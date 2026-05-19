@@ -154,6 +154,10 @@ const Login: React.FC = () => {
     try {
       // 登录
       const msg = await login({ ...values, type });
+      console.log(msg)
+      if (msg?.access_token) {
+        localStorage.setItem('access_token', msg.access_token);
+      }
       if (msg.status === 'ok') {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
@@ -166,7 +170,6 @@ const Login: React.FC = () => {
         window.location.href = redirectUrl;
         return;
       }
-      console.log(msg);
       // 如果失败去设置用户错误信息
       setUserLoginState(msg);
     } catch (error) {

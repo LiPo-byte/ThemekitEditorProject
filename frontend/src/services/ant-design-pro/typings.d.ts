@@ -27,6 +27,8 @@ declare namespace API {
     status?: string;
     type?: string;
     currentAuthority?: string;
+    access_token?: string;
+    token_type?: string;
   };
 
   type PageParams = {

@@ -172,7 +172,7 @@ const Welcome: React.FC = () => {
         </>
       }
     >
-      <div
+      {/* <div
         data-theme={isDark ? 'dark' : 'light'}
         className="flex flex-col gap-6 md:flex-row"
       >
@@ -200,7 +200,7 @@ const Welcome: React.FC = () => {
             />
           ))}
         </div>
-      </div>
+      </div> */}
     </PageContainer>
   );
 };

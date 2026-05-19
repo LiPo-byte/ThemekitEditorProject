@@ -93,12 +93,25 @@ export const errorConfig: RequestConfig = {
   // 请求拦截器
   requestInterceptors: [
     (config: RequestOptions) => {
-      // 拦截请求配置，进行个性化处理。
-      const url = config?.url?.concat('?token=123');
-      return { ...config, url };
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`,
+        };
+      }
+      return config;
     },
   ],
 
   // 响应拦截器
-  responseInterceptors: [],
+  responseInterceptors: [
+    (response) => {
+      console.log(response, 'response.data')
+      if (response.data && typeof response.data === 'object') {
+        (response.data as any).status = response.status === 200 ? 'ok' : 'error';
+      }
+      return response;
+    },
+  ],
 };
