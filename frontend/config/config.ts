@@ -45,6 +45,12 @@ export default defineConfig({
   hash: true,
 
   publicPath: PUBLIC_PATH,
+  favicons: [
+    // 完整地址
+    'http://localhost:5173/logo.webp',
+    // 此时将指向 `/favicon.png` ，确保你的项目含有 `public/favicon.png`
+    '/logo.webp'
+  ],
 
   /**
    * @name 兼容性设置
@@ -114,7 +120,7 @@ export default defineConfig({
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
    */
-  title: 'Ant Design Pro',
+  title: 'Themekit Editor Pro',
   layout: {
     locale: true,
     ...defaultSettings,

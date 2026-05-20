@@ -187,10 +187,10 @@ const Login: React.FC = () => {
     <div className={styles.container}>
       <Helmet>
         <title>
-          {intl.formatMessage({
+          {/* {intl.formatMessage({
             id: 'menu.login',
             defaultMessage: '登录页',
-          })}
+          })} */}
           {Settings.title && ` - ${Settings.title}`}
         </title>
       </Helmet>

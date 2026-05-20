@@ -44,9 +44,10 @@ export async function getInitialState(): Promise<{
       return msg;
     } catch (_error) {
       const { pathname, search, hash } = history.location;
-      history.replace(
-        `${loginPath}?redirect=${encodeURIComponent(pathname + search + hash)}`,
-      );
+      history.replace({
+        pathname: loginPath,
+        search: `?redirect=${encodeURIComponent(pathname + search + hash)}`,
+      });
     }
     return undefined;
   };
@@ -108,9 +109,11 @@ export const layout: RunTimeLayoutConfig = ({
       const { location } = history;
       // 如果没有登录，重定向到 login
       if (!initialState?.currentUser && location.pathname !== loginPath) {
-        history.replace(
-          `${loginPath}?redirect=${encodeURIComponent(location.pathname + location.search + location.hash)}`,
-        );
+        const { pathname, search, hash } = location;
+        history.replace({
+          pathname: loginPath,
+          search: `?redirect=${encodeURIComponent(pathname + search + hash)}`,
+        });
       }
     },
     // bgLayoutImgList: [
@@ -132,7 +135,7 @@ export const layout: RunTimeLayoutConfig = ({
     //     left: 0,
     //     width: '331px',
     //   },
-    // ],
+    // ], 
     // links: isDev
     //   ? [
     //       <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
@@ -143,7 +146,7 @@ export const layout: RunTimeLayoutConfig = ({
     //   : [],
     // Replace ProLayout's default ErrorBoundary with our offline-aware version,
     // so chunk load errors show friendly messages instead of "Something went wrong."
-    ErrorBoundary: ErrorBoundary,
+    ErrorBoundary: ErrorBoundary as any,
     menuHeaderRender: undefined,
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
@@ -184,7 +187,7 @@ export const layout: RunTimeLayoutConfig = ({
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request: RequestConfig = {
-  baseURL: isDev ? '' : 'https://pro-api.ant-design-demo.workers.dev',
+  baseURL: isDev ? '' : 'http://localhost:8000',
   ...errorConfig,
 };
 
