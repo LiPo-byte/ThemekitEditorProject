@@ -1,4 +1,3 @@
-import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
@@ -12,12 +11,8 @@ dayjs.extend(relativeTime);
 
 import {
   AvatarDropdown,
-  DocLink,
   ErrorBoundary,
-  Footer,
-  LangDropdown,
   OfflineBanner,
-  VersionDropdown,
 } from '@/components';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
 import defaultSettings from '../config/defaultSettings';
@@ -59,6 +54,9 @@ export async function getInitialState(): Promise<{
     )
   ) {
     const currentUser = await fetchUserInfo();
+    if (currentUser && !currentUser.avatar) {
+      currentUser.avatar = 'afternoon-reading.svg';
+    }
     return {
       fetchUserInfo,
       currentUser,
@@ -90,13 +88,13 @@ export const layout: RunTimeLayoutConfig = ({
       return dom;
     },
     actionsRender: () => [
-      <DocLink key="doc" />,
-      <VersionDropdown key="version" />,
-      <LangDropdown key="lang" />,
+      // <DocLink key="doc" />,
+      // <VersionDropdown key="version" />,
+      // <LangDropdown key="lang" />,
     ],
     avatarProps: {
-      src: initialState?.currentUser?.avatar,
-      title: 'ProUser',
+      src: `/avater/${initialState?.currentUser?.avatar}`,
+      title: '李白',
       render: (_, avatarChildren) => (
         <AvatarDropdown>{avatarChildren}</AvatarDropdown>
       ),
@@ -104,7 +102,7 @@ export const layout: RunTimeLayoutConfig = ({
     // waterMarkProps: {
     //   content: initialState?.currentUser?.name,
     // },
-    footerRender: () => <Footer />,
+    // footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
       // 如果没有登录，重定向到 login

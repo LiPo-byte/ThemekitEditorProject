@@ -19,4 +19,11 @@ export { default as OfflineBanner } from './OfflineBanner';
 export { default as StandardFormRow } from './StandardFormRow';
 export { default as TagSelect } from './TagSelect';
 
-export { AvatarDropdown, DocLink, Footer, LangDropdown, VersionDropdown };
+
+export {
+    AvatarDropdown,
+    DocLink,
+    Footer,
+    LangDropdown,
+    VersionDropdown,
+};

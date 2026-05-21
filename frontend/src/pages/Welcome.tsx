@@ -19,7 +19,7 @@ interface InfoCardProps {
   href: string;
 }
 
-const InfoCard: React.FC<InfoCardProps> = ({ title, index, desc, href }) => (
+const _InfoCard: React.FC<InfoCardProps> = ({ title, index, desc, href }) => (
   <a href={href} target="_blank" rel="noopener noreferrer" aria-label={title}>
     <Card hoverable size="small">
       <div className="flex items-start gap-3">
@@ -109,7 +109,7 @@ const mdConfig = {
   },
 };
 
-const infoCards = [
+const _infoCards = [
   {
     index: 1,
     href: 'https://umijs.org/docs/introduce/introduce',
@@ -172,7 +172,7 @@ const Welcome: React.FC = () => {
         </>
       }
     >
-      {/* <div
+      <div
         data-theme={isDark ? 'dark' : 'light'}
         className="flex flex-col gap-6 md:flex-row"
       >
@@ -184,7 +184,7 @@ const Welcome: React.FC = () => {
           </Card>
         </div>
         <div className="flex flex-1 flex-col gap-4">
-          {infoCards.map((card) => (
+          {/* {infoCards.map((card) => (
             <InfoCard
               key={card.href}
               index={card.index}
@@ -198,9 +198,9 @@ const Welcome: React.FC = () => {
                 defaultMessage: card.descDefault,
               })}
             />
-          ))}
+          ))} */}
         </div>
-      </div> */}
+      </div>
     </PageContainer>
   );
 };

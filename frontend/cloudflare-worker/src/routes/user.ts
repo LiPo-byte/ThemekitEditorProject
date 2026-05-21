@@ -19,9 +19,9 @@ app.post('/login/account', async (c) => {
 });
 
 // Logout
-app.post('/login/outLogin', (c) => {
-  return c.json({ data: {}, success: true });
-});
+// app.post('/login/outLogin', (c) => {
+//   return c.json({ data: {}, success: true });
+// });
 
 // Captcha
 app.get('/login/captcha', (c) => {

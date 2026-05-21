@@ -39,6 +39,7 @@
     "@ant-design/x-sdk": "^2.5.0",
     "@rc-component/util": "^1.11.0",
     "@tanstack/react-query": "^5.100.6",
+    "@xyflow/react": "^12.10.2",
     "antd": "^6.4.2",
     "antd-style": "^4.1.0",
     "clsx": "^2.1.1",

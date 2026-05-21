@@ -85,7 +85,7 @@ export const errorConfig: RequestConfig = {
       } else if (error.request) {
         message.error('None response! Please retry.');
       } else {
-        message.error('Request error, please retry.');
+        message.error(error ? error.message : 'Request error, please retry.');
       }
     },
   },
@@ -106,12 +106,24 @@ export const errorConfig: RequestConfig = {
 
   // 响应拦截器
   responseInterceptors: [
-    (response) => {
-      console.log(response, 'response.data')
-      if (response.data && typeof response.data === 'object') {
-        (response.data as any).status = response.status === 200 ? 'ok' : 'error';
-      }
-      return response;
-    },
+    [
+      (response) => {
+        if (response.data && typeof response.data === 'object') {
+          (response.data as any).status =
+            response.status === 200 ? 'ok' : 'error';
+        }
+        return response;
+      },
+      (error: any) => {
+        const detail = error?.response?.data?.detail;
+        const errorMessage =
+          typeof detail === 'string'
+            ? detail
+            : Array.isArray(detail)
+              ? detail.map((d: any) => d.msg).join(', ')
+              : error?.message || 'Request error';
+        return Promise.reject(new Error(errorMessage));
+      },
+    ],
   ],
 };

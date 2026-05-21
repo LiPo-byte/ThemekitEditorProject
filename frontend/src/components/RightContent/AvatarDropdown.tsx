@@ -1,13 +1,13 @@
 import {
   LogoutOutlined,
-  SettingOutlined,
-  SkinOutlined,
+  TeamOutlined,
+  UserOutlined,
+  AppstoreOutlined
 } from '@ant-design/icons';
-import { history, useModel } from '@umijs/max';
+import { history, useModel, useAccess } from '@umijs/max';
 import type { MenuProps } from 'antd';
 import { Spin } from 'antd';
 import React, { startTransition } from 'react';
-import { outLogin } from '@/services/ant-design-pro/api';
 import HeaderDropdown from '../HeaderDropdown';
 
 type GlobalHeaderRightProps = {
@@ -18,7 +18,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   children,
 }) => {
   const loginOut = async () => {
-    await outLogin();
+    localStorage.removeItem('access_token');
     const { search, pathname } = window.location;
     const urlParams = new URL(window.location.href).searchParams;
     const searchParams = new URLSearchParams({
@@ -33,6 +33,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
     }
   };
   const { initialState, setInitialState } = useModel('@@initialState');
+  const access = useAccess();
 
   const onMenuClick: MenuProps['onClick'] = (event) => {
     const { key } = event;
@@ -43,8 +44,12 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
       loginOut();
       return;
     }
-    if (key === 'theme') {
-      setInitialState((s) => ({ ...s, settingDrawerOpen: true }));
+    if (key === 'designer-list') {
+      history.push('/designer-list');
+      return;
+    }
+    if (key === 'component-list') {
+      history.push('/component-list');
       return;
     }
     history.push(`/account/${key}`);
@@ -53,24 +58,29 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   if (!initialState) {
     return <Spin size="small" />;
   }
-
   const { currentUser } = initialState;
 
   if (!currentUser) {
     return <Spin size="small" />;
   }
 
+  const accessItems = access.canAdmin ? [{
+    key: 'designer-list',
+    icon: <TeamOutlined />,
+    label: '设计师列表',
+  }, {
+    key: 'component-list',
+    icon: <AppstoreOutlined />,
+    label: '组件列表',
+  }] : [];
+
   const menuItems: MenuProps['items'] = [
     {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: '个人设置',
+      key: 'center',
+      icon: <UserOutlined />,
+      label: '个人中心',
     },
-    {
-      key: 'theme',
-      icon: <SkinOutlined />,
-      label: '主题设置',
-    },
+    ...accessItems,
     {
       type: 'divider' as const,
     },
