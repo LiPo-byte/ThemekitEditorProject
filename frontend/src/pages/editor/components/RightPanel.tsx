@@ -1,5 +1,8 @@
 import { createStyles } from 'antd-style';
 import React from 'react';
+import FontSelect from './FontSelect';
+import { useEditorCore } from '../context';
+import Konva from 'konva';
 
 const useStyles = createStyles(({ token, css }) => ({
   wrap: css`
@@ -27,10 +30,31 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const RightPanel: React.FC = () => {
   const { styles } = useStyles();
+  const core = useEditorCore();
+  if (!core) {
+    return null;
+  }
   return (
     <div className={styles.wrap}>
       <div className={styles.title}>属性面板</div>
       <div className={styles.placeholder}>预留区域</div>
+      <FontSelect
+        onChange={async (v) => {
+          const selectNodes = core.getSelectedNodes();
+          const affectedLayers = new Set<Konva.Layer>();
+          let changed = false;
+          selectNodes.forEach((node) => {
+            if (!(node instanceof Konva.Text)) return;
+            node.fontFamily(v);
+            const layer = node.getLayer();
+            if (layer) affectedLayers.add(layer);
+            changed = true;
+          });
+          if (!changed) return;
+          affectedLayers.forEach((layer) => layer.batchDraw());
+          core.refreshSelectionLayout();
+        }}
+      />
     </div>
   );
 };

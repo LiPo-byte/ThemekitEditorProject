@@ -1,0 +1,779 @@
+[
+  {
+    "file": "AvenirNext-Bold.ttf",
+    "family": "Avenir Next",
+    "subfamily": "Bold",
+    "fullName": "Avenir Next Bold",
+    "postscriptName": "AvenirNext-Bold"
+  },
+  {
+    "file": "AvenirNext-BoldItalic.ttf",
+    "family": "Avenir Next",
+    "subfamily": "Bold Italic",
+    "fullName": "Avenir Next Bold Italic",
+    "postscriptName": "AvenirNext-BoldItalic"
+  },
+  {
+    "file": "AvenirNext-DemiBold.ttf",
+    "family": "Avenir Next Demi Bold",
+    "subfamily": "Regular",
+    "fullName": "Avenir Next Demi Bold",
+    "postscriptName": "AvenirNext-DemiBold"
+  },
+  {
+    "file": "AvenirNext-DemiBoldItalic.ttf",
+    "family": "Avenir Next Demi Bold",
+    "subfamily": "Italic",
+    "fullName": "Avenir Next Demi Bold Italic",
+    "postscriptName": "AvenirNext-DemiBoldItalic"
+  },
+  {
+    "file": "AvenirNext-Heavy.ttf",
+    "family": "Avenir Next Heavy",
+    "subfamily": "Regular",
+    "fullName": "Avenir Next Heavy",
+    "postscriptName": "AvenirNext-Heavy"
+  },
+  {
+    "file": "AvenirNext-HeavyItalic.ttf",
+    "family": "Avenir Next Heavy",
+    "subfamily": "Italic",
+    "fullName": "Avenir Next Heavy Italic",
+    "postscriptName": "AvenirNext-HeavyItalic"
+  },
+  {
+    "file": "AvenirNext-Medium.ttf",
+    "family": "Avenir Next Medium",
+    "subfamily": "Regular",
+    "fullName": "Avenir Next Medium",
+    "postscriptName": "AvenirNext-Medium"
+  },
+  {
+    "file": "AvenirNext-MediumItalic.ttf",
+    "family": "Avenir Next Medium",
+    "subfamily": "Italic",
+    "fullName": "Avenir Next Medium Italic",
+    "postscriptName": "AvenirNext-MediumItalic"
+  },
+  {
+    "file": "AvenirNextCondensed-Bold.ttf",
+    "family": "Avenir Next Condensed",
+    "subfamily": "Bold",
+    "fullName": "Avenir Next Condensed Bold",
+    "postscriptName": "AvenirNextCondensed-Bold"
+  },
+  {
+    "file": "AvenirNextCondensed-BoldItalic.ttf",
+    "family": "Avenir Next Condensed",
+    "subfamily": "Bold Italic",
+    "fullName": "Avenir Next Condensed Bold Italic",
+    "postscriptName": "AvenirNextCondensed-BoldItalic"
+  },
+  {
+    "file": "AvenirNextCondensed-DemiBold.ttf",
+    "family": "Avenir Next Condensed Demi Bold",
+    "subfamily": "Regular",
+    "fullName": "Avenir Next Condensed Demi Bold",
+    "postscriptName": "AvenirNextCondensed-DemiBold"
+  },
+  {
+    "file": "AvenirNextCondensed-DemiBoldItalic.ttf",
+    "family": "Avenir Next Condensed Demi Bold",
+    "subfamily": "Italic",
+    "fullName": "Avenir Next Condensed Demi Bold Italic",
+    "postscriptName": "AvenirNextCondensed-DemiBoldItalic"
+  },
+  {
+    "file": "AvenirNextCondensed-Heavy.ttf",
+    "family": "Avenir Next Condensed Heavy",
+    "subfamily": "Regular",
+    "fullName": "Avenir Next Condensed Heavy",
+    "postscriptName": "AvenirNextCondensed-Heavy"
+  },
+  {
+    "file": "AvenirNextCondensed-HeavyItalic.ttf",
+    "family": "Avenir Next Condensed Heavy",
+    "subfamily": "Italic",
+    "fullName": "Avenir Next Condensed Heavy Italic",
+    "postscriptName": "AvenirNextCondensed-HeavyItalic"
+  },
+  {
+    "file": "AvenirNextCondensed-Medium.ttf",
+    "family": "Avenir Next Condensed Medium",
+    "subfamily": "Regular",
+    "fullName": "Avenir Next Condensed Medium",
+    "postscriptName": "AvenirNextCondensed-Medium"
+  },
+  {
+    "file": "AvenirNextCondensed-MediumItalic.ttf",
+    "family": "Avenir Next Condensed Medium",
+    "subfamily": "Italic",
+    "fullName": "Avenir Next Medium Condensed Italic",
+    "postscriptName": "AvenirNextCondensed-MediumItalic"
+  },
+  {
+    "file": "Comic Sans MS.ttf",
+    "family": "Comic Sans MS",
+    "subfamily": "Regular",
+    "fullName": "Comic Sans MS",
+    "postscriptName": "ComicSansMS"
+  },
+  {
+    "file": "HFAppleTree.ttf",
+    "family": "HFAppleTree",
+    "subfamily": "Regular",
+    "fullName": "HFAppleTree Regular",
+    "postscriptName": "HFAppleTree-Regular"
+  },
+  {
+    "file": "HFArchite.ttf",
+    "family": "HFArchite",
+    "subfamily": "Regular",
+    "fullName": "HFArchite",
+    "postscriptName": "HFArchite"
+  },
+  {
+    "file": "HFAster.ttf",
+    "family": "HFAster",
+    "subfamily": "Regular",
+    "fullName": "HFAster Medium",
+    "postscriptName": "HFAster-Medium"
+  },
+  {
+    "file": "HFBerry.ttf",
+    "family": "HFBerry",
+    "subfamily": "Regular",
+    "fullName": "HFBerry",
+    "postscriptName": "HFBerry"
+  },
+  {
+    "file": "HFBestWishes.ttf",
+    "family": "HFBestWishes",
+    "subfamily": "Regular",
+    "fullName": "HFBestWishes",
+    "postscriptName": "HFBestWishes"
+  },
+  {
+    "file": "HFBiscuit.ttf",
+    "family": "HFBiscuit",
+    "subfamily": "Regular",
+    "fullName": "HFBiscuit Regular",
+    "postscriptName": "HFBiscuit-Regular"
+  },
+  {
+    "file": "HFBlueJazz.ttf",
+    "family": "HFBlueJazz",
+    "subfamily": "Italic",
+    "fullName": "HFBlueJazz Italic",
+    "postscriptName": "HFBlueJazz-Italic"
+  },
+  {
+    "file": "HFBone.ttf",
+    "family": "HFBone",
+    "subfamily": "Regular",
+    "fullName": "HFBone",
+    "postscriptName": "HFBone"
+  },
+  {
+    "file": "HFBronte.ttf",
+    "family": "HFBronte",
+    "subfamily": "Regular",
+    "fullName": "HFBronte",
+    "postscriptName": "HFBronte"
+  },
+  {
+    "file": "HFBungee.ttf",
+    "family": "HFBungee",
+    "subfamily": "Regular",
+    "fullName": "HFBungee Regular",
+    "postscriptName": "HFBungee-Regular"
+  },
+  {
+    "file": "HFCapsule.ttf",
+    "family": "HFCapsule",
+    "subfamily": "Regular",
+    "fullName": "HFCapsule Regular",
+    "postscriptName": "HFCapsule-Regular"
+  },
+  {
+    "file": "HFCarnival.ttf",
+    "family": "HFCarnival",
+    "subfamily": "Regular",
+    "fullName": "HFCarnival Regular",
+    "postscriptName": "HFCarnival-Regular"
+  },
+  {
+    "file": "HFCarol.ttf",
+    "family": "HFCarol",
+    "subfamily": "Regular",
+    "fullName": "HFCarol",
+    "postscriptName": "HFCarol"
+  },
+  {
+    "file": "HFCelebration.ttf",
+    "family": "HFCelebration",
+    "subfamily": "Regular",
+    "fullName": "HFCelebration Regular",
+    "postscriptName": "HFCelebration-Regular"
+  },
+  {
+    "file": "HFCheers.ttf",
+    "family": "HFCheers",
+    "subfamily": "Bold",
+    "fullName": "HFCheers",
+    "postscriptName": "HFCheers"
+  },
+  {
+    "file": "HFChooseyLover.ttf",
+    "family": "FC Iconic",
+    "subfamily": "Regular",
+    "fullName": "HFChooseyLover Regular",
+    "postscriptName": "HFChooseyLover-Regular"
+  },
+  {
+    "file": "HFClay.ttf",
+    "family": "HFClay",
+    "subfamily": "Bold",
+    "fullName": "HFClay",
+    "postscriptName": "HFClay"
+  },
+  {
+    "file": "HFClearance.ttf",
+    "family": "HFClearance",
+    "subfamily": "Regular",
+    "fullName": "HFClearance",
+    "postscriptName": "HFClearance"
+  },
+  {
+    "file": "HFComfortable.ttf",
+    "family": "HFComfortable",
+    "subfamily": "Regular",
+    "fullName": "HFComfortable",
+    "postscriptName": "HFComfortable"
+  },
+  {
+    "file": "HFComic.ttf",
+    "family": "HFComic",
+    "subfamily": "Regular",
+    "fullName": "HFComic",
+    "postscriptName": "HFComic"
+  },
+  {
+    "file": "HFComplex.ttf",
+    "family": "HFComplex",
+    "subfamily": "Regular",
+    "fullName": "HFComplex Regular",
+    "postscriptName": "HFComplex-Regular"
+  },
+  {
+    "file": "HFConflix.ttf",
+    "family": "HFConflix",
+    "subfamily": "Regular",
+    "fullName": "HFConflix Medium",
+    "postscriptName": "HFConflix-Medium"
+  },
+  {
+    "file": "HFCrystal.ttf",
+    "family": "HFCrystal",
+    "subfamily": "Regular",
+    "fullName": "HFCrystal",
+    "postscriptName": "HFCrystal"
+  },
+  {
+    "file": "HFCurtain.ttf",
+    "family": "HFCurtain",
+    "subfamily": "Regular",
+    "fullName": "HFCurtain Regular",
+    "postscriptName": "HFCurtain-Regular"
+  },
+  {
+    "file": "HFCutiePie.ttf",
+    "family": "HFCutiePie",
+    "subfamily": "Italic",
+    "fullName": "HFCutiePie Regular",
+    "postscriptName": "HFCutiePie-Regular"
+  },
+  {
+    "file": "HFDancingLine.ttf",
+    "family": "HFDancingLine",
+    "subfamily": "Regular",
+    "fullName": "HFDancingLine",
+    "postscriptName": "HFDancingLine"
+  },
+  {
+    "file": "HFDigits.ttf",
+    "family": "HFDigits",
+    "subfamily": "Regular",
+    "fullName": "HFDigits",
+    "postscriptName": "HFDigits"
+  },
+  {
+    "file": "HFDreamer.ttf",
+    "family": "HFDreamer",
+    "subfamily": "Regular",
+    "fullName": "HFDreamer",
+    "postscriptName": "HFDreamer"
+  },
+  {
+    "file": "HFElasticity.ttf",
+    "family": "HFElasticity",
+    "subfamily": "Regular",
+    "fullName": "HFElasticity",
+    "postscriptName": "HFElasticity"
+  },
+  {
+    "file": "HFExotic.ttf",
+    "family": "HFExotic",
+    "subfamily": "Regular",
+    "fullName": "HFExotic",
+    "postscriptName": "HFExotic"
+  },
+  {
+    "file": "HFFlow.ttf",
+    "family": "HFFlow",
+    "subfamily": "Regular",
+    "fullName": "HFFlow Regular",
+    "postscriptName": "HFFlow-Regular"
+  },
+  {
+    "file": "HFFull.ttf",
+    "family": "HFFull Med",
+    "subfamily": "Regular",
+    "fullName": "HFFull Medium",
+    "postscriptName": "HFFull-Medium"
+  },
+  {
+    "file": "HFGeo.ttf",
+    "family": "HFGeo",
+    "subfamily": "Regular",
+    "fullName": "HFGeo",
+    "postscriptName": "HFGeo"
+  },
+  {
+    "file": "HFGlossy.ttf",
+    "family": "HFGlossy",
+    "subfamily": "Regular",
+    "fullName": "HFGlossy",
+    "postscriptName": "HFGlossy"
+  },
+  {
+    "file": "HFGrowing.ttf",
+    "family": "HFGrowing",
+    "subfamily": "Regular",
+    "fullName": "HFGrowing",
+    "postscriptName": "HFGrowing"
+  },
+  {
+    "file": "HFGrowingUp.ttf",
+    "family": "HFGrowingUp",
+    "subfamily": "Regular",
+    "fullName": "HFGrowingUp",
+    "postscriptName": "HFGrowingUp"
+  },
+  {
+    "file": "HFHalloween.ttf",
+    "family": "HFHalloween",
+    "subfamily": "Regular",
+    "fullName": "HFHalloween",
+    "postscriptName": "HFHalloween"
+  },
+  {
+    "file": "HFHaru.ttf",
+    "family": "HFHaru",
+    "subfamily": "Regular",
+    "fullName": "HFHaru Regular",
+    "postscriptName": "HFHaru-Regular"
+  },
+  {
+    "file": "HFHockey.ttf",
+    "family": "HFHockey",
+    "subfamily": "Regular",
+    "fullName": "HFHockey Regular",
+    "postscriptName": "HFHockey-Regular"
+  },
+  {
+    "file": "HFIceCubes.ttf",
+    "family": "HFIceCubes",
+    "subfamily": "Regular",
+    "fullName": "HFIceCubes",
+    "postscriptName": "HFIceCubes"
+  },
+  {
+    "file": "HFLaundrySoap.ttf",
+    "family": "HFLaundrySoap",
+    "subfamily": "Regular",
+    "fullName": "HFLaundrySoap Regular",
+    "postscriptName": "HFLaundrySoap-Regular"
+  },
+  {
+    "file": "HFLazyBone.ttf",
+    "family": "HFLazyBone",
+    "subfamily": "Regular",
+    "fullName": "HFLazyBone Regular",
+    "postscriptName": "HFLazyBone-Regular"
+  },
+  {
+    "file": "HFLoveMeAgain.ttf",
+    "family": "HFLoveMeAgain",
+    "subfamily": "Regular",
+    "fullName": "HFLoveMeAgain",
+    "postscriptName": "HFLoveMeAgain"
+  },
+  {
+    "file": "HFMacchiato.ttf",
+    "family": "HFMacchiato",
+    "subfamily": "Regular",
+    "fullName": "HFMacchiato",
+    "postscriptName": "HFMacchiato"
+  },
+  {
+    "file": "HFMarkerpen.ttf",
+    "family": "HFMarkerpen",
+    "subfamily": "Regular",
+    "fullName": "HFMarkerpen",
+    "postscriptName": "HFMarkerpen"
+  },
+  {
+    "file": "HFMuscle.ttf",
+    "family": "HFMuscle",
+    "subfamily": "Regular",
+    "fullName": "HFMuscle",
+    "postscriptName": "HFMuscle"
+  },
+  {
+    "file": "HFNoodle.ttf",
+    "family": "HFNoodle",
+    "subfamily": "Regular",
+    "fullName": "HFNoodle",
+    "postscriptName": "HFNoodle"
+  },
+  {
+    "file": "HFNoose.ttf",
+    "family": "HFNoose Med",
+    "subfamily": "Regular",
+    "fullName": "HFNoose Medium",
+    "postscriptName": "HFNoose-Medium"
+  },
+  {
+    "file": "HFOldClock.ttf",
+    "family": "HFOldClock",
+    "subfamily": "Regular",
+    "fullName": "HFOldClock",
+    "postscriptName": "HFOldClock"
+  },
+  {
+    "file": "HFOlive.ttf",
+    "family": "HFOlive",
+    "subfamily": "Regular",
+    "fullName": "HFOlive Regular",
+    "postscriptName": "HFOlive-Regular"
+  },
+  {
+    "file": "HFParisStreet.ttf",
+    "family": "HFParisStreet",
+    "subfamily": "Regular",
+    "fullName": "HFParisStreet Regular",
+    "postscriptName": "HFParisStreet-Regular"
+  },
+  {
+    "file": "HFPopinBold.ttf",
+    "family": "HFPopinBold",
+    "subfamily": "Bold",
+    "fullName": "HFPopinBold",
+    "postscriptName": "HFPopinBold"
+  },
+  {
+    "file": "HFPopinRegular.ttf",
+    "family": "HFPopinRegular",
+    "subfamily": "Regular",
+    "fullName": "HFPopinRegular",
+    "postscriptName": "HFPopinRegular"
+  },
+  {
+    "file": "HFPuff.ttf",
+    "family": "HFPuff",
+    "subfamily": "Regular",
+    "fullName": "HFPuff",
+    "postscriptName": "HFPuff"
+  },
+  {
+    "file": "HFReed.ttf",
+    "family": "HFReed",
+    "subfamily": "Regular",
+    "fullName": "HFReed Regular",
+    "postscriptName": "HFReed-Regular"
+  },
+  {
+    "file": "HFRoot.ttf",
+    "family": "HFRoot",
+    "subfamily": "Bold",
+    "fullName": "HFRoot",
+    "postscriptName": "HFRoot"
+  },
+  {
+    "file": "HFSandBeach.ttf",
+    "family": "HFSandBeach",
+    "subfamily": "Regular",
+    "fullName": "HFSandBeach Regular",
+    "postscriptName": "HFSandBeach-Regular"
+  },
+  {
+    "file": "HFSantaMonica.ttf",
+    "family": "HFSantaMonica",
+    "subfamily": "Regular",
+    "fullName": "HFSantaMonica",
+    "postscriptName": "HFSantaMonica"
+  },
+  {
+    "file": "HFShinySunday.ttf",
+    "family": "HFShinySunday",
+    "subfamily": "Regular",
+    "fullName": "HFShinySunday",
+    "postscriptName": "HFShinySunday"
+  },
+  {
+    "file": "HFSmoothie.ttf",
+    "family": "HFSmoothie",
+    "subfamily": "Regular",
+    "fullName": "HFSmoothie Regular",
+    "postscriptName": "HFSmoothie-Regular"
+  },
+  {
+    "file": "HFSoda.ttf",
+    "family": "HFSoda",
+    "subfamily": "Regular",
+    "fullName": "HFSoda",
+    "postscriptName": "HFSoda"
+  },
+  {
+    "file": "HFSparrow.ttf",
+    "family": "HFSparrow",
+    "subfamily": "Regular",
+    "fullName": "HFSparrow Regular",
+    "postscriptName": "HFSparrow-Regular"
+  },
+  {
+    "file": "HFSpikey.ttf",
+    "family": "HFSpikey",
+    "subfamily": "Bold",
+    "fullName": "HFSpikey Bold",
+    "postscriptName": "HFSpikey-Bold"
+  },
+  {
+    "file": "HFSprouts.ttf",
+    "family": "HFSprouts",
+    "subfamily": "Regular",
+    "fullName": "HFSprouts",
+    "postscriptName": "HFSprouts"
+  },
+  {
+    "file": "HFSwapping.ttf",
+    "family": "HFSwapping",
+    "subfamily": "Regular",
+    "fullName": "HFSwapping Regular",
+    "postscriptName": "HFSwapping-Regular"
+  },
+  {
+    "file": "HFSwash.ttf",
+    "family": "HFSwash",
+    "subfamily": "Regular",
+    "fullName": "HFSwash",
+    "postscriptName": "HFSwash"
+  },
+  {
+    "file": "HFToast.ttf",
+    "family": "HFToast",
+    "subfamily": "Regular",
+    "fullName": "HFToast Regular",
+    "postscriptName": "HFToast-Regular"
+  },
+  {
+    "file": "HFTongue.ttf",
+    "family": "HFTongue",
+    "subfamily": "Regular",
+    "fullName": "HFTongue",
+    "postscriptName": "HFTongue"
+  },
+  {
+    "file": "HFTrack.ttf",
+    "family": "HFTrack",
+    "subfamily": "Regular",
+    "fullName": "HFTrack",
+    "postscriptName": "HFTrack"
+  },
+  {
+    "file": "HFTroy.ttf",
+    "family": "HFTroy Med",
+    "subfamily": "Regular",
+    "fullName": "HFTroy Medium",
+    "postscriptName": "HFTroy-Medium"
+  },
+  {
+    "file": "HFTypewriter.ttf",
+    "family": "HFTypewriter",
+    "subfamily": "Bold",
+    "fullName": "HFTypewriter",
+    "postscriptName": "HFTypewriter"
+  },
+  {
+    "file": "HFUpAndDown.ttf",
+    "family": "HFUpAndDown",
+    "subfamily": "Regular",
+    "fullName": "HFUpAndDown",
+    "postscriptName": "HFUpAndDown"
+  },
+  {
+    "file": "HFVoyager.ttf",
+    "family": "HFVoyager",
+    "subfamily": "Regular",
+    "fullName": "HFVoyager Regular",
+    "postscriptName": "HFVoyager-Regular"
+  },
+  {
+    "file": "HFWaffle.ttf",
+    "family": "HFWaffle",
+    "subfamily": "Regular",
+    "fullName": "HFWaffle",
+    "postscriptName": "HFWaffle"
+  },
+  {
+    "file": "HFWickywitch.ttf",
+    "family": "HFWickywitch",
+    "subfamily": "Regular",
+    "fullName": "HFWickywitch",
+    "postscriptName": "HFWickywitch"
+  },
+  {
+    "file": "HHFAntiquity.ttf",
+    "family": "HFAntiquity",
+    "subfamily": "Regular",
+    "fullName": "HFAntiquity",
+    "postscriptName": "HFAntiquity"
+  },
+  {
+    "file": "Helvetica-Bold.ttf",
+    "family": "Helvetica",
+    "subfamily": "Bold",
+    "fullName": "Helvetica Bold",
+    "postscriptName": "Helvetica-Bold"
+  },
+  {
+    "file": "Helvetica-BoldOblique.ttf",
+    "family": "Helvetica",
+    "subfamily": "Bold Oblique",
+    "fullName": "Helvetica Bold Oblique",
+    "postscriptName": "Helvetica-BoldOblique"
+  },
+  {
+    "file": "Helvetica-Oblique.ttf",
+    "family": "Helvetica",
+    "subfamily": "Oblique",
+    "fullName": "Helvetica Oblique",
+    "postscriptName": "Helvetica-Oblique"
+  },
+  {
+    "file": "Helvetica.ttf",
+    "family": "Helvetica",
+    "subfamily": "Regular",
+    "fullName": "Helvetica",
+    "postscriptName": "Helvetica"
+  },
+  {
+    "file": "HelveticaNeue-Bold.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Bold",
+    "fullName": "Helvetica Neue Bold",
+    "postscriptName": "HelveticaNeue-Bold"
+  },
+  {
+    "file": "HelveticaNeue-BoldItalic.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Bold Italic",
+    "fullName": "Helvetica Neue Bold Italic",
+    "postscriptName": "HelveticaNeue-BoldItalic"
+  },
+  {
+    "file": "HelveticaNeue-CondensedBlack.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Condensed Black",
+    "fullName": "Helvetica Neue Condensed Black",
+    "postscriptName": "HelveticaNeue-CondensedBlack"
+  },
+  {
+    "file": "HelveticaNeue-CondensedBold.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Condensed Bold",
+    "fullName": "Helvetica Neue Condensed Bold",
+    "postscriptName": "HelveticaNeue-CondensedBold"
+  },
+  {
+    "file": "HelveticaNeue-Italic.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Italic",
+    "fullName": "Helvetica Neue Italic",
+    "postscriptName": "HelveticaNeue-Italic"
+  },
+  {
+    "file": "HelveticaNeue-Light.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Light",
+    "fullName": "Helvetica Neue Light",
+    "postscriptName": "HelveticaNeue-Light"
+  },
+  {
+    "file": "HelveticaNeue-LightItalic.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Light Italic",
+    "fullName": "Helvetica Neue Light Italic",
+    "postscriptName": "HelveticaNeue-LightItalic"
+  },
+  {
+    "file": "HelveticaNeue-Medium.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Medium",
+    "fullName": "Helvetica Neue Medium",
+    "postscriptName": "HelveticaNeue-Medium"
+  },
+  {
+    "file": "HelveticaNeue-MediumItalic.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Medium Italic",
+    "fullName": "Helvetica Neue Medium Italic",
+    "postscriptName": "HelveticaNeue-MediumItalic"
+  },
+  {
+    "file": "HelveticaNeue.ttf",
+    "family": "Helvetica Neue",
+    "subfamily": "Regular",
+    "fullName": "Helvetica Neue",
+    "postscriptName": "HelveticaNeue"
+  },
+  {
+    "file": "Impact.ttf",
+    "family": "Impact",
+    "subfamily": "Regular",
+    "fullName": "Impact",
+    "postscriptName": "Impact"
+  },
+  {
+    "file": "Krungthep.ttf",
+    "family": "Krungthep",
+    "subfamily": "Regular",
+    "fullName": "Krungthep",
+    "postscriptName": "Krungthep"
+  },
+  {
+    "file": "Phosphate-Solid.ttf",
+    "family": "Phosphate",
+    "subfamily": "Solid",
+    "fullName": "Phosphate Solid",
+    "postscriptName": "Phosphate-Solid"
+  },
+  {
+    "file": "Thonburi-Bold.ttf",
+    "family": "Thonburi",
+    "subfamily": "Bold",
+    "fullName": "Thonburi Bold",
+    "postscriptName": "Thonburi-Bold"
+  }
+]

@@ -39,12 +39,12 @@
     "@ant-design/x-sdk": "^2.5.0",
     "@rc-component/util": "^1.11.0",
     "@tanstack/react-query": "^5.100.6",
-    "@xyflow/react": "^12.10.2",
     "antd": "^6.4.2",
     "antd-style": "^4.1.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.20",
     "highlight.js": "^11.11.1",
+    "konva": "^10.3.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

@@ -50,6 +50,7 @@ const useStyles = createStyles(({ token, css }) => ({
 const EditorToolbar: React.FC = () => {
   const { styles } = useStyles();
   const [mode, setMode] = useState<string | number>('主题');
+  const [fontFamily, setFontFamily] = useState('AvenirNext-Bold');
 
   const handleClick = (key: string) => {
     console.log('[toolbar]', key);
@@ -73,11 +74,6 @@ const EditorToolbar: React.FC = () => {
             <RedoOutlined />
           </div>
         </Tooltip>
-        <Segmented
-          value={mode}
-          onChange={setMode}
-          options={['主题', '组件', '锁屏']}
-        />
       </div>
 
       <div className={styles.center}>
