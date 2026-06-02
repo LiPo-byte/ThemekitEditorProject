@@ -1,32 +1,36 @@
 import React from 'react';
 import EditorCanvas from './components/EditorCanvas';
 import EditorToolbar from './components/EditorToolbar';
-import EditorTopMenu from './components/EditorTopMenu';
 import LeftPanel from './components/LeftPanel';
 import RightPanel from './components/RightPanel';
+import EditorBottomToolBar from './components/EditorBottomToolBar';
+import ZoomToolBar from './components/ZoomToolBar';
+import HeaderControls from './components/HeaderControls';
 import { EditorCoreProvider } from './context';
 import { useStyles } from './style';
 
-const EditorPage: React.FC = () => {
+const EditorPageContent: React.FC = () => {
   const { styles } = useStyles();
+  return (
+    <div className={styles.root}>
+      {/* <EditorTopMenu /> */}
+      <div className={styles.body}>
+        <EditorToolbar />
+        <LeftPanel />
+        <EditorCanvas />
+        <RightPanel />
+        <EditorBottomToolBar />
+        <ZoomToolBar />
+        <HeaderControls />
+      </div>
+    </div>
+  );
+};
 
+const EditorPage: React.FC = () => {
   return (
     <EditorCoreProvider>
-      <div className={styles.root}>
-        <EditorTopMenu />
-        <EditorToolbar />
-        <div className={styles.body}>
-          <aside className={styles.leftPanel}>
-            <LeftPanel />
-          </aside>
-          <main className={styles.canvas}>
-            <EditorCanvas />
-          </main>
-          <aside className={styles.rightPanel}>
-            <RightPanel />
-          </aside>
-        </div>
-      </div>
+      <EditorPageContent />
     </EditorCoreProvider>
   );
 };

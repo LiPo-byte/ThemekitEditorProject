@@ -1,28 +1,65 @@
 import { createStyles } from 'antd-style';
-import { Button } from 'antd';
 import React from 'react';
-import { useEditorCore } from '../context';
+import { useEditorCore, useEditorCoreLoading, useEditorLeftPanlOpen } from '../context';
+import { useEnterAnimation } from '../hooks/useEnterAnimation';
+import { Menu, Typography, type MenuProps } from 'antd';
+import widgetitems from '../widget_config.json';
+
 const useStyles = createStyles(({ token, css }) => ({
+  shell: css`
+    width: 280px;
+    position: absolute;
+    top: 80px;
+    left: 12px;
+    z-index: 20;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: ${token.boxShadowSecondary};
+    background: ${token.colorBgElevated}f2;
+    backdrop-filter: blur(14px);
+    transition: transform 260ms ease, opacity 220ms ease;
+  `,
+  shellClosed: css`
+    transform: translateX(-24px);
+    opacity: 0;
+    pointer-events: none;
+  `,
+  shellEnter: css`
+    animation: left-panel-slide-in 280ms ease-out;
+    @keyframes left-panel-slide-in {
+      from {
+        transform: translateX(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  `,
   wrap: css`
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     padding: 12px 16px;
   `,
-  title: css`
-    font-size: 12px;
-    font-weight: 600;
-    color: ${token.colorTextTertiary};
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 8px;
+  header: css`
+    flex-shrink: 0;
+    padding-bottom: 8px;
   `,
-  placeholder: css`
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: ${token.colorTextQuaternary};
-    font-size: 12px;
-    border: 1px dashed ${token.colorBorderSecondary};
-    border-radius: ${token.borderRadius}px;
+  menuScroll: css`
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   `,
 }));
 
@@ -118,9 +155,13 @@ const mockdata = {
          }
   ]
 }
-const LeftPanel: React.FC = () => {
+
+const LeftPanel: React.FC<any> = () => {
   const { styles } = useStyles();
   const core = useEditorCore();
+  const coreLoading = useEditorCoreLoading();
+  const open = useEditorLeftPanlOpen();
+  const playEnterAnimation = useEnterAnimation(coreLoading || open, { durationMs: 280 });
   const handleAddWidget = () => {
     if (!core) {
       console.warn('[LeftPanel] EditorCore 尚未初始化');
@@ -128,12 +169,27 @@ const LeftPanel: React.FC = () => {
     }
     core.addWidget(mockdata);
   };
+
   return (
-    <div className={styles.wrap}>
-      <div className={styles.title}>组件树</div>
-      <div className={styles.placeholder}>预留区域</div>
-      
-      <Button type="primary" onClick={handleAddWidget}>添加组件</Button>
+    <div
+      className={`${styles.shell} ${!open ? styles.shellClosed : ''} ${playEnterAnimation && open ? styles.shellEnter : ''}`}
+    >
+      <div className={styles.wrap}>
+        <div className={styles.header}>
+          <Typography.Title level={5} style={{ margin: 0 }}>
+            Widget
+          </Typography.Title>
+        </div>
+        <div className={styles.menuScroll}>
+          <Menu
+            onClick={handleAddWidget}
+            style={{ border: 'none' }}
+            mode="inline"
+            selectable={false}
+            items={widgetitems as MenuProps['items']}
+          />
+        </div>
+      </div>
     </div>
   );
 };

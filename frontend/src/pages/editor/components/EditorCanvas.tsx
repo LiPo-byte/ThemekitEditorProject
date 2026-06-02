@@ -1,10 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { createStyles } from 'antd-style';
 import { EditorCore } from '@/editor-core';
-import { useEditorCoreSetter, useEditorFontsReady } from '../context';
+import { useEditorCoreLoading, useEditorCoreSetter, useEditorFontsReady } from '../context';
 import ActionPopover from './ActionPopover';
+import { useEnterAnimation } from '../hooks/useEnterAnimation';
 
-const useStyles = createStyles(({ css }) => ({
+const useStyles = createStyles(({ token, css }) => ({
+  shell: css`
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: ${token.colorBgLayout};
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `,
+  shellEnter: css`
+    animation: canvas-pop-in 300ms ease-out;
+    @keyframes canvas-pop-in {
+      from {
+        transform: translateY(-12px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  `,
   // ActionPopover 用 absolute 定位，需要一个 relative 锚点
   wrapper: css`
     position: relative;
@@ -18,104 +43,12 @@ const useStyles = createStyles(({ css }) => ({
   `,
 }));
 
-const mockdata = {
-  "version":0,
-  "isLockScreen":false,
-  "type":1,
-  "textAlignment":1,
-  "sizes":[
-         {
-            "size":1,
-         "name":"Pink_Love_Heart_Small",
-            "padding":16,
-            "time":{
-                 "font":"AvenirNext-Bold",
-                //  "font":"ComicSansMS",
-                 "textSize":28,
-                 "textHeight":24,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            },
-            "day" :{
-                 "font":"AvenirNext-Bold",
-                 "textSize":20,
-                 "textHeight":18,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0,
-                  "topSpacing":10,
-                 "bottomSpacing":10
-            },
-            "date":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":16,
-                 "textHeight":15,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            }
-         },
-         {
-            "size":2,
-         "name":"Pink_Love_Heart_Medium",
-            "padding":16,
-            "time":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":32,
-                 "textHeight":29,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            },
-            "day" :{
-                 "font":"AvenirNext-Bold",
-                 "textSize":28,
-                 "textHeight":25,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0,
-                  "topSpacing":14,
-                 "bottomSpacing":10
-            },
-            "date":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":18,
-                 "textHeight":16,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            }
-         },
-         {
-            "size":3,
-         "name":"Pink_Love_Heart_Large",
-            "padding":16,
-            "time":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":54,
-                 "textHeight":47,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            },
-            "day" :{
-                 "font":"AvenirNext-Bold",
-                 "textSize":38,
-                 "textHeight":33,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0,
-                  "topSpacing":20,
-                 "bottomSpacing":20
-            },
-            "date":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":30,
-                 "textHeight":26,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            }
-         }
-  ]
-}
-
 const EditorCanvas: React.FC = () => {
   const { styles } = useStyles();
   const setCore = useEditorCoreSetter();
   const fontsReady = useEditorFontsReady();
+  const coreLoading = useEditorCoreLoading();
+  const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 300 });
   useEffect(() => {
     if (!fontsReady) return;
     // useEffect 在 DOM commit 之后才跑，#editor-container 必然存在
@@ -127,9 +60,11 @@ const EditorCanvas: React.FC = () => {
     };
   }, [fontsReady, setCore]);
   return (
-    <div className={styles.wrapper}>
-      <div id='editor-container' className={styles.stage}></div>
-      <ActionPopover />
+    <div className={`${styles.shell} ${playEnterAnimation ? styles.shellEnter : ''}`}>
+      <div className={styles.wrapper}>
+        <div id='editor-container' className={styles.stage}></div>
+        <ActionPopover />
+      </div>
     </div>
   );
 };

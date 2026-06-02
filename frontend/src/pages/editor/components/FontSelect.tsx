@@ -52,8 +52,9 @@ const FontSelect: React.FC<FontSelectProps> = ({
       onChange={onSelectChange}
       disabled={disabled}
       options={items}
-      variant="borderless"
-      style={{ width: 200 }}
+      variant="filled"
+      size='small'
+      style={{ width: '100%' }}
       suffixIcon={null}
       optionRender={(option) => (
         <span

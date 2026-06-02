@@ -368,6 +368,83 @@ export class EditorCore {
     this.emitLayoutChange();
   }
 
+  /** 公开缩放：放大一步（可传锚点；不传则按当前可视区域中心） */
+  zoomIn(pointer?: { x: number; y: number }) {
+    this.applyZoom(true, pointer ?? this.getViewportCenter());
+  }
+
+  /** 公开缩放：缩小一步（可传锚点；不传则按当前可视区域中心） */
+  zoomOut(pointer?: { x: number; y: number }) {
+    this.applyZoom(false, pointer ?? this.getViewportCenter());
+  }
+
+  // 切换到全局视角，把所有节点显示出来，居中
+  fitView() {
+    let hasVisibleNode = false;
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    this.contentLayer.getChildren().forEach((node) => {
+      if (!node.isVisible()) return;
+      hasVisibleNode = true;
+      const rect = node.getClientRect({ relativeTo: this.stage });
+      if (rect.x < minX) minX = rect.x;
+      if (rect.y < minY) minY = rect.y;
+      if (rect.x + rect.width > maxX) maxX = rect.x + rect.width;
+      if (rect.y + rect.height > maxY) maxY = rect.y + rect.height;
+    });
+
+    if (!hasVisibleNode) return;
+
+    const boundsWidth = Math.max(1, maxX - minX);
+    const boundsHeight = Math.max(1, maxY - minY);
+
+    const stage = this.stage;
+    const padding = 40;
+    const availableWidth = Math.max(1, stage.width() - padding * 2);
+    const availableHeight = Math.max(1, stage.height() - padding * 2);
+    let targetScale = Math.min(availableWidth / boundsWidth, availableHeight / boundsHeight);
+    targetScale = Math.min(this.maxScale, Math.max(this.minScale, targetScale));
+
+    const boundsCenterX = minX + boundsWidth / 2;
+    const boundsCenterY = minY + boundsHeight / 2;
+    const viewportCenter = this.getViewportCenter();
+
+    stage.scale({ x: targetScale, y: targetScale });
+    stage.position({
+      x: viewportCenter.x - boundsCenterX * targetScale,
+      y: viewportCenter.y - boundsCenterY * targetScale,
+    });
+    stage.batchDraw();
+  }
+
+  /** 当前可视区域中心点（屏幕坐标） */
+  private getViewportCenter() {
+    return { x: this.stage.width() / 2, y: this.stage.height() / 2 };
+  }
+
+  /** 统一缩放计算（滚轮/按钮复用） */
+  private applyZoom(zoomIn: boolean, pointer: { x: number; y: number }) {
+    const stage = this.stage;
+    const oldScale = stage.scaleX();
+    const worldPos = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+    let newScale = zoomIn ? oldScale * this.zoomStep : oldScale / this.zoomStep;
+    newScale = Math.min(this.maxScale, Math.max(this.minScale, newScale));
+    if (newScale === oldScale) return;
+    stage.scale({ x: newScale, y: newScale });
+    stage.position({
+      x: pointer.x - worldPos.x * newScale,
+      y: pointer.y - worldPos.y * newScale,
+    });
+  }
+
+  
+
   /**
    * 滚轮缩放：以鼠标所在位置为锚点。
    * - 普通鼠标滚轮：上滚放大、下滚缩小
@@ -375,27 +452,10 @@ export class EditorCore {
    */
   private handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
-
     const stage = this.stage;
-    const oldScale = stage.scaleX();
     const pointer = stage.getPointerPosition();
     if (!pointer) return;
-
-    const worldPos = {
-      x: (pointer.x - stage.x()) / oldScale,
-      y: (pointer.y - stage.y()) / oldScale,
-    };
-
-    const zoomIn = e.evt.deltaY < 0;
-    let newScale = zoomIn ? oldScale * this.zoomStep : oldScale / this.zoomStep;
-    newScale = Math.min(this.maxScale, Math.max(this.minScale, newScale));
-    if (newScale === oldScale) return;
-
-    stage.scale({ x: newScale, y: newScale });
-    stage.position({
-      x: pointer.x - worldPos.x * newScale,
-      y: pointer.y - worldPos.y * newScale,
-    });
+    this.applyZoom(e.evt.deltaY < 0, pointer);
   };
 
   /** 添加节点到内容层 */
@@ -447,17 +507,25 @@ export class EditorCore {
   }
 
   initBgLayer() {
-    // 单 Shape + sceneFunc 自绘网格，避免上万个 Circle 节点的性能黑洞
-    // 点位画在世界坐标系，自然跟随 stage 缩放放大缩小
-    const gridSpacing = 40;
+    // React Flow Dots 风格点阵：单 Shape + sceneFunc 自绘，避免大量节点开销
+    const baseGap = 30;
+    const minScreenGap = 8;
+    const maxScreenGap = 28;
+    const dotRadiusPx = 1;
     const grid = new Konva.Shape({
       listening: false,
       perfectDrawEnabled: false,
       sceneFunc: (ctx) => {
         const stage = this.stage;
         const scale = stage.scaleX();
-        // 缩太小时屏幕间距 < 4px，再画会触发可视区域内几万到几十万个点
-        if (gridSpacing * scale < 4) return;
+        // 按缩放层级切换间距：缩小时变稀、放大时变密（2 的幂档位）
+        let gap = baseGap;
+        while (gap * scale < minScreenGap) {
+          gap *= 2;
+        }
+        while (gap * scale > maxScreenGap && gap > 2) {
+          gap /= 2;
+        }
 
         const pos = stage.position();
         // 可视区域 → 世界坐标
@@ -465,16 +533,16 @@ export class EditorCore {
         const y1 = -pos.y / scale;
         const x2 = (stage.width() - pos.x) / scale;
         const y2 = (stage.height() - pos.y) / scale;
-        // 对齐到网格起点（向下取整到 gridSpacing 倍数）
-        const startX = Math.floor(x1 / gridSpacing) * gridSpacing;
-        const startY = Math.floor(y1 / gridSpacing) * gridSpacing;
+        // 对齐到网格起点（向下取整到 gap 倍数）
+        const startX = Math.floor(x1 / gap) * gap;
+        const startY = Math.floor(y1 / gap) * gap;
 
-        const radius = 1;
-        ctx.fillStyle = this.getGridColor();
+        const radius = dotRadiusPx / scale;
+        ctx.fillStyle = this.getGridDotColor();
         ctx.beginPath();
-        for (let x = startX; x <= x2; x += gridSpacing) {
-          for (let y = startY; y <= y2; y += gridSpacing) {
-            // moveTo 避免和上一个圆产生连线
+        for (let x = startX; x <= x2; x += gap) {
+          for (let y = startY; y <= y2; y += gap) {
+            // moveTo 避免与上一段 path 意外连线
             ctx.moveTo(x + radius, y);
             ctx.arc(x, y, radius, 0, Math.PI * 2);
           }
@@ -485,7 +553,7 @@ export class EditorCore {
     this.bgLayer.add(grid);
   }
 
-  private getGridColor() {
+  private getGridDotColor() {
     return this.theme === 'dark' ? '#3a3a3a' : '#ccc';
   }
 
@@ -629,7 +697,7 @@ class Time {
       const heightPx = pt(sizeCfg.height);
       const groupItem = new Konva.Group({ x: cursorX, y: 0, selected: true });
 
-      const title = this.creteTitle({ x: pt(5), y: heightPx + 10, name });
+      const title = this.createTitle({ x: pt(5), y: heightPx + 10, name });
       const rect = this.createRect({ w: widthPx, h: heightPx });
 
       const timeNode = this.createDes({ ...time, text: '10:09' });
@@ -670,7 +738,7 @@ class Time {
       const heightPx = pt(sizeCfg.height);
       const groupItem = new Konva.Group({ x: cursorX, y: cursorY, selected: true });
 
-      const title = this.creteTitle({ x: pt(5), y: heightPx + 10, name });
+      const title = this.createTitle({ x: pt(5), y: heightPx + 10, name });
       const rect = this.createRect({ w: widthPx, h: heightPx });
 
       const timeNode = this.createDes({ ...time, text: '10:09' });
@@ -719,7 +787,7 @@ class Time {
       height: fullBbox.height + pad * 2,
       fill: '#10b981', // 薄荷绿；想换色见下方 BG_PALETTE
       opacity: 0.1,
-      cornerRadius: pt(16),
+      cornerRadius: pt(3),
     });
     group.add(bg);
     bg.moveToBottom(); // 置底，不挡 widget
@@ -732,7 +800,7 @@ class Time {
     this.node = group;
   }
 
-  creteTitle(params: any) {
+  createTitle(params: any) {
     const { x, y, name } = params;
     const title = new Konva.Text({
       x,
@@ -785,6 +853,7 @@ class Time {
       width: w,
       height: h,
       listening: false, // 背景不响应事件
+      selected: true,
       sceneFunc: (ctx) => {
         if (!imageObj.complete || imageObj.naturalWidth === 0) return;
         ctx.beginPath();

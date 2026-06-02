@@ -157,6 +157,8 @@ export default defineConfig({
       theme: {
         token: {
           fontFamily: 'AlibabaSans, sans-serif',
+          boxShadowSecondary: '0 1px 3px 0 #00000026, 0 0 .5px 0 #0000004d',
+          padding: '6px',
         },
       },
     },

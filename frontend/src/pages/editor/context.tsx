@@ -17,22 +17,31 @@ const MANIFEST_FONTS = (fontManifest as FontManifestItem[]).filter(
 type EditorCoreCtxValue = {
   /** EditorCore 实例，画布挂载前为 null */
   core: EditorCore | null;
+  coreLoading: boolean;
   /** 字体是否已准备就绪 */
   fontsReady: boolean;
   /** 仅给画布组件用：注入/卸载实例 */
   setCore: (c: EditorCore | null) => void;
+  leftPanlOpen: boolean;
+  setLeftPanlOpen: (b: boolean) => void;
 };
 
 const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   core: null,
   fontsReady: false,
+  coreLoading: false,
   setCore: () => {},
+  leftPanlOpen: false,
+  setLeftPanlOpen: () => {},
 });
 
 /** 包裹整个编辑器页面，子组件可通过 useEditorCore 取到实例 */
 export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [core, setCore] = useState<EditorCore | null>(null);
   const [fontsReady, setFontsReady] = useState(false);
+  const [coreLoading, setCoreLoading] = useState(true);
+
+  const [leftPanlOpen, setLeftPanlOpen] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -70,11 +79,28 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       mounted = false;
     };
   }, []);
+  useEffect(() => {
+    if (core) {
+        setCoreLoading(false);
+    }
+  }, [core])
 
   // value 的 identity 仅在 core 变化时改变，避免无意义 re-render
   const value = useMemo<EditorCoreCtxValue>(
-    () => ({ core, fontsReady, setCore }),
-    [core, fontsReady],
+    () => ({
+        core,
+        fontsReady,
+        setCore,
+        coreLoading,
+        leftPanlOpen,
+        setLeftPanlOpen,
+    }),
+    [
+        core,
+        fontsReady,
+        coreLoading,
+        leftPanlOpen,
+    ],
   );
   return <EditorCoreCtx.Provider value={value}>{children}</EditorCoreCtx.Provider>;
 };
@@ -82,6 +108,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 /** 子组件读取 core 实例（未就绪返回 null，调用方自行判空） */
 export const useEditorCore = () => useContext(EditorCoreCtx).core;
 export const useEditorFontsReady = () => useContext(EditorCoreCtx).fontsReady;
+export const useEditorCoreLoading = () => useContext(EditorCoreCtx).coreLoading;
 
 /** 仅 EditorCanvas 用：在 useEffect 中注入/卸载实例 */
 export const useEditorCoreSetter = () => useContext(EditorCoreCtx).setCore;
+
+export const useEditorLeftPanlOpen = () => useContext(EditorCoreCtx).leftPanlOpen;
+export const useEditorLeftPanlOpenSetter = () => useContext(EditorCoreCtx).setLeftPanlOpen;
