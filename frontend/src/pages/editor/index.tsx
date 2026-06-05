@@ -8,6 +8,8 @@ import ZoomToolBar from './components/ZoomToolBar';
 import HeaderControls from './components/HeaderControls';
 import { EditorCoreProvider } from './context';
 import { useStyles } from './style';
+import PreviewDevices from './components/PreviewDevices';
+import CropTool from './components/CropTool';
 
 const EditorPageContent: React.FC = () => {
   const { styles } = useStyles();
@@ -22,6 +24,8 @@ const EditorPageContent: React.FC = () => {
         <EditorBottomToolBar />
         <ZoomToolBar />
         <HeaderControls />
+        <PreviewDevices />
+        <CropTool />
       </div>
     </div>
   );

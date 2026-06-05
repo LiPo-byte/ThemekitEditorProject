@@ -14,6 +14,25 @@ const MANIFEST_FONTS = (fontManifest as FontManifestItem[]).filter(
   (item) => item.file && item.postscriptName,
 );
 
+/** 编辑器浮层 UI 显隐（侧栏、工具条等） */
+export type EditorUIVisibility = {
+  leftPanel: boolean;
+  rightPanel: boolean;
+  editorToolbar: boolean;
+  bottomToolBar: boolean;
+  headerControls: boolean;
+  zoomToolBar: boolean;
+};
+
+export const DEFAULT_EDITOR_UI_VISIBILITY: EditorUIVisibility = {
+  leftPanel: true,
+  rightPanel: true,
+  editorToolbar: true,
+  bottomToolBar: true,
+  headerControls: true,
+  zoomToolBar: true,
+};
+
 type EditorCoreCtxValue = {
   /** EditorCore 实例，画布挂载前为 null */
   core: EditorCore | null;
@@ -22,8 +41,20 @@ type EditorCoreCtxValue = {
   fontsReady: boolean;
   /** 仅给画布组件用：注入/卸载实例 */
   setCore: (c: EditorCore | null) => void;
+  uiVisibility: EditorUIVisibility;
+  setUIVisibility: (patch: Partial<EditorUIVisibility>) => void;
+  /** @deprecated 请用 uiVisibility.leftPanel / setUIVisibility */
   leftPanlOpen: boolean;
   setLeftPanlOpen: (b: boolean) => void;
+  /** @deprecated 请用 uiVisibility.rightPanel / setUIVisibility */
+  rightPanlOpen: boolean;
+  setRightPanlOpen: (b: boolean) => void;
+  previewDevicesOpen: boolean;
+  setPreviewDevicesOpen: (b: boolean) => void;
+  /** true：隐藏全部浮层 UI（裁剪等沉浸场景） */
+  setHideUI: (b: boolean) => void;
+  cropToolOpen: boolean;
+  setCropToolOpen: (b: boolean) => void;
 };
 
 const EditorCoreCtx = createContext<EditorCoreCtxValue>({
@@ -31,8 +62,17 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   fontsReady: false,
   coreLoading: false,
   setCore: () => {},
+  uiVisibility: DEFAULT_EDITOR_UI_VISIBILITY,
+  setUIVisibility: () => {},
   leftPanlOpen: false,
   setLeftPanlOpen: () => {},
+  rightPanlOpen: false,
+  setRightPanlOpen: () => {},
+  previewDevicesOpen: false,
+  setPreviewDevicesOpen: () => {},
+  setHideUI: () => {},
+  cropToolOpen: false,
+  setCropToolOpen: () => {},
 });
 
 /** 包裹整个编辑器页面，子组件可通过 useEditorCore 取到实例 */
@@ -41,8 +81,29 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [fontsReady, setFontsReady] = useState(false);
   const [coreLoading, setCoreLoading] = useState(true);
 
-  const [leftPanlOpen, setLeftPanlOpen] = useState(true);
+  const [cropToolOpen, setCropToolOpen] = useState(false);
+  const [uiVisibility, setUIVisibilityState] = useState<EditorUIVisibility>(
+    DEFAULT_EDITOR_UI_VISIBILITY,
+  );
+  const [previewDevicesOpen, setPreviewDevicesOpen] = useState(false);
 
+  const setUIVisibility = (patch: Partial<EditorUIVisibility>) => {
+    setUIVisibilityState((prev) => ({ ...prev, ...patch }));
+  };
+
+  const setLeftPanlOpen = (open: boolean) => setUIVisibility({ leftPanel: open });
+  const setRightPanlOpen = (open: boolean) => setUIVisibility({ rightPanel: open });
+
+  const setHideUI = (hide: boolean) => {
+      setUIVisibility({
+        leftPanel: !hide,
+        rightPanel: !hide,
+        editorToolbar: !hide,
+        bottomToolBar: !hide,
+        headerControls: !hide,
+        zoomToolBar: !hide,
+      });
+  };
   useEffect(() => {
     let mounted = true;
     const prepareFonts = async () => {
@@ -79,6 +140,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       mounted = false;
     };
   }, []);
+
   useEffect(() => {
     if (core) {
         setCoreLoading(false);
@@ -92,14 +154,24 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         fontsReady,
         setCore,
         coreLoading,
-        leftPanlOpen,
+        uiVisibility,
+        setUIVisibility,
+        leftPanlOpen: uiVisibility.leftPanel,
         setLeftPanlOpen,
+        rightPanlOpen: uiVisibility.rightPanel,
+        setRightPanlOpen,
+        previewDevicesOpen,
+        setPreviewDevicesOpen,
+        setHideUI,
+        cropToolOpen,
+        setCropToolOpen,
     }),
     [
         core,
         fontsReady,
         coreLoading,
-        leftPanlOpen,
+        uiVisibility,
+        previewDevicesOpen,
     ],
   );
   return <EditorCoreCtx.Provider value={value}>{children}</EditorCoreCtx.Provider>;
@@ -113,5 +185,25 @@ export const useEditorCoreLoading = () => useContext(EditorCoreCtx).coreLoading;
 /** 仅 EditorCanvas 用：在 useEffect 中注入/卸载实例 */
 export const useEditorCoreSetter = () => useContext(EditorCoreCtx).setCore;
 
-export const useEditorLeftPanlOpen = () => useContext(EditorCoreCtx).leftPanlOpen;
+export const useEditorUIVisibility = () => useContext(EditorCoreCtx).uiVisibility;
+export const useEditorUIVisibilitySetter = () => useContext(EditorCoreCtx).setUIVisibility;
+
+export const useEditorLeftPanlOpen = () => useContext(EditorCoreCtx).uiVisibility.leftPanel;
 export const useEditorLeftPanlOpenSetter = () => useContext(EditorCoreCtx).setLeftPanlOpen;
+export const useEditorRightPanlOpen = () => useContext(EditorCoreCtx).uiVisibility.rightPanel;
+export const useEditorRightPanlOpenSetter = () => useContext(EditorCoreCtx).setRightPanlOpen;
+
+export const useEditorToolbarVisible = () => useContext(EditorCoreCtx).uiVisibility.editorToolbar;
+export const useEditorBottomToolBarVisible = () =>
+  useContext(EditorCoreCtx).uiVisibility.bottomToolBar;
+export const useEditorHeaderControlsVisible = () =>
+  useContext(EditorCoreCtx).uiVisibility.headerControls;
+export const useEditorZoomToolBarVisible = () => useContext(EditorCoreCtx).uiVisibility.zoomToolBar;
+
+export const useEditorPreviewDevicesOpen = () => useContext(EditorCoreCtx).previewDevicesOpen;
+export const useEditorPreviewDevicesOpenSetter = () => useContext(EditorCoreCtx).setPreviewDevicesOpen;
+
+export const useEditorCropToolOpen = () => useContext(EditorCoreCtx).cropToolOpen;
+export const useEditorCropToolOpenSetter = () => useContext(EditorCoreCtx).setCropToolOpen;
+
+export const useEditorHideUISetter = () => useContext(EditorCoreCtx).setHideUI;

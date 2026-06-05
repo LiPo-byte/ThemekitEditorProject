@@ -1,8 +1,9 @@
 import { createStyles } from 'antd-style';
 import React from 'react';
-import { useEditorCore, useEditorCoreLoading, useEditorLeftPanlOpen } from '../context';
+import { useEditorCore, useEditorCoreLoading, useEditorLeftPanlOpen, useEditorLeftPanlOpenSetter } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
-import { Menu, Typography, type MenuProps } from 'antd';
+import { Button, Col, Menu, Row, Typography, type MenuProps } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import widgetitems from '../widget_config.json';
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -63,97 +64,191 @@ const useStyles = createStyles(({ token, css }) => ({
   `,
 }));
 
-const mockdata = {
-  "version":0,
-  "isLockScreen":false,
-  "type":1,
-  "textAlignment":1,
-  "sizes":[
-         {
-            "size":1,
-         "name":"Pink_Love_Heart_Small",
-            "padding":16,
-            "time":{
-                 "font":"HFBestWishes",
-                 "textSize":28,
-                 "textHeight":24,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            },
-            "day" :{
-                 "font":"AvenirNext-Bold",
-                 "textSize":20,
-                 "textHeight":18,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0,
-                  "topSpacing":10,
-                 "bottomSpacing":10
-            },
-            "date":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":16,
-                 "textHeight":15,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            }
-         },
-         {
-            "size":2,
-         "name":"Pink_Love_Heart_Medium",
-            "padding":16,
-            "time":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":32,
-                 "textHeight":29,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            },
-            "day" :{
-                 "font":"AvenirNext-Bold",
-                 "textSize":28,
-                 "textHeight":25,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0,
-                  "topSpacing":14,
-                 "bottomSpacing":10
-            },
-            "date":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":18,
-                 "textHeight":16,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            }
-         },
-         {
-            "size":3,
-         "name":"Pink_Love_Heart_Large",
-            "padding":16,
-            "time":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":54,
-                 "textHeight":47,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            },
-            "day" :{
-                 "font":"AvenirNext-Bold",
-                 "textSize":38,
-                 "textHeight":33,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0,
-                  "topSpacing":20,
-                 "bottomSpacing":20
-            },
-            "date":{
-                 "font":"AvenirNext-Bold",
-                 "textSize":30,
-                 "textHeight":26,
-                 "textColor":"#FBA3C9",
-                 "alpha":1.0
-            }
-         }
-  ]
+const mockdata ={
+  ios: {
+    "version":0,
+    "isLockScreen":false,
+    "type":1,
+    "textAlignment":1,
+    "sizes":[
+          {
+              "size":1,
+          "name":"Pink_Love_Heart_Small",
+              "padding":16,
+              "time":{
+                  "font":"HFBestWishes",
+                  "textSize":28,
+                  "textHeight":24,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              },
+              "day" :{
+                  "font":"AvenirNext-Bold",
+                  "textSize":20,
+                  "textHeight":18,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0,
+                    "topSpacing":10,
+                  "bottomSpacing":10
+              },
+              "date":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":16,
+                  "textHeight":15,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              }
+          },
+          {
+              "size":2,
+          "name":"Pink_Love_Heart_Medium",
+              "padding":16,
+              "time":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":32,
+                  "textHeight":29,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              },
+              "day" :{
+                  "font":"AvenirNext-Bold",
+                  "textSize":28,
+                  "textHeight":25,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0,
+                    "topSpacing":14,
+                  "bottomSpacing":10
+              },
+              "date":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":18,
+                  "textHeight":16,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              }
+          },
+          {
+              "size":3,
+          "name":"Pink_Love_Heart_Large",
+              "padding":16,
+              "time":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":54,
+                  "textHeight":47,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              },
+              "day" :{
+                  "font":"AvenirNext-Bold",
+                  "textSize":38,
+                  "textHeight":33,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0,
+                    "topSpacing":20,
+                  "bottomSpacing":20
+              },
+              "date":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":30,
+                  "textHeight":26,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              }
+          }
+    ]
+  },
+  android: {
+    "version":0,
+    "isLockScreen":false,
+    "type":1,
+    "textAlignment":1,
+    "sizes":[
+          {
+              "size":1,
+          "name":"Pink_Love_Heart_Small",
+              "padding":16,
+              "time":{
+                  "font":"HFBestWishes",
+                  "textSize":28,
+                  "textHeight":24,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              },
+              "day" :{
+                  "font":"AvenirNext-Bold",
+                  "textSize":20,
+                  "textHeight":18,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0,
+                    "topSpacing":10,
+                  "bottomSpacing":10
+              },
+              "date":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":16,
+                  "textHeight":15,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              }
+          },
+          {
+              "size":2,
+          "name":"Pink_Love_Heart_Medium",
+              "padding":16,
+              "time":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":32,
+                  "textHeight":29,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              },
+              "day" :{
+                  "font":"AvenirNext-Bold",
+                  "textSize":28,
+                  "textHeight":25,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0,
+                    "topSpacing":14,
+                  "bottomSpacing":10
+              },
+              "date":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":18,
+                  "textHeight":16,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              }
+          },
+          {
+              "size":3,
+          "name":"Pink_Love_Heart_Large",
+              "padding":16,
+              "time":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":54,
+                  "textHeight":47,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              },
+              "day" :{
+                  "font":"AvenirNext-Bold",
+                  "textSize":38,
+                  "textHeight":33,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0,
+                    "topSpacing":20,
+                  "bottomSpacing":20
+              },
+              "date":{
+                  "font":"AvenirNext-Bold",
+                  "textSize":30,
+                  "textHeight":26,
+                  "textColor":"#FBA3C9",
+                  "alpha":1.0
+              }
+          }
+    ]
+  }
 }
 
 const LeftPanel: React.FC<any> = () => {
@@ -161,6 +256,7 @@ const LeftPanel: React.FC<any> = () => {
   const core = useEditorCore();
   const coreLoading = useEditorCoreLoading();
   const open = useEditorLeftPanlOpen();
+  const setOpen = useEditorLeftPanlOpenSetter();
   const playEnterAnimation = useEnterAnimation(coreLoading || open, { durationMs: 280 });
   const handleAddWidget = () => {
     if (!core) {
@@ -176,9 +272,16 @@ const LeftPanel: React.FC<any> = () => {
     >
       <div className={styles.wrap}>
         <div className={styles.header}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            Widget
-          </Typography.Title>
+          <Row>
+            <Col span={20} >
+              <Typography.Title level={5} style={{ margin: 0 }}>
+                  Widget
+              </Typography.Title>
+            </Col>
+            <Col span={4}>
+                <Button type="text" onClick={() => {setOpen(false)}} icon={<CloseOutlined />} />
+            </Col>
+          </Row>
         </div>
         <div className={styles.menuScroll}>
           <Menu

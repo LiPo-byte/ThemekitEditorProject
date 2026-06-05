@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createStyles } from 'antd-style';
-import { useEditorCore } from '../context';
+import { useEditorCore, useEditorHideUISetter, useEditorCropToolOpenSetter } from '../context';
+import { Button } from 'antd';
+import { BlockOutlined, ExportOutlined } from '@ant-design/icons';
 
 const useStyles = createStyles(({ css, token }) => ({
   popover: css`
@@ -50,6 +52,8 @@ interface ActionPopoverProps {
  */
 const ActionPopover: React.FC<ActionPopoverProps> = ({ children }) => {
   const core = useEditorCore();
+  const setHideUI = useEditorHideUISetter();
+  const setCropOpen = useEditorCropToolOpenSetter();
   const { styles } = useStyles();
   const [rect, setRect] = useState<Rect | null>(null);
   const popoverRef = React.useRef<HTMLDivElement | null>(null);
@@ -57,7 +61,9 @@ const ActionPopover: React.FC<ActionPopoverProps> = ({ children }) => {
   const replayEnterAnimation = () => {
     const el = popoverRef.current;
     if (!el) return;
-    el.getAnimations().forEach((animation) => animation.cancel());
+    el.getAnimations().forEach((animation) => {
+      animation.cancel();
+    });
     el.animate(
       [
         { opacity: 0, transform: 'translate(-50%, calc(-100% - 2px))' },
@@ -109,7 +115,19 @@ const ActionPopover: React.FC<ActionPopoverProps> = ({ children }) => {
 
   return (
     <div ref={popoverRef} className={styles.popover} style={{ left, top }}>
-      {children ?? <span>Action Popover</span>}
+      {/* {children ?? <span>Action Popover</span>} */}
+      {
+        <Button
+            type='text'
+            onClick={() => {
+              core?.crop();
+              setHideUI(true);
+              setCropOpen(true);
+            }}
+            icon={<BlockOutlined />}
+        />
+      }
+      <Button type='text' icon={<ExportOutlined />} />
     </div>
   );
 };

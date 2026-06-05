@@ -1,7 +1,11 @@
 import React from 'react';
 import { useModel } from '@umijs/max';
 import { createStyles } from 'antd-style';
-import { useEditorCoreLoading } from '../context';
+import {
+  useEditorCoreLoading,
+  useEditorHeaderControlsVisible,
+  useEditorPreviewDevicesOpenSetter,
+} from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { AvatarDropdown } from '@/components';
 import { Button, Tooltip, Avatar, Segmented } from 'antd';
@@ -43,15 +47,19 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const HeaderControls: React.FC = () => {
   const { styles } = useStyles();
+  const visible = useEditorHeaderControlsVisible();
   const { initialState, setInitialState } = useModel('@@initialState');
   const currentUser = initialState?.currentUser;
   const coreLoading = useEditorCoreLoading();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
+  const setPreviewDevicesOpen = useEditorPreviewDevicesOpenSetter();
+
+  if (!visible) return null;
 
   return (
     <div className={`${styles.headerControls} ${playEnterAnimation ? styles.barEnter : ''}`}>
-        <Tooltip placement="rightTop" title="Preview">
-            <Button type="text">
+        <Tooltip placement="rightTop" title="Preview Devices">
+            <Button type="text" onClick={() => {setPreviewDevicesOpen(true)}}>
                 <PlayCircleOutlined style={{fontSize: '20px'}} />
             </Button>
         </Tooltip>

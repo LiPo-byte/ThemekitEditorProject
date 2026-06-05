@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createStyles } from 'antd-style';
-import { useEditorCoreLoading } from '../context';
+import { useEditorCoreLoading, useEditorToolbarVisible } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { Dropdown, MenuProps, Button, Tooltip } from 'antd';
 import { DownOutlined, UnorderedListOutlined, LayoutOutlined } from '@ant-design/icons';
@@ -88,10 +88,13 @@ const items: MenuProps['items'] = [
 
 const EditorToolbar: React.FC = () => {
   const { styles } = useStyles();
+  const visible = useEditorToolbarVisible();
   const coreLoading = useEditorCoreLoading();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  if (!visible) return null;
 
   return (
     <div className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}>

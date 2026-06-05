@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Space, Tooltip, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import { PlusOutlined, MinusOutlined, ExpandOutlined } from '@ant-design/icons';
-import { useEditorCore } from '../context'
+import { useEditorCore, useEditorZoomToolBarVisible } from '../context';
 
 const useStyles = createStyles(({ token, css }) => ({
   shell: css`
@@ -22,7 +22,11 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const ZoomToolBar: React.FC = () => {
   const { styles } = useStyles();
+  const visible = useEditorZoomToolBarVisible();
   const core = useEditorCore();
+
+  if (!visible) return null;
+
   return (
     <div className={styles.shell}>
         <Space>

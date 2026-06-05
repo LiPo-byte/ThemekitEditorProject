@@ -4,6 +4,7 @@ import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import '@/assets/devices.min.css';
 import React from 'react';
 
 // Initialize dayjs plugins globally

@@ -1,10 +1,16 @@
 import React from 'react';
 import { createStyles } from 'antd-style';
-import { useEditorCoreLoading, useEditorLeftPanlOpen, useEditorLeftPanlOpenSetter } from '../context';
+import {
+  useEditorBottomToolBarVisible,
+  useEditorCore,
+  useEditorCoreLoading,
+  useEditorLeftPanlOpen,
+  useEditorLeftPanlOpenSetter,
+} from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
 import { Button, Flex, Divider } from 'antd';
-import { ProductOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
@@ -13,7 +19,7 @@ const useStyles = createStyles(({ token, css }) => ({
     left: 50%;
     // right: 0;
     margin: auto;
-    transform: translateY(0px) translateX(-50%);
+    // transform: translateY(0px) translateX(-50%);
     // width: 500px;
     // height: 50px;
   `,
@@ -34,6 +40,7 @@ const useStyles = createStyles(({ token, css }) => ({
   toolbarbody: css`
     overflow: hidden;
     border-radius: 12px;
+    transform: translateY(0px) translateX(-50%);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     user-select: none;
@@ -47,22 +54,30 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const EditorBottomToolBar: React.FC = () => {
   const { styles } = useStyles();
+  const visible = useEditorBottomToolBarVisible();
+  const core = useEditorCore();
   const coreLoading = useEditorCoreLoading();
   const setLeftPanlOpen = useEditorLeftPanlOpenSetter();
   const leftPanlOpen = useEditorLeftPanlOpen();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
 
-//   const onWidgetClick = () => {
-//     setLeftPanlOpen(!leftPanlOpen);
-//   }
+  const onAddWallPaper = () => {
+      core?.addWallPaper()
+  }
+
+  const onAddIconPack = () => {
+    core?.addIconPack()
+}
+  if (!visible) return null;
+
   return (
     <div className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}>
         <div className={styles.toolbarbody}>
             <Flex gap="medium" align="center">
                 <Button type='primary' icon={<SelectSvg color="#000000" size={14} />}></Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Widget</Button>
-                <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Icon Pack</Button>
-                <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Wallpaper</Button>
+                <Button type='text' onClick={onAddIconPack} >Icon Pack</Button>
+                <Button type='text' onClick={onAddWallPaper} >Wallpaper</Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Lock Screen</Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Theme</Button>
                 <Button color="default" variant='filled' shape="circle" icon={<PlusOutlined />}></Button>
