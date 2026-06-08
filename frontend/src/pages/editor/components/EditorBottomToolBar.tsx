@@ -9,7 +9,7 @@ import {
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
-import { Button, Flex, Divider } from 'antd';
+import { Button, Flex } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 
 const useStyles = createStyles(({ token, css }) => ({

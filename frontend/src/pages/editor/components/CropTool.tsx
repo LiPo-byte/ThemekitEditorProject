@@ -11,9 +11,7 @@ import {
   useEditorCropToolOpen,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
-import { SelectSvg, } from '@/icons'
-import { Button, Flex, Divider } from 'antd';
-import { PlusOutlined, CheckOutlined } from '@ant-design/icons';
+import { Button, Flex } from 'antd';
 
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
@@ -59,16 +57,25 @@ const CropTool: React.FC = () => {
   const core = useEditorCore();
   const playEnterAnimation = useEnterAnimation(open, { durationMs: 260 });
 
-  if (!open) return null
+  if (!open || !core) return null
   return (
     <div className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}>
         <Flex gap="medium" align="center" justify='end' style={{ width: '100%', height: '100%' }}>
             <Button onClick={() => {
                 setOpen(false);
                 setHideUI(false);
-                core?.closeCrop();
+                core.closeCrop();
             }}>Cancel</Button>
-            <Button type='primary'>Confirm</Button>
+            <Button
+                onClick={() => {
+                    setOpen(false);
+                    setHideUI(false);
+                    core.confirmCrop();
+                }}
+                type='primary'
+            >
+                Confirm
+            </Button>
         </Flex>
     </div>
   );

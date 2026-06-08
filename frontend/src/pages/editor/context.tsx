@@ -25,8 +25,8 @@ export type EditorUIVisibility = {
 };
 
 export const DEFAULT_EDITOR_UI_VISIBILITY: EditorUIVisibility = {
-  leftPanel: true,
-  rightPanel: true,
+  leftPanel: false,
+  rightPanel: false,
   editorToolbar: true,
   bottomToolBar: true,
   headerControls: true,

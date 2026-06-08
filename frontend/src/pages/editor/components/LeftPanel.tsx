@@ -2,7 +2,7 @@ import { createStyles } from 'antd-style';
 import React from 'react';
 import { useEditorCore, useEditorCoreLoading, useEditorLeftPanlOpen, useEditorLeftPanlOpenSetter } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
-import { Button, Col, Menu, Row, Typography, type MenuProps } from 'antd';
+import { Button, Col, Menu, Row, Typography, type MenuProps, Flex } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import widgetitems from '../widget_config.json';
 
@@ -273,20 +273,22 @@ const LeftPanel: React.FC<any> = () => {
       <div className={styles.wrap}>
         <div className={styles.header}>
           <Row>
-            <Col span={20} >
-              <Typography.Title level={5} style={{ margin: 0 }}>
-                  Widget
-              </Typography.Title>
-            </Col>
-            <Col span={4}>
+            <Col span={24} >
+              <Flex align='center' justify='space-between'>
+                <Typography.Title level={5} style={{ margin: 0 }}>
+                    Widget
+                </Typography.Title>
                 <Button type="text" onClick={() => {setOpen(false)}} icon={<CloseOutlined />} />
+              </Flex>
             </Col>
           </Row>
         </div>
         <div className={styles.menuScroll}>
           <Menu
             onClick={handleAddWidget}
-            style={{ border: 'none' }}
+            style={{
+              border: 'none',
+            }}
             mode="inline"
             selectable={false}
             items={widgetitems as MenuProps['items']}

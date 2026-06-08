@@ -26,8 +26,8 @@ const useStyles = createStyles(({ token, css }) => ({
         display: flex;
         align-items: center;
         justify-content: center;
-        // gap: 6px;
-        padding: ${token.padding};
+        gap: 6px;
+        padding: 6px;
         user-select: none;
     `,
     barEnter: css`
@@ -60,7 +60,7 @@ const HeaderControls: React.FC = () => {
     <div className={`${styles.headerControls} ${playEnterAnimation ? styles.barEnter : ''}`}>
         <Tooltip placement="rightTop" title="Preview Devices">
             <Button type="text" onClick={() => {setPreviewDevicesOpen(true)}}>
-                <PlayCircleOutlined style={{fontSize: '20px'}} />
+                <PlayCircleOutlined style={{fontSize: '12px'}} />
             </Button>
         </Tooltip>
         <Segmented

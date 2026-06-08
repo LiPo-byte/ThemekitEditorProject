@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Space, Tooltip, Typography } from 'antd';
+import { Button, Space } from 'antd';
 import { createStyles } from 'antd-style';
 import { PlusOutlined, MinusOutlined, ExpandOutlined } from '@ant-design/icons';
 import { useEditorCore, useEditorZoomToolBarVisible } from '../context';

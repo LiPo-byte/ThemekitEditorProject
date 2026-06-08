@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createStyles } from 'antd-style';
-import { useEditorCoreLoading, useEditorToolbarVisible } from '../context';
+import { useEditorCore, useEditorCoreLoading, useEditorToolbarVisible } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
-import { Dropdown, MenuProps, Button, Tooltip } from 'antd';
-import { DownOutlined, UnorderedListOutlined, LayoutOutlined } from '@ant-design/icons';
+import { Dropdown, type MenuProps, Button, Tooltip, Input } from 'antd';
+import type { InputRef } from 'antd';
+import { DownOutlined, UnorderedListOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -20,8 +21,8 @@ const useStyles = createStyles(({ token, css }) => ({
     background: ${token.colorBgElevated}f2;
     display: flex;
     align-items: center;
-    // gap: 6px;
-    padding: ${token.padding};
+    gap: 6px;
+    padding: 6px;
     user-select: none;
   `,
   barEnter: css`
@@ -41,65 +42,163 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const items: MenuProps['items'] = [
   {
-    key: '1',
-    type: 'group',
-    label: 'Group title',
+    key: 'back2files',
+    label: 'Back to files',
+  },
+  {
+    type: 'divider',
+  },
+  {
+    key: 'file-group',
+    label: 'File',
     children: [
-      {
-        key: '1-1',
-        label: '1st menu item',
-      },
-      {
-        key: '1-2',
-        label: '2nd menu item',
-      },
+      { key: 'file-new', label: 'New' },
+      { key: 'file-open', label: 'Open...' },
+      { key: 'file-save', label: 'Save' },
+      { key: 'file-save-as', label: 'Save As...' },
+      { type: 'divider' },
+      { key: 'file-export', label: 'Export...' },
+      { key: 'file-close', label: 'Close' },
     ],
   },
   {
-    key: '2',
-    label: 'sub menu',
+    key: 'edit',
+    label: 'Edit',
     children: [
-      {
-        key: '2-1',
-        label: '3rd menu item',
-      },
-      {
-        key: '2-2',
-        label: '4th menu item',
-      },
+      { key: 'edit-undo', label: 'Undo  Cmd/Ctrl+Z' },
+      { key: 'edit-redo', label: 'Redo  Cmd/Ctrl+Shift+Z' },
+      { type: 'divider' },
+      { key: 'edit-cut', label: 'Cut  Cmd/Ctrl+X' },
+      { key: 'edit-copy', label: 'Copy  Cmd/Ctrl+C' },
+      { key: 'edit-paste', label: 'Paste  Cmd/Ctrl+V' },
+      { key: 'edit-delete', label: 'Delete  Delete' },
+      { type: 'divider' },
+      { key: 'edit-select-all', label: 'Select All  Cmd/Ctrl+A' },
     ],
   },
   {
-    key: '3',
-    label: 'disabled sub menu',
-    disabled: true,
+    key: 'view',
+    label: 'View',
     children: [
-      {
-        key: '3-1',
-        label: '5d menu item',
-      },
-      {
-        key: '3-2',
-        label: '6th menu item',
-      },
+      { key: 'view-zoom-in', label: 'Zoom In' },
+      { key: 'view-zoom-out', label: 'Zoom Out' },
+      { key: 'view-fit', label: 'Fit to Canvas' },
+      { type: 'divider' },
+      { key: 'view-toggle-left-panel', label: 'Toggle Left Panel' },
+      { key: 'view-toggle-right-panel', label: 'Toggle Right Panel' },
+      { key: 'view-toggle-grid', label: 'Toggle Grid' },
+    ],
+  },
+  {
+    type: 'divider',
+  },
+  {
+    key: 'help',
+    label: 'Help',
+    children: [
+      { key: 'help-shortcuts', label: 'Keyboard Shortcuts' },
+      { key: 'help-docs', label: 'Documentation' },
+      { key: 'help-about', label: 'About' },
     ],
   },
 ];
 
+type EditableFileNameButtonProps = {
+  value: string;
+  onChange: (nextName: string) => void;
+};
+
+const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, onChange }) => {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<InputRef>(null);
+
+  useEffect(() => {
+    if (!editing) {
+      setDraft(value);
+      return;
+    }
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, [editing, value]);
+
+  const commit = () => {
+    const nextName = draft.trim();
+    if (nextName) {
+      onChange(nextName);
+    }
+    setEditing(false);
+  };
+
+  const cancel = () => {
+    setDraft(value);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <Input
+        ref={inputRef}
+        value={draft}
+        size="small"
+        style={{ width: 160 }}
+        onChange={(e) => setDraft(e.target.value)}
+        onPressEnter={commit}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            cancel();
+          }
+        }}
+      />
+    );
+  }
+
+  return (
+    <Tooltip title="Double click to rename">
+      <Button type="text" onDoubleClick={() => setEditing(true)}>
+        {value}
+      </Button>
+    </Tooltip>
+  );
+};
+
 const EditorToolbar: React.FC = () => {
   const { styles } = useStyles();
+  const core = useEditorCore();
   const visible = useEditorToolbarVisible();
   const coreLoading = useEditorCoreLoading();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
+  const [fileName, setFileName] = useState('Try Again');
+  const [historyState, setHistoryState] = useState({ canUndo: false, canRedo: false });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (!core) {
+      setHistoryState({ canUndo: false, canRedo: false });
+      return;
+    }
+    return core.onHistoryChange((state) => {
+      setHistoryState(state);
+    });
+  }, [core]);
 
   if (!visible) return null;
 
   return (
     <div className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}>
-          <Dropdown onOpenChange={setDropdownOpen} trigger={['click']} menu={{ items }}>
-              <Tooltip placement="rightTop" title="菜单">
+          <Dropdown
+              styles={{
+                root: { width: '200px' },
+                item: { width: '200px' }
+              }}
+              onOpenChange={setDropdownOpen}
+              trigger={['click']}
+              menu={{ items }}
+          >
+              <Tooltip placement="rightTop" title="Menu">
                 <Button
                     variant={dropdownOpen ? "filled" : "text"}
                     color='default'
@@ -109,12 +208,26 @@ const EditorToolbar: React.FC = () => {
                 </Button>
               </Tooltip>
           </Dropdown>
-          <Tooltip placement="rightTop" title="展开布局">
-            <Button type="text">
-              Base React Antd
-            <LayoutOutlined />
-            </Button>
+          <Tooltip title="Save">
+              <Button type='text' icon={<SaveOutlined />} />
           </Tooltip>
+          <Tooltip title="Undo">
+              <Button
+                type='text'
+                icon={<UndoOutlined />}
+                disabled={!historyState.canUndo}
+                onClick={() => core?.undo()}
+              />
+          </Tooltip>
+          <Tooltip title="Redo">
+              <Button
+                type='text'
+                icon={<RedoOutlined />}
+                disabled={!historyState.canRedo}
+                onClick={() => core?.redo()}
+              />
+          </Tooltip>
+          <EditableFileNameButton value={fileName} onChange={setFileName} />
     </div>
   );
 };

@@ -41,14 +41,30 @@ const CONFIG_SIZE_MAP:any = {
   3: 'large'
 }
 
-const WIDGET_BORDER_RADIUS = 22;
+const WIDGET_BORDER_RADIUS = 28;
 
 const WIDGET_GAP = 200;
-const SELECTION_DRAG_THRESHOLD = 2;
 const SELECTED_NODE_BOX_COLOR = '#fbbf24';
 const SELECTED_NODE_BOX_WIDTH = 0.5;
 
 export type EditorTheme = 'light' | 'dark';
+
+type EditorCommand = {
+  label: string;
+  do: () => void;
+  undo: () => void;
+};
+
+type EditorHistoryState = {
+  canUndo: boolean;
+  canRedo: boolean;
+};
+
+type SelectionCapabilities = {
+  canDelete: boolean;
+  canExport: boolean;
+  canCrop: boolean;
+};
 
 
 /**
@@ -63,8 +79,6 @@ export class EditorCore {
   readonly wallPaperLayer: Konva.Layer;
   readonly overlayLayer: Konva.Layer;
   readonly cropLayer: Konva.Layer;
-  private cWidth: number;
-  private cHeight: number;
   private readonly minScale: number;
   private readonly maxScale: number;
   private readonly zoomStep: number;
@@ -72,29 +86,28 @@ export class EditorCore {
   private croping: boolean;
   private shiftKeyDownBoolean: boolean;
   private theme: EditorTheme;
+  private backgroundColor = '#ffffff';
+  private showBackgroundDecorations = true;
+  private showAxis = true;
   private wallPaperAnim: Konva.Animation | null = null;
-  // private widgetBorderRadius: number;
-  private widgetsNodes: any[];
   private nodes: any[];
   private transformer!: Konva.Transformer;
   private selectionRectangle: Konva.Rect;
-  // private selectionStartPoint: { x: number; y: number } | null = null;
-  private isSelecting = false;
-  // private isShiftPressed = false;
-  // private suppressNextStageClick = false;
   private selectedNodes: Konva.Node[] = [];
   /** 当前处于裁剪模式的背景图；null 表示未进入裁剪 */
   private cropImage: Konva.Image | null = null;
-  /** 进入裁剪前备份 transformer 配置，退出裁剪时还原 */
-  private cropTransformerBackup: {
-    boundBoxFunc: Konva.TransformerConfig['boundBoxFunc'];
-    flipEnabled: boolean;
-  } | null = null;
   private selectionBoxes = new Map<Konva.Node, Konva.Rect>();
   /** 选中变化订阅器（供 React 浮层监听） */
   private selectionListeners = new Set<(node: Konva.Node[] | null) => void>();
   /** 布局变化订阅器（stage 缩放/平移、transformer 变换时触发，用于 React 浮层重定位） */
   private layoutListeners = new Set<() => void>();
+  private gridShape: Konva.Shape | null = null;
+  private axisShape: Konva.Shape | null = null;
+
+  private historyListeners = new Set<(state: EditorHistoryState) => void>();
+  private undoStack: EditorCommand[] = [];
+  private redoStack: EditorCommand[] = [];
+  private readonly maxHistorySize = 100;
 
   constructor(containerId: string, options: EditorCoreOptions = {}) {
     const el = document.getElementById(containerId);
@@ -116,6 +129,7 @@ export class EditorCore {
       height,
       draggable: true,
     });
+    this.stage.container().style.backgroundColor = this.backgroundColor;
 
     this.bgLayer = new Konva.Layer({ listening: false });
     this.contentLayer = new Konva.Layer();
@@ -125,8 +139,6 @@ export class EditorCore {
       visible: false,
       draggable: false,
     });
-    this.cWidth = width;
-    this.cHeight = height;
     this.shiftKeyDownBoolean = false;
     this.minScale = options.minScale ?? 0.1;
     this.maxScale = options.maxScale ?? 8;
@@ -134,7 +146,6 @@ export class EditorCore {
     this.zoomable = true;
     this.croping = false;
     this.theme = options.theme ?? 'light';
-    this.widgetsNodes = [];
     this.nodes = [];
 
     this.stage.add(this.bgLayer);
@@ -189,11 +200,50 @@ export class EditorCore {
   }
 
   private handleWindowKeyDown = (e: KeyboardEvent) => {
+    if (this.isEditableTarget(e.target)) return;
+    if (this.handleUndoRedoKeydown(e)) return;
+    if (this.handleDeleteKeydown(e)) return;
+    this.handleShiftKeydown(e);
+  };
+
+  // 撤销回退按键
+  private handleUndoRedoKeydown(e: KeyboardEvent) {
+    const key = e.key.toLowerCase();
+    const commandPressed = e.metaKey || e.ctrlKey;
+    if (!commandPressed) return false;
+    if (key === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        this.redo();
+      } else {
+        this.undo();
+      }
+      return true;
+    }
+    if (key === 'y') {
+      e.preventDefault();
+      this.redo();
+      return true;
+    }
+    return false;
+  }
+
+  // 删除按键
+  private handleDeleteKeydown(e: KeyboardEvent) {
+    if (e.key !== 'Delete' && e.key !== 'Backspace') return false;
+    e.preventDefault();
+    this.deleteSelectedNodes();
+    return true;
+  }
+
+  // 按下shift按键
+  private handleShiftKeydown(e: KeyboardEvent) {
     if (e.key !== 'Shift' || this.shiftKeyDownBoolean) return;
     this.shiftKeyDownBoolean = true;
     e.preventDefault();
-  };
+  }
 
+  // 抬起shift按键
   private handleWindowKeyUp = (e: KeyboardEvent) => {
     if (e.key !== 'Shift') return;
     this.shiftKeyDownBoolean = false;
@@ -206,6 +256,65 @@ export class EditorCore {
     // if (this.cropLayer.visible()) return;
     // this.stage.draggable(!this.isSelecting);
   };
+
+  private isEditableTarget(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) return false;
+    const tag = target.tagName;
+    return (
+      target.isContentEditable ||
+      tag === 'INPUT' ||
+      tag === 'TEXTAREA' ||
+      tag === 'SELECT'
+    );
+  }
+
+  private executeCommand(command: EditorCommand) {
+    command.do();
+    this.undoStack.push(command);
+    if (this.undoStack.length > this.maxHistorySize) {
+      this.undoStack.shift();
+    }
+    this.redoStack = [];
+    this.emitHistoryChange();
+  }
+
+  undo() {
+    const command = this.undoStack.pop();
+    if (!command) return;
+    command.undo();
+    this.redoStack.push(command);
+    this.emitHistoryChange();
+  }
+
+  redo() {
+    const command = this.redoStack.pop();
+    if (!command) return;
+    command.do();
+    this.undoStack.push(command);
+    this.emitHistoryChange();
+  }
+
+  private getHistoryState(): EditorHistoryState {
+    return {
+      canUndo: this.undoStack.length > 0,
+      canRedo: this.redoStack.length > 0,
+    };
+  }
+
+  private emitHistoryChange() {
+    const state = this.getHistoryState();
+    this.historyListeners.forEach((cb) => {
+      cb(state);
+    });
+  }
+
+  onHistoryChange(cb: (state: EditorHistoryState) => void): () => void {
+    this.historyListeners.add(cb);
+    cb(this.getHistoryState());
+    return () => {
+      this.historyListeners.delete(cb);
+    };
+  }
 
   /** 点击空白/其他元素取消选中；点中带 selected:true 的节点（或其后代）选中之 */
   private handleStageClick = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
@@ -399,6 +508,29 @@ export class EditorCore {
     return [...this.selectedNodes];
   }
 
+  getSelectionCapabilities(): SelectionCapabilities {
+    const selectedNodes = this.selectedNodes;
+    const selectedCount = selectedNodes.length;
+    let canDelete = selectedCount > 0;
+    let canExport = false;
+    let canCrop = false;
+
+    for (let i = 0; i < selectedCount; i += 1) {
+      const node = selectedNodes[i];
+      if (node.getAttr('deleteable') !== true) {
+        canDelete = false;
+      }
+      if (!canExport && node.getAttr('packable') === true) {
+        canExport = true;
+      }
+      if (selectedCount === 1 && node.getAttr('cropable') === true) {
+        canCrop = true;
+      }
+    }
+
+    return { canDelete, canExport, canCrop };
+  }
+
   /** 外部手动修改节点几何（如字体/内容）后，主动刷新选框与浮层定位 */
   refreshSelectionLayout() {
     this.transformer.forceUpdate();
@@ -526,14 +658,45 @@ export class EditorCore {
       return { x, y };
   }
 
-  addWidget(data: any) {
-    const { x, y } = this.getEmptyXY()
+  private createAddWidgetCommand(data: any): EditorCommand {
+    const { x, y } = this.getEmptyXY();
+    const widget = new Time({ x, y, data });
+    const widgetNode = widget.node;
+    const insertIndex = this.nodes.length;
 
-    const time = new Time({ x, y, data });
-    this.nodes.push(time);
-    if (time.node) {
-      this.contentLayer.add(time.node);
-    }
+    return {
+      label: 'add-widget',
+      do: () => {
+        if (!this.nodes.includes(widget)) {
+          const safeIndex = Math.min(insertIndex, this.nodes.length);
+          this.nodes.splice(safeIndex, 0, widget);
+        }
+        if (widgetNode && widgetNode.getParent() !== this.contentLayer) {
+          this.contentLayer.add(widgetNode);
+        }
+        this.contentLayer.batchDraw();
+        if (widgetNode) {
+          this.select(widgetNode);
+        }
+        this.emitLayoutChange();
+      },
+      undo: () => {
+        const idx = this.nodes.indexOf(widget);
+        if (idx >= 0) {
+          this.nodes.splice(idx, 1);
+        }
+        if (widgetNode?.getParent()) {
+          this.removeNode(widgetNode);
+        } else {
+          this.contentLayer.batchDraw();
+        }
+        this.emitLayoutChange();
+      },
+    };
+  }
+
+  addWidget(data: any) {
+    this.executeCommand(this.createAddWidgetCommand(data));
   }
 
   addWallPaper() {
@@ -544,6 +707,74 @@ export class EditorCore {
       this.wallPaperLayer.add(wallPaper.node);
       this.ensureWallPaperAnimation();
     }
+  }
+
+
+  createDeleteSelectNodesCommand(): EditorCommand | null {
+    const selectedNodes = this.getSelectedNodes();
+    if (!selectedNodes.length) return null;
+
+    const deleteable = selectedNodes.every((node) => node.getAttr('deleteable') === true);
+
+    if (!deleteable) {
+      console.warn('[EditorCore] delete blocked: all selected nodes must set deleteable=true');
+      return null;
+    }
+
+    const nodeSnapshots = selectedNodes.map((node) => {
+      const parent = node.getParent();
+      return {
+        node,
+        parent,
+        index: parent ? node.index : -1,
+      };
+    });
+
+    const removedNodeEntries = this.nodes
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => selectedNodes.some((node) => item?.node === node));
+
+    return {
+      label: 'delete-selected-nodes',
+      do: () => {
+        const nodeIndexes = removedNodeEntries.map(({ index }) => index).sort((a, b) => b - a);
+        nodeIndexes.forEach((index) => {
+          this.nodes.splice(index, 1);
+        });
+        nodeSnapshots.forEach(({ node }) => {
+          if (node.getParent()) {
+            this.removeNode(node);
+          }
+        });
+        this.deselect();
+        this.emitLayoutChange();
+      },
+      undo: () => {
+        removedNodeEntries
+          .slice()
+          .sort((a, b) => a.index - b.index)
+          .forEach(({ item, index }) => {
+            const safeIndex = Math.min(Math.max(index, 0), this.nodes.length);
+            this.nodes.splice(safeIndex, 0, item);
+          });
+
+        nodeSnapshots.forEach(({ node, parent, index }) => {
+          if (!parent || node.getParent() === parent) return;
+          parent.add(node);
+          if (index >= 0) {
+            node.zIndex(index);
+          }
+          parent.getLayer()?.batchDraw();
+        });
+        this.emitLayoutChange();
+      },
+    };
+  }
+
+  deleteSelectedNodes() {
+    const command = this.createDeleteSelectNodesCommand();
+    if (!command) return;
+    this.executeCommand(command);
   }
 
   private ensureWallPaperAnimation() {
@@ -628,6 +859,8 @@ export class EditorCore {
         ctx.fill();
       },
     });
+    grid.visible(this.showBackgroundDecorations);
+    this.gridShape = grid;
     this.bgLayer.add(grid);
 
     // 过世界原点(0,0)的 X/Y 坐标轴 + 自适应刻度数字，跟随缩放平移
@@ -702,6 +935,8 @@ export class EditorCore {
         ctx.fillText('0', -tick * 1.2, tick * 1.4);
       },
     });
+    axis.visible(this.showAxis);
+    this.axisShape = axis;
     this.bgLayer.add(axis);
   }
 
@@ -728,6 +963,38 @@ export class EditorCore {
     this.theme = theme;
     this.bgLayer.destroyChildren();
     this.initBgLayer();
+    this.bgLayer.batchDraw();
+  }
+
+  getBackgroundColor(): string {
+    return this.backgroundColor;
+  }
+
+  setBackgroundColor(color: string) {
+    if (!color || this.backgroundColor === color) return;
+    this.backgroundColor = color;
+    this.stage.container().style.backgroundColor = color;
+  }
+
+  getShowBackgroundDecorations(): boolean {
+    return this.showBackgroundDecorations;
+  }
+
+  setShowBackgroundDecorations(show: boolean) {
+    if (this.showBackgroundDecorations === show) return;
+    this.showBackgroundDecorations = show;
+    this.gridShape?.visible(show);
+    this.bgLayer.batchDraw();
+  }
+
+  getShowAxis(): boolean {
+    return this.showAxis;
+  }
+
+  setShowAxis(show: boolean) {
+    if (this.showAxis === show) return;
+    this.showAxis = show;
+    this.axisShape?.visible(show);
     this.bgLayer.batchDraw();
   }
 
@@ -771,8 +1038,6 @@ export class EditorCore {
       height: this.stage.height() / scale,
     };
 
-
-
     // 裁剪的图片以及
     cropWidgetItem.x(hole.x);
     cropWidgetItem.y(hole.y);
@@ -804,8 +1069,8 @@ export class EditorCore {
         return cropLayer.getAbsoluteTransform().point(clampPosLocal(local.x, local.y));
       }
 
-      let sx = cropImage.scaleX();
-      let sy = cropImage.scaleY();
+      const sx = cropImage.scaleX();
+      const sy = cropImage.scaleY();
       if (sx < minScale || sy < minScale) {
         const x = cropImage.x();
         const y = cropImage.y();
@@ -893,6 +1158,13 @@ export class EditorCore {
     this.transformer.enabledAnchors([]);
   }
 
+  confirmCrop() {
+    if (!this.croping || !this.cropImage) return;
+    // 退出裁剪模式，并恢复原图显示
+    this.closeCrop();
+    this.refreshSelectionLayout();
+  }
+
 
   /** 销毁 Stage，释放 Konva 资源；组件卸载时调用 */
   destroy() {
@@ -907,15 +1179,12 @@ export class EditorCore {
 
     this.selectionListeners.clear();
     this.layoutListeners.clear();
+    this.historyListeners.clear();
     this.wallPaperAnim?.stop();
     this.wallPaperAnim = null;
 
     this.stage.destroy();
   }
-}
-
-class Widget {
-  constructor() {}
 }
 
 type WidgetLayoutCtx = {
@@ -947,7 +1216,13 @@ class BaseNode {
     this.dataJson = data;
     this.gap = 50;
     this.ratio = ratio ?? 2;
-    this.node = new Konva.Group({ x: this.x, y: this.y, selected: true });
+    this.node = new Konva.Group({
+      x: this.x,
+      y: this.y,
+      selected: true,
+      deleteable: true,
+      packable: true,
+    });
   }
 
   initFullBox(): void {
@@ -1071,7 +1346,7 @@ class Time extends BaseNode {
       date.width(halfW);
     },
     // 2：整组垂直水平居中
-    2: ({ w, h, padding, time, day, date }) => {
+    2: ({ h, padding, time, day, date }) => {
       const gap = pt(4);
       const totalH = time.height() + day.height() + date.height() + gap * 2;
       let cy = (h - totalH) / 2;
@@ -1103,7 +1378,6 @@ class Time extends BaseNode {
 
   init() {
     const { ios, android } = this.dataJson;
-    // const wdget = this.createWidget({agent: 'ios', ...ios.sizes[0], sizeKey: 'large'});
     if (ios) {
       ios.sizes.forEach((iosData: any) => {
         const sizeKey = CONFIG_SIZE_MAP[iosData.size];
@@ -1125,7 +1399,7 @@ class Time extends BaseNode {
       const nextY = bbox.height === 0 ? 0 : bbox.y + bbox.height + 20;
       const iosWidget = this.iosNodes[sizeKey];
       const androidWidget = this.androidNodes[sizeKey];
-      let cursorX = 0;
+      const cursorX = 0;
       if (iosWidget) {
         iosWidget.x(cursorX);
         iosWidget.y(nextY);
@@ -1137,12 +1411,12 @@ class Time extends BaseNode {
         this.node.add(androidWidget)
       }
     })
-    
+
     this.initFullBox();
   }
 
   createWidget(options: any) {
-    const { size, agent, name, sizeKey, time, day, date, padding, layoutType, src } = options;
+    const { agent, name, sizeKey, time, day, date, padding, layoutType, src } = options;
     const sizeCfg = WIDGET_SIZE[sizeKey];
     const widthPx = pt(sizeCfg.width);
     const heightPx = pt(sizeCfg.height);
@@ -1154,8 +1428,8 @@ class Time extends BaseNode {
       // selected: true,
       clipFunc: (ctx: any) => this.clipFuncBorderRadius(ctx, radius, widthPx, heightPx),
     });
-    const rect = this.createRect({ w: widthPx, h: heightPx });
-    const title = this.createTitle({x: 5, y: heightPx + 10, name: name + '_' + agent })
+    // const rect = this.createRect({ w: widthPx, h: heightPx });
+    const title = this.createTitle({x: 5, y: heightPx + 10, name: `${name}_${agent}` })
 
     const timeNode = this.createDes({ ...time, text: '10:09' });
     const dayNode = this.createDes({ ...day, text: 'Wednesday' });
@@ -1240,6 +1514,7 @@ class Time extends BaseNode {
       width: w,
       height: h,
       selected: true,
+      cropable: true,
     });
     imageObj.onload = () => {
       // image.width(pt(imageObj.width/this.ratio));
@@ -1265,7 +1540,7 @@ class WallPaper extends BaseNode {
     video.muted = true;
     video.autoplay = true;
     const group = this.node;
-    video.addEventListener('loadedmetadata', function () {
+    video.addEventListener('loadedmetadata', () => {
       rect.width(video.videoWidth);
       rect.height(video.videoHeight);
       const videoNode = new Konva.Image({
@@ -1302,7 +1577,7 @@ class IconPack extends BaseNode {
         y: cursorY,
         clipFunc: (ctx: any) => this.clipFuncBorderRadius(ctx, radius, widthPx, heightPx)
       });
-      const iconImage = this.createBgImage({ w: widthPx, h: heightPx, src: 'http://localhost:5100/appicons/' + icon });
+      const iconImage = this.createBgImage({ w: widthPx, h: heightPx, src: `http://localhost:5100/appicons/${icon}` });
       if (iconImage) {
         group.add(iconImage)
       }

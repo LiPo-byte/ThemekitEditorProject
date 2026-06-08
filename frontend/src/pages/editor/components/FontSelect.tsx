@@ -1,5 +1,5 @@
 import { Select } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import fontManifest from './font-manifest.json';
 
 type FontManifestItem = {

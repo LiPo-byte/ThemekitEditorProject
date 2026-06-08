@@ -2,6 +2,7 @@
 
 import { join } from 'node:path';
 import { defineConfig } from '@umijs/max';
+import { theme as antdTheme } from 'antd';
 import defaultSettings from './defaultSettings';
 import proxy from './proxy';
 
@@ -156,10 +157,10 @@ export default defineConfig({
       variant: 'filled',
       theme: {
         token: {
-          fontFamily: 'AlibabaSans, sans-serif',
           boxShadowSecondary: '0 1px 3px 0 #00000026, 0 0 .5px 0 #0000004d',
-          padding: '6px',
+          fontSize: 12,
         },
+        algorithm: antdTheme.compactAlgorithm,
       },
     },
   },

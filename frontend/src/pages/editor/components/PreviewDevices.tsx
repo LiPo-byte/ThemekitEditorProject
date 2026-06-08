@@ -1,6 +1,6 @@
 import { createStyles } from 'antd-style';
 import React from 'react';
-import { useEditorCore, useEditorCoreLoading, useEditorPreviewDevicesOpen } from '../context';
+import { useEditorPreviewDevicesOpen } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 
 const useStyles = createStyles(({ token, css }) => ({
