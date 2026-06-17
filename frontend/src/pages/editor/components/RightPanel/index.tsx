@@ -1,14 +1,15 @@
+import { CloseOutlined } from '@ant-design/icons';
+import { Button, Col, Divider, Row, Typography } from 'antd';
 import { createStyles } from 'antd-style';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   useEditorCore,
   useEditorRightPanlOpen,
   useEditorRightPanlOpenSetter,
 } from '../../context';
 import { useEnterAnimation } from '../../hooks/useEnterAnimation';
-import { Col, Row, Button, Typography, Divider } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
 import { CanvasSettingsForm, SelectedNodePropForm } from './PropForm';
+
 
 const useStyles = createStyles(({ token, css }) => ({
   shell: css`
@@ -19,7 +20,7 @@ const useStyles = createStyles(({ token, css }) => ({
     bottom: 62px;
     z-index: 20;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: auto;
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     backdrop-filter: blur(14px);
@@ -70,38 +71,87 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const RightPanel: React.FC = () => {
   const { styles } = useStyles();
-  const [selectNodes, setSelectNodes] = useState([]);
+  const [selectNodes, setSelectNodes] = useState<any[]>([]);
+  const [selectNodesTitle, setSelectNodesTitle] = useState<any[]>([]);
+  const [editProps, setEditProps] = useState<Record<string, any>>({});
+  const selectNodesRef = useRef<any[]>([]);
   const open = useEditorRightPanlOpen();
   const setOpen = useEditorRightPanlOpenSetter();
   const playEnterAnimation = useEnterAnimation(open, { durationMs: 280 });
   const core = useEditorCore();
 
+  const handleEditProps = useCallback((nodes: any[]) => {
+    if (!core) return;
+    const nextEditProps = core.getSelectedEditProps();
+    setEditProps(nextEditProps);
+  }, [core]);
+
   useEffect(() => {
     if (!core) return;
-    core.onSelectionChange((sn: any) => {
-      setSelectNodes(sn);
+    const offSelection = core.onSelectionChange((sn: any) => {
+      const nextSelectedNodes = Array.isArray(sn) ? sn : [];
+      selectNodesRef.current = nextSelectedNodes;
+      const titles:any = [];
+      nextSelectedNodes.forEach(node => {
+        titles.push(core.getOwnerTitleForNode(node))
+      })
+      setSelectNodesTitle(titles);
+      setSelectNodes(nextSelectedNodes);
+      handleEditProps(nextSelectedNodes);
       setOpen(true);
-    })
-  }, [core])
+    });
+    const offEditProps = core.onEditPropsChange(() => {
+      handleEditProps(selectNodesRef.current);
+    });
+    return () => {
+      offSelection();
+      offEditProps();
+    };
+  }, [core, handleEditProps, setOpen]);
+
+  const handleSelectedNodePropChange = (key: string, v: any) => {
+    if (key === 'source') {
+        const { id, value } = v;
+        core?.changeNodeProps({ key, value, ids: [id] });
+        return;
+    }
+    core?.changeNodeProps({ key, value: v });
+  };
+
   return (
-    <div className={`${styles.shell} ${!open ? styles.shellClosed : ''} ${playEnterAnimation && open ? styles.shellEnter : ''}`}>
+    <div
+      className={`${styles.shell} ${!open ? styles.shellClosed : ''} ${playEnterAnimation && open ? styles.shellEnter : ''}`}
+    >
       <div className={styles.wrap}>
         <Row>
-          <Col span={20} >
+          <Col span={20}>
             <Typography.Title level={3} style={{ margin: 0 }}>
-                Props
+              Props
             </Typography.Title>
           </Col>
           <Col span={4}>
-              <Button type="text" onClick={() => {setOpen(false)}} icon={<CloseOutlined />} />
+            <Button
+              type="text"
+              onClick={() => {
+                setOpen(false);
+              }}
+              icon={<CloseOutlined />}
+            />
           </Col>
         </Row>
         <Divider size="small" />
         <Typography.Title level={5} style={{ margin: 0 }}>
-            Google Icon
+          {selectNodesTitle[0]}
         </Typography.Title>
-        <Divider size="small" />
-        {selectNodes.length ? <SelectedNodePropForm /> : <CanvasSettingsForm />}
+        {/* <Divider size="small" /> */}
+        {selectNodes.length ? (
+          <SelectedNodePropForm
+            editProps={editProps}
+            onChange={handleSelectedNodePropChange}
+          />
+        ) : (
+          <CanvasSettingsForm />
+        )}
       </div>
     </div>
   );

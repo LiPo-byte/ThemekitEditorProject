@@ -8,8 +8,8 @@
         "label": "Layout 0: Basic Time",
         "title": "Time, date, and weekday; single or double row",
         "children": [
-          { "key": "Time-0-single", "label": "Single Row" },
-          { "key": "Time-0-double", "label": "Double Row" }
+          { "key": "Time_LayoutType_0_1", "label": "Single Row" },
+          { "key": "Time_LayoutType_0", "label": "Double Row" }
         ]
       },
       {

@@ -56,6 +56,7 @@ const ActionPopover: React.FC = () => {
   const [rect, setRect] = useState<Rect | null>(null);
   const [caps, setCaps] = useState({ canDelete: false, canExport: false, canCrop: false });
   const popoverRef = React.useRef<HTMLDivElement | null>(null);
+  const rectRef = React.useRef<Rect | null>(null);
 
 
   const replayEnterAnimation = () => {
@@ -77,29 +78,38 @@ const ActionPopover: React.FC = () => {
     );
   };
 
+  const isRectChanged = (prevRect: Rect | null, nextRect: Rect | null) => {
+    if (prevRect === nextRect) return false;
+    if (!prevRect || !nextRect) return prevRect !== nextRect;
+    return (
+      Math.abs(prevRect.x - nextRect.x) > RECT_EPSILON ||
+      Math.abs(prevRect.y - nextRect.y) > RECT_EPSILON ||
+      Math.abs(prevRect.width - nextRect.width) > RECT_EPSILON ||
+      Math.abs(prevRect.height - nextRect.height) > RECT_EPSILON
+    );
+  };
+
   useEffect(() => {
     if (!core) {
+      rectRef.current = null;
       setRect(null);
       setCaps({ canDelete: false, canExport: false, canCrop: false });
       return;
     }
     const sync = () => {
       const nextRect = core.getSelectionScreenRect();
-      setRect((prevRect) => {
-        if (prevRect === nextRect) return prevRect;
-        if (!prevRect || !nextRect) return nextRect;
-        const changed =
-          Math.abs(prevRect.x - nextRect.x) > RECT_EPSILON ||
-          Math.abs(prevRect.y - nextRect.y) > RECT_EPSILON ||
-          Math.abs(prevRect.width - nextRect.width) > RECT_EPSILON ||
-          Math.abs(prevRect.height - nextRect.height) > RECT_EPSILON;
-        return changed ? nextRect : prevRect;
-      });
+      const prevRect = rectRef.current;
+      const changed = isRectChanged(prevRect, nextRect);
+      if (!changed) return false;
+      rectRef.current = nextRect;
+      setRect(nextRect);
+      return true;
     };
     const offSel = core.onSelectionChange((node: any[] | null) => {
       setCaps(core.getSelectionCapabilities());
-      sync();
+      const rectChanged = sync();
       if (!node?.length) return;
+      if (!rectChanged) return;
       requestAnimationFrame(replayEnterAnimation);
     });
     const offLayout = core.onLayoutChange(sync);

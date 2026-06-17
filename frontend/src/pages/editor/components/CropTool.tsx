@@ -1,17 +1,13 @@
-import React from 'react';
+import { Button, Flex } from 'antd';
 import { createStyles } from 'antd-style';
+import React from 'react';
 import {
-//   useEditorBottomToolBarVisible,
   useEditorCore,
-  useEditorHideUISetter,
-//   useEditorCoreLoading,
-//   useEditorLeftPanlOpen,
-//   useEditorLeftPanlOpenSetter,
-  useEditorCropToolOpenSetter,
   useEditorCropToolOpen,
+  useEditorCropToolOpenSetter,
+  useEditorHideUISetter,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
-import { Button, Flex } from 'antd';
 
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
@@ -44,39 +40,49 @@ const useStyles = createStyles(({ token, css }) => ({
       }
     }
   `,
-//   toolbarbody: css`
-//   `
+  //   toolbarbody: css`
+  //   `
 }));
 
 const CropTool: React.FC = () => {
   const { styles } = useStyles();
-//   const visible = useEditorBottomToolBarVisible();
   const setHideUI = useEditorHideUISetter();
   const open = useEditorCropToolOpen();
   const setOpen = useEditorCropToolOpenSetter();
   const core = useEditorCore();
   const playEnterAnimation = useEnterAnimation(open, { durationMs: 260 });
 
-  if (!open || !core) return null
+  if (!open || !core) return null;
   return (
-    <div className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}>
-        <Flex gap="medium" align="center" justify='end' style={{ width: '100%', height: '100%' }}>
-            <Button onClick={() => {
-                setOpen(false);
-                setHideUI(false);
-                core.closeCrop();
-            }}>Cancel</Button>
-            <Button
-                onClick={() => {
-                    setOpen(false);
-                    setHideUI(false);
-                    core.confirmCrop();
-                }}
-                type='primary'
-            >
-                Confirm
-            </Button>
-        </Flex>
+    <div
+      className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}
+    >
+      <Flex
+        gap="medium"
+        align="center"
+        justify="end"
+        style={{ width: '100%', height: '100%' }}
+      >
+        <Button
+          onClick={() => {
+            setOpen(false);
+            setHideUI(false);
+            core.closeCrop();
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            setOpen(false);
+            setHideUI(false);
+            void core.confirmCrop();
+          }}
+          type="primary"
+        >
+          Confirm
+        </Button>
+      </Flex>
     </div>
   );
 };

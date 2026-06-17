@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="24" y="24" width="464" height="464" rx="24" fill="#F5F6F8" stroke="#D9DDE3" stroke-width="4" stroke-dasharray="10 10"/>
+
+  <rect x="146" y="150" width="210" height="150" rx="14" fill="#FFFFFF" stroke="#C9CED8" stroke-width="4"/>
+  <rect x="172" y="176" width="210" height="150" rx="14" fill="#EEF1F5" stroke="#BCC3CF" stroke-width="4"/>
+
+  <circle cx="325" cy="218" r="16" fill="#B6BECA"/>
+  <path d="M198 294L238 252C242 248 248 248 252 252L278 278C282 282 288 282 292 278L317 253C321 249 327 249 331 253L356 278V308H198V294Z" fill="#C4CBD6"/>
+
+  <text x="256" y="374" text-anchor="middle" fill="#6F7784" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="600">
+    Multiple images selected
+  </text>
+</svg>

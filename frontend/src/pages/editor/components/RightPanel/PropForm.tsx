@@ -1,35 +1,103 @@
-import React, { useEffect, useState } from 'react';
-import FontSelect from '../FontSelect';
-import { useEditorCore } from '../../context';
-import {
-  Col,
-  Input,
-  Row,
-  Divider,
-  ColorPicker,
-  Segmented,
-  Switch,
-  type UploadProps,
-  Flex,
-  Tag,
-} from 'antd';
 import {
   AlignCenterOutlined,
   AlignLeftOutlined,
   AlignRightOutlined,
-  AppleOutlined,
   AndroidOutlined,
+  AppleOutlined,
+  // PlusOutlined,
+  UploadOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
-import Dragger from 'antd/es/upload/Dragger';
+import {
+  Col,
+  ColorPicker,
+  Divider,
+  Flex,
+  type GetProp,
+  Input,
+  InputNumber,
+  Row,
+  Segmented,
+  Switch,
+  Tag,
+  Upload,
+  Button,
+  // type UploadFile,
+  type UploadProps,
+  // Space,
+  Typography,
+  Slider
+} from 'antd';
+import type { ColorPickerProps } from 'antd';
+
+import { createStyles } from 'antd-style';
+import React, { useEffect, useState } from 'react';
+import { useEditorCore } from '../../context';
+import FontSelect from '../FontSelect';
+
+const MIXED_VALUE = '__MIXED__';
+type Color = GetProp<ColorPickerProps, 'value'>;
+const { Paragraph, Text } = Typography;
 
 const InputTitle: React.FC<{ label: string }> = ({ label }) => {
   return <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{label}</span>;
 };
 
+const useImageUploadStyles = createStyles(({ css }) => ({
+  uploadButtonLabelMixed: css`
+    margin-top: 0;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font-weight: 600;
+  `,
+  previewImage: css`
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  `,
+  formRow: css`
+    margin-bottom: 5px;
+  `,
+  upload: css`
+    width: 32px;
+    height: 32px;
+  `,
+  deleteButton: css`
+    // display: flex;
+    // align-items: center;
+    // justify-content: space-between;
+  `,
+  itemRow: css`
+    width: 100%;
+    margin-bottom: 5px;
+  `,
+  uploadRoot: css`
+    width: 170px;
+  `,
+  iconBox: css`
+    width: 28px;
+    height: 28px;
+  `,
+  itemText: css`
+    width: 150px;
+    text-align: left;
+  `,
+  previewImg: css`
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    object-fit: cover;
+  `,
+}));
+
 export const CanvasSettingsForm: React.FC = () => {
   const core = useEditorCore();
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [showBackgroundDecorations, setShowBackgroundDecorations] = useState(true);
+  const [showBackgroundDecorations, setShowBackgroundDecorations] =
+    useState(true);
   const [showAxis, setShowAxis] = useState(true);
 
   useEffect(() => {
@@ -103,53 +171,42 @@ export const AgentTagsMultipleSelect: React.FC = () => {
     const temp = [...checked];
     temp[index] = b;
     setChecked(temp);
-  }
+  };
   return (
     <Row style={{ marginBottom: '5px' }}>
       <Col span={24}>
-        <Flex justify='space-between' align='center'>
-            <InputTitle label="Sync Agent" />
-            <div>
-              <Tag.CheckableTag
-                style={{ marginRight: 5 }}
-                icon={<AppleOutlined />}
-                checked={checked[0]}
-                onChange={(checked) => handleChange(0, checked)}
-              >
-                Ios
-              </Tag.CheckableTag>
-              <Tag.CheckableTag
-                icon={<AndroidOutlined />}
-                checked={checked[1]}
-                onChange={(checked) => handleChange(1, checked)}
-              >
-                Android
-              </Tag.CheckableTag>
-            </div>
+        <Flex justify="space-between" align="center">
+          <InputTitle label="Sync Agent" />
+          <div>
+            <Tag.CheckableTag
+              style={{ marginRight: 5 }}
+              icon={<AppleOutlined />}
+              checked={checked[0]}
+              onChange={(checked) => handleChange(0, checked)}
+            >
+              Ios
+            </Tag.CheckableTag>
+            <Tag.CheckableTag
+              icon={<AndroidOutlined />}
+              checked={checked[1]}
+              onChange={(checked) => handleChange(1, checked)}
+            >
+              Android
+            </Tag.CheckableTag>
+          </div>
         </Flex>
       </Col>
     </Row>
-  )
-}
-
-const FontSizeInput: React.FC = () => {
-  return (
-    <>
-      <Row style={{ marginBottom: '5px' }}>
-        <Col span={24}>
-          <InputTitle label="FontSize" />
-        </Col>
-      </Row>
-      <Row>
-        <Col span={24}>
-          <Input size="small" value={12} placeholder="Filled" variant="filled" />
-        </Col>
-      </Row>
-    </>
   );
 };
 
-const FontFamilyInput: React.FC = () => {
+
+const FontFamilyInput: React.FC<{
+  value?: string;
+  onChange?: (value: string) => void;
+}> = ({ value, onChange }) => {
+  const isMixed = value === MIXED_VALUE;
+  const fontValue = isMixed ? undefined : value;
   return (
     <>
       <Row style={{ marginBottom: '5px' }}>
@@ -159,31 +216,54 @@ const FontFamilyInput: React.FC = () => {
       </Row>
       <Row>
         <Col span={24}>
-          <FontSelect onChange={async () => {}} />
+          <FontSelect
+              value={fontValue}
+              onChange={onChange}
+              isMixed={isMixed}
+            />
         </Col>
       </Row>
     </>
   );
 };
 
-const FontColorInput: React.FC = () => {
+const FontColorInput: React.FC<{
+  value?: string;
+  onChange?: (value: string) => void;
+}> = ({ value, onChange }) => {
+  const colorValue = value === MIXED_VALUE ? undefined : value;
   return (
     <>
-      <Row style={{ marginBottom: '5px' }}>
-        <Col span={24}>
-          <InputTitle label="FontColor" />
-        </Col>
-      </Row>
       <Row>
         <Col span={24}>
-          <ColorPicker defaultValue="#1677ff" size="small" showText />
+          <Flex align='center' justify='space-between'>
+            <InputTitle label="TextColor" />
+            <ColorPicker
+              value={colorValue}
+              size="small"
+              disabledAlpha
+              showText={(color) => {
+                if (colorValue) {
+                  return <span>{color.toHexString()}</span>
+                } else {
+                  return <span>Multiple values</span>
+                }
+              }}
+              onChangeComplete={(color: any) => {
+                onChange?.(color.toHexString().toUpperCase());
+              }}
+            />
+          </Flex>
         </Col>
       </Row>
     </>
   );
 };
 
-const TextAlignment: React.FC = () => {
+const TextAlignment: React.FC<{
+  value?: number;
+  onChange?: (value: number) => void;
+}> = ({ value, onChange }) => {
   return (
     <>
       <Row style={{ marginBottom: '5px' }}>
@@ -194,32 +274,15 @@ const TextAlignment: React.FC = () => {
       <Row>
         <Col span={24}>
           <Segmented
-            value={1}
+            value={value}
             block
-            onChange={() => {}}
+            onChange={onChange}
             options={[
               { value: 1, label: <AlignLeftOutlined /> },
               { value: 2, label: <AlignCenterOutlined /> },
               { value: 3, label: <AlignRightOutlined /> },
             ]}
           />
-        </Col>
-      </Row>
-    </>
-  );
-};
-
-const NameInput: React.FC = () => {
-  return (
-    <>
-      <Row style={{ marginBottom: '5px' }}>
-        <Col span={24}>
-          <InputTitle label="Name" />
-        </Col>
-      </Row>
-      <Row>
-        <Col span={24}>
-          <Input size="small" value="Pink_Love_Heart_Large" placeholder="Filled" variant="filled" />
         </Col>
       </Row>
     </>
@@ -239,65 +302,356 @@ export const IsGIFInput: React.FC = () => {
   );
 };
 
-const FileUpload: React.FC = () => {
-  const props: UploadProps = {
-    name: 'file',
-    multiple: true,
-    action: '',
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-    },
-    onDrop(e) {
-      console.log('Dropped files', e.dataTransfer.files);
-    },
-  };
+type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
+const getBase64 = (file: FileType): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+});
+
+export const ImageUpload: React.FC<{
+  value: any[];
+  onChange: (payload: { id: any; value: any }) => void;
+}> = ({ value, onChange }) => {
+  const { styles } = useImageUploadStyles();
+
+  const handleChange =
+    (id: any): UploadProps['onChange'] =>
+    ({ fileList: nextFileList }) => {
+      const singleList = nextFileList.slice(-1);
+      const latestFile = singleList[0];
+      if (!latestFile) {
+        onChange({ id, value: '' });
+        return;
+      }
+      if (latestFile.url) {
+        onChange({ id, value: latestFile.url });
+        return;
+      }
+      if (latestFile.originFileObj) {
+        onChange({
+          id,
+          value: URL.createObjectURL(latestFile.originFileObj as File),
+        });
+      }
+    };
+
+  const onDeleteSource = (id: any) => {
+    onChange({
+      id: id,
+      value: '',
+    });
+  }
+
+  return (
+    <>
+      <Row className={styles.formRow}>
+        <Col span={24}>
+          <InputTitle label="Source" />
+        </Col>
+      </Row>
+      {value.map((sourceObj: any) => {
+        const { source, name, id } = sourceObj;
+        if (!source) {
+          return (
+            <Row key={id} className={styles.itemRow}>
+              <Col span={24}>
+                <Upload
+                  accept="image/*"
+                  maxCount={1}
+                  fileList={[]}
+                  beforeUpload={() => false}
+                  onChange={handleChange(id)}
+                  className={styles.uploadRoot}
+                >
+                  <Button variant="filled" color="default">
+                    <Flex
+                      className={styles.iconBox}
+                      align="center"
+                      justify="center"
+                    >
+                      <UploadOutlined />
+                    </Flex>
+                    <Text
+                      className={styles.itemText}
+                      ellipsis={{ tooltip: name }}
+                    >
+                      {name}
+                    </Text>
+                  </Button>
+                </Upload>
+              </Col>
+            </Row>
+          );
+        }
+        return (
+          <Row key={id} className={styles.itemRow}>
+            <Col span={20}>
+              <Button variant="filled" color="default">
+                <img className={styles.previewImg} src={source} alt="" />
+                <Text
+                  className={styles.itemText}
+                  ellipsis={{ tooltip: name }}
+                >
+                  {name}
+                </Text>
+              </Button>
+            </Col>
+            <Col span={4}>
+              <Button type="text" onClick={() => {onDeleteSource(id)}} icon={<DeleteOutlined />} />
+            </Col>
+          </Row>
+        );
+      })}
+    </>
+  );
+};
+
+export const AlphaSlider:React.FC<{
+  value?: any;
+  onChange?: (value: any) => void;
+}> = ({ value, onChange }) => {
+  const [alphaValue, setAlphaValue] = useState(0)
+  useEffect(() => {
+    setAlphaValue(value === MIXED_VALUE ? 0 : value * 100)
+  }, [value])
+  return (
+    <Row>
+      <Col span={24}>
+        <InputTitle label="Alpha" />
+        <Slider
+          min={1}
+          max={100}
+          styles={{
+            rail: {
+              height: 12,
+              borderRadius: 6,
+              backgroundImage: `
+                linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,1)),
+                linear-gradient(45deg, #ccc 25%, transparent 25%),
+                linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ccc 75%),
+                linear-gradient(-45deg, transparent 75%, #ccc 75%)
+              `,
+              backgroundSize: '100% 100%, 8px 8px, 8px 8px, 8px 8px, 8px 8px',
+              backgroundPosition: '0 0, 0 0, 0 4px, 4px -4px, -4px 0',
+              backgroundColor: '#fff',
+              opacity: 1,
+            },
+            track: {
+              height: 12,
+              background: 'transparent',
+            },
+            handle: {
+              marginTop: 4
+            },
+          }}
+          tooltip={{
+            formatter: (v: any) => {
+              return <>{v}%</>
+            }
+          }}
+          onChangeComplete={(v: any) => {
+            onChange?.(v/100)
+          }}
+
+          onChange={setAlphaValue}
+          value={alphaValue || 0}
+        />
+      </Col>
+    </Row>
+  )
+}
+
+export const RadiusSlider:React.FC<{
+  value?: any;
+  onChange?: (value: any) => void;
+}> = ({ value, onChange }) => {
+  const [radiusValue, setRadiusValue] = useState(0)
+  useEffect(() => {
+    setRadiusValue(value === MIXED_VALUE ? 0 : value)
+  }, [value])
+  return (
+    <Row>
+      <Col span={24}>
+        <InputTitle label="Radius" />
+        <Slider
+          min={0}
+          max={200}
+          onChangeComplete={onChange}
+          onChange={setRadiusValue}
+          value={radiusValue}
+        />
+      </Col>
+    </Row>
+  )
+}
+
+export const PropInput: React.FC<{
+  LabelName: string;
+  value?: any;
+  type?: string;
+  onChange?: (value: any) => void;
+}> = ({ LabelName, value, onChange, type }) => {
+  const isMixed = value === MIXED_VALUE;
+  const inputValue = isMixed ? undefined : value;
   return (
     <>
       <Row style={{ marginBottom: '5px' }}>
         <Col span={24}>
-          <InputTitle label="Image/Video" />
+          <InputTitle label={LabelName} />
         </Col>
       </Row>
       <Row>
         <Col span={24}>
-          <Dragger {...props}>
-            <p className="ant-upload-hint">
-              Support for a single or bulk upload. Strictly prohibited from uploading company data or
-              other banned files.
-            </p>
-          </Dragger>
+          {type === 'number' ? (
+            <InputNumber
+              style={{ width: '100%' }}
+              size="small"
+              onChange={onChange}
+              value={inputValue}
+              placeholder={isMixed ? 'Multiple values' : 'Filled'}
+              variant="filled"
+            />
+          ) : (
+            <Input
+              size="small"
+              onChange={(event) => onChange?.(event.target.value)}
+              value={inputValue}
+              placeholder={isMixed ? 'Multiple values' : 'Filled'}
+              variant="filled"
+            />
+          )}
         </Col>
       </Row>
     </>
   );
 };
 
-export const SelectedNodePropForm: React.FC = () => {
+export const SelectedNodePropForm: React.FC<{
+  editProps: Record<string, any>;
+  onChange?: (key: string, value: any) => void;
+}> = ({ editProps, onChange }) => {
+  const hasKey = (key: string) => Object.hasOwn(editProps, key);
   return (
     <>
-      {/* <Space orientation="vertical" size="medium"> */}
-        <AgentTagsMultipleSelect/>
-        {/* <AgentSegmented /> */}
-        <Divider size="small" />
-        <NameInput />
-        <Divider size="small" />
-        <IsGIFInput />
-        <Divider size="small" />
-        <FontSizeInput />
-        <Divider size="small" />
-        <FontFamilyInput />
-        <Divider size="small" />
-        <FontColorInput />
-        <Divider size="small" />
-        <TextAlignment />
-        <Divider size="small" />
-        <FileUpload />
-        <Divider size="small" />
-      {/* </Space> */}
+      {hasKey('name') && (
+        <>
+          <Divider size="small" />
+          <PropInput
+            LabelName="Name"
+            value={editProps.name}
+            onChange={(nextValue) => onChange?.('name', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('radius') && (
+        <>
+          <Divider size="small" />
+          <RadiusSlider value={editProps.radius} onChange={(nextValue) => onChange?.('radius', nextValue)} />
+        </>
+      )}
+      {hasKey('padding') && (
+        <>
+          <Divider size="small" />
+          <PropInput
+            LabelName="Padding"
+            value={editProps.padding}
+            type="number"
+            onChange={(nextValue) => onChange?.('padding', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('isGIF') && (
+        <>
+          <Divider size="small" />
+          <IsGIFInput />
+        </>
+      )}
+      {hasKey('isLockScreen') && (
+        <>
+          <Divider size="small" />
+          <Row style={{ marginBottom: '5px' }}>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                  <InputTitle label="LockScreen" />
+                  <Switch
+                      size="small"
+                      checked={editProps.isLockScreen}
+                      onChange={(nextValue) => onChange?.('isLockScreen', nextValue)}
+                    />
+              </Flex>
+            </Col>
+          </Row>
+        </>
+      )}
+      {hasKey('textSize') && (
+        <>
+          <Divider size="small" />
+          <PropInput
+            LabelName="TextSize"
+            value={editProps.textSize}
+            type="number"
+            onChange={(nextValue) => onChange?.('textSize', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('font') && (
+        <>
+          <Divider size="small" />
+          <FontFamilyInput
+            value={editProps.font}
+            onChange={(nextValue) => onChange?.('font', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('textAlignment') && (
+        <>
+          <Divider size="small" />
+          <TextAlignment
+            value={editProps.textAlignment}
+            onChange={(nextValue) => onChange?.('textAlignment', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('alpha') && (
+        <>
+          <Divider size="small" />
+          <AlphaSlider value={editProps.alpha} onChange={(nextValue) => onChange?.('alpha', nextValue)} />
+        </>
+      )}
+      {hasKey('textHeight') && (
+        <>
+          <Divider size="small" />
+          <PropInput
+            LabelName="TextHeight"
+            value={editProps.textHeight}
+            type="number"
+            onChange={(nextValue) => onChange?.('textHeight', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('textColor') && (
+        <>
+          <Divider size="small" />
+          <FontColorInput
+            value={editProps.textColor}
+            onChange={(nextValue) => onChange?.('textColor', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('source') && (
+        <>
+          <Divider size="small" />
+          <ImageUpload
+            value={editProps.source}
+            onChange={(nextValue) => onChange?.('source', nextValue)}
+          />
+        </>
+      )}
     </>
   );
 };

@@ -11,6 +11,7 @@ import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
 import { Button, Flex } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { IconPackDefaultConfig } from '@/editor-core/defaultConfig'
 
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
@@ -61,12 +62,8 @@ const EditorBottomToolBar: React.FC = () => {
   const leftPanlOpen = useEditorLeftPanlOpen();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
 
-  const onAddWallPaper = () => {
-      core?.addWallPaper()
-  }
-
   const onAddIconPack = () => {
-    core?.addIconPack()
+    core?.addIconPack(IconPackDefaultConfig)
 }
   if (!visible) return null;
 
@@ -77,7 +74,7 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='primary' icon={<SelectSvg color="#000000" size={14} />}></Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Widget</Button>
                 <Button type='text' onClick={onAddIconPack} >Icon Pack</Button>
-                <Button type='text' onClick={onAddWallPaper} >Wallpaper</Button>
+                <Button type='text' onClick={() => {}} >Wallpaper</Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Lock Screen</Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Theme</Button>
                 <Button color="default" variant='filled' shape="circle" icon={<PlusOutlined />}></Button>

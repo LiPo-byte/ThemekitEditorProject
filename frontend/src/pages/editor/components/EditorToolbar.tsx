@@ -170,7 +170,7 @@ const EditorToolbar: React.FC = () => {
   const visible = useEditorToolbarVisible();
   const coreLoading = useEditorCoreLoading();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
-  const [fileName, setFileName] = useState('Try Again');
+  const [fileName, setFileName] = useState('File Name');
   const [historyState, setHistoryState] = useState({ canUndo: false, canRedo: false });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);

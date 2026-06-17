@@ -1,5 +1,6 @@
 import Konva from 'konva';
-import mockdata from './mockdata.json';
+import IconPack from './IconPack';
+import Time from './Time';
 
 /** 96 DPI 下 1pt = 4/3 px；编辑器内部统一用 px 喂给 Konva，对外尺寸接口可以用 pt 表达 */
 const PT_TO_PX = 4 / 3;
@@ -18,34 +19,12 @@ export interface EditorCoreOptions {
   theme?: EditorTheme;
 }
 
-const WIDGET_SIZE:any = {
-  small: {
-    width: 155,
-    height: 155,
-  },
-  medium: {
-    width: 329,
-    height: 155,
-  },
-  large: {
-    width: 329,
-    height: 345,
-  },
-}
-
-const MAX_WIDGET_WIDTH = 329;
-
-const CONFIG_SIZE_MAP:any = {
-  1: 'small',
-  2: 'medium',
-  3: 'large'
-}
 
 const WIDGET_BORDER_RADIUS = 28;
 
 const WIDGET_GAP = 200;
 const SELECTED_NODE_BOX_COLOR = '#fbbf24';
-const SELECTED_NODE_BOX_WIDTH = 0.5;
+const SELECTED_NODE_BOX_WIDTH = 2;
 
 export type EditorTheme = 'light' | 'dark';
 
@@ -94,13 +73,16 @@ export class EditorCore {
   private transformer!: Konva.Transformer;
   private selectionRectangle: Konva.Rect;
   private selectedNodes: Konva.Node[] = [];
+
   /** 当前处于裁剪模式的背景图；null 表示未进入裁剪 */
-  private cropImage: Konva.Image | null = null;
+  private cropImage: Konva.Group | null = null;
   private selectionBoxes = new Map<Konva.Node, Konva.Rect>();
   /** 选中变化订阅器（供 React 浮层监听） */
   private selectionListeners = new Set<(node: Konva.Node[] | null) => void>();
   /** 布局变化订阅器（stage 缩放/平移、transformer 变换时触发，用于 React 浮层重定位） */
   private layoutListeners = new Set<() => void>();
+  /** 节点 editProps 变化订阅器（节点 attrs.editProps 变化时触发） */
+  private editPropsListeners = new Set<() => void>();
   private gridShape: Konva.Shape | null = null;
   private axisShape: Konva.Shape | null = null;
 
@@ -121,7 +103,6 @@ export class EditorCore {
     }
     const width = options.width ?? parent.clientWidth;
     const height = options.height ?? parent.clientHeight;
-
 
     this.stage = new Konva.Stage({
       container: containerId,
@@ -162,7 +143,7 @@ export class EditorCore {
       // enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
       enabledAnchors: [],
       borderStroke: '#1677ff',
-      borderStrokeWidth: 1,
+      borderStrokeWidth: 2,
       // 添加锚点
       anchorFill: '#1677ff',
       anchorStroke: '#ffffff',
@@ -186,12 +167,14 @@ export class EditorCore {
     this.bindEvents();
   }
 
-
   private bindEvents() {
     this.stage.on('wheel', this.handleWheel);
     this.stage.on('click tap', this.handleStageClick);
     // stage 任何位置/缩放变化（含 wheel、stage 拖动）→ 通知浮层重定位
-    this.stage.on('xChange yChange scaleXChange scaleYChange', this.emitLayoutChange);
+    this.stage.on(
+      'xChange yChange scaleXChange scaleYChange',
+      this.emitLayoutChange,
+    );
     window.addEventListener('keydown', this.handleWindowKeyDown);
     window.addEventListener('keyup', this.handleWindowKeyUp);
     window.addEventListener('blur', this.handleWindowBlur);
@@ -279,6 +262,7 @@ export class EditorCore {
   }
 
   undo() {
+    if (this.croping) return;
     const command = this.undoStack.pop();
     if (!command) return;
     command.undo();
@@ -287,6 +271,7 @@ export class EditorCore {
   }
 
   redo() {
+    if (this.croping) return;
     const command = this.redoStack.pop();
     if (!command) return;
     command.do();
@@ -317,7 +302,9 @@ export class EditorCore {
   }
 
   /** 点击空白/其他元素取消选中；点中带 selected:true 的节点（或其后代）选中之 */
-  private handleStageClick = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+  private handleStageClick = (
+    e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+  ) => {
     if (this.croping) return;
     const isMultiSelect = this.shiftKeyDownBoolean;
     // 点 stage 自身（真正的空白）→ 取消选中
@@ -351,7 +338,8 @@ export class EditorCore {
 
   /** 选中节点 */
   select(node: Konva.Node) {
-    if (this.selectedNodes.length === 1 && this.selectedNodes[0] === node) return;
+    if (this.selectedNodes.length === 1 && this.selectedNodes[0] === node)
+      return;
     this.setSelectedNodes([node]);
   }
 
@@ -363,7 +351,9 @@ export class EditorCore {
 
   private syncSelectionBoxes() {
     const shouldShowBoxes = this.selectedNodes.length > 1;
-    const nextSet = shouldShowBoxes ? new Set(this.selectedNodes) : new Set<Konva.Node>();
+    const nextSet = shouldShowBoxes
+      ? new Set(this.selectedNodes)
+      : new Set<Konva.Node>();
     this.selectionBoxes.forEach((box, node) => {
       if (nextSet.has(node)) return;
       box.destroy();
@@ -463,11 +453,24 @@ export class EditorCore {
     };
   }
 
+  /** 订阅节点 editProps 变化；返回退订函数 */
+  onEditPropsChange(cb: () => void): () => void {
+    this.editPropsListeners.add(cb);
+    return () => {
+      this.editPropsListeners.delete(cb);
+    };
+  }
+
   /**
    * 选中节点在 stage 容器坐标系下的 bbox（屏幕坐标，单位 px）。
    * 已经包含 stage 的 scale/translate，浮层用 left/top 直接消费即可。
    */
-  getSelectionScreenRect(): { x: number; y: number; width: number; height: number } | null {
+  getSelectionScreenRect(): {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null {
     if (!this.selectedNodes.length) {
       return null;
     }
@@ -503,9 +506,72 @@ export class EditorCore {
     });
   };
 
+  /** 主动触发节点 editProps 变化通知（供外部手动派发） */
+  emitEditPropsChange() {
+    this.editPropsListeners.forEach((cb) => {
+      cb();
+    });
+  }
+
   /** 当前全部选中节点 */
   getSelectedNodes(): Konva.Node[] {
     return [...this.selectedNodes];
+  }
+
+  /**
+   * 获取当前选中节点（含子节点）的 editProps 聚合结果。
+   * 同 key 在多节点中值不一致时，返回 multipleValue。
+   */
+  getSelectedEditProps(multipleValue = '__MIXED__'): Record<string, any> {
+    if (!this.selectedNodes.length) return {};
+    const mergedEditProps: Record<string, any> = {};
+    const mixedKeys = new Set<string>();
+    const candidateNodes: Konva.Node[] = [];
+    const visitedNodes = new Set<Konva.Node>();
+    const collectNodeAndDescendants = (node: Konva.Node) => {
+      if (visitedNodes.has(node)) return;
+      visitedNodes.add(node);
+      candidateNodes.push(node);
+      const children = (node as any).getChildren?.();
+      if (!children?.length) return;
+      children.forEach((child: Konva.Node) => {
+        collectNodeAndDescendants(child);
+      });
+    };
+
+    this.selectedNodes.forEach((node) => {
+      collectNodeAndDescendants(node);
+    });
+
+    candidateNodes.forEach((node) => {
+      const editProps = node.getAttr('editProps');
+      if (!editProps || typeof editProps !== 'object') return;
+      Object.entries(editProps).forEach(([key, value]) => {
+        // 图片资源需要单独处理
+        if (key === 'source') {
+          const obj = mergedEditProps[key] || [];
+          obj.push({
+            id: node._id,
+            name: editProps.name || '未知',
+            source: value,
+          })
+          mergedEditProps[key] = [...obj];
+          return;
+        }
+        if (!Object.hasOwn(mergedEditProps, key)) {
+          mergedEditProps[key] = value;
+          return;
+        }
+        if (!Object.is(mergedEditProps[key], value)) {
+          mixedKeys.add(key);
+        }
+      });
+    });
+
+    mixedKeys.forEach((key) => {
+      mergedEditProps[key] = multipleValue;
+    });
+    return mergedEditProps;
   }
 
   getSelectionCapabilities(): SelectionCapabilities {
@@ -555,15 +621,18 @@ export class EditorCore {
     let maxX = Number.NEGATIVE_INFINITY;
     let maxY = Number.NEGATIVE_INFINITY;
 
-    this.contentLayer.getChildren().concat(this.wallPaperLayer.getChildren()).forEach((node) => {
-      if (!node.isVisible()) return;
-      hasVisibleNode = true;
-      const rect = node.getClientRect({ relativeTo: this.stage });
-      if (rect.x < minX) minX = rect.x;
-      if (rect.y < minY) minY = rect.y;
-      if (rect.x + rect.width > maxX) maxX = rect.x + rect.width;
-      if (rect.y + rect.height > maxY) maxY = rect.y + rect.height;
-    });
+    this.contentLayer
+      .getChildren()
+      .concat(this.wallPaperLayer.getChildren())
+      .forEach((node) => {
+        if (!node.isVisible()) return;
+        hasVisibleNode = true;
+        const rect = node.getClientRect({ relativeTo: this.stage });
+        if (rect.x < minX) minX = rect.x;
+        if (rect.y < minY) minY = rect.y;
+        if (rect.x + rect.width > maxX) maxX = rect.x + rect.width;
+        if (rect.y + rect.height > maxY) maxY = rect.y + rect.height;
+      });
 
     if (!hasVisibleNode) return;
 
@@ -574,7 +643,10 @@ export class EditorCore {
     const padding = 40;
     const availableWidth = Math.max(1, stage.width() - padding * 2);
     const availableHeight = Math.max(1, stage.height() - padding * 2);
-    let targetScale = Math.min(availableWidth / boundsWidth, availableHeight / boundsHeight);
+    let targetScale = Math.min(
+      availableWidth / boundsWidth,
+      availableHeight / boundsHeight,
+    );
     targetScale = Math.min(this.maxScale, Math.max(this.minScale, targetScale));
 
     const boundsCenterX = minX + boundsWidth / 2;
@@ -633,31 +705,55 @@ export class EditorCore {
 
   // 获取空白位置
   getEmptyXY() {
-      // 网格布局：每行 PER_ROW 个，超出换行
-      const PER_ROW = 8;
+    // 网格布局：每行 PER_ROW 个，超出换行
+    const PER_ROW = 8;
 
-      const idx = this.nodes.length;
-      const col = idx % PER_ROW;
-      const row = Math.floor(idx / PER_ROW);
+    const idx = this.nodes.length;
+    const col = idx % PER_ROW;
+    const row = Math.floor(idx / PER_ROW);
 
-      let x = 0;
-      let y = 0;
-      if (col > 0) {
-        // 同一行：跟在前一个右边
-        const prev = this.nodes[idx - 1];
-        x = prev.x + prev.width + WIDGET_GAP;
-        y = prev.y;
-      } else if (row > 0) {
-        // 新一行：x 归零，y 跳到上一行最大底部 + gap
-        const prevRowStart = (row - 1) * PER_ROW;
-        const prevRow = this.nodes.slice(prevRowStart, prevRowStart + PER_ROW);
-        const maxBottom = Math.max(...prevRow.map((w: any) => w.y + w.height));
-        x = 0;
-        y = maxBottom + WIDGET_GAP;
-      }
-      return { x, y };
+    let x = 0;
+    let y = 0;
+    if (col > 0) {
+      // 同一行：跟在前一个右边
+      const prev = this.nodes[idx - 1];
+      x = prev.x + prev.width + WIDGET_GAP;
+      y = prev.y;
+    } else if (row > 0) {
+      // 新一行：x 归零，y 跳到上一行最大底部 + gap
+      const prevRowStart = (row - 1) * PER_ROW;
+      const prevRow = this.nodes.slice(prevRowStart, prevRowStart + PER_ROW);
+      const maxBottom = Math.max(...prevRow.map((w: any) => w.y + w.height));
+      x = 0;
+      y = maxBottom + WIDGET_GAP;
+    }
+    return { x, y };
   }
 
+  private getOwnerInstanceForNode(node: Konva.Node | null) {
+    let current = node;
+    while (current) {
+      const instance = current.getAttr('instance');
+      if (instance && typeof instance.render === 'function') {
+        return instance;
+      }
+      current = current.getParent();
+    }
+    return null;
+  }
+  getOwnerTitleForNode(node: Konva.Node | null) {
+    let current = node;
+    while (current) {
+      const title = current.getAttr('title');
+      if (title) {
+        return title;
+      }
+      current = current.getParent();
+    }
+    return null;
+  }
+
+  // Widget
   private createAddWidgetCommand(data: any): EditorCommand {
     const { x, y } = this.getEmptyXY();
     const widget = new Time({ x, y, data });
@@ -675,9 +771,6 @@ export class EditorCore {
           this.contentLayer.add(widgetNode);
         }
         this.contentLayer.batchDraw();
-        if (widgetNode) {
-          this.select(widgetNode);
-        }
         this.emitLayoutChange();
       },
       undo: () => {
@@ -685,6 +778,7 @@ export class EditorCore {
         if (idx >= 0) {
           this.nodes.splice(idx, 1);
         }
+        this.deselect();
         if (widgetNode?.getParent()) {
           this.removeNode(widgetNode);
         } else {
@@ -694,30 +788,151 @@ export class EditorCore {
       },
     };
   }
-
   addWidget(data: any) {
     this.executeCommand(this.createAddWidgetCommand(data));
   }
+  private createAddIconPackCommand(data: any): EditorCommand {
+    const { x, y } = this.getEmptyXY();
+    const iconPack = new IconPack({ x, y, data });
+    const iconPackNode = iconPack.node;
+    const insertIndex = this.nodes.length;
 
-  addWallPaper() {
-    const { x, y } = this.getEmptyXY()
-    const wallPaper = new WallPaper({ x, y });
-    this.nodes.push(wallPaper);
-    if (wallPaper.node) {
-      this.wallPaperLayer.add(wallPaper.node);
-      this.ensureWallPaperAnimation();
-    }
+    return {
+      label: 'add-iconpack',
+      do: () => {
+        if (!this.nodes.includes(iconPack)) {
+          const safeIndex = Math.min(insertIndex, this.nodes.length);
+          this.nodes.splice(safeIndex, 0, iconPack);
+        }
+        if (iconPackNode && iconPackNode.getParent() !== this.contentLayer) {
+          this.contentLayer.add(iconPackNode);
+        }
+        this.contentLayer.batchDraw();
+        this.emitLayoutChange();
+      },
+      undo: () => {
+        const idx = this.nodes.indexOf(iconPack);
+        if (idx >= 0) {
+          this.nodes.splice(idx, 1);
+        }
+        this.deselect();
+        if (iconPackNode?.getParent()) {
+          this.removeNode(iconPackNode);
+        } else {
+          this.contentLayer.batchDraw();
+        }
+        this.emitLayoutChange();
+      },
+    };
+  }
+  addIconPack(data: any) {
+    this.executeCommand(this.createAddIconPackCommand(data));
   }
 
 
-  createDeleteSelectNodesCommand(): EditorCommand | null {
+  private createChangeNodePropsCommand(params: any): EditorCommand | null {
+    const { key, value, ids } = params;
+    if (!this.selectedNodes.length) return null;
+    const nodesAttrs: any = [];
+    const candidateNodes: Konva.Node[] = [];
+    const visitedNodes = new Set<Konva.Node>();
+    const collectNodeAndDescendants = (node: Konva.Node) => {
+      if (visitedNodes.has(node)) return;
+      visitedNodes.add(node);
+      candidateNodes.push(node);
+      const children = (node as any).getChildren?.();
+      if (!children?.length) return;
+      children.forEach((child: Konva.Node) => {
+        collectNodeAndDescendants(child);
+      });
+    };
+    this.selectedNodes.forEach((node) => {
+      collectNodeAndDescendants(node);
+    });
+    candidateNodes.forEach((node: any) => {
+      if (ids && !ids.includes(node._id)) return;
+      const prevEditProps = { ...(node.getAttr('editProps') ?? {}) };
+      // 如果不包含此参数，直接返回
+      if (!Object.keys(prevEditProps).includes(key)) return;
+
+      const hasChanged = prevEditProps[key] !== value;
+      if (!hasChanged) return;
+
+      nodesAttrs.push({
+        instance: node,
+        prevAttrs: {
+          ...prevEditProps,
+        },
+        nextAttrs: {
+          ...prevEditProps,
+          [key]: value,
+        },
+      });
+    });
+    return {
+      label: `change-node-props:${String(key)}`,
+      do: () => {
+        const affectedInstances = new Set<any>();
+        const affectedLayers = new Set<Konva.Layer>();
+        nodesAttrs.forEach(({ instance, nextAttrs }: any) => {
+          instance.setAttr('editProps', nextAttrs);
+          const ownerInstance = this.getOwnerInstanceForNode(instance);
+          if (ownerInstance) {
+            affectedInstances.add(ownerInstance);
+          } else {
+            const layer = instance.getLayer();
+            if (layer) affectedLayers.add(layer);
+          }
+        });
+        affectedInstances.forEach((instance) => {
+          instance.render();
+        });
+        affectedLayers.forEach((layer) => layer.batchDraw());
+        this.transformer.forceUpdate();
+        this.emitEditPropsChange();
+      },
+      undo: () => {
+        const affectedInstances = new Set<any>();
+        const affectedLayers = new Set<Konva.Layer>();
+        nodesAttrs.forEach(({ instance, prevAttrs }: any) => {
+          instance.setAttr('editProps', prevAttrs);
+          const ownerInstance = this.getOwnerInstanceForNode(instance);
+          if (ownerInstance) {
+            affectedInstances.add(ownerInstance);
+          } else {
+            const layer = instance.getLayer();
+            if (layer) affectedLayers.add(layer);
+          }
+        });
+        affectedInstances.forEach((instance) => {
+          instance.render();
+        });
+        affectedLayers.forEach((layer) => layer.batchDraw());
+        this.transformer.forceUpdate();
+        this.emitEditPropsChange();
+      },
+    };
+  }
+
+  changeNodeProps(params: any) {
+    const command = this.createChangeNodePropsCommand(params);
+    if (!command) return;
+    this.executeCommand(command);
+    this.emitSelectionChange();
+  }
+
+  private createDeleteSelectNodesCommand(): EditorCommand | null {
     const selectedNodes = this.getSelectedNodes();
     if (!selectedNodes.length) return null;
 
-    const deleteable = selectedNodes.every((node) => node.getAttr('deleteable') === true);
+    const deleteable = selectedNodes.every(
+      (node) => node.getAttr('deleteable') === true,
+    );
 
     if (!deleteable) {
-      console.warn('[EditorCore] delete blocked: all selected nodes must set deleteable=true');
+      console.warn(
+        '[EditorCore] delete blocked: all selected nodes must set deleteable=true',
+      );
       return null;
     }
 
@@ -737,7 +952,9 @@ export class EditorCore {
     return {
       label: 'delete-selected-nodes',
       do: () => {
-        const nodeIndexes = removedNodeEntries.map(({ index }) => index).sort((a, b) => b - a);
+        const nodeIndexes = removedNodeEntries
+          .map(({ index }) => index)
+          .sort((a, b) => b - a);
         nodeIndexes.forEach((index) => {
           this.nodes.splice(index, 1);
         });
@@ -789,16 +1006,6 @@ export class EditorCore {
     if (this.wallPaperLayer.getChildren().length > 0) return;
     this.wallPaperAnim?.stop();
     this.wallPaperAnim = null;
-  }
-
-  addIconPack() {
-    const { x, y } = this.getEmptyXY()
-
-    const iconPack = new IconPack({ x, y });
-    this.nodes.push(iconPack);
-    if (iconPack.node) {
-      this.contentLayer.add(iconPack.node);
-    }
   }
 
   /** 移除节点（自动从所属父级解绑），并刷新所在层 */
@@ -998,7 +1205,6 @@ export class EditorCore {
     this.bgLayer.batchDraw();
   }
 
-
   /**
    * 切换裁剪模式：
    * - 裁剪框 = widgetGroup 已有的 clipFunc 区域，固定不动
@@ -1009,22 +1215,37 @@ export class EditorCore {
   crop() {
     // 选中的整块 widget group，作为裁剪高亮区
     const target = this.selectedNodes[0];
-    if (!target || !(target instanceof Konva.Image)) return;
-    this.cropImage = target;
-    const cropImage = target.clone();
-    const widgetItem = target.getParent();
-    this.cropImage.visible(false);
+    if (!target || !(target instanceof Konva.Group)) return;
+    const cropable = target.getAttr('cropable');
+    if (!cropable) return;
+    const cropImageInstance = target.findOne((node: Konva.Node) =>
+      node.getAttr('cropInstance'),
+    );
 
-    if (!widgetItem || !(widgetItem instanceof Konva.Group)) return;
-    const cropWidgetItem = widgetItem.clone();
+    const cropWidgetItem = target.clone();
+
+    const cropImage = cropWidgetItem.findOne((node: Konva.Node) =>
+      node.getAttr('cropInstance'),
+    );
+
+    if (
+      !cropImageInstance ||
+      !(cropImageInstance instanceof Konva.Group) ||
+      !cropImage ||
+      !(cropImage instanceof Konva.Group)
+    )
+      return;
 
     // 进入裁剪
     this.zoomable = false; // 禁止缩放
     this.stage.draggable(false); // 禁止画布平移
     this.croping = true; // 正在裁剪
     this.cropLayer.destroyChildren();
+    // 关键：把 cropImage（cropInstance group）的所有裁剪去掉，让内层 Image 整张展示出来
+    // clipFunc 是圆角；clip 是矩形（现版本被注释，保留这行做双保险）
+    cropImage.setAttr('clipFunc', undefined);
+    cropImage.setAttr('clip', null);
     this.deselect();
-    const cropLayer = this.cropLayer;
 
     // cropLayer 与 contentLayer 同为 stage 直接子层、自身无 transform，坐标可直接互换
     const hole = target.getClientRect({ relativeTo: this.contentLayer });
@@ -1038,72 +1259,38 @@ export class EditorCore {
       height: this.stage.height() / scale,
     };
 
-    // 裁剪的图片以及
+
+    // cropWidgetItem 放回原 widget 位置（cropLayer 与 contentLayer 坐标系一致）
     cropWidgetItem.x(hole.x);
     cropWidgetItem.y(hole.y);
-    // 添加裁剪图片
-    cropImage.x(hole.x);
-    cropImage.y(hole.y);
-    cropImage.draggable(true);
 
-    // 拖动 / 缩放共用：不露白 + 最小缩放（缩放时按锚点固定对角）
-    const applyCropCoverConstraints = (
-      dragPos?: { x: number; y: number },
-    ): { x: number; y: number } | undefined => {
-      const iw = cropImage.width();
-      const ih = cropImage.height();
-      if (!iw || !ih) return dragPos;
+    // 只 add cropWidgetItem。cropImage 已经是它的子节点，不能再单独 add
+    // —— 否则 Konva 会把它从 cropWidgetItem 里 detach 出来跑到 cropLayer 的 (0,0)
+    this.cropLayer.add(cropWidgetItem);
 
-      const minScale = Math.max(hole.width / iw, hole.height / ih);
-      const clampPosLocal = (x: number, y: number) => {
-        const imgW = iw * cropImage.scaleX();
-        const imgH = ih * cropImage.scaleY();
-        return {
-          x: Math.max(hole.x + hole.width - imgW, Math.min(hole.x, x)),
-          y: Math.max(hole.y + hole.height - imgH, Math.min(hole.y, y)),
-        };
-      };
+    // 找到 cropImage 内层的 Konva.Image，开启拖拽与命中
+    // cropWidgetItem 是 clone 出来的，closeCrop 中会 destroyChildren，不必手动还原
+    const innerImage = cropImage.findOne(
+      (n: Konva.Node) => n instanceof Konva.Image,
+    );
+    if (!(innerImage instanceof Konva.Image)) return;
+    innerImage.listening(true);
+    innerImage.draggable(true);
 
-      if (dragPos) {
-        const local = cropLayer.getAbsoluteTransform().copy().invert().point(dragPos);
-        return cropLayer.getAbsoluteTransform().point(clampPosLocal(local.x, local.y));
-      }
-
-      const sx = cropImage.scaleX();
-      const sy = cropImage.scaleY();
-      if (sx < minScale || sy < minScale) {
-        const x = cropImage.x();
-        const y = cropImage.y();
-        const brX = x + iw * sx;
-        const brY = y + ih * sy;
-        const anchor = this.transformer.getActiveAnchor();
-        cropImage.scale({ x: minScale, y: minScale });
-        switch (anchor) {
-          case 'top-left':
-            cropImage.position({ x: brX - iw * minScale, y: brY - ih * minScale });
-            break;
-          case 'top-right':
-            cropImage.position({ x, y: brY - ih * minScale });
-            break;
-          case 'bottom-left':
-            cropImage.position({ x: brX - iw * minScale, y });
-            break;
-          default:
-            cropImage.position({ x, y });
-            break;
-        }
-      }
-      cropImage.position(clampPosLocal(cropImage.x(), cropImage.y()));
-      return undefined;
-    };
-
-    cropImage.dragBoundFunc((pos: any) => applyCropCoverConstraints(pos) ?? pos);
-    cropImage.on('transform', () => applyCropCoverConstraints());
-
-    this.cropLayer.add(cropImage, cropWidgetItem);
-
-    this.transformer.enabledAnchors(['top-left', 'top-right', 'bottom-left', 'bottom-right']);
-    this.transformer.nodes([cropImage]);
+    this.transformer.enabledAnchors([
+      'top-center',
+      'middle-left',
+      'middle-right',
+      'bottom-center',
+      'top-left',
+      'top-right',
+      'bottom-left',
+      'bottom-right',
+    ]);
+    this.transformer.rotateEnabled(true);
+    // transformer 必须接管 Konva.Image 本身，而不是外层 Group
+    // confirmCrop 里也是按 cropPreviewImage instanceof Konva.Image 判定的
+    this.transformer.nodes([innerImage]);
 
     // 压暗蒙层 + 挖空：用单个 Shape，在自己的 cache 离屏 canvas 里画
     // 「整屏压暗 + destination-out 挖空」，destination-out 限定在离屏内生效，不会擦穿下层图片。
@@ -1139,38 +1326,71 @@ export class EditorCore {
     this.cropLayer.add(maskShape);
 
     // 自定义 sceneFunc 无法自动算包围盒，cache 必须显式给区域；pixelRatio 对齐当前缩放避免发虚
-    maskShape.cache({ x: view.x, y: view.y, width: view.width, height: view.height, pixelRatio: scale });
+    maskShape.cache({
+      x: view.x,
+      y: view.y,
+      width: view.width,
+      height: view.height,
+      pixelRatio: scale,
+    });
     // 命中按 cache 的 alpha：镂空区透明 → 不拦截，图片可交互；四周半透明 → 拦截点击
     maskShape.drawHitFromCache();
 
+    target.visible(false);
+    this.cropImage = target;
     this.cropLayer.batchDraw();
     this.cropLayer.visible(true);
   }
 
   closeCrop() {
-    this.zoomable = true; // 禁止缩放
-    this.stage.draggable(true); // 禁止画布平移
-    this.croping = false; // 正在裁剪
+    this.zoomable = true;
+    this.croping = false;
+    this.stage.draggable(true);
+    this.cropImage?.visible(true);
+    this.transformer.keepRatio(true);
+    this.transformer.rotateEnabled(false);
     this.cropLayer.destroyChildren();
     this.cropLayer.visible(false);
-    this.cropImage?.visible(true);
+    this.deselect()
     this.transformer.nodes([]);
+    // this.cropImage && this.transformer.nodes([this.cropImage]);
     this.transformer.enabledAnchors([]);
   }
-
+  /**
+   * 第一步：仅拿到用户在裁剪面板里调整的几何参数（translate/scale/rotation），
+   * 反算回 crop_props 语义（与 createBgImage2 一致），先不做导出/写回。
+   */
   confirmCrop() {
-    if (!this.croping || !this.cropImage) return;
-    // 退出裁剪模式，并恢复原图显示
-    this.closeCrop();
-    this.refreshSelectionLayout();
-  }
+    if (!this.croping) return null;
+    const [previewImage] = this.transformer.nodes();
+    if (!(previewImage instanceof Konva.Image)) return null;
 
+    // 与 createBgImage2 的几何约定一一对应：
+    //   x = imgW/2 + translateX, y = imgH/2 + translateY
+    //   offsetX/Y = imgW/2, imgH/2（旋转/缩放锚点固定在图片中心）
+    const crop_props = {
+      translateX: previewImage.x() - previewImage.offsetX(),
+      translateY: previewImage.y() - previewImage.offsetY(),
+      scaleX: previewImage.scaleX(),
+      scaleY: previewImage.scaleY(),
+      rotation: previewImage.rotation(),
+    };
+    if (this.cropImage) {
+      this.select(this.cropImage);
+      this.changeNodeProps({ key: 'crop_props', value: crop_props });
+    }
+    this.closeCrop();
+    return crop_props;
+  }
 
   /** 销毁 Stage，释放 Konva 资源；组件卸载时调用 */
   destroy() {
     this.stage.off('wheel', this.handleWheel);
     this.stage.off('click tap', this.handleStageClick);
-    this.stage.off('xChange yChange scaleXChange scaleYChange', this.emitLayoutChange);
+    this.stage.off(
+      'xChange yChange scaleXChange scaleYChange',
+      this.emitLayoutChange,
+    );
     window.removeEventListener('keydown', this.handleWindowKeyDown);
     window.removeEventListener('keyup', this.handleWindowKeyUp);
     window.removeEventListener('blur', this.handleWindowBlur);
@@ -1179,6 +1399,7 @@ export class EditorCore {
 
     this.selectionListeners.clear();
     this.layoutListeners.clear();
+    this.editPropsListeners.clear();
     this.historyListeners.clear();
     this.wallPaperAnim?.stop();
     this.wallPaperAnim = null;
@@ -1187,421 +1408,13 @@ export class EditorCore {
   }
 }
 
-type WidgetLayoutCtx = {
-  w: number;
-  h: number;
-  padding: number;
-  time: Konva.Text;
-  day: Konva.Text;
-  date: Konva.Text;
-};
-
-type WidgetLayoutFn = (ctx: WidgetLayoutCtx) => void;
-
-class BaseNode {
-  public width: number;
-  public height: number;
-  public x: number;
-  public y: number;
-  public dataJson: any;
-  public gap: number;
-  public ratio: number;
-  public node: Konva.Group;
-  constructor(options: any) {
-    const { x, y, data, ratio } = options
-    this.width = 0;
-    this.height = 0;
-    this.x = x ?? 0;
-    this.y = y ?? 0;
-    this.dataJson = data;
-    this.gap = 50;
-    this.ratio = ratio ?? 2;
-    this.node = new Konva.Group({
-      x: this.x,
-      y: this.y,
-      selected: true,
-      deleteable: true,
-      packable: true,
-    });
-  }
-
-  initFullBox(): void {
-      // #0ea5e9
-      // #a78bfa
-      // #f9a8d4
-      // #fbbf24
-      // 加完所有 widget 后重算一次完整 bbox（覆盖两行）
-      const fullBbox = this.node.getClientRect({ skipTransform: true });
-
-      // 比 widget 群外扩 pad px，视觉留白
-      const pad = 40;
-
-      const w = fullBbox.width + pad * 2;
-      const h = fullBbox.height + pad * 2;
-      this.width = w;
-      this.height = h;
-
-      const bg = new Konva.Rect({
-        x: fullBbox.x - pad,
-        y: fullBbox.y - pad,
-        width: w,
-        height: h,
-        fill: '#10b981', // 薄荷绿；想换色见下方 BG_PALETTE
-        opacity: 0.1,
-        cornerRadius: pt(3),
-      });
-      // 包含背景边距后的总尺寸
-      this.node.width(w);
-      this.node.height(h);
-      this.node.add(bg);
-      bg.moveToBottom();
-  }
-
-  createRect(params: any) {
-    const { x = 0, y = 0, w, h } = params;
-    const rect = new Konva.Rect({
-      x: x,
-      y: y,
-      width: w,
-      height: h,
-      fill: '#ffffff',
-      cornerRadius: pt(WIDGET_BORDER_RADIUS),
-    });
-    return rect;
-  }
-
-  clipFuncBorderRadius(ctx: any, radius: number, widthPx: number, heightPx: number) {
-    ctx.beginPath();
-    ctx.moveTo(radius, 0);
-    ctx.lineTo(widthPx - radius, 0);
-    ctx.quadraticCurveTo(widthPx, 0, widthPx, radius);
-    ctx.lineTo(widthPx, heightPx - radius);
-    ctx.quadraticCurveTo(widthPx, heightPx, widthPx - radius, heightPx);
-    ctx.lineTo(radius, heightPx);
-    ctx.quadraticCurveTo(0, heightPx, 0, heightPx - radius);
-    ctx.lineTo(0, radius);
-    ctx.quadraticCurveTo(0, 0, radius, 0);
-    ctx.closePath();
-  }
-
-  createBgImage(params: any) {
-    const { src, w, h } = params;
-    if (!src) return;
-    const imageObj = new Image();
-    imageObj.src = src;
-    imageObj.crossOrigin = 'anonymous'; // 之后想 toDataURL 导出时避免污染 canvas
-    // 主要 API:
-    const image = new Konva.Image({
-      x: 0,
-      y: 0,
-      image: imageObj,
-      width: w,
-      height: h,
-      selected: true,
-    });
-    imageObj.onload = () => {
-      // image.width(pt(imageObj.width/this.ratio));
-      // image.height(pt(imageObj.height/this.ratio));
-    }
-    return image;
-  }
-
-}
-
-
-class Time extends BaseNode {
-  private iosNodes: any;
-  private androidNodes: any;
-  constructor(options: any) {
-    super(options);
-    this.iosNodes = {};
-    this.androidNodes = {};
-    this.init();
-  }
-
-  /** 布局策略表：layoutType (number) -> 摆位函数；新增布局只需要加一个 key */
-  private layoutFns: Record<number, WidgetLayoutFn> = {
-    // 0：上下堆叠 —— time / day / date 顺序从上往下
-    0: ({ w, padding, time, day, date }) => {
-      let cy = padding;
-      [time, day, date].forEach((n) => {
-        n.x(padding);
-        n.width(w - padding * 2);
-        n.y(cy);
-        cy += n.height() + pt(4);
-      });
-    },
-    // 1：上方大时间 + 下方一行 day | date
-    1: ({ w, padding, time, day, date }) => {
-      time.x(padding);
-      time.y(padding);
-      time.width(w - padding * 2);
-      const halfW = (w - padding * 2) / 2;
-      const bottomY = padding + time.height() + pt(4);
-      day.x(padding);
-      day.y(bottomY);
-      day.width(halfW);
-      date.x(padding + halfW);
-      date.y(bottomY);
-      date.width(halfW);
-    },
-    // 2：整组垂直水平居中
-    2: ({ h, padding, time, day, date }) => {
-      const gap = pt(4);
-      const totalH = time.height() + day.height() + date.height() + gap * 2;
-      let cy = (h - totalH) / 2;
-      [time, day, date].forEach((n) => {
-        n.x(padding);
-        // n.width(w - padding * 2);
-        n.y(cy);
-        cy += n.height() + gap;
-      });
-    },
-    // 3：左大时间（垂直居中）+ 右上 day / 右下 date
-    3: ({ w, h, padding, time, day, date }) => {
-      const innerW = w - padding * 2;
-      const leftW = innerW * 0.55;
-      const colGap = pt(8);
-      const rightX = padding + leftW + colGap;
-      const rightW = innerW - leftW - colGap;
-      time.x(padding);
-      time.width(leftW);
-      time.y((h - time.height()) / 2);
-      day.x(rightX);
-      day.y(padding);
-      day.width(rightW);
-      date.x(rightX);
-      date.y(padding + day.height() + pt(2));
-      date.width(rightW);
-    },
-  };
-
-  init() {
-    const { ios, android } = this.dataJson;
-    if (ios) {
-      ios.sizes.forEach((iosData: any) => {
-        const sizeKey = CONFIG_SIZE_MAP[iosData.size];
-        const wdget = this.createWidget({agent: 'ios', ...iosData, sizeKey: sizeKey})
-        this.iosNodes[sizeKey] = wdget;
-      });
-    }
-    if (android) {
-      android.sizes.forEach((iosData: any) => {
-        const sizeKey = CONFIG_SIZE_MAP[iosData.size];
-        const wdget = this.createWidget({agent: 'android', ...iosData, sizeKey: sizeKey})
-        this.androidNodes[sizeKey] = wdget;
-      });
-    }
-
-    ['large', 'medium', 'small'].forEach((sizeKey: string) => {
-      const bbox = this.node.getClientRect({ skipTransform: true });
-      // 纵向基线要用包围盒底边(bbox.y + bbox.height)，否则 bbox.y 偏移会吃掉行间距
-      const nextY = bbox.height === 0 ? 0 : bbox.y + bbox.height + 20;
-      const iosWidget = this.iosNodes[sizeKey];
-      const androidWidget = this.androidNodes[sizeKey];
-      const cursorX = 0;
-      if (iosWidget) {
-        iosWidget.x(cursorX);
-        iosWidget.y(nextY);
-        this.node.add(iosWidget)
-      }
-      if (androidWidget) {
-        androidWidget.x(pt(MAX_WIDGET_WIDTH) + this.gap);
-        androidWidget.y(nextY);
-        this.node.add(androidWidget)
-      }
-    })
-
-    this.initFullBox();
-  }
-
-  createWidget(options: any) {
-    const { agent, name, sizeKey, time, day, date, padding, layoutType, src } = options;
-    const sizeCfg = WIDGET_SIZE[sizeKey];
-    const widthPx = pt(sizeCfg.width);
-    const heightPx = pt(sizeCfg.height);
-    const radius = pt(WIDGET_BORDER_RADIUS);
-    // 用 clipFunc 圆角裁剪整个 group：让无圆角的 bgImage 也被裁出圆角（单纯靠 z-index 遮挡做不到）
-    const widgetGroup = new Konva.Group({
-      x: 0,
-      y: 0,
-      // selected: true,
-      clipFunc: (ctx: any) => this.clipFuncBorderRadius(ctx, radius, widthPx, heightPx),
-    });
-    // const rect = this.createRect({ w: widthPx, h: heightPx });
-    const title = this.createTitle({x: 5, y: heightPx + 10, name: `${name}_${agent}` })
-
-    const timeNode = this.createDes({ ...time, text: '10:09' });
-    const dayNode = this.createDes({ ...day, text: 'Wednesday' });
-    const dateNode = this.createDes({ ...date, text: 'March 23' });
-    const bgImage = this.createBgImage({ w:widthPx, h: heightPx, src });
-    const items = [bgImage, timeNode, dayNode, dateNode];
-
-    const layoutFn = this.layoutFns[2];
-    if (layoutFn) {
-      layoutFn({
-        w: widthPx,
-        h: heightPx,
-        padding: pt(padding ?? 0),
-        time: timeNode,
-        day: dayNode,
-        date: dateNode,
-      });
-    } else {
-      console.warn('[Time] unknown layoutType:', layoutType);
-    }
-
-    widgetGroup.add(...items);
-
-    const group = new Konva.Group({ selected: true });
-    group.add(title);
-    group.add(widgetGroup);
-
-    return group;
-  }
-
-  createTitle(params: any) {
-    const { x, y, name } = params;
-    const title = new Konva.Text({
-      x,
-      y,
-      text: name,
-      fontSize: pt(10),
-      fontFamily: 'Calibri',
-      fill: 'green',
-      selected: true,
-    });
-    return title;
-  }
-  createRect(params: any) {
-    const { x = 0, y = 0, w, h } = params;
-    const rect = new Konva.Rect({
-      x: x,
-      y: y,
-      width: w,
-      height: h,
-      fill: '#ffffff',
-      cornerRadius: pt(WIDGET_BORDER_RADIUS),
-    });
-    return rect;
-  }
-  /** 只负责造节点，不负责定位（定位交给 layoutFns） */
-  createDes(params: any) {
-    const { alpha, textColor, textHeight, textSize, font, text } = params;
-    return new Konva.Text({
-      text,
-      fontSize: pt(textSize),
-      selected: true,
-      fill: textColor,
-      opacity: alpha,
-      align: 'center',
-      verticalAlign: 'middle',
-      height: pt(textHeight),
-      fontFamily: font,
-    });
-  }
-
-  createBgImage(params: any) {
-    const { src, w, h } = params;
-    const imageObj = new Image();
-    imageObj.src = src ?? 'http://localhost:5173/mock/widgets_large_time.jpg';
-    imageObj.crossOrigin = 'anonymous'; // 之后想 toDataURL 导出时避免污染 canvas
-    // 主要 API:
-    const image = new Konva.Image({
-      x: 0,
-      y: 0,
-      image: imageObj,
-      width: w,
-      height: h,
-      selected: true,
-      cropable: true,
-    });
-    imageObj.onload = () => {
-      // image.width(pt(imageObj.width/this.ratio));
-      // image.height(pt(imageObj.height/this.ratio));
-    }
-    return image;
-  }
-}
-
-class WallPaper extends BaseNode {
-  constructor(options: any) {
-    super(options);
-    this.init();
-  }
-  init() {
-    const rect = this.createRect({ w: 887, h: 1926 });
-    this.node.add(rect);
-    const video = document.createElement('video');
-    video.src =
-      'http://localhost:5100/live_wallpaper.mp4';
-    video.play();
-    video.loop = true;
-    video.muted = true;
-    video.autoplay = true;
-    const group = this.node;
-    video.addEventListener('loadedmetadata', () => {
-      rect.width(video.videoWidth);
-      rect.height(video.videoHeight);
-      const videoNode = new Konva.Image({
-        image: video,
-        x: 0,
-        y: 0,
-        width: video.videoWidth,
-        height: video.videoHeight,
-      });
-      group.add(videoNode);
-    });
-    this.initFullBox();
-  };
-}
-
-class IconPack extends BaseNode {
-  constructor(options: any) {
-    super(options);
-    this.init();
-  }
-  init() {
-    // mock数据
-    const { icon_pack } = mockdata;
-    let cursorX = 0;
-    let cursorY = 0;
-    let col = 4;
-    icon_pack.forEach((icon: string) => {
-      const widthPx = pt(180);
-      const heightPx = pt(180);
-      const radius = pt(WIDGET_BORDER_RADIUS);
-
-      const group = new Konva.Group({
-        x: cursorX,
-        y: cursorY,
-        clipFunc: (ctx: any) => this.clipFuncBorderRadius(ctx, radius, widthPx, heightPx)
-      });
-      const iconImage = this.createBgImage({ w: widthPx, h: heightPx, src: `http://localhost:5100/appicons/${icon}` });
-      if (iconImage) {
-        group.add(iconImage)
-      }
-      col--;
-      if (!col) {
-        col = 4;
-        cursorX = 0;
-        cursorY += (heightPx + this.gap * 2);
-      } else {
-        cursorX += (widthPx + this.gap * 2);
-      }
-      this.node.add(group)
-    })
-    this.initFullBox();
-  }
-}
-
-
-// export default EditorCore;
-
 let core: EditorCore | null = null;
 
 /** 在 DOM 准备好后由容器组件调用一次，负责创建实例 */
-function initCore(containerId: string, options?: EditorCoreOptions): EditorCore {
+function initCore(
+  containerId: string,
+  options?: EditorCoreOptions,
+): EditorCore {
   if (core) return core;
   core = new EditorCore(containerId, options);
   return core;
@@ -1618,8 +1431,4 @@ function destroyCore() {
   core = null;
 }
 
-export {
-  initCore,
-  getCore,
-  destroyCore,
-}
+export { destroyCore, getCore, initCore };

@@ -1,5 +1,5 @@
 import { Select } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import fontManifest from './font-manifest.json';
 
 type FontManifestItem = {
@@ -28,10 +28,12 @@ interface FontSelectProps {
   onChange?: (fontFamily: string) => void;
   options?: Array<{ label: string; value: string }>;
   disabled?: boolean;
+  isMixed: boolean;
 }
 
 const FontSelect: React.FC<FontSelectProps> = ({
-  value = "ComicSansMS",
+  value,
+  isMixed,
   onChange = () => {},
   options = DEFAULT_FONT_OPTIONS,
   disabled = false,
@@ -41,19 +43,16 @@ const FontSelect: React.FC<FontSelectProps> = ({
     label: i.label,
   }));
 
-  const [font, setFont] = useState(value);
-  const onSelectChange = (value: string) => {
-    setFont(value);
-    onChange(value);
-  }
   return (
     <Select
-      value={font}
-      onChange={onSelectChange}
+      value={value}
+      showSearch={{ optionFilterProp: 'label' }}
+      onChange={onChange}
       disabled={disabled}
       options={items}
       variant="filled"
       size='small'
+      placeholder={isMixed ? 'Multiple values' : 'Filled'}
       style={{ width: '100%' }}
       suffixIcon={null}
       optionRender={(option) => (
