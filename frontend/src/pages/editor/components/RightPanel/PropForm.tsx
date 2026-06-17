@@ -317,7 +317,6 @@ export const ImageUpload: React.FC<{
   onChange: (payload: { id: any; value: any }) => void;
 }> = ({ value, onChange }) => {
   const { styles } = useImageUploadStyles();
-
   const handleChange =
     (id: any): UploadProps['onChange'] =>
     ({ fileList: nextFileList }) => {
@@ -389,19 +388,19 @@ export const ImageUpload: React.FC<{
         }
         return (
           <Row key={id} className={styles.itemRow}>
-            <Col span={20}>
-              <Button variant="filled" color="default">
-                <img className={styles.previewImg} src={source} alt="" />
-                <Text
-                  className={styles.itemText}
-                  ellipsis={{ tooltip: name }}
-                >
-                  {name}
-                </Text>
-              </Button>
-            </Col>
-            <Col span={4}>
-              <Button type="text" onClick={() => {onDeleteSource(id)}} icon={<DeleteOutlined />} />
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                <Button variant="filled" color="default">
+                  <img className={styles.previewImg} src={source} alt="" />
+                  <Text
+                    className={styles.itemText}
+                    ellipsis={{ tooltip: name }}
+                  >
+                    {name}
+                  </Text>
+                </Button>
+                <Button type="text" onClick={() => {onDeleteSource(id)}} icon={<DeleteOutlined />} />
+              </Flex>
             </Col>
           </Row>
         );
