@@ -125,7 +125,6 @@ const Login: React.FC = () => {
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
-      console.log(userInfo, 'userInfo')
       startTransition(() => {
         setInitialState((s) => ({
           ...s,

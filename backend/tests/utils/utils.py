@@ -14,9 +14,17 @@ def random_email() -> str:
     return f"{random_lower_string()}@{random_lower_string()}.com"
 
 
+def random_username() -> str:
+    return "u_" + "".join(random.choices(string.ascii_lowercase + string.digits, k=16))
+
+
+def superuser_username() -> str:
+    return settings.FIRST_SUPERUSER.split("@")[0]
+
+
 def get_superuser_token_headers(client: TestClient) -> dict[str, str]:
     login_data = {
-        "username": settings.FIRST_SUPERUSER,
+        "username": superuser_username(),
         "password": settings.FIRST_SUPERUSER_PASSWORD,
     }
     r = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)

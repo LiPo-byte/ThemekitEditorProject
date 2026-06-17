@@ -1,5 +1,6 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { SettingDrawer } from '@ant-design/pro-components';
+import { Button } from 'antd';
+// import { SettingDrawer } from '@ant-design/pro-components';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import dayjs from 'dayjs';
@@ -13,6 +14,7 @@ dayjs.extend(relativeTime);
 import {
   AvatarDropdown,
   ErrorBoundary,
+  InitialAvatar,
   OfflineBanner,
 } from '@/components';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
@@ -94,10 +96,26 @@ export const layout: RunTimeLayoutConfig = ({
       // <LangDropdown key="lang" />,
     ],
     avatarProps: {
-      src: `/avater/${initialState?.currentUser?.avatar}`,
-      title: '李白',
-      render: (_, avatarChildren) => (
-        <AvatarDropdown>{avatarChildren}</AvatarDropdown>
+      title: (initialState?.currentUser as any)?.username ?? '未登录',
+      render: (props: any, _avatarChildren) => (
+        <AvatarDropdown>
+          <Button type='text'>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                cursor: 'pointer',
+              }}
+            >
+              <InitialAvatar
+                size="small"
+                name={(initialState?.currentUser as any)?.username}
+              />
+              <span>{props.title}</span>
+            </span>
+          </Button>
+        </AvatarDropdown>
       ),
     },
     // waterMarkProps: {
@@ -155,7 +173,7 @@ export const layout: RunTimeLayoutConfig = ({
       return (
         <>
           {children}
-          <SettingDrawer
+          {/* <SettingDrawer
             disableUrlParams
             enableDarkTheme
             collapse={initialState?.settingDrawerOpen}
@@ -172,7 +190,7 @@ export const layout: RunTimeLayoutConfig = ({
                 settings,
               }));
             }}
-          />
+          /> */}
         </>
       );
     },

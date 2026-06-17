@@ -10,6 +10,7 @@ def test_create_user(client: TestClient, db: Session) -> None:
         f"{settings.API_V1_STR}/private/users/",
         json={
             "email": "pollo@listo.com",
+            "username": "pollo_listo",
             "password": "password123",
             "full_name": "Pollo Listo",
         },
@@ -23,4 +24,5 @@ def test_create_user(client: TestClient, db: Session) -> None:
 
     assert user
     assert user.email == "pollo@listo.com"
+    assert user.username == "pollo_listo"
     assert user.full_name == "Pollo Listo"
