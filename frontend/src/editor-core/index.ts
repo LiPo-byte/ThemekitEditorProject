@@ -661,6 +661,178 @@ export class EditorCore {
     stage.batchDraw();
   }
 
+  /**
+   * 截图整个画布
+   * - 默认模式（不传 outputWidth/outputHeight）：按所有内容真实包围盒 1:1 输出
+   * - 固定尺寸模式（传了 outputWidth+outputHeight）：内容居中适配到指定尺寸，
+   *   fit='contain' 完整显示+留白；fit='cover' 填满+裁剪
+   * - 排除：背景网格、坐标轴、选中框、变换控制点、裁剪蒙层
+   * - 同步返回 base64 dataURL；无可见内容时返回 null
+   */
+  captureCanvas(
+    options: {
+      /** 像素密度，默认 2 */
+      pixelRatio?: number;
+      /** 输出格式，默认 image/png */
+      mimeType?: 'image/png' | 'image/jpeg' | 'image/webp';
+      /** JPEG/WebP 质量 0-1，默认 0.92 */
+      quality?: number;
+      /**
+       * 内边距/外扩 px：
+       * - 固定尺寸模式：输出画布的屏幕内边距，默认 20
+       * - 包围盒模式：包围盒外扩的世界坐标 px，默认 0
+       */
+      padding?: number;
+      /** 背景色；传 null 输出透明；不传沿用当前 stage 背景色 */
+      backgroundColor?: string | null;
+      /** 输出宽 px。配合 outputHeight 走「固定尺寸 + 内容居中」模式 */
+      outputWidth?: number;
+      /** 输出高 px */
+      outputHeight?: number;
+      /** 固定尺寸模式下的适配方式，默认 contain */
+      fit?: 'contain' | 'cover';
+      /** 是否包含背景辅助元素（网格点、坐标轴、原点标记），默认 true */
+      includeBackground?: boolean;
+    } = {},
+  ): string | null {
+    const pixelRatio = options.pixelRatio ?? 2;
+    const mimeType = options.mimeType ?? 'image/png';
+    const quality = options.quality ?? 0.92;
+    const includeBackground = options.includeBackground ?? true;
+    const backgroundColor =
+      'backgroundColor' in options
+        ? options.backgroundColor
+        : this.backgroundColor;
+
+    const exportableNodes = [
+      ...this.contentLayer.getChildren(),
+      ...this.wallPaperLayer.getChildren(),
+    ].filter((node) => node.isVisible());
+    if (!exportableNodes.length) return null;
+
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+    exportableNodes.forEach((node) => {
+      // relativeTo: stage 得到的是不含 stage transform 的世界坐标
+      const rect = node.getClientRect({ relativeTo: this.stage });
+      if (rect.width === 0 || rect.height === 0) return;
+      if (rect.x < minX) minX = rect.x;
+      if (rect.y < minY) minY = rect.y;
+      if (rect.x + rect.width > maxX) maxX = rect.x + rect.width;
+      if (rect.y + rect.height > maxY) maxY = rect.y + rect.height;
+    });
+    if (!Number.isFinite(minX)) return null;
+
+    const bboxW = Math.max(1, maxX - minX);
+    const bboxH = Math.max(1, maxY - minY);
+    const isFixed =
+      options.outputWidth != null && options.outputHeight != null;
+
+    // 按模式分别推导：导出缩放、stage 临时位置、toDataURL 截取区域（屏幕坐标）
+    let exportScale: number;
+    let stagePosX: number;
+    let stagePosY: number;
+    let toDataX: number;
+    let toDataY: number;
+    let toDataW: number;
+    let toDataH: number;
+
+    if (isFixed) {
+      const outW = options.outputWidth as number;
+      const outH = options.outputHeight as number;
+      const fit = options.fit ?? 'contain';
+      const pad = options.padding ?? 20;
+
+      const availW = Math.max(1, outW - pad * 2);
+      const availH = Math.max(1, outH - pad * 2);
+      exportScale =
+        fit === 'contain'
+          ? Math.min(availW / bboxW, availH / bboxH)
+          : Math.max(outW / bboxW, outH / bboxH);
+
+      const centerX = minX + bboxW / 2;
+      const centerY = minY + bboxH / 2;
+      // 让内容中心 (centerX, centerY) 映射到屏幕中心 (outW/2, outH/2)
+      stagePosX = outW / 2 - centerX * exportScale;
+      stagePosY = outH / 2 - centerY * exportScale;
+      toDataX = 0;
+      toDataY = 0;
+      toDataW = outW;
+      toDataH = outH;
+    } else {
+      const pad = options.padding ?? 0;
+      exportScale = 1;
+      stagePosX = 0;
+      stagePosY = 0;
+      toDataX = minX - pad;
+      toDataY = minY - pad;
+      toDataW = Math.max(1, Math.ceil(bboxW + pad * 2));
+      toDataH = Math.max(1, Math.ceil(bboxH + pad * 2));
+    }
+
+    const savedScale = { x: this.stage.scaleX(), y: this.stage.scaleY() };
+    const savedPos = this.stage.position();
+    const savedBgVisible = this.bgLayer.visible();
+    const savedAxisVisible = this.axisShape?.visible() ?? true;
+    const savedOverlayVisible = this.overlayLayer.visible();
+    const savedCropVisible = this.cropLayer.visible();
+
+    // 背景色：临时新建一个 Layer 放在所有 layer 最底，避免 PNG 透明 / JPEG 黑底；
+    // 不能放 contentLayer 里——contentLayer 整层在 bgLayer 之上，背景色会盖住网格/坐标轴
+    let bgRectLayer: Konva.Layer | null = null;
+    if (backgroundColor) {
+      const worldX = (toDataX - stagePosX) / exportScale;
+      const worldY = (toDataY - stagePosY) / exportScale;
+      const worldW = toDataW / exportScale;
+      const worldH = toDataH / exportScale;
+      bgRectLayer = new Konva.Layer({ listening: false });
+      bgRectLayer.add(
+        new Konva.Rect({
+          x: worldX,
+          y: worldY,
+          width: worldW,
+          height: worldH,
+          fill: backgroundColor,
+        }),
+      );
+      this.stage.add(bgRectLayer);
+      bgRectLayer.moveToBottom();
+    }
+
+    this.stage.scale({ x: exportScale, y: exportScale });
+    this.stage.position({ x: stagePosX, y: stagePosY });
+    // bgLayer 上的 grid/axis 都是 sceneFunc 自绘并依赖 stage 当前 transform，
+    // 这里设置 visible(true) 后，toDataURL 会按上面新设置的 scale/position 重新绘制，自动适配
+    this.bgLayer.visible(includeBackground);
+    // 截图里不要坐标轴和刻度数字，只保留网格点
+    this.axisShape?.visible(false);
+    this.overlayLayer.visible(false);
+    this.cropLayer.visible(false);
+
+    try {
+      return this.stage.toDataURL({
+        x: toDataX,
+        y: toDataY,
+        width: toDataW,
+        height: toDataH,
+        pixelRatio,
+        mimeType,
+        quality,
+      });
+    } finally {
+      bgRectLayer?.destroy();
+      this.stage.scale(savedScale);
+      this.stage.position(savedPos);
+      this.bgLayer.visible(savedBgVisible);
+      this.axisShape?.visible(savedAxisVisible);
+      this.overlayLayer.visible(savedOverlayVisible);
+      this.cropLayer.visible(savedCropVisible);
+      this.stage.batchDraw();
+    }
+  }
+
   /** 当前可视区域中心点（屏幕坐标） */
   private getViewportCenter() {
     return { x: this.stage.width() / 2, y: this.stage.height() / 2 };

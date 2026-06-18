@@ -1,6 +1,7 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { Button } from 'antd';
-// import { SettingDrawer } from '@ant-design/pro-components';
+import { PlusOutlined } from '@ant-design/icons';
+import { SettingDrawer } from '@ant-design/pro-components';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import dayjs from 'dayjs';
@@ -91,6 +92,15 @@ export const layout: RunTimeLayoutConfig = ({
       return dom;
     },
     actionsRender: () => [
+      <Button
+        key="design"
+        variant='filled'
+        color="default"
+        icon={<PlusOutlined />}
+        onClick={() => history.push('/editor')}
+      >
+        Design
+      </Button>
       // <DocLink key="doc" />,
       // <VersionDropdown key="version" />,
       // <LangDropdown key="lang" />,
@@ -173,7 +183,7 @@ export const layout: RunTimeLayoutConfig = ({
       return (
         <>
           {children}
-          {/* <SettingDrawer
+          <SettingDrawer
             disableUrlParams
             enableDarkTheme
             collapse={initialState?.settingDrawerOpen}
@@ -190,7 +200,7 @@ export const layout: RunTimeLayoutConfig = ({
                 settings,
               }));
             }}
-          /> */}
+          />
         </>
       );
     },

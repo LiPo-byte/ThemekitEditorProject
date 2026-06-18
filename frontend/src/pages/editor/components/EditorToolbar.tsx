@@ -185,6 +185,26 @@ const EditorToolbar: React.FC = () => {
     });
   }, [core]);
 
+  const onSave = async () => {
+    if (!core) return;
+    const url = core.captureCanvas({
+      outputWidth: 400,
+      outputHeight: 300,
+      fit: 'contain',
+      padding: 20,
+    });
+    if (!url) return;
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(
+      `<title>画布截图</title>
+       <style>body{margin:0;background:#222;display:flex;align-items:center;justify-content:center;min-height:100vh}
+       img{box-shadow:0 0 20px rgba(0,0,0,.5)}</style>
+       <img src="${url}" />`,
+    );
+    win.document.close();
+  }
+
   if (!visible) return null;
 
   return (
@@ -209,7 +229,7 @@ const EditorToolbar: React.FC = () => {
               </Tooltip>
           </Dropdown>
           <Tooltip title="Save">
-              <Button type='text' icon={<SaveOutlined />} />
+              <Button type='text' onClick={onSave} icon={<SaveOutlined />} />
           </Tooltip>
           <Tooltip title="Undo">
               <Button

@@ -10,7 +10,7 @@ const Settings: ProLayoutProps & {
   colorPrimary: '#1677ff',
   layout: 'top',
   contentWidth: 'Fluid',
-  fixedHeader: false,
+  fixedHeader: true,
   fixSiderbar: true,
   colorWeak: false,
   title: 'Themekit Editor',

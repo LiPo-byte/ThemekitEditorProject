@@ -7,8 +7,8 @@ import {
   useEditorPreviewDevicesOpenSetter,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
-import { AvatarDropdown } from '@/components';
-import { Button, Tooltip, Avatar, Segmented } from 'antd';
+import { AvatarDropdown, InitialAvatar } from '@/components';
+import { Button, Tooltip, Segmented } from 'antd';
 import { PlayCircleOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons';
 
 
@@ -80,17 +80,21 @@ const HeaderControls: React.FC = () => {
             ]}
         />
         <AvatarDropdown>
-            <Button type="text">
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                { currentUser && <Avatar src={`/avater/${currentUser.avatar}`} size="small" /> }
-                <span style={{ marginLeft: 8 }}>李白</span>
-              </span>
+            <Button type='text'>
+                <span
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        cursor: 'pointer',
+                    }}
+                >
+                    <InitialAvatar
+                        size="small"
+                        name={(currentUser as any)?.username}
+                    />
+                    <span>{(currentUser as any)?.username}</span>
+                </span>
             </Button>
         </AvatarDropdown>
     </div>

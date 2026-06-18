@@ -67,7 +67,7 @@ const DesignerList: React.FC = () => {
     <PageContainer>
       <Row gutter={[10, 10]}>
         {designers.map((designer) => (
-          <Col key={designer.username} xs={24} sm={12} lg={6}>
+          <Col key={designer.username} span={24}>
             <Card hoverable style={{ width: '100%' }}>
               <Meta
                 avatar={<InitialAvatar name={designer.username} />}
@@ -77,7 +77,7 @@ const DesignerList: React.FC = () => {
             </Card>
           </Col>
         ))}
-        <Col xs={24} sm={12} lg={6}>
+        <Col span={24}>
           <Button
             variant="filled"
             color="default"

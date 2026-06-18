@@ -67,11 +67,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   const accessItems = access.canAdmin ? [{
     key: 'designer-list',
     icon: <TeamOutlined />,
-    label: '设计师列表',
+    label: '设计师',
   }, {
     key: 'component-list',
     icon: <AppstoreOutlined />,
-    label: '组件列表',
+    label: '资源',
   }] : [];
 
   const menuItems: MenuProps['items'] = [
