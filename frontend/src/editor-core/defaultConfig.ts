@@ -11,7 +11,8 @@ export const WidgetDefaultConfig = {
                 {
                     "size":1,
                     "name": "Time-IOS-Small",
-                    // "source": "http://localhost:5173/mock/widgets_large_time.gif",
+                    "radius": 28,
+                    "source": "",
                     "padding":16,
                     "time":{
                         "font":"AvenirNext-HeavyItalic",
@@ -41,7 +42,8 @@ export const WidgetDefaultConfig = {
                     "size":2,
                     "name": "Time-IOS-Medium",
                     "padding":16,
-                    // "source": "http://localhost:5173/mock/widgets_large_time.jpg",
+                    "radius": 28,
+                    "source": "",
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":32,
@@ -70,6 +72,8 @@ export const WidgetDefaultConfig = {
                     "size":3,
                     "name": "Time-IOS-Large",
                     "padding":16,
+                    "radius": 28,
+                    "source": "",
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":54,
@@ -105,7 +109,9 @@ export const WidgetDefaultConfig = {
                 {
                     "size":1,
                     "name": "Time-Android-Small",
-                    "padding":16,
+                    "source": "",
+                    "radius": 28,
+                    "padding": 16,
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":28,
@@ -134,6 +140,8 @@ export const WidgetDefaultConfig = {
                     "size":2,
                     "name": "Time-Android-Medium",
                     "padding":16,
+                    "source": "",
+                    "radius": 28,
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":32,
@@ -162,6 +170,8 @@ export const WidgetDefaultConfig = {
                     "size":3,
                     "name": "Time-Android-Large",
                     "padding":16,
+                    "source": "",
+                    "radius": 28,
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":54,
@@ -200,7 +210,8 @@ export const WidgetDefaultConfig = {
                     "size":1,
                     "name": "Time-IOS-Small",
                     "layoutType": '0-1',
-                    // "source": "http://localhost:5173/mock/widgets_large_time.gif",
+                    "source": "",
+                    "radius": 28,
                     "padding":16,
                     "time":{
                         "font":"AvenirNext-HeavyItalic",
@@ -214,8 +225,9 @@ export const WidgetDefaultConfig = {
                     "size":2,
                     "name": "Time-IOS-Medium",
                     "padding":16,
+                    "source": "",
+                    "radius": 28,
                     "layoutType": '0-1',
-                    // "source": "http://localhost:5173/mock/widgets_large_time.jpg",
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":32,
@@ -228,6 +240,8 @@ export const WidgetDefaultConfig = {
                     "size":3,
                     "name": "Time-IOS-Large",
                     "padding":16,
+                    "source": "",
+                    "radius": 28,
                     "layoutType": '0-1',
                     "time":{
                         "font":"AvenirNext-Bold",
@@ -250,6 +264,8 @@ export const WidgetDefaultConfig = {
                     "size":1,
                     "name": "Time-Android-Small",
                     "padding":16,
+                    "source": "",
+                    "radius": 28,
                     "layoutType": '0-1',
                     "time":{
                         "font":"AvenirNext-Bold",
@@ -263,6 +279,8 @@ export const WidgetDefaultConfig = {
                     "size":2,
                     "name": "Time-Android-Medium",
                     "padding":16,
+                    "source": "",
+                    "radius": 28,
                     "layoutType": '0-1',
                     "time":{
                         "font":"AvenirNext-Bold",
@@ -275,6 +293,8 @@ export const WidgetDefaultConfig = {
                 {
                     "size":3,
                     "name": "Time-Android-Large",
+                    "source": "",
+                    "radius": 28,
                     "padding":16,
                     "layoutType": '0-1',
                     "time":{

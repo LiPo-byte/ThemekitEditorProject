@@ -314,6 +314,7 @@ export default class BaseNode {
             h,
             x = 0,
             y = 0,
+            radius,
         } = params;
 
         const imageObj = new Image();
@@ -328,11 +329,11 @@ export default class BaseNode {
             height: h,
             cropInstance: true,
             editProps: {
-                radius: WIDGET_BORDER_RADIUS,
+              radius,
             },
             // clip: { x: 0, y: 0, width: w, height: h },
             clipFunc: (ctx: any) =>
-            this.clipFuncBorderRadius(ctx, pt(WIDGET_BORDER_RADIUS), w, h),
+            this.clipFuncBorderRadius(ctx, pt(radius || WIDGET_BORDER_RADIUS), w, h),
         });
 
         // 内层 Image：承载图片本身以及 crop 变换（位移/缩放/旋转）

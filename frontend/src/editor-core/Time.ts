@@ -206,6 +206,7 @@ export default class Time extends BaseNode {
         padding,
         layoutType,
         source,
+        radius,
       } = options;
 
       const sizeCfg = WIDGET_SIZE[sizeKey];
@@ -238,7 +239,7 @@ export default class Time extends BaseNode {
       });
 
       const bgRect = this.createRect({ w: widthPx, h: heightPx })
-      const bgImage = this.createSource({ w: widthPx, h: heightPx, source, crop_props });
+      const bgImage = this.createSource({ w: widthPx, h: heightPx, source, crop_props, radius });
       let items:any = [bgRect, bgImage];
       if (time) {
         const timeNode = this.createText({
