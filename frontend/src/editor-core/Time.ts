@@ -1,5 +1,6 @@
 import Konva from "konva";
-import BaseNode, { pt, CONFIG_SIZE_MAP, WIDGET_BORDER_RADIUS, WIDGET_SIZE, WHITE_PIXEL_DATA_URL } from "./WidgetBaseNode";
+import { nanoid } from "nanoid";
+import BaseNode, { pt, CONFIG_SIZE_MAP, WIDGET_SIZE } from "./WidgetBaseNode";
 const iosSystem = 'IOS';
 const androidSystem = 'Android';
 export default class Time extends BaseNode {
@@ -19,6 +20,7 @@ export default class Time extends BaseNode {
       // this.backgroundImageNodes = new Map();
       this.node.setAttr('title', 'Time');
       this.node.setAttr('editProps', { name: 'Time' });
+      this.node.setAttr('snapshotType', 'Time');
       this.initLayoutFns();
       this.init();
     }
@@ -126,6 +128,9 @@ export default class Time extends BaseNode {
           isLockScreen: ios.isLockScreen,
           system: iosSystem,
         },
+        // serialize 时用于把 editProps 回填到 data.ios
+        snapshotDataPath: 'ios',
+        snapshotNodeId: nanoid(),
       });
       this.androidWidgetGroup = new Konva.Group({
         x: 0,
@@ -138,27 +143,36 @@ export default class Time extends BaseNode {
           isLockScreen: android.isLockScreen,
           system: androidSystem,
         },
+        // serialize 时用于把 editProps 回填到 data.android
+        snapshotDataPath: 'android',
+        snapshotNodeId: nanoid(),
       });
 
       this.node.add(this.androidWidgetGroup, this.iosWidgetGroup);
       if (ios) {
-        ios.sizes.forEach((iosData: any) => {
+        ios.sizes.forEach((iosData: any, sizeIndex: number) => {
           const sizeKey = CONFIG_SIZE_MAP[iosData.size];
+          const dataPath = `ios.sizes.${sizeIndex}`;
           const wdget = this.createWidget({
             agent: iosSystem,
             ...iosData,
             sizeKey: sizeKey,
+            // 对齐 data 中 sizes 的真实索引，避免按 sizeKey 推断导致错位。
+            dataPath,
           });
           this.iosNodes[sizeKey] = wdget;
         });
       }
       if (android) {
-        android.sizes.forEach((iosData: any) => {
+        android.sizes.forEach((iosData: any, sizeIndex: number) => {
           const sizeKey = CONFIG_SIZE_MAP[iosData.size];
+          const dataPath = `android.sizes.${sizeIndex}`;
           const wdget = this.createWidget({
             agent: androidSystem,
             ...iosData,
             sizeKey: sizeKey,
+            // 对齐 data 中 sizes 的真实索引，避免按 sizeKey 推断导致错位。
+            dataPath,
           });
           this.androidNodes[sizeKey] = wdget;
         });
@@ -207,6 +221,7 @@ export default class Time extends BaseNode {
         layoutType,
         source,
         radius,
+        dataPath,
       } = options;
 
       const sizeCfg = WIDGET_SIZE[sizeKey];
@@ -234,8 +249,12 @@ export default class Time extends BaseNode {
             padding,
             name,
             source,
+            radius,
             crop_props: crop_props,
         },
+        // Widget 容器级字段（padding/name/source/radius/crop_props）回填路径。
+        snapshotDataPath: dataPath,
+        snapshotNodeId: nanoid(),
       });
 
       const bgRect = this.createRect({ w: widthPx, h: heightPx })
@@ -247,6 +266,8 @@ export default class Time extends BaseNode {
           text: '10:09',
           key: 'time',
         });
+        // 文本子节点映射到 data 的 time 分支。
+        timeNode.setAttr('snapshotDataPath', `${dataPath}.time`);
         items.push(timeNode);
       }
       if (day) {
@@ -255,6 +276,8 @@ export default class Time extends BaseNode {
           text: 'Wednesday',
           key: 'day',
         });
+        // 文本子节点映射到 data 的 day 分支。
+        dayNode.setAttr('snapshotDataPath', `${dataPath}.day`);
         items.push(dayNode);
       }
       if (date) {
@@ -263,6 +286,8 @@ export default class Time extends BaseNode {
           text: 'March 23',
           key: 'date',
         });
+        // 文本子节点映射到 data 的 date 分支。
+        dateNode.setAttr('snapshotDataPath', `${dataPath}.date`);
         items.push(dateNode);
       }
       this.backgroundImageNodes.set(widgetGroup, bgImage);
@@ -277,144 +302,4 @@ export default class Time extends BaseNode {
 
       return widgetGroup;
     }
-
-    // render() {
-    //   const groups = this.renderNodes;
-    //   groups.forEach((wg: Konva.Group) => {
-    //     this.addTitle(wg, 15);
-    //     const candidates = wg.find((node: Konva.Node) => {
-    //       return (
-    //         !!node.getAttr('editProps') || node.getAttr('layoutNode') === true
-    //       );
-    //     });
-    //     const layoutNodes = new Set<Konva.Node>();
-    //     candidates.forEach((node: Konva.Node) => {
-    //       if (node.getAttr('editProps')) {
-    //         this.decorationNode(node);
-    //       }
-    //       if (node.getAttr('layoutNode') === true) {
-    //         layoutNodes.add(node);
-    //       }
-    //     });
-    //     layoutNodes.forEach((node) => {
-    //       this.layoutNode(node);
-    //     });
-    //     layoutNodes.forEach((node) => {
-    //       this.addTitle(node);
-    //     });
-    //   });
-    //   this.node.getLayer()?.batchDraw(); // 最后统一一次提交绘制
-    // }
-
-    // addTitle(node: Konva.Node, textSize?: Number, text?: string) {
-    //   if (!text) {
-    //       const { name, system } = node.getAttr('editProps') || {};
-    //       text = name || system;
-    //   }
-    //   if (this.titlesNodes.has(node)) {
-    //     const title = this.titlesNodes.get(node);
-    //     title.text(text);
-    //   } else {
-    //     const rect = node.getClientRect({ relativeTo: this.node });
-    //     const { x, y, width, height } = rect;
-    //     const titleNode = this.createTitle({
-    //       x: x + 5,
-    //       y: y + height + 10,
-    //       text: text,
-    //       w: width,
-    //       textSize,
-    //     });
-    //     this.node.add(titleNode);
-    //     this.titlesNodes.set(node, titleNode);
-    //   }
-    // }
-
-    // renderSource(node: Konva.Node) {
-    //   const { source, crop_props, w, h, } = node.getAttr('editProps') || {};
-    //   if (this.backgroundImageNodes.has(node)) {
-    //     const bgImage = this.backgroundImageNodes.get(node);
-    //     const bgImageInstance = bgImage.findOne(
-    //       (n: Konva.Node) => n instanceof Konva.Image,
-    //     );
-    //     node.setAttr('cropable', !!source);
-
-    //     const nextSrc = source || WHITE_PIXEL_DATA_URL;
-    //     const currentSrc = bgImageInstance.image()?.src || '';
-    //     // src 没变：只重算 crop 参数，不重新 load，避免无关属性变更导致图片闪烁
-    //     if (currentSrc === nextSrc) {
-    //       this.cropParamSource(bgImageInstance, crop_props);
-    //       node.getLayer()?.batchDraw();
-    //       return;
-    //     }
-
-    //     const imageObj = new Image();
-    //     imageObj.crossOrigin = 'anonymous'; // 必须在 src 之前设置才生效
-    //     imageObj.onload = () => {
-    //       bgImageInstance.image(imageObj);
-    //       this.cropParamSource(bgImageInstance, crop_props);
-    //       node.getLayer()?.batchDraw();
-    //     };
-    //     imageObj.onerror = () => {
-    //       // bgImageInstance.image(imageObj);
-    //       node.setAttr('cropable', false);
-    //     };
-    //     imageObj.src = nextSrc; // src 必须在 onload/onerror 绑定后赋值，缓存命中时事件才不会丢
-    //     this.cropParamSource(bgImageInstance, crop_props);
-    //   }
-    // }
-
-    // // 定位节点
-    // layoutNode = (widget: Konva.Node) => {
-    //   const layoutType = widget.getAttr('layoutType');
-    //   const layoutFn = this.layoutFns[layoutType || 0];
-    //   if (layoutFn) {
-    //     layoutFn({ widget: widget });
-    //   } else {
-    //     console.warn('[Time] unknown layoutType:');
-    //   }
-    // };
-
-    // // 装饰节点
-    // decorationNode(node: Konva.Node) {
-    //   const getValue = (key: string, value: any): any => {
-    //     const needPt = ['textHeight', 'textSize'];
-    //     if (needPt.includes(key) && typeof value === 'number') {
-    //       return pt(value);
-    //     }
-    //     return value;
-    //   };
-    //   const temp: any = {
-    //     alpha: 'opacity',
-    //     textHeight: 'height',
-    //     font: 'fontFamily',
-    //     textSize: 'fontSize',
-    //     textColor: 'fill',
-    //   };
-    //   const editProps = node.getAttr('editProps');
-    //   const attrs: any = {};
-    //   Object.keys(editProps).forEach((key: string) => {
-    //     if (key === 'crop_props') {
-    //       this.renderSource(node);
-    //     }
-    //     if (temp[key]) {
-    //       attrs[temp[key]] = getValue(key, editProps[key]);
-    //     }
-    //   });
-    //   node.setAttrs(attrs);
-    // }
-
-    // createTitle(params: any) {
-    //   const { x, y, text, w, textSize, align } = params;
-    //   const title = new Konva.Text({
-    //     x,
-    //     y,
-    //     text,
-    //     fontSize: pt(textSize || 10),
-    //     fontFamily: 'Calibri',
-    //     fill: 'green',
-    //     width: w,
-    //     align: align || 'right',
-    //   });
-    //   return title;
-    // }
   }

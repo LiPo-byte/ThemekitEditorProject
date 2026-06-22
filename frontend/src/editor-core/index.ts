@@ -1,6 +1,12 @@
 import Konva from 'konva';
 import IconPack from './IconPack';
 import Time from './Time';
+import {
+  SNAPSHOT_SCHEMA_VERSION,
+  type SnapshotNode,
+  type SnapshotNodeType,
+  type SnapshotV1,
+} from './snapshot';
 
 /** 96 DPI 下 1pt = 4/3 px；编辑器内部统一用 px 喂给 Konva，对外尺寸接口可以用 pt 表达 */
 const PT_TO_PX = 4 / 3;
@@ -1553,6 +1559,221 @@ export class EditorCore {
     }
     this.closeCrop();
     return crop_props;
+  }
+
+  /**
+   * 把当前画布序列化为 snapshot（业务语义，与 Konva 内部结构解耦）。
+   * 仅在 widget 根节点未被销毁、editProps 节点都带 snapshotNodeId 的前提下成立。
+   */
+  private cloneSerializable<T>(value: T): T {
+    // 仅保留 JSON 可序列化字段，避免把 Konva 运行时对象带进 snapshot。
+    if (value == null) return value;
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  private getByPath(root: unknown, path: string): unknown {
+    // 支持 'a.b.0.c' 这种点路径读取，数组下标按 number 处理。
+    if (!path) return root;
+    const parts = path.split('.');
+    let cursor: any = root;
+    for (const part of parts) {
+      if (cursor == null) return undefined;
+      const key: string | number = /^\d+$/.test(part) ? Number(part) : part;
+      cursor = cursor[key];
+    }
+    return cursor;
+  }
+
+  private setByPath(root: unknown, path: string, value: unknown) {
+    // 只在路径已存在时写值，不创建新结构，保证 patch 与 data 同形。
+    if (!path) return;
+    const parts = path.split('.');
+    let cursor: any = root;
+    for (let i = 0; i < parts.length - 1; i += 1) {
+      const part = parts[i];
+      const key: string | number = /^\d+$/.test(part) ? Number(part) : part;
+      if (cursor[key] == null) return;
+      cursor = cursor[key];
+    }
+    const tail = parts[parts.length - 1];
+    const tailKey: string | number = /^\d+$/.test(tail) ? Number(tail) : tail;
+    cursor[tailKey] = value;
+  }
+
+  private projectEditPropsToDataShape(
+    editProps: Record<string, unknown>,
+    target: unknown,
+  ): unknown {
+    // 数组整体沿用原始结构；当前编辑模型没有数组内逐项字段映射。
+    if (Array.isArray(target)) return this.cloneSerializable(target);
+
+    if (target && typeof target === 'object') {
+      // 对象仅覆盖同名 key，防止 editProps 扩散出 data 契约之外的字段。
+      const base = this.cloneSerializable(target) as Record<string, unknown>;
+      Object.keys(base).forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(editProps, key)) {
+          base[key] = this.cloneSerializable(editProps[key]);
+        }
+      });
+      return base;
+    }
+
+    if (typeof target === 'string') {
+      // IconPack 这类 string data 节点，优先回填 name/source。
+      if (typeof editProps.name === 'string') return editProps.name;
+      if (typeof editProps.source === 'string') return editProps.source;
+      return target;
+    }
+
+    return target;
+  }
+
+  private buildStructuredEditPropsPatch(
+    root: Konva.Group,
+    data: unknown,
+  ): unknown {
+    // 以 data 为底，按各节点声明的 snapshotDataPath 把 editProps 投影回同形结构。
+    const patch = this.cloneSerializable(data);
+    const candidates = root.find((n: Konva.Node) =>
+      Boolean(n.getAttr('snapshotDataPath')) && Boolean(n.getAttr('editProps')),
+    );
+    candidates.forEach((n: Konva.Node) => {
+      const dataPath = n.getAttr('snapshotDataPath');
+      const editProps = n.getAttr('editProps');
+      if (typeof dataPath !== 'string' || !dataPath) return;
+      if (!editProps || typeof editProps !== 'object') return;
+      const prevValue = this.getByPath(patch, dataPath);
+      if (typeof prevValue === 'undefined') return;
+      const nextValue = this.projectEditPropsToDataShape(
+        editProps as Record<string, unknown>,
+        prevValue,
+      );
+      this.setByPath(patch, dataPath, nextValue);
+    });
+    return patch;
+  }
+
+  /**
+   * 从 snapshot 回显到当前画布：
+   * - 清空当前节点与历史栈
+   * - 按 nodes 顺序重建（顺序即 z-order）
+   * - 恢复 stage 视觉状态（主题/背景/网格/坐标轴/视角）
+   */
+  loadSnapshot(snapshotLike: unknown): boolean {
+    if (!snapshotLike || typeof snapshotLike !== 'object') return false;
+    const snapshot = snapshotLike as Partial<SnapshotV1>;
+    if (
+      snapshot.schemaVersion !== SNAPSHOT_SCHEMA_VERSION ||
+      !snapshot.stage ||
+      !Array.isArray(snapshot.nodes)
+    ) {
+      return false;
+    }
+
+    this.deselect();
+    this.nodes = [];
+    this.contentLayer.destroyChildren();
+    this.undoStack = [];
+    this.redoStack = [];
+    this.emitHistoryChange();
+
+    snapshot.nodes.forEach((nodeLike) => {
+      const node = nodeLike as Partial<SnapshotNode>;
+      if (!node || typeof node !== 'object') return;
+      const transform = node.transform ?? { x: 0, y: 0 };
+      const x = typeof transform.x === 'number' ? transform.x : 0;
+      const y = typeof transform.y === 'number' ? transform.y : 0;
+      const data = node.editPropsPatch ?? node.data;
+
+      let widget: any = null;
+      if (node.type === 'Time') {
+        widget = new Time({ x, y, data });
+      } else if (node.type === 'IconPack') {
+        widget = new IconPack({ x, y, data });
+      } else {
+        return;
+      }
+
+      if (typeof node.id === 'string' && node.id) {
+        widget.node.setAttr('snapshotNodeId', node.id);
+      }
+      this.nodes.push(widget);
+      this.contentLayer.add(widget.node);
+    });
+
+    const stageState = snapshot.stage;
+    if (stageState.theme === 'light' || stageState.theme === 'dark') {
+      this.setTheme(stageState.theme);
+    }
+    if (typeof stageState.backgroundColor === 'string') {
+      this.setBackgroundColor(stageState.backgroundColor);
+    }
+    if (typeof stageState.showBackgroundDecorations === 'boolean') {
+      this.setShowBackgroundDecorations(stageState.showBackgroundDecorations);
+    }
+    if (typeof stageState.showAxis === 'boolean') {
+      this.setShowAxis(stageState.showAxis);
+    }
+    if (stageState.view) {
+      const scale =
+        typeof stageState.view.scale === 'number'
+          ? Math.max(this.minScale, Math.min(this.maxScale, stageState.view.scale))
+          : this.stage.scaleX();
+      const x = typeof stageState.view.x === 'number' ? stageState.view.x : this.stage.x();
+      const y = typeof stageState.view.y === 'number' ? stageState.view.y : this.stage.y();
+      this.stage.scale({ x: scale, y: scale });
+      this.stage.position({ x, y });
+    }
+
+    this.contentLayer.batchDraw();
+    this.emitLayoutChange();
+    this.emitSelectionChange();
+    return true;
+  }
+
+  serialize(meta: { name: string }): SnapshotV1 {
+    const view = {
+      scale: this.stage.scaleX(),
+      x: this.stage.x(),
+      y: this.stage.y(),
+    };
+
+    const nodes: SnapshotNode[] = this.nodes.map((widget: any) => {
+      const root: Konva.Group = widget.node;
+      const type = root.getAttr('snapshotType') as SnapshotNodeType;
+      const id = root.getAttr('snapshotNodeId') as string;
+
+      const data = this.cloneSerializable(widget.originalData);
+      const editPropsPatch = this.buildStructuredEditPropsPatch(root, data);
+
+      return {
+        type,
+        id,
+        transform: { x: root.x(), y: root.y() },
+        data,
+        editPropsPatch,
+      };
+    });
+
+    return {
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
+      meta: { name: meta.name },
+      stage: {
+        backgroundColor: this.backgroundColor,
+        theme: this.theme,
+        showBackgroundDecorations: this.showBackgroundDecorations,
+        showAxis: this.showAxis,
+        view,
+      },
+      nodes,
+    };
+  }
+
+  /** 调试探针：打印 snapshot 到 console 并返回；P4 完成后建议移除 */
+  __debugDump(): SnapshotV1 {
+    const snapshot = this.serialize({ name: '__debug__' });
+    console.log('[EditorCore] snapshot:', JSON.stringify(snapshot, null, 2));
+    return snapshot;
   }
 
   /** 销毁 Stage，释放 Konva 资源；组件卸载时调用 */

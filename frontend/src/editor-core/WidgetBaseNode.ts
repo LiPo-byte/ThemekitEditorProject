@@ -1,4 +1,5 @@
 import Konva from 'konva';
+import { nanoid } from 'nanoid';
 
 const PT_TO_PX = 4 / 3;
 export const pt = (n: number) => n * PT_TO_PX;
@@ -60,6 +61,8 @@ export default class BaseNode {
     public x: number;
     public y: number;
     public dataJson: any;
+    /** 构造时传入的原始 data 深拷贝；serialize 时使用，避免运行时 dataJson 被业务污染 */
+    public originalData: any;
     public gap: number;
     public ratio: number;
     public node: Konva.Group;
@@ -74,6 +77,7 @@ export default class BaseNode {
       this.x = x ?? 0;
       this.y = y ?? 0;
       this.dataJson = data;
+      this.originalData = data == null ? data : JSON.parse(JSON.stringify(data));
       this.gap = 50;
       this.ratio = ratio ?? 2;
       this.titlesNodes = new Map();
@@ -87,6 +91,7 @@ export default class BaseNode {
         deleteable: true,
         packable: true,
         instance: this,
+        snapshotNodeId: nanoid(),
       });
     }
 
@@ -222,6 +227,7 @@ export default class BaseNode {
             verticalAlign: 'middle',
             editProps: { ...params },
             itemKey: key,
+            snapshotNodeId: nanoid(),
         });
     }
 
@@ -279,9 +285,13 @@ export default class BaseNode {
             crop_props: (node: Konva.Node) => {
                 this.renderSource(node);
             },
-            radius: (node: Konva.Node) => {
+            radius: (node: any) => {
                 const { radius } = node.getAttr('editProps') || {};
-                node.setAttr('clipFunc', (ctx: any) => this.clipFuncBorderRadius(ctx, pt(radius), node.width(), node.height()))
+                // const n = node.findOne(() => {})
+                const radiusBox = node.findOne(
+                  (n: Konva.Node) => n.getAttr('radiusBox'),
+                );
+                radiusBox.setAttr('clipFunc', (ctx: any) => this.clipFuncBorderRadius(ctx, pt(radius), node.width(), node.height()))
             }
         }
         const editProps = node.getAttr('editProps');
@@ -328,9 +338,8 @@ export default class BaseNode {
             width: w,
             height: h,
             cropInstance: true,
-            editProps: {
-              radius,
-            },
+            radiusBox: true,
+            snapshotNodeId: nanoid(),
             // clip: { x: 0, y: 0, width: w, height: h },
             clipFunc: (ctx: any) =>
             this.clipFuncBorderRadius(ctx, pt(radius || WIDGET_BORDER_RADIUS), w, h),

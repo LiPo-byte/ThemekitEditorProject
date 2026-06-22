@@ -1,4 +1,5 @@
 import Konva from 'konva';
+import { nanoid } from 'nanoid';
 import BaseNode, { pt, WIDGET_BORDER_RADIUS, WHITE_PIXEL_DATA_URL } from "./WidgetBaseNode";
 // import mockdata from './mockdata.json';
 
@@ -14,6 +15,7 @@ export default class IconPack extends BaseNode {
       super(options);
       this.node.setAttr('title', 'Icon Pack');
       this.node.setAttr('editProps', { name: 'Icon Pack' });
+      this.node.setAttr('snapshotType', 'IconPack');
       this.init();
     }
 
@@ -24,7 +26,7 @@ export default class IconPack extends BaseNode {
       let cursorY = 0;
       let col = 8;
       const renderNode:any = [];
-      icon_pack.forEach((icon: string) => {
+      icon_pack.forEach((icon: string, index: number) => {
         const widthPx = ICON_WIDTH;
         const heightPx = ICON_WIDTH;
         const source = `http://localhost:5100/appicons2/${icon}`;
@@ -46,11 +48,15 @@ export default class IconPack extends BaseNode {
             editProps: {
                 source,
                 name: icon,
+                radius: 39.96,
                 crop_props: crop_props
             },
+            // IconPack 的 data 是 string[]，这里用索引路径回填到对应项。
+            snapshotDataPath: String(index),
+            snapshotNodeId: nanoid(),
           });
-          const rect = this.createRect({ w: widthPx, h: heightPx, radius: 39.96 });
-          const iconImage = this.createSource({ w: widthPx, h: heightPx, source, crop_props });
+          const rect = this.createRect({ w: widthPx, h: heightPx });
+          const iconImage = this.createSource({ w: widthPx, h: heightPx, source, crop_props, radius: 39.96 });
           this.backgroundImageNodes.set(iconGroup, iconImage);
           iconGroup.add(rect, iconImage);
           renderNode.push(iconGroup);

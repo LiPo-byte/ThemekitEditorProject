@@ -258,7 +258,6 @@ export const WidgetDefaultConfig = {
           "isLockScreen":false,
           "type":1,
           "textAlignment":1,
-          "row": 'multiple',
           "sizes":[
                 {
                     "size":1,
