@@ -1,6 +1,17 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { history, useLocation, useParams } from '@umijs/max';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import type { EditorCore } from '@/editor-core';
 import fontManifest from './components/font-manifest.json';
+import { postApiV1Project } from './service';
+import { message } from 'antd';
 
 const FONT_FACE_STYLE_ID = 'editor-font-face-manifest';
 const FONT_LOAD_TIMEOUT_MS = 4000;
@@ -34,6 +45,7 @@ export const DEFAULT_EDITOR_UI_VISIBILITY: EditorUIVisibility = {
 };
 
 type EditorCoreCtxValue = {
+  projectId: string | null;
   /** EditorCore 实例，画布挂载前为 null */
   core: EditorCore | null;
   coreLoading: boolean;
@@ -58,6 +70,7 @@ type EditorCoreCtxValue = {
 };
 
 const EditorCoreCtx = createContext<EditorCoreCtxValue>({
+  projectId: null,
   core: null,
   fontsReady: false,
   coreLoading: false,
@@ -77,6 +90,11 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
 
 /** 包裹整个编辑器页面，子组件可通过 useEditorCore 取到实例 */
 export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const params = useParams<{ projectId?: string }>();
+  const creatingProjectRef = useRef(false);
+
+  const [projectId, setProjectId] = useState<string | null>(params.projectId ?? null);
   const [core, setCore] = useState<EditorCore | null>(null);
   const [fontsReady, setFontsReady] = useState(false);
   const [coreLoading, setCoreLoading] = useState(true);
@@ -104,6 +122,39 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         zoomToolBar: !hide,
       });
   };
+  useEffect(() => {
+    if (params.projectId) {
+      setProjectId(params.projectId);
+      return;
+    }
+    if (location.pathname !== '/editor' || creatingProjectRef.current) {
+      return;
+    }
+
+    creatingProjectRef.current = true;
+    const createProjectAndReplacePath = async () => {
+      try {
+        const { project_id: createdProjectId } = await postApiV1Project();
+        const latestPath = history.location.pathname;
+        if (latestPath.startsWith('/editor/')) {
+          return;
+        }
+        setProjectId(createdProjectId);
+        history.replace({
+          pathname: `/editor/${createdProjectId}`,
+          search: history.location.search,
+          hash: history.location.hash,
+        });
+      } catch(error: any) {
+        message.error('创建项目失败！请稍后再试');
+      } finally {
+        creatingProjectRef.current = false;
+      }
+    };
+
+    void createProjectAndReplacePath();
+  }, [location.pathname, params.projectId]);
+
   useEffect(() => {
     let mounted = true;
     const prepareFonts = async () => {
@@ -150,6 +201,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   // value 的 identity 仅在 core 变化时改变，避免无意义 re-render
   const value = useMemo<EditorCoreCtxValue>(
     () => ({
+        projectId,
         core,
         fontsReady,
         setCore,
@@ -167,6 +219,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         setCropToolOpen,
     }),
     [
+        projectId,
         core,
         fontsReady,
         coreLoading,
@@ -179,6 +232,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
 /** 子组件读取 core 实例（未就绪返回 null，调用方自行判空） */
 export const useEditorCore = () => useContext(EditorCoreCtx).core;
+export const useEditorProjectId = () => useContext(EditorCoreCtx).projectId;
 export const useEditorFontsReady = () => useContext(EditorCoreCtx).fontsReady;
 export const useEditorCoreLoading = () => useContext(EditorCoreCtx).coreLoading;
 

@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime, timezone
+from typing import Any
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime
+from sqlalchemy import JSON, DateTime, UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -78,6 +79,7 @@ class User(UserBase, table=True):
         sa_type=DateTime(timezone=True),  # type: ignore
     )
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    projects: list["Project"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -130,6 +132,96 @@ class ItemPublic(ItemBase):
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
+
+
+class ProjectBase(SQLModel):
+    name: str = Field(min_length=1, max_length=128)
+    status: str = Field(default="draft", max_length=20)
+    current_version: int = Field(default=0, ge=0)
+
+
+class ProjectCreate(SQLModel):
+    name: str | None = Field(default=None, min_length=1, max_length=128)
+
+
+class ProjectCreateResponse(SQLModel):
+    project_id: uuid.UUID
+
+
+class Project(ProjectBase, table=True):
+    __tablename__ = "project"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    deleted_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))  # type: ignore
+    owner: User | None = Relationship(back_populates="projects")
+    elements: list["ProjectElement"] = Relationship(
+        back_populates="project", cascade_delete=True
+    )
+
+
+class ProjectElementBase(SQLModel):
+    element_key: str = Field(min_length=1, max_length=128)
+    category: str = Field(min_length=1, max_length=32)
+    subtype: str = Field(min_length=1, max_length=32)
+    x: float = 0
+    y: float = 0
+    visible: bool = True
+    locked: bool = False
+
+
+class ProjectElement(ProjectElementBase, table=True):
+    __tablename__ = "project_element"
+    __table_args__ = (UniqueConstraint("project_id", "element_key"),)
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    project_id: uuid.UUID = Field(
+        foreign_key="project.id", nullable=False, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    deleted_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))  # type: ignore
+    project: Project | None = Relationship(back_populates="elements")
+    config: "ElementConfig" = Relationship(back_populates="element")
+
+
+class ElementConfigBase(SQLModel):
+    schema_version: int = Field(default=1, ge=1)
+    config_json: dict[str, Any] = Field(default_factory=dict, sa_type=JSON)
+
+
+class ElementConfig(ElementConfigBase, table=True):
+    __tablename__ = "element_config"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    element_id: uuid.UUID = Field(
+        foreign_key="project_element.id", nullable=False, unique=True, ondelete="CASCADE"
+    )
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    updated_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    element: ProjectElement | None = Relationship(back_populates="config")
 
 
 # Generic message

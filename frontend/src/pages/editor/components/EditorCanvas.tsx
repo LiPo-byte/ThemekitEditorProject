@@ -1,7 +1,12 @@
 import React, { useEffect } from 'react';
 import { createStyles } from 'antd-style';
 import { EditorCore } from '@/editor-core';
-import { useEditorCoreLoading, useEditorCoreSetter, useEditorFontsReady } from '../context';
+import {
+  useEditorCoreLoading,
+  useEditorCoreSetter,
+  useEditorFontsReady,
+  useEditorProjectId
+} from '../context';
 import ActionPopover from './ActionPopover';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 
@@ -49,11 +54,13 @@ const useStyles = createStyles(({ token, css }) => ({
 const EditorCanvas: React.FC = () => {
   const { styles } = useStyles();
   const setCore = useEditorCoreSetter();
+  const projectId = useEditorProjectId();
   const fontsReady = useEditorFontsReady();
   const coreLoading = useEditorCoreLoading();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 300 });
   useEffect(() => {
     if (!fontsReady) return;
+    if (!projectId) return;
     // useEffect 在 DOM commit 之后才跑，#editor-container 必然存在
     const core = new EditorCore('editor-container');
     setCore(core);
@@ -62,10 +69,13 @@ const EditorCanvas: React.FC = () => {
       const cachedSnapshot = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
       if (cachedSnapshot) {
         const parsed = JSON.parse(cachedSnapshot);
-        const loaded = core.loadSnapshot(parsed);
-        if (!loaded) {
-          console.warn('[EditorCanvas] local snapshot is invalid, skipped restore');
-        }
+        const { id } = parsed;
+        if (id === projectId) {
+          const loaded = core.loadSnapshot(parsed);
+          if (!loaded) {
+            console.warn('[EditorCanvas] local snapshot is invalid, skipped restore');
+          }
+        };
       }
     } catch (error) {
       console.warn('[EditorCanvas] restore snapshot from localStorage failed:', error);
@@ -78,7 +88,7 @@ const EditorCanvas: React.FC = () => {
     const persistSnapshot = () => {
       try {
         const snapshot = core.serialize({ name: 'local-draft' });
-        localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshot));
+        localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify({...snapshot, id: projectId}));
       } catch (error) {
         console.warn('[EditorCanvas] save snapshot to localStorage failed:', error);
       }
@@ -127,7 +137,7 @@ const EditorCanvas: React.FC = () => {
       core.destroy();
       setCore(null);
     };
-  }, [fontsReady, setCore]);
+  }, [fontsReady, setCore, projectId]);
 
   return (
     <div className={`${styles.shell} ${playEnterAnimation ? styles.shellEnter : ''}`}>

@@ -1743,15 +1743,13 @@ export class EditorCore {
       const type = root.getAttr('snapshotType') as SnapshotNodeType;
       const id = root.getAttr('snapshotNodeId') as string;
 
-      const data = this.cloneSerializable(widget.originalData);
-      const editPropsPatch = this.buildStructuredEditPropsPatch(root, data);
+      const data = this.buildStructuredEditPropsPatch(root, this.cloneSerializable(widget.originalData));
 
       return {
         type,
         id,
         transform: { x: root.x(), y: root.y() },
         data,
-        editPropsPatch,
       };
     });
 

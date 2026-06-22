@@ -18,6 +18,12 @@ export default [
     component: './editor',
   },
   {
+    name: 'editor-detail',
+    layout: false,
+    path: '/editor/:projectId',
+    component: './editor',
+  },
+  {
     name: 'designer-list',
     icon: 'team',
     access: 'canAdmin',
