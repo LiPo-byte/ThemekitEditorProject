@@ -330,12 +330,12 @@ export const ImageUpload: React.FC<{
         onChange({ id, value: latestFile.url });
         return;
       }
-      if (latestFile.originFileObj) {
+      getBase64(latestFile.originFileObj as FileType).then(res => {
         onChange({
           id,
-          value: URL.createObjectURL(latestFile.originFileObj as File),
+          value: res,
         });
-      }
+      });
     };
 
   const onDeleteSource = (id: any) => {

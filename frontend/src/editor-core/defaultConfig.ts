@@ -1,5 +1,10 @@
-
-
+export const crop_props = {
+    scaleX: 1,
+    scaleY: 1,
+    rotation: 0,
+    translateX: 0,
+    translateY: 0,
+};
 export const WidgetDefaultConfig = {
     Time_LayoutType_0: {
         ios: {
@@ -13,6 +18,7 @@ export const WidgetDefaultConfig = {
                     "name": "Time-IOS-Small",
                     "radius": 28,
                     "source": "",
+                    "crop_props": crop_props,
                     "padding":16,
                     "time":{
                         "font":"AvenirNext-HeavyItalic",
@@ -44,6 +50,7 @@ export const WidgetDefaultConfig = {
                     "padding":16,
                     "radius": 28,
                     "source": "",
+                    "crop_props": crop_props,
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":32,
@@ -74,6 +81,7 @@ export const WidgetDefaultConfig = {
                     "padding":16,
                     "radius": 28,
                     "source": "",
+                    "crop_props": crop_props,
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":54,
@@ -110,6 +118,7 @@ export const WidgetDefaultConfig = {
                     "size":1,
                     "name": "Time-Android-Small",
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "padding": 16,
                     "time":{
@@ -141,6 +150,7 @@ export const WidgetDefaultConfig = {
                     "name": "Time-Android-Medium",
                     "padding":16,
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "time":{
                         "font":"AvenirNext-Bold",
@@ -171,6 +181,7 @@ export const WidgetDefaultConfig = {
                     "name": "Time-Android-Large",
                     "padding":16,
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "time":{
                         "font":"AvenirNext-Bold",
@@ -211,6 +222,7 @@ export const WidgetDefaultConfig = {
                     "name": "Time-IOS-Small",
                     "layoutType": '0-1',
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "padding":16,
                     "time":{
@@ -226,6 +238,7 @@ export const WidgetDefaultConfig = {
                     "name": "Time-IOS-Medium",
                     "padding":16,
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "layoutType": '0-1',
                     "time":{
@@ -241,6 +254,7 @@ export const WidgetDefaultConfig = {
                     "name": "Time-IOS-Large",
                     "padding":16,
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "layoutType": '0-1',
                     "time":{
@@ -264,6 +278,7 @@ export const WidgetDefaultConfig = {
                     "name": "Time-Android-Small",
                     "padding":16,
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "layoutType": '0-1',
                     "time":{
@@ -279,6 +294,7 @@ export const WidgetDefaultConfig = {
                     "name": "Time-Android-Medium",
                     "padding":16,
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "layoutType": '0-1',
                     "time":{
@@ -293,6 +309,7 @@ export const WidgetDefaultConfig = {
                     "size":3,
                     "name": "Time-Android-Large",
                     "source": "",
+                    "crop_props": crop_props,
                     "radius": 28,
                     "padding":16,
                     "layoutType": '0-1',

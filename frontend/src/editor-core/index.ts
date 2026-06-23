@@ -5,6 +5,7 @@ import {
   SNAPSHOT_SCHEMA_VERSION,
   type SnapshotNode,
   type SnapshotNodeType,
+  type SnapshotCategory,
   type SnapshotV1,
 } from './snapshot';
 
@@ -332,6 +333,7 @@ export class EditorCore {
       }
       node = node.getParent();
     }
+
     if (isMultiSelect) return;
     this.deselect();
   };
@@ -1653,6 +1655,32 @@ export class EditorCore {
     return patch;
   }
 
+  loadData(data: any): void {
+    const snapshot = {
+      schemaVersion: 1,
+      stage: {
+        "backgroundColor": "#ffffff",
+        "theme": "light",
+        "showBackgroundDecorations": true,
+        "showAxis": true,
+        "view": {
+            "scale": 0.644608916217797,
+            "x": 156.72746794795165,
+            "y": 123.32070607242446
+        }
+      },
+      nodes: data.elements.map((node: any) => {
+        return {
+          category: node.category,
+          type: node.subtype,
+          id: node.element_key,
+          transform: { x: node.x, y: node.y },
+          data: node.config_json,
+        }
+      })
+    };
+    this.loadSnapshot(snapshot);
+  }
   /**
    * 从 snapshot 回显到当前画布：
    * - 清空当前节点与历史栈
@@ -1675,7 +1703,7 @@ export class EditorCore {
     this.contentLayer.destroyChildren();
     this.undoStack = [];
     this.redoStack = [];
-    this.emitHistoryChange();
+    // this.emitHistoryChange();
 
     snapshot.nodes.forEach((nodeLike) => {
       const node = nodeLike as Partial<SnapshotNode>;
@@ -1686,9 +1714,9 @@ export class EditorCore {
       const data = node.editPropsPatch ?? node.data;
 
       let widget: any = null;
-      if (node.type === 'Time') {
+      if (node.type === 'time') {
         widget = new Time({ x, y, data });
-      } else if (node.type === 'IconPack') {
+      } else if (node.type === 'iconpack') {
         widget = new IconPack({ x, y, data });
       } else {
         return;
@@ -1741,12 +1769,14 @@ export class EditorCore {
     const nodes: SnapshotNode[] = this.nodes.map((widget: any) => {
       const root: Konva.Group = widget.node;
       const type = root.getAttr('snapshotType') as SnapshotNodeType;
+      const category = root.getAttr('snapshotCategory') as SnapshotCategory;
       const id = root.getAttr('snapshotNodeId') as string;
 
       const data = this.buildStructuredEditPropsPatch(root, this.cloneSerializable(widget.originalData));
 
       return {
         type,
+        category,
         id,
         transform: { x: root.x(), y: root.y() },
         data,

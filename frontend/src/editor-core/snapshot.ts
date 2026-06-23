@@ -9,7 +9,8 @@
 
 export const SNAPSHOT_SCHEMA_VERSION = 1 as const;
 
-export type SnapshotNodeType = 'Time' | 'IconPack';
+export type SnapshotNodeType = 'time' | 'iconpack';
+export type SnapshotCategory = 'widget' | 'iconpack';
 
 export type SnapshotTransform = {
   x: number;
@@ -39,6 +40,7 @@ export type SnapshotV1 = {
 export type SnapshotNode = {
   /** 节点类型，对应 EditorCore 的 add 入口（addWidget / addIconPack 等） */
   type: SnapshotNodeType;
+  category: SnapshotCategory;
   /** widget 实例 id（widget 根节点的 snapshotNodeId），nanoid 生成 */
   id: string;
   /** widget 在 stage 世界坐标的位置 */

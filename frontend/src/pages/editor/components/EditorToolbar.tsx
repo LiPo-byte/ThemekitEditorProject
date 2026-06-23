@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createStyles } from 'antd-style';
-import { useEditorCore, useEditorCoreLoading, useEditorToolbarVisible } from '../context';
+import { useEditorCore, useEditorCoreLoading, useEditorToolbarVisible, useEditorSaveAllNow } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { Dropdown, type MenuProps, Button, Tooltip, Input } from 'antd';
 import type { InputRef } from 'antd';
@@ -167,6 +167,7 @@ const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, 
 const EditorToolbar: React.FC = () => {
   const { styles } = useStyles();
   const core = useEditorCore();
+  const saveAllNow = useEditorSaveAllNow();
   const visible = useEditorToolbarVisible();
   const coreLoading = useEditorCoreLoading();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
@@ -175,6 +176,7 @@ const EditorToolbar: React.FC = () => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  
   useEffect(() => {
     if (!core) {
       setHistoryState({ canUndo: false, canRedo: false });
@@ -185,24 +187,17 @@ const EditorToolbar: React.FC = () => {
     });
   }, [core]);
 
+  let timer:any = null;
   const onSave = async () => {
     if (!core) return;
-    const url = core.captureCanvas({
-      outputWidth: 400,
-      outputHeight: 300,
-      fit: 'contain',
-      padding: 20,
-    });
-    if (!url) return;
-    const win = window.open('', '_blank');
-    if (!win) return;
-    win.document.write(
-      `<title>画布截图</title>
-       <style>body{margin:0;background:#222;display:flex;align-items:center;justify-content:center;min-height:100vh}
-       img{box-shadow:0 0 20px rgba(0,0,0,.5)}</style>
-       <img src="${url}" />`,
-    );
-    win.document.close();
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      saveAllNow();
+      clearTimeout(timer);
+      timer = null;
+    }, 200)
   }
 
   if (!visible) return null;

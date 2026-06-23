@@ -148,6 +148,71 @@ class ProjectCreateResponse(SQLModel):
     project_id: uuid.UUID
 
 
+class ProjectElementSave(SQLModel):
+    element_key: str = Field(min_length=1, max_length=128)
+    category: str = Field(min_length=1, max_length=32)
+    subtype: str = Field(min_length=1, max_length=32)
+    x: float = 0
+    y: float = 0
+    visible: bool = True
+    locked: bool = False
+    schema_version: int = Field(default=1, ge=1)
+    config_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProjectSaveRequest(SQLModel):
+    elements: list[ProjectElementSave] | None = None
+    preview_image: str | None = None
+
+
+class ProjectSaveResponse(SQLModel):
+    project_id: uuid.UUID
+    saved_count: int
+    updated_at: datetime
+
+
+class ProjectDetailElement(SQLModel):
+    element_key: str
+    category: str
+    subtype: str
+    x: float
+    y: float
+    visible: bool
+    locked: bool
+    schema_version: int
+    config_json: dict[str, Any]
+
+
+class ProjectDetailResponse(SQLModel):
+    project_id: uuid.UUID
+    name: str
+    status: str
+    current_version: int
+    preview_image: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    elements: list[ProjectDetailElement]
+
+
+class ProjectUploadImageResponse(SQLModel):
+    url: str
+    path: str
+    content_type: str
+    size: int
+
+
+class ProjectAssetItem(SQLModel):
+    url: str
+    path: str
+    content_type: str | None = None
+    size: int
+
+
+class ProjectAssetsResponse(SQLModel):
+    project_id: uuid.UUID
+    assets: list[ProjectAssetItem]
+
+
 class Project(ProjectBase, table=True):
     __tablename__ = "project"
 
@@ -163,6 +228,7 @@ class Project(ProjectBase, table=True):
         default_factory=get_datetime_utc,
         sa_type=DateTime(timezone=True),  # type: ignore
     )
+    preview_image: str | None = None
     deleted_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))  # type: ignore
     owner: User | None = Relationship(back_populates="projects")
     elements: list["ProjectElement"] = Relationship(

@@ -2,6 +2,7 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 from sqlmodel import Session, delete
 
 from app.core.config import settings
@@ -15,6 +16,12 @@ from tests.utils.utils import get_superuser_token_headers
 @pytest.fixture(scope="session", autouse=True)
 def db() -> Generator[Session, None, None]:
     with Session(engine) as session:
+        current_db = session.exec(text("SELECT current_database()")).one()[0]
+        if current_db != "app_test":
+            raise RuntimeError(
+                f"Refusing to run tests against non-test database: {current_db}. "
+                "Please run tests with POSTGRES_DB=app_test."
+            )
         init_db(session)
         yield session
         statement = delete(Item)

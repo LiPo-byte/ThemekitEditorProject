@@ -16,11 +16,14 @@ export default class Time extends BaseNode {
       this.androidNodes = {};
       this.iosWidgetGroup = null;
       this.androidWidgetGroup = null;
+      this.category = 'widget';
+      this.subtype = 'time';
       // this.titlesNodes = new Map();
       // this.backgroundImageNodes = new Map();
       this.node.setAttr('title', 'Time');
       this.node.setAttr('editProps', { name: 'Time' });
-      this.node.setAttr('snapshotType', 'Time');
+      this.node.setAttr('snapshotCategory', 'widget');
+      this.node.setAttr('snapshotType', 'time');
       this.initLayoutFns();
       this.init();
     }
@@ -222,19 +225,13 @@ export default class Time extends BaseNode {
         source,
         radius,
         dataPath,
+        crop_props,
       } = options;
 
       const sizeCfg = WIDGET_SIZE[sizeKey];
       const widthPx = pt(sizeCfg.width);
       const heightPx = pt(sizeCfg.height);
 
-      const crop_props = {
-        scaleX: 1,
-        scaleY: 1,
-        rotation: 0,
-        translateX: 0,
-        translateY: 0,
-      };
       const widgetGroup = new Konva.Group({
         x: 0,
         y: 0,
@@ -250,7 +247,7 @@ export default class Time extends BaseNode {
             name,
             source,
             radius,
-            crop_props: crop_props,
+            crop_props,
         },
         // Widget 容器级字段（padding/name/source/radius/crop_props）回填路径。
         snapshotDataPath: dataPath,

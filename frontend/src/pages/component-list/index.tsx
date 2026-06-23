@@ -19,7 +19,7 @@ const ComponentList: React.FC = () => {
                 <img
                   draggable={false}
                   alt="example"
-                  src="https://images.unsplash.com/photo-1777400547618-2fb8571fb11c?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw5fHx8ZW58MHx8fHx8"
+                  src="http://localhost:8000/data/project/e01cb63a-cc16-42e9-a0a5-ca6a6e4fa6f8/preview.webp"
                 />
               }
               hoverable
@@ -42,7 +42,6 @@ const ComponentList: React.FC = () => {
                   </Flex>
                 }
               />
-              
             </Card>
           </Col>
         ))}

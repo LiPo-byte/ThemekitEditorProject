@@ -70,6 +70,8 @@ export default class BaseNode {
     public backgroundImageNodes: any;
     public renderNodes: any;
     public layoutFns: any;
+    public category: string;
+    public subtype: string;
     constructor(options: any) {
       const { x, y, data, ratio } = options;
       this.width = 0;
@@ -84,6 +86,8 @@ export default class BaseNode {
       this.backgroundImageNodes = new Map();
       this.renderNodes = [];
       this.layoutFns = {};
+      this.category = '';
+      this.subtype = '';
       this.node = new Konva.Group({
         x: this.x,
         y: this.y,

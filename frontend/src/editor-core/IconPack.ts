@@ -13,14 +13,16 @@ function getSuffixName(filename: string): string {
 export default class IconPack extends BaseNode {
     constructor(options: any) {
       super(options);
+      this.category = 'iconpack';
+      this.subtype = 'iconpack';
       this.node.setAttr('title', 'Icon Pack');
       this.node.setAttr('editProps', { name: 'Icon Pack' });
-      this.node.setAttr('snapshotType', 'IconPack');
+      this.node.setAttr('snapshotCategory', 'iconpack');
+      this.node.setAttr('snapshotType', 'iconpack');
       this.init();
     }
 
    init() {
-      // mock数据
       const icon_pack = this.dataJson;
       let cursorX = 0;
       let cursorY = 0;

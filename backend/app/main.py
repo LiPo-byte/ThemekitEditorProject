@@ -1,6 +1,9 @@
+from pathlib import Path
+
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
@@ -19,6 +22,10 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
+
+_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+_DATA_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/data", StaticFiles(directory=str(_DATA_DIR)), name="data")
 
 # Set all CORS enabled origins
 if settings.all_cors_origins:

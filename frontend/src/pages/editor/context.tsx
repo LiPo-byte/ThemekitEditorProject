@@ -12,6 +12,10 @@ import type { EditorCore } from '@/editor-core';
 import fontManifest from './components/font-manifest.json';
 import { postApiV1Project } from './service';
 import { message } from 'antd';
+import {
+  type ProjectAutoSaveStatus,
+  useProjectAutoSave,
+} from './hooks/useProjectAutoSave';
 
 const FONT_FACE_STYLE_ID = 'editor-font-face-manifest';
 const FONT_LOAD_TIMEOUT_MS = 4000;
@@ -46,6 +50,9 @@ export const DEFAULT_EDITOR_UI_VISIBILITY: EditorUIVisibility = {
 
 type EditorCoreCtxValue = {
   projectId: string | null;
+  saveStatus: ProjectAutoSaveStatus;
+  lastSavedAt: string | null;
+  saveAllNow: () => void;
   /** EditorCore 实例，画布挂载前为 null */
   core: EditorCore | null;
   coreLoading: boolean;
@@ -71,6 +78,9 @@ type EditorCoreCtxValue = {
 
 const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   projectId: null,
+  saveStatus: 'idle',
+  lastSavedAt: null,
+  saveAllNow: () => {},
   core: null,
   fontsReady: false,
   coreLoading: false,
@@ -95,6 +105,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const creatingProjectRef = useRef(false);
 
   const [projectId, setProjectId] = useState<string | null>(params.projectId ?? null);
+  const [saveStatus, setSaveStatus] = useState<ProjectAutoSaveStatus>('idle');
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [core, setCore] = useState<EditorCore | null>(null);
   const [fontsReady, setFontsReady] = useState(false);
   const [coreLoading, setCoreLoading] = useState(true);
@@ -104,6 +116,17 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     DEFAULT_EDITOR_UI_VISIBILITY,
   );
   const [previewDevicesOpen, setPreviewDevicesOpen] = useState(false);
+
+  const { saveAllNow } = useProjectAutoSave({
+    core,
+    projectId,
+    onStatusChange: (status, meta) => {
+      setSaveStatus(status);
+      if (meta && Object.hasOwn(meta, 'lastSavedAt')) {
+        setLastSavedAt(meta.lastSavedAt ?? null);
+      }
+    },
+  });
 
   const setUIVisibility = (patch: Partial<EditorUIVisibility>) => {
     setUIVisibilityState((prev) => ({ ...prev, ...patch }));
@@ -145,7 +168,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
           search: history.location.search,
           hash: history.location.hash,
         });
-      } catch(error: any) {
+      } catch(_error: any) {
         message.error('创建项目失败！请稍后再试');
       } finally {
         creatingProjectRef.current = false;
@@ -202,6 +225,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const value = useMemo<EditorCoreCtxValue>(
     () => ({
         projectId,
+        saveStatus,
+        lastSavedAt,
+        saveAllNow,
         core,
         fontsReady,
         setCore,
@@ -220,6 +246,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     }),
     [
         projectId,
+        saveStatus,
+        lastSavedAt,
+        saveAllNow,
         core,
         fontsReady,
         coreLoading,
@@ -233,6 +262,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 /** 子组件读取 core 实例（未就绪返回 null，调用方自行判空） */
 export const useEditorCore = () => useContext(EditorCoreCtx).core;
 export const useEditorProjectId = () => useContext(EditorCoreCtx).projectId;
+export const useEditorSaveStatus = () => useContext(EditorCoreCtx).saveStatus;
+export const useEditorLastSavedAt = () => useContext(EditorCoreCtx).lastSavedAt;
+export const useEditorSaveAllNow = () => useContext(EditorCoreCtx).saveAllNow;
 export const useEditorFontsReady = () => useContext(EditorCoreCtx).fontsReady;
 export const useEditorCoreLoading = () => useContext(EditorCoreCtx).coreLoading;
 
