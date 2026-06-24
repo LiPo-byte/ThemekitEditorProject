@@ -186,8 +186,9 @@ export default class BaseNode {
 
     addTitle(node: Konva.Node, textSize?: Number, text?: string) {
         if (typeof text === 'undefined') {
-            const { name, system } = node.getAttr('editProps') || {};
-            text = name || system;
+            const { name, system, appname } = node.getAttr('editProps') || {};
+            // const title = node.getAttr('title') || 'title';
+            text = name || system || appname;
         }
         if (this.titlesNodes.has(node)) {
           const title = this.titlesNodes.get(node);
@@ -384,7 +385,7 @@ export default class BaseNode {
     }
 
     renderSource(node: Konva.Node) {
-        const { source, crop_props, } = node.getAttr('editProps') || {};
+        const { source, crop_props } = node.getAttr('editProps') || {};
         if (this.backgroundImageNodes.has(node)) {
           const bgImage = this.backgroundImageNodes.get(node);
           const bgImageInstance = bgImage.findOne(

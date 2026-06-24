@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
-from sqlmodel import select
+from sqlmodel import col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
@@ -19,9 +19,15 @@ from app.models import (
     ProjectDetailElement,
     ProjectDetailResponse,
     ProjectElement,
+    ProjectListItem,
+    ProjectListResponse,
+    ProjectOwnerInfo,
     ProjectSaveRequest,
     ProjectSaveResponse,
+    ProjectUpdateNameRequest,
+    ProjectUpdateNameResponse,
     ProjectUploadImageResponse,
+    User,
 )
 
 router = APIRouter(prefix="/project", tags=["project"])
@@ -90,6 +96,65 @@ def create_project(
     session.commit()
     session.refresh(project)
     return ProjectCreateResponse(project_id=project.id)
+
+
+@router.get("/", response_model=ProjectListResponse)
+def get_project_list(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    base_condition = Project.deleted_at.is_(None)
+    if current_user.is_superuser:
+        count_statement = (
+            select(func.count()).select_from(Project).where(base_condition)
+        )
+        statement = (
+            select(Project, User)
+            .join(User, User.id == Project.owner_id)
+            .where(base_condition)
+            .order_by(col(Project.updated_at).desc())
+            .offset(skip)
+            .limit(limit)
+        )
+    else:
+        count_statement = (
+            select(func.count())
+            .select_from(Project)
+            .where(base_condition, Project.owner_id == current_user.id)
+        )
+        statement = (
+            select(Project, User)
+            .join(User, User.id == Project.owner_id)
+            .where(base_condition, Project.owner_id == current_user.id)
+            .order_by(col(Project.updated_at).desc())
+            .offset(skip)
+            .limit(limit)
+        )
+
+    count = session.exec(count_statement).one()
+    projects = session.exec(statement).all()
+    data = [
+        ProjectListItem(
+            project_id=project.id,
+            name=project.name,
+            status=project.status,
+            current_version=project.current_version,
+            preview_image=project.preview_image,
+            created_at=project.created_at,
+            updated_at=project.updated_at,
+            owner=ProjectOwnerInfo(
+                id=owner.id,
+                username=owner.username,
+                email=owner.email,
+                full_name=owner.full_name,
+            ),
+        )
+        for project, owner in projects
+    ]
+    return ProjectListResponse(data=data, count=count)
 
 
 @router.put("/{project_id}/elements/batch", response_model=ProjectSaveResponse)
@@ -234,6 +299,32 @@ def get_project_detail(
         created_at=project.created_at,
         updated_at=project.updated_at,
         elements=elements,
+    )
+
+
+@router.patch("/{project_id}", response_model=ProjectUpdateNameResponse)
+def update_project_name(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    project_id: uuid.UUID,
+    project_in: ProjectUpdateNameRequest,
+) -> Any:
+    project = session.get(Project, project_id)
+    if not project or project.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if not current_user.is_superuser and project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    project.name = project_in.name
+    project.updated_at = datetime.now(timezone.utc)
+    session.add(project)
+    session.commit()
+    session.refresh(project)
+    return ProjectUpdateNameResponse(
+        project_id=project.id,
+        name=project.name,
+        updated_at=project.updated_at or datetime.now(timezone.utc),
     )
 
 

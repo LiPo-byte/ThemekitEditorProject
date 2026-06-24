@@ -31,6 +31,21 @@ export type ProjectSaveResponse = {
   updated_at: string;
 };
 
+export type ProjectListItem = {
+  project_id: string;
+  name: string;
+  status: string;
+  current_version: number;
+  preview_image: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type ProjectListResponse = {
+  data: ProjectListItem[];
+  count: number;
+};
+
 export type ProjectDetailElement = {
   element_key: string;
   category: string;
@@ -54,6 +69,16 @@ export type ProjectDetailResponse = {
   elements: ProjectDetailElement[];
 };
 
+export type ProjectUpdateNameRequest = {
+  name: string;
+};
+
+export type ProjectUpdateNameResponse = {
+  project_id: string;
+  name: string;
+  updated_at: string;
+};
+
 export type ProjectUploadImageResponse = {
   url: string;
   path: string;
@@ -72,6 +97,18 @@ export async function postApiV1Project(
       'Content-Type': 'application/json',
     },
     data: body ?? {},
+    ...(options || {}),
+  });
+}
+
+/** 获取项目列表 GET /api/v1/project/ */
+export async function getProjectList(
+  params?: { skip?: number; limit?: number },
+  options?: { [key: string]: any },
+) {
+  return request<ProjectListResponse>('/api/v1/project/', {
+    method: 'GET',
+    params,
     ...(options || {}),
   });
 }
@@ -102,6 +139,22 @@ export async function getProjectDetail(
 ) {
   return request<ProjectDetailResponse>(`/api/v1/project/${projectId}`, {
     method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** 修改项目名称 PATCH /api/v1/project/{project_id} */
+export async function patchProjectName(
+  projectId: string,
+  body: ProjectUpdateNameRequest,
+  options?: { [key: string]: any },
+) {
+  return request<ProjectUpdateNameResponse>(`/api/v1/project/${projectId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
     ...(options || {}),
   });
 }

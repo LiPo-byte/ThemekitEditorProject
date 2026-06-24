@@ -24,18 +24,17 @@ export default [
     component: './editor',
   },
   {
+    name: 'project-list',
+    icon: 'appstore',
+    path: '/project-list',
+    component: './project-list',
+  },
+  {
     name: 'designer-list',
     icon: 'team',
     access: 'canAdmin',
     path: '/designer-list',
     component: './designer-list',
-  },
-  {
-    name: 'component-list',
-    icon: 'appstore',
-    access: 'canAdmin',
-    path: '/component-list',
-    component: './component-list',
   },
   {
     name: 'account',

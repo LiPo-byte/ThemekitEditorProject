@@ -48,8 +48,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
       history.push('/designer-list');
       return;
     }
-    if (key === 'component-list') {
-      history.push('/component-list');
+    if (key === 'project-list') {
+      history.push('/project-list');
       return;
     }
     history.push(`/account/${key}`);
@@ -69,9 +69,9 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
     icon: <TeamOutlined />,
     label: '设计师',
   }, {
-    key: 'component-list',
+    key: 'project-list',
     icon: <AppstoreOutlined />,
-    label: '资源',
+    label: '项目',
   }] : [];
 
   const menuItems: MenuProps['items'] = [

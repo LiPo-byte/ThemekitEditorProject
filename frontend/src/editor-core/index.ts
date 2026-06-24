@@ -8,6 +8,7 @@ import {
   type SnapshotCategory,
   type SnapshotV1,
 } from './snapshot';
+import { defaultCropProps } from './defaultConfig';
 
 /** 96 DPI 下 1pt = 4/3 px；编辑器内部统一用 px 喂给 Konva，对外尺寸接口可以用 pt 表达 */
 const PT_TO_PX = 4 / 3;
@@ -553,6 +554,7 @@ export class EditorCore {
 
     candidateNodes.forEach((node) => {
       const editProps = node.getAttr('editProps');
+      const title = node.getAttr('title');
       if (!editProps || typeof editProps !== 'object') return;
       Object.entries(editProps).forEach(([key, value]) => {
         // 图片资源需要单独处理
@@ -560,7 +562,7 @@ export class EditorCore {
           const obj = mergedEditProps[key] || [];
           obj.push({
             id: node._id,
-            name: editProps.name || '未知',
+            name: editProps.name || title || '未知',
             source: value,
           })
           mergedEditProps[key] = [...obj];
@@ -1035,6 +1037,13 @@ export class EditorCore {
       // 如果不包含此参数，直接返回
       if (!Object.keys(prevEditProps).includes(key)) return;
 
+      let nextpv:any = {
+        [key]: value,
+      };
+      if (key === 'source' && !value) {
+        nextpv.crop_props = defaultCropProps;
+      }
+
       const hasChanged = prevEditProps[key] !== value;
       if (!hasChanged) return;
 
@@ -1045,7 +1054,7 @@ export class EditorCore {
         },
         nextAttrs: {
           ...prevEditProps,
-          [key]: value,
+          ...nextpv,
         },
       });
     });

@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createStyles } from 'antd-style';
-import { useEditorCore, useEditorCoreLoading, useEditorToolbarVisible, useEditorSaveAllNow } from '../context';
+import {
+  useEditorCore,
+  useEditorCoreLoading,
+  useEditorToolbarVisible,
+  useEditorSaveAllNow,
+  useEditorProjectNameSetter,
+  useEditorProjectName,
+  useEditorProjectId,
+} from '../context';
+import { patchProjectName } from '../service';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { Dropdown, type MenuProps, Button, Tooltip, Input } from 'antd';
 import type { InputRef } from 'antd';
@@ -167,11 +176,13 @@ const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, 
 const EditorToolbar: React.FC = () => {
   const { styles } = useStyles();
   const core = useEditorCore();
+  const projectName = useEditorProjectName();
+  const setProjectName = useEditorProjectNameSetter();
+  const projectId = useEditorProjectId();
   const saveAllNow = useEditorSaveAllNow();
   const visible = useEditorToolbarVisible();
   const coreLoading = useEditorCoreLoading();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
-  const [fileName, setFileName] = useState('File Name');
   const [historyState, setHistoryState] = useState({ canUndo: false, canRedo: false });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -242,7 +253,13 @@ const EditorToolbar: React.FC = () => {
                 onClick={() => core?.redo()}
               />
           </Tooltip>
-          <EditableFileNameButton value={fileName} onChange={setFileName} />
+          <EditableFileNameButton value={projectName} onChange={(name: string) => {
+            if (projectId) {
+              patchProjectName(projectId, { name: name }).then(() => {
+                setProjectName(name);
+              })
+            }
+          }} />
     </div>
   );
 };

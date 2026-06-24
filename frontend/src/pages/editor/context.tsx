@@ -50,6 +50,8 @@ export const DEFAULT_EDITOR_UI_VISIBILITY: EditorUIVisibility = {
 
 type EditorCoreCtxValue = {
   projectId: string | null;
+  projectName: string;
+  setProjectName: (s: string) => void;
   saveStatus: ProjectAutoSaveStatus;
   lastSavedAt: string | null;
   saveAllNow: () => void;
@@ -78,6 +80,8 @@ type EditorCoreCtxValue = {
 
 const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   projectId: null,
+  projectName: '',
+  setProjectName: () => {},
   saveStatus: 'idle',
   lastSavedAt: null,
   saveAllNow: () => {},
@@ -105,6 +109,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const creatingProjectRef = useRef(false);
 
   const [projectId, setProjectId] = useState<string | null>(params.projectId ?? null);
+  const [projectName, setProjectName] = useState<string>('Untitled Project');
   const [saveStatus, setSaveStatus] = useState<ProjectAutoSaveStatus>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [core, setCore] = useState<EditorCore | null>(null);
@@ -225,6 +230,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const value = useMemo<EditorCoreCtxValue>(
     () => ({
         projectId,
+        projectName,
+        setProjectName,
         saveStatus,
         lastSavedAt,
         saveAllNow,
@@ -246,6 +253,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     }),
     [
         projectId,
+        projectName,
         saveStatus,
         lastSavedAt,
         saveAllNow,
@@ -262,6 +270,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 /** 子组件读取 core 实例（未就绪返回 null，调用方自行判空） */
 export const useEditorCore = () => useContext(EditorCoreCtx).core;
 export const useEditorProjectId = () => useContext(EditorCoreCtx).projectId;
+export const useEditorProjectName = () => useContext(EditorCoreCtx).projectName;
+export const useEditorProjectNameSetter = () => useContext(EditorCoreCtx).setProjectName;
 export const useEditorSaveStatus = () => useContext(EditorCoreCtx).saveStatus;
 export const useEditorLastSavedAt = () => useContext(EditorCoreCtx).lastSavedAt;
 export const useEditorSaveAllNow = () => useContext(EditorCoreCtx).saveAllNow;

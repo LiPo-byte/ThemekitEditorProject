@@ -1,7 +1,7 @@
 export default {
   'menu.welcome': '欢迎',
   'menu.designer-list': '设计师',
-  'menu.component-list': '资源',
+  'menu.project-list': '项目',
   'menu.more-blocks': '更多区块',
   'menu.home': '首页',
   'menu.admin': '管理页',

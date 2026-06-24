@@ -5,7 +5,8 @@ import {
   useEditorCoreLoading,
   useEditorCoreSetter,
   useEditorFontsReady,
-  useEditorProjectId
+  useEditorProjectId,
+  useEditorProjectNameSetter
 } from '../context';
 import ActionPopover from './ActionPopover';
 import { getProjectDetail } from '../service';
@@ -64,6 +65,7 @@ const EditorCanvas: React.FC = () => {
   const projectId = useEditorProjectId();
   const fontsReady = useEditorFontsReady();
   const coreLoading = useEditorCoreLoading();
+  const setProjectName = useEditorProjectNameSetter();
   const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 300 });
   useEffect(() => {
     if (!fontsReady) return;
@@ -74,11 +76,11 @@ const EditorCanvas: React.FC = () => {
     let disposed = false;
     const restoreSnapshot = async () => {
       let serverUpdatedAt: string | null = null;
-      // let fetchedServerDetail = false;
       try {
         const detail = await getProjectDetail(projectId);
-        serverUpdatedAt = detail.updated_at;
-        // fetchedServerDetail = true;
+        const { name, updated_at  } = detail;
+        serverUpdatedAt = updated_at;
+        setProjectName(name);
         // 加载云端数据
         core.loadData(detail);
       } catch (error) {
@@ -101,10 +103,10 @@ const EditorCanvas: React.FC = () => {
           (serverTs === null || localTs > serverTs);
 
         if (!shouldRestoreLocal) return;
-        const loaded = core.loadSnapshot(parsed);
-        if (!loaded) {
-          console.warn('[EditorCanvas] local snapshot is invalid, skipped restore');
-        }
+        // const loaded = core.loadSnapshot(parsed);
+        // if (!loaded) {
+        //   console.warn('[EditorCanvas] local snapshot is invalid, skipped restore');
+        // }
       } catch (error) {
         console.warn('[EditorCanvas] restore snapshot from localStorage failed:', error);
       }

@@ -27,6 +27,10 @@ _DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 _DATA_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/data", StaticFiles(directory=str(_DATA_DIR)), name="data")
 
+_PUBLIC_DIR = Path(__file__).resolve().parents[1] / "public"
+_PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/public", StaticFiles(directory=str(_PUBLIC_DIR)), name="public")
+
 # Set all CORS enabled origins
 if settings.all_cors_origins:
     app.add_middleware(

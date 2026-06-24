@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -6,6 +7,91 @@ from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.models import ElementConfig, Project, ProjectElement, User
+
+
+def test_get_project_list_for_owner(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    own_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Owner List Project"},
+    )
+    assert own_response.status_code == 200
+    own_project_id = own_response.json()["project_id"]
+
+    to_delete_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Owner Deleted Project"},
+    )
+    assert to_delete_response.status_code == 200
+    deleted_project_id = to_delete_response.json()["project_id"]
+    deleted_project = db.get(Project, deleted_project_id)
+    assert deleted_project is not None
+    deleted_project.deleted_at = datetime.now(timezone.utc)
+    db.add(deleted_project)
+    db.commit()
+
+    other_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=superuser_token_headers,
+        json={"name": "Other User Project"},
+    )
+    assert other_response.status_code == 200
+
+    list_response = client.get(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+    )
+    assert list_response.status_code == 200
+    content = list_response.json()
+    assert content["count"] >= 1
+    ids = {item["project_id"] for item in content["data"]}
+    assert own_project_id in ids
+    assert deleted_project_id not in ids
+    assert all(item["name"] != "Other User Project" for item in content["data"])
+    current_user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
+    assert current_user is not None
+    own_project = next(item for item in content["data"] if item["project_id"] == own_project_id)
+    assert own_project["owner"]["id"] == str(current_user.id)
+    assert own_project["owner"]["username"] == current_user.username
+    assert own_project["owner"]["email"] == current_user.email
+
+
+def test_get_project_list_for_superuser(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+    superuser_token_headers: dict[str, str],
+) -> None:
+    normal_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Normal User Visible Project"},
+    )
+    assert normal_response.status_code == 200
+    normal_project_id = normal_response.json()["project_id"]
+
+    super_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=superuser_token_headers,
+        json={"name": "Super User Visible Project"},
+    )
+    assert super_response.status_code == 200
+    super_project_id = super_response.json()["project_id"]
+
+    list_response = client.get(
+        f"{settings.API_V1_STR}/project/",
+        headers=superuser_token_headers,
+    )
+    assert list_response.status_code == 200
+    content = list_response.json()
+    ids = {item["project_id"] for item in content["data"]}
+    assert normal_project_id in ids
+    assert super_project_id in ids
 
 
 def test_create_project(
@@ -202,6 +288,56 @@ def test_get_project_detail_not_enough_permissions(
     )
     assert detail_response.status_code == 403
     assert detail_response.json()["detail"] == "Not enough permissions"
+
+
+def test_update_project_name(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Old Project Name"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+    project_uuid = uuid.UUID(project_id)
+
+    update_response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}",
+        headers=normal_user_token_headers,
+        json={"name": "New Project Name"},
+    )
+    assert update_response.status_code == 200
+    content = update_response.json()
+    assert content["project_id"] == project_id
+    assert content["name"] == "New Project Name"
+    assert "updated_at" in content
+
+    updated_project = db.get(Project, project_uuid)
+    assert updated_project is not None
+    assert updated_project.name == "New Project Name"
+
+
+def test_update_project_name_not_enough_permissions(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=superuser_token_headers,
+        json={"name": "Super Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    update_response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}",
+        headers=normal_user_token_headers,
+        json={"name": "Try Change Name"},
+    )
+    assert update_response.status_code == 403
+    assert update_response.json()["detail"] == "Not enough permissions"
 
 
 def test_upload_project_image(

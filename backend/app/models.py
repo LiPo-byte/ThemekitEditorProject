@@ -194,6 +194,39 @@ class ProjectDetailResponse(SQLModel):
     elements: list[ProjectDetailElement]
 
 
+class ProjectOwnerInfo(SQLModel):
+    id: uuid.UUID
+    username: str
+    email: EmailStr
+    full_name: str | None = None
+
+
+class ProjectListItem(SQLModel):
+    project_id: uuid.UUID
+    name: str
+    status: str
+    current_version: int
+    preview_image: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    owner: ProjectOwnerInfo
+
+
+class ProjectListResponse(SQLModel):
+    data: list[ProjectListItem]
+    count: int
+
+
+class ProjectUpdateNameRequest(SQLModel):
+    name: str = Field(min_length=1, max_length=128)
+
+
+class ProjectUpdateNameResponse(SQLModel):
+    project_id: uuid.UUID
+    name: str
+    updated_at: datetime
+
+
 class ProjectUploadImageResponse(SQLModel):
     url: str
     path: str
