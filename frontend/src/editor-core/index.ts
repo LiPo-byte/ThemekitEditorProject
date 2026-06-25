@@ -1806,6 +1806,14 @@ export class EditorCore {
     };
   }
 
+  export() {
+    if (this.selectedNodes && this.selectedNodes.length) {
+      const [ selectedNode ] = this.selectedNodes;
+      const instance = this.getOwnerInstanceForNode(selectedNode);
+      console.log(instance);
+    }
+  }
+
   /** 调试探针：打印 snapshot 到 console 并返回；P4 完成后建议移除 */
   __debugDump(): SnapshotV1 {
     const snapshot = this.serialize({ name: '__debug__' });

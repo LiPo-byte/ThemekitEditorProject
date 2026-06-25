@@ -28,7 +28,7 @@ import {
   Typography,
   Slider
 } from 'antd';
-import type { ColorPickerProps } from 'antd';
+// import type { ColorPickerProps } from 'antd';
 
 import { createStyles } from 'antd-style';
 import React, { useEffect, useState } from 'react';
@@ -36,7 +36,7 @@ import { useEditorCore } from '../../context';
 import FontSelect from '../FontSelect';
 
 const MIXED_VALUE = '__MIXED__';
-type Color = GetProp<ColorPickerProps, 'value'>;
+// type Color = GetProp<ColorPickerProps, 'value'>;
 const { Paragraph, Text } = Typography;
 
 const InputTitle: React.FC<{ label: string }> = ({ label }) => {
@@ -314,7 +314,7 @@ const getBase64 = (file: FileType): Promise<string> =>
 
 export const ImageUpload: React.FC<{
   value: any[];
-  onChange: (payload: { id: any; value: any }) => void;
+  onChange: (payload: { id: any; value: any, deletePath?: any }) => void;
 }> = ({ value, onChange }) => {
   const { styles } = useImageUploadStyles();
   const handleChange =
@@ -330,18 +330,19 @@ export const ImageUpload: React.FC<{
         onChange({ id, value: latestFile.url });
         return;
       }
-      getBase64(latestFile.originFileObj as FileType).then(res => {
-        onChange({
-          id,
-          value: res,
-        });
+      onChange({
+        id,
+        value: latestFile.originFileObj,
       });
+      // getBase64(latestFile.originFileObj as FileType).then(res => {
+      // });
     };
 
-  const onDeleteSource = (id: any) => {
+  const onDeleteSource = (id: any, deletePath: any) => {
     onChange({
       id: id,
-      value: '',
+      value: null,
+      deletePath: deletePath,
     });
   }
 
@@ -399,7 +400,7 @@ export const ImageUpload: React.FC<{
                     {name}
                   </Text>
                 </Button>
-                <Button type="text" onClick={() => {onDeleteSource(id)}} icon={<DeleteOutlined />} />
+                <Button type="text" onClick={() => {onDeleteSource(id, source)}} icon={<DeleteOutlined />} />
               </Flex>
             </Col>
           </Row>

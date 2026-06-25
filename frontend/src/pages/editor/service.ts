@@ -86,6 +86,11 @@ export type ProjectUploadImageResponse = {
   size: number;
 };
 
+export type ProjectDeleteImageResponse = {
+  path: string;
+  deleted: boolean;
+};
+
 /** 创建草稿项目 POST /api/v1/project/ */
 export async function postApiV1Project(
   body?: ProjectCreateRequest,
@@ -172,6 +177,22 @@ export async function uploadProjectImage(
     {
       method: 'POST',
       data: formData,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 删除项目图片 DELETE /api/v1/project/{project_id}/assets */
+export async function deleteProjectImage(
+  projectId: string,
+  path: string,
+  options?: { [key: string]: any },
+) {
+  return request<ProjectDeleteImageResponse>(
+    `/api/v1/project/${projectId}/assets`,
+    {
+      method: 'DELETE',
+      params: { path },
       ...(options || {}),
     },
   );

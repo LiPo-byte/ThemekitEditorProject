@@ -132,12 +132,16 @@ const ActionPopover: React.FC = () => {
       if (!core) return;
       core.deleteSelectedNodes();
   }
+  const onExport = () => {
+    if (!core) return;
+    core.export();
+  }
 
   const actionList = useMemo(() => {
     return (
       <>
         {caps.canCrop ? <Button type='text' onClick={onCorp} icon={<CropSvg />} /> : null}
-        {caps.canExport ? <Button type='text' icon={<ExportOutlined />} /> : null}
+        {caps.canExport ? <Button type='text' onClick={onExport} icon={<ExportOutlined />} /> : null}
         {caps.canDelete ? (
           <Button
             type='text'

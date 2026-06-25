@@ -16,6 +16,7 @@ from app.models import (
     ProjectAssetsResponse,
     ProjectCreate,
     ProjectCreateResponse,
+    ProjectDeleteImageResponse,
     ProjectDetailElement,
     ProjectDetailResponse,
     ProjectElement,
@@ -403,3 +404,35 @@ def get_project_assets(
         )
 
     return ProjectAssetsResponse(project_id=project_id, assets=assets)
+
+
+@router.delete("/{project_id}/assets", response_model=ProjectDeleteImageResponse)
+def delete_project_asset(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    project_id: uuid.UUID,
+    path: str,
+) -> Any:
+    project = session.get(Project, project_id)
+    if not project or project.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if not current_user.is_superuser and project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    expected_prefix = f"data/project/{project_id}/assets/"
+    if not path.startswith(expected_prefix):
+        raise HTTPException(status_code=400, detail="Invalid asset path")
+
+    assets_dir = (_ASSET_DIR / str(project_id) / "assets").resolve()
+    target_file = (_BACKEND_ROOT / path).resolve()
+    try:
+        target_file.relative_to(assets_dir)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail="Invalid asset path") from error
+
+    if not target_file.exists() or not target_file.is_file():
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    target_file.unlink()
+    return ProjectDeleteImageResponse(path=path, deleted=True)

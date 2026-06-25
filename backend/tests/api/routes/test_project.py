@@ -399,3 +399,37 @@ def test_get_project_assets(
     assert assets_content["project_id"] == project_id
     assert len(assets_content["assets"]) >= 1
     assert any(item["path"] == uploaded["path"] for item in assets_content["assets"])
+
+
+def test_delete_project_asset(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Delete Asset Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    upload_response = client.post(
+        f"{settings.API_V1_STR}/project/{project_id}/upload-image",
+        headers=normal_user_token_headers,
+        files={"file": ("sample.png", b"\x89PNG\r\n\x1a\n", "image/png")},
+    )
+    assert upload_response.status_code == 200
+    uploaded = upload_response.json()
+
+    delete_response = client.delete(
+        f"{settings.API_V1_STR}/project/{project_id}/assets",
+        headers=normal_user_token_headers,
+        params={"path": uploaded["path"]},
+    )
+    assert delete_response.status_code == 200
+    delete_content = delete_response.json()
+    assert delete_content["path"] == uploaded["path"]
+    assert delete_content["deleted"] is True
+
+    backend_root = Path(__file__).resolve().parents[3]
+    deleted_file = backend_root / uploaded["path"]
+    assert not deleted_file.exists()

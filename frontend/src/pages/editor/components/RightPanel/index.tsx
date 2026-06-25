@@ -6,7 +6,9 @@ import {
   useEditorCore,
   useEditorRightPanlOpen,
   useEditorRightPanlOpenSetter,
+  useEditorProjectId,
 } from '../../context';
+import { deleteProjectImage, uploadProjectImage } from '../../service';
 import { useEnterAnimation } from '../../hooks/useEnterAnimation';
 import { CanvasSettingsForm, SelectedNodePropForm } from './PropForm';
 
@@ -75,6 +77,7 @@ const RightPanel: React.FC = () => {
   const [selectNodesTitle, setSelectNodesTitle] = useState<any[]>([]);
   const [editProps, setEditProps] = useState<Record<string, any>>({});
   const selectNodesRef = useRef<any[]>([]);
+  const projectId = useEditorProjectId();
   const open = useEditorRightPanlOpen();
   const setOpen = useEditorRightPanlOpenSetter();
   const playEnterAnimation = useEnterAnimation(open, { durationMs: 280 });
@@ -110,10 +113,25 @@ const RightPanel: React.FC = () => {
   }, [core, handleEditProps, setOpen]);
 
   const handleSelectedNodePropChange = (key: string, v: any) => {
+    if (!projectId) return;
     if (key === 'source') {
-        const { id, value } = v;
-        core?.changeNodeProps({ key, value, ids: [id] });
+      // projectId
+      if (v  && v.value) {
+        uploadProjectImage(projectId, v.value).then(res => {
+          const { url } = res;
+          const { id } = v;
+          core?.changeNodeProps({ key, value: url, ids: [id] });
+        })
         return;
+      }
+      if (v && v.deletePath) {
+        const path = new URL(v.deletePath).pathname.replace(/^\/+/, '');
+        deleteProjectImage(projectId, path).then(res => {
+          const { id } = v;
+          core?.changeNodeProps({ key, value: '', ids: [id] });
+        })
+      }
+      return;
     }
     core?.changeNodeProps({ key, value: v });
   };

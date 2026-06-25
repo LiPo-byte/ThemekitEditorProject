@@ -234,6 +234,11 @@ class ProjectUploadImageResponse(SQLModel):
     size: int
 
 
+class ProjectDeleteImageResponse(SQLModel):
+    path: str
+    deleted: bool
+
+
 class ProjectAssetItem(SQLModel):
     url: str
     path: str
