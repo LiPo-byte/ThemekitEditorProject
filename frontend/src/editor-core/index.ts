@@ -1576,93 +1576,93 @@ export class EditorCore {
    * 把当前画布序列化为 snapshot（业务语义，与 Konva 内部结构解耦）。
    * 仅在 widget 根节点未被销毁、editProps 节点都带 snapshotNodeId 的前提下成立。
    */
-  private cloneSerializable<T>(value: T): T {
-    // 仅保留 JSON 可序列化字段，避免把 Konva 运行时对象带进 snapshot。
-    if (value == null) return value;
-    return JSON.parse(JSON.stringify(value));
-  }
+  // private cloneSerializable<T>(value: T): T {
+  //   // 仅保留 JSON 可序列化字段，避免把 Konva 运行时对象带进 snapshot。
+  //   if (value == null) return value;
+  //   return JSON.parse(JSON.stringify(value));
+  // }
 
-  private getByPath(root: unknown, path: string): unknown {
-    // 支持 'a.b.0.c' 这种点路径读取，数组下标按 number 处理。
-    if (!path) return root;
-    const parts = path.split('.');
-    let cursor: any = root;
-    for (const part of parts) {
-      if (cursor == null) return undefined;
-      const key: string | number = /^\d+$/.test(part) ? Number(part) : part;
-      cursor = cursor[key];
-    }
-    return cursor;
-  }
+  // private getByPath(root: unknown, path: string): unknown {
+  //   // 支持 'a.b.0.c' 这种点路径读取，数组下标按 number 处理。
+  //   if (!path) return root;
+  //   const parts = path.split('.');
+  //   let cursor: any = root;
+  //   for (const part of parts) {
+  //     if (cursor == null) return undefined;
+  //     const key: string | number = /^\d+$/.test(part) ? Number(part) : part;
+  //     cursor = cursor[key];
+  //   }
+  //   return cursor;
+  // }
 
-  private setByPath(root: unknown, path: string, value: unknown) {
-    // 只在路径已存在时写值，不创建新结构，保证 patch 与 data 同形。
-    if (!path) return;
-    const parts = path.split('.');
-    let cursor: any = root;
-    for (let i = 0; i < parts.length - 1; i += 1) {
-      const part = parts[i];
-      const key: string | number = /^\d+$/.test(part) ? Number(part) : part;
-      if (cursor[key] == null) return;
-      cursor = cursor[key];
-    }
-    const tail = parts[parts.length - 1];
-    const tailKey: string | number = /^\d+$/.test(tail) ? Number(tail) : tail;
-    cursor[tailKey] = value;
-  }
+  // private setByPath(root: unknown, path: string, value: unknown) {
+  //   // 只在路径已存在时写值，不创建新结构，保证 patch 与 data 同形。
+  //   if (!path) return;
+  //   const parts = path.split('.');
+  //   let cursor: any = root;
+  //   for (let i = 0; i < parts.length - 1; i += 1) {
+  //     const part = parts[i];
+  //     const key: string | number = /^\d+$/.test(part) ? Number(part) : part;
+  //     if (cursor[key] == null) return;
+  //     cursor = cursor[key];
+  //   }
+  //   const tail = parts[parts.length - 1];
+  //   const tailKey: string | number = /^\d+$/.test(tail) ? Number(tail) : tail;
+  //   cursor[tailKey] = value;
+  // }
 
-  private projectEditPropsToDataShape(
-    editProps: Record<string, unknown>,
-    target: unknown,
-  ): unknown {
-    // 数组整体沿用原始结构；当前编辑模型没有数组内逐项字段映射。
-    if (Array.isArray(target)) return this.cloneSerializable(target);
+  // private projectEditPropsToDataShape(
+  //   editProps: Record<string, unknown>,
+  //   target: unknown,
+  // ): unknown {
+  //   // 数组整体沿用原始结构；当前编辑模型没有数组内逐项字段映射。
+  //   if (Array.isArray(target)) return this.cloneSerializable(target);
 
-    if (target && typeof target === 'object') {
-      // 对象仅覆盖同名 key，防止 editProps 扩散出 data 契约之外的字段。
-      const base = this.cloneSerializable(target) as Record<string, unknown>;
-      Object.keys(base).forEach((key) => {
-        if (Object.prototype.hasOwnProperty.call(editProps, key)) {
-          base[key] = this.cloneSerializable(editProps[key]);
-        }
-      });
-      return base;
-    }
+  //   if (target && typeof target === 'object') {
+  //     // 对象仅覆盖同名 key，防止 editProps 扩散出 data 契约之外的字段。
+  //     const base = this.cloneSerializable(target) as Record<string, unknown>;
+  //     Object.keys(base).forEach((key) => {
+  //       if (Object.prototype.hasOwnProperty.call(editProps, key)) {
+  //         base[key] = this.cloneSerializable(editProps[key]);
+  //       }
+  //     });
+  //     return base;
+  //   }
 
-    if (typeof target === 'string') {
-      // IconPack 这类 string data 节点，优先回填 name/source。
-      if (typeof editProps.name === 'string') return editProps.name;
-      if (typeof editProps.source === 'string') return editProps.source;
-      return target;
-    }
+  //   if (typeof target === 'string') {
+  //     // IconPack 这类 string data 节点，优先回填 name/source。
+  //     if (typeof editProps.name === 'string') return editProps.name;
+  //     if (typeof editProps.source === 'string') return editProps.source;
+  //     return target;
+  //   }
 
-    return target;
-  }
+  //   return target;
+  // }
 
-  private buildStructuredEditPropsPatch(
-    root: Konva.Group,
-    data: unknown,
-  ): unknown {
-    // 以 data 为底，按各节点声明的 snapshotDataPath 把 editProps 投影回同形结构。
-    const patch = this.cloneSerializable(data);
-    const candidates = root.find((n: Konva.Node) =>
-      Boolean(n.getAttr('snapshotDataPath')) && Boolean(n.getAttr('editProps')),
-    );
-    candidates.forEach((n: Konva.Node) => {
-      const dataPath = n.getAttr('snapshotDataPath');
-      const editProps = n.getAttr('editProps');
-      if (typeof dataPath !== 'string' || !dataPath) return;
-      if (!editProps || typeof editProps !== 'object') return;
-      const prevValue = this.getByPath(patch, dataPath);
-      if (typeof prevValue === 'undefined') return;
-      const nextValue = this.projectEditPropsToDataShape(
-        editProps as Record<string, unknown>,
-        prevValue,
-      );
-      this.setByPath(patch, dataPath, nextValue);
-    });
-    return patch;
-  }
+  // private buildStructuredEditPropsPatch(
+  //   root: Konva.Group,
+  //   data: unknown,
+  // ): unknown {
+  //   // 以 data 为底，按各节点声明的 snapshotDataPath 把 editProps 投影回同形结构。
+  //   const patch = this.cloneSerializable(data);
+  //   const candidates = root.find((n: Konva.Node) =>
+  //     Boolean(n.getAttr('snapshotDataPath')) && Boolean(n.getAttr('editProps')),
+  //   );
+  //   candidates.forEach((n: Konva.Node) => {
+  //     const dataPath = n.getAttr('snapshotDataPath');
+  //     const editProps = n.getAttr('editProps');
+  //     if (typeof dataPath !== 'string' || !dataPath) return;
+  //     if (!editProps || typeof editProps !== 'object') return;
+  //     const prevValue = this.getByPath(patch, dataPath);
+  //     if (typeof prevValue === 'undefined') return;
+  //     const nextValue = this.projectEditPropsToDataShape(
+  //       editProps as Record<string, unknown>,
+  //       prevValue,
+  //     );
+  //     this.setByPath(patch, dataPath, nextValue);
+  //   });
+  //   return patch;
+  // }
 
   loadData(data: any): void {
     const snapshot = {
@@ -1776,20 +1776,7 @@ export class EditorCore {
     };
 
     const nodes: SnapshotNode[] = this.nodes.map((widget: any) => {
-      const root: Konva.Group = widget.node;
-      const type = root.getAttr('snapshotType') as SnapshotNodeType;
-      const category = root.getAttr('snapshotCategory') as SnapshotCategory;
-      const id = root.getAttr('snapshotNodeId') as string;
-
-      const data = this.buildStructuredEditPropsPatch(root, this.cloneSerializable(widget.originalData));
-
-      return {
-        type,
-        category,
-        id,
-        transform: { x: root.x(), y: root.y() },
-        data,
-      };
+      return widget.nodeSerialize();
     });
 
     return {
@@ -1807,11 +1794,12 @@ export class EditorCore {
   }
 
   export() {
-    if (this.selectedNodes && this.selectedNodes.length) {
-      const [ selectedNode ] = this.selectedNodes;
-      const instance = this.getOwnerInstanceForNode(selectedNode);
-      console.log(instance);
-    }
+    this.selectedNodes.forEach((node: Konva.Node) => {
+      if (node.getAttr('packable')) {
+        const instance = this.getOwnerInstanceForNode(node);
+        instance.export(node);
+      }
+    })
   }
 
   /** 调试探针：打印 snapshot 到 console 并返回；P4 完成后建议移除 */
