@@ -26,7 +26,7 @@ export default class Time extends BaseNode {
       workers: 2,
       // gif.js 中 quality 越小体积越大，这里提高取样步长以减小预览图体积
       quality: 12,
-      pixelRatio: 1,
+      pixelRatio: 2,
       minDelayMs: 1,
       // 限制导出帧率，避免把高帧率源 GIF 全量编码导致文件过大
       maxFps: 8,
@@ -512,15 +512,17 @@ export default class Time extends BaseNode {
       });
     }
 
-    private resolveResourceExt(source: string, blob: Blob) {
+    private resolveResourceExt(source: string, blob?: Blob) {
       const byMime: Record<string, string> = {
         'image/gif': 'gif',
         'image/png': 'png',
         'image/jpeg': 'jpg',
         'image/webp': 'webp',
       };
-      const mimeExt = byMime[blob.type];
-      if (mimeExt) return mimeExt;
+      if (blob) {
+        const mimeExt = byMime[blob.type];
+        if (mimeExt) return mimeExt;
+      }
       const plainSource = source.split('?')[0];
       const match = plainSource.match(/\.([a-zA-Z0-9]+)$/);
       if (match?.[1]) return match[1].toLowerCase();
@@ -553,6 +555,9 @@ export default class Time extends BaseNode {
         throw new Error('Cannot find widget background image node.');
       }
       const bgImageContainer = bgImageNode.getParent() as Konva.Group | null;
+      if (!bgImageContainer) {
+        throw new Error('Cannot find widget background image container.');
+      }
       const originalClipFunc =
         bgImageContainer && typeof (bgImageContainer as any).clipFunc === 'function'
           ? (bgImageContainer as any).clipFunc()
@@ -564,38 +569,57 @@ export default class Time extends BaseNode {
       const originalImage = bgImageNode.image();
       const { crop_props } = widget.getAttr('editProps') || {};
       const renderedFrames: Array<{ canvas: HTMLCanvasElement; delayMs: number }> = [];
+      const sourceOnlyFrames: Array<{ canvas: HTMLCanvasElement; delayMs: number }> = [];
       const widgetRect = widget.getClientRect({ skipTransform: true });
       const width = Math.max(1, Math.round(widgetRect.width));
       const height = Math.max(1, Math.round(widgetRect.height));
       try {
         if (bgImageContainer) {
-          const clipWidth = Number(bgImageContainer.width()) || widgetRect.width;
-          const clipHeight = Number(bgImageContainer.height()) || widgetRect.height;
-          bgImageContainer.setAttr('clipFunc', (ctx: any) => {
-            ctx.beginPath();
-            ctx.rect(0, 0, clipWidth, clipHeight);
-            ctx.closePath();
-          });
+          bgImageContainer.setAttr('clipFunc', undefined);
         }
         for (const frame of frames) {
           bgImageNode.image(frame.canvas);
           this.cropParamSource(bgImageNode, crop_props || {});
           widget.getLayer()?.draw();
-          const frameCanvas = widget.toCanvas({ pixelRatio: this.gifExportOptions.pixelRatio });
-          const composedCanvas = document.createElement('canvas');
+          const previewFrameCanvas = widget.toCanvas({ pixelRatio: this.gifExportOptions.pixelRatio });
+          const sourceFrameCanvas = bgImageContainer.toCanvas({
+            pixelRatio: this.gifExportOptions.pixelRatio,
+          });
+          const previewComposedCanvas = document.createElement('canvas');
+          const sourceComposedCanvas = document.createElement('canvas');
           // 导出尺寸固定为 widgetRect 的逻辑宽高
-          composedCanvas.width = width;
-          composedCanvas.height = height;
-          const composedCtx = composedCanvas.getContext('2d');
-          if (!composedCtx) {
+          previewComposedCanvas.width = width;
+          previewComposedCanvas.height = height;
+          sourceComposedCanvas.width = width;
+          sourceComposedCanvas.height = height;
+          const previewCtx = previewComposedCanvas.getContext('2d');
+          const sourceCtx = sourceComposedCanvas.getContext('2d');
+          if (!previewCtx || !sourceCtx) {
             continue;
           }
-          composedCtx.fillStyle = this.gifExportOptions.backgroundColor;
-          composedCtx.fillRect(0, 0, composedCanvas.width, composedCanvas.height);
+          previewCtx.fillStyle = this.gifExportOptions.backgroundColor;
+          previewCtx.fillRect(0, 0, previewComposedCanvas.width, previewComposedCanvas.height);
           // 按目标尺寸回填；pixelRatio 仅用于提高采样清晰度
-          composedCtx.drawImage(frameCanvas, 0, 0, composedCanvas.width, composedCanvas.height);
+          previewCtx.drawImage(
+            previewFrameCanvas,
+            0,
+            0,
+            previewComposedCanvas.width,
+            previewComposedCanvas.height,
+          );
+          sourceCtx.drawImage(
+            sourceFrameCanvas,
+            0,
+            0,
+            sourceComposedCanvas.width,
+            sourceComposedCanvas.height,
+          );
           renderedFrames.push({
-            canvas: composedCanvas,
+            canvas: previewComposedCanvas,
+            delayMs: frame.delayMs,
+          });
+          sourceOnlyFrames.push({
+            canvas: sourceComposedCanvas,
             delayMs: frame.delayMs,
           });
         }
@@ -612,51 +636,94 @@ export default class Time extends BaseNode {
       if (!renderedFrames.length) {
         throw new Error('No rendered gif frames.');
       }
+      if (!sourceOnlyFrames.length) {
+        throw new Error('No rendered source gif frames.');
+      }
       const compactedFrames = this.compactGifFramesByFps(renderedFrames);
+      const compactedSourceFrames = this.compactGifFramesByFps(sourceOnlyFrames);
       const outputWidth = width;
       const outputHeight = height;
       const blob = await this.renderNodeToGif(compactedFrames, outputWidth, outputHeight);
+      const sourceBlob = await this.renderNodeToGif(
+        compactedSourceFrames,
+        outputWidth,
+        outputHeight,
+      );
 
-      return { blob, frameCount: compactedFrames.length };
+      return { blob, sourceBlob, frameCount: compactedFrames.length };
     }
 
-    private async exportIosWidgetBundle(data: unknown) {
+    private async exportWidgetPreviewPng(widget: Konva.Group) {
+      const bgImageNode = this.findWidgetBgImage(widget);
+      const pixelRati =  this.gifExportOptions.pixelRatio;
+      if (!bgImageNode) {
+        throw new Error('Cannot find widget background image node.');
+      }
+      const bgImageContainer = bgImageNode.getParent() as Konva.Group | null;
+      const originalClipFunc =
+        bgImageContainer && typeof (bgImageContainer as any).clipFunc === 'function'
+          ? (bgImageContainer as any).clipFunc()
+          : undefined;
+
+      const widgetRect = widget.getClientRect({ skipTransform: true });
+      const width = Math.max(1, Math.round(widgetRect.width * pixelRati));
+      const height = Math.max(1, Math.round(widgetRect.height * pixelRati));
+      try {
+        if (bgImageContainer) {
+          bgImageContainer.setAttr('clipFunc', undefined);
+        }
+        const rawPreviewCanvas = widget.toCanvas({ pixelRatio: pixelRati });
+        const previewCanvas = document.createElement('canvas');
+        previewCanvas.width = width;
+        previewCanvas.height = height;
+        const previewCtx = previewCanvas.getContext('2d');
+        if (previewCtx) {
+          previewCtx.drawImage(rawPreviewCanvas, 0, 0, width, height);
+        }
+        const blob = await this.canvasToBlob(previewCanvas, 'image/png');
+
+        const sourceCanvas = (bgImageContainer || bgImageNode).toCanvas({ pixelRatio: pixelRati });
+        const sourceOnlyCanvas = document.createElement('canvas');
+        sourceOnlyCanvas.width = width;
+        sourceOnlyCanvas.height = height;
+        const sourceOnlyCtx = sourceOnlyCanvas.getContext('2d');
+        if (sourceOnlyCtx) {
+          sourceOnlyCtx.drawImage(sourceCanvas, 0, 0, width, height);
+        }
+        const sourceBlob = await this.canvasToBlob(sourceOnlyCanvas, 'image/png');
+        return { blob, sourceBlob };
+      } finally {
+        if (bgImageContainer) {
+          bgImageContainer.setAttr('clipFunc', originalClipFunc);
+        }
+      }
+    }
+
+    private async exportWidgetBundle(data: unknown, system: string) {
       const zip = new JSZip();
       zip.file('widgets_spec.json', JSON.stringify(data ?? {}, null, 2));
 
+      const nodes = system === 'ios' ? this.iosNodes : this.androidNodes;
       const sizes = ['small', 'medium', 'large'];
       for (const size of sizes) {
-        const widgetNode = this.iosNodes[size];
+        const widgetNode = nodes[size];
         if (!widgetNode) continue;
 
-        // const previewCanvas = widgetNode.toCanvas({
-        //   pixelRatio: this.gifExportOptions.pixelRatio,
-        // });
-        // const previewBlob = await this.canvasToBlob(previewCanvas, 'image/png');
-
         const { source } = widgetNode.getAttr('editProps') || {};
-
-        const { blob: previewBlob } = await this.exportWidgetGif(widgetNode, source);
-        zip.file(`widgets_${size}_preview.gif`, previewBlob);
-
-        if (typeof source !== 'string' || !source) continue;
-        try {
-          const response = await fetch(source);
-          if (!response.ok) {
-            console.warn('[Time] fetch source failed:', source);
-            continue;
-          }
-          const resourceBlob = await response.blob();
-          const ext = this.resolveResourceExt(source, resourceBlob);
-          zip.file(`widgets_${size}_time.${ext}`, resourceBlob);
-        } catch (error) {
-          console.warn('[Time] fetch source error:', source, error);
+        if (this.isGifSource(source)) {
+          const { blob: previewBlob, sourceBlob } = await this.exportWidgetGif(widgetNode, source);
+          zip.file(`widgets_${size}_preview.gif`, previewBlob);
+          zip.file(`widgets_${size}_time.gif`, sourceBlob);
+        } else {
+          const { blob: previewBlob, sourceBlob } = await this.exportWidgetPreviewPng(widgetNode);
+          zip.file(`widgets_${size}_preview.png`, previewBlob);
+          zip.file(`widgets_${size}_time.png`, sourceBlob);
         }
       }
 
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       const zipUrl = URL.createObjectURL(zipBlob);
-      const filename = `widget_${this.getDateStamp()}.zip`;
+      const filename = `widget_${this.getDateStamp()}_${system}.zip`;
       this.triggerDownload(zipUrl, filename);
       window.setTimeout(() => URL.revokeObjectURL(zipUrl), 30_000);
     }
@@ -673,8 +740,15 @@ export default class Time extends BaseNode {
             ? this.getByPath(fullData, snapshotDataPath)
             : fullData;
         if (snapshotDataPath == 'ios') {
-          await this.exportIosWidgetBundle(data);
+          await this.exportWidgetBundle(data, 'ios');
+          return;
         }
+        if (snapshotDataPath == 'android') {
+          await this.exportWidgetBundle(data, 'android');
+          return;
+        }
+        await this.exportWidgetBundle(data, 'ios');
+        await this.exportWidgetBundle(data, 'android');
       }
     }
   }
