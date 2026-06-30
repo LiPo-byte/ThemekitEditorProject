@@ -324,6 +324,220 @@ export const WidgetDefaultConfig = {
           ]
         }
     },
+    Time_LayoutType_1: {
+        ios: {
+          "version":0,
+          "isLockScreen":false,
+          "type":1,
+          "sizes":[
+                {
+                    "size":1,
+                    "layoutType": 1,
+                    "name": "Time-IOS-Small",
+                    "radius": 28,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "padding":16,
+                    "time":{
+                        "textAlignment":1,
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":28,
+                        "textHeight":24,
+                        "textColor":"#000000",
+                        "alpha":1.0
+                    },
+                    "day" :{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":20,
+                        "textHeight":18,
+                        "textColor":"#000000",
+                        "alpha":1.0,
+                        "topSpacing":10,
+                        "bottomSpacing":10
+                    },
+                    "date":{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":16,
+                        "textHeight":15,
+                        "textColor":"#000000",
+                        "alpha":1.0
+                    }
+                },
+                {
+                    "size":2,
+                    "layoutType": 1,
+                    "name": "Time-IOS-Medium",
+                    "radius": 28,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "padding":16,
+                    "time":{
+                        "textAlignment":1,
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":28,
+                        "textHeight":24,
+                        "textColor":"#000000",
+                        "alpha":1.0
+                    },
+                    "day" :{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":20,
+                        "textHeight":18,
+                        "textColor":"#000000",
+                        "alpha":1.0,
+                        "topSpacing":10,
+                        "bottomSpacing":10
+                    },
+                    "date":{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":16,
+                        "textHeight":15,
+                        "textColor":"#000000",
+                        "alpha":1.0
+                    }
+                },
+                {
+                    "size":3,
+                    "layoutType": 1,
+                    "name": "Time-IOS-Large",
+                    "radius": 28,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "padding":16,
+                    "time":{
+                        "textAlignment":1,
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":28,
+                        "textHeight":24,
+                        "textColor":"#000000",
+                        "alpha":1.0
+                    },
+                    "day" :{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":20,
+                        "textHeight":18,
+                        "textColor":"#000000",
+                        "alpha":1.0,
+                        "topSpacing":10,
+                        "bottomSpacing":10
+                    },
+                    "date":{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":16,
+                        "textHeight":15,
+                        "textColor":"#000000",
+                        "alpha":1.0
+                    }
+                },
+          ]
+        },
+        android: {
+            "version":0,
+            "isLockScreen":false,
+            "type":1,
+            "sizes":[
+                  {
+                      "size":1,
+                      "layoutType": 1,
+                      "name": "Time-Android-Small",
+                      "radius": 28,
+                      "source": "",
+                      "crop_props": defaultCropProps,
+                      "padding":16,
+                      "time":{
+                          "textAlignment":1,
+                          "font":"AvenirNext-HeavyItalic",
+                          "textSize":28,
+                          "textHeight":24,
+                          "textColor":"#000000",
+                          "alpha":1.0
+                      },
+                      "day" :{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":20,
+                          "textHeight":18,
+                          "textColor":"#000000",
+                          "alpha":1.0,
+                          "topSpacing":10,
+                          "bottomSpacing":10
+                      },
+                      "date":{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":16,
+                          "textHeight":15,
+                          "textColor":"#000000",
+                          "alpha":1.0
+                      }
+                  },
+                  {
+                      "size":2,
+                      "layoutType": 1,
+                      "name": "Time-Android-Medium",
+                      "radius": 28,
+                      "source": "",
+                      "crop_props": defaultCropProps,
+                      "padding":16,
+                      "time":{
+                          "textAlignment":1,
+                          "font":"AvenirNext-HeavyItalic",
+                          "textSize":28,
+                          "textHeight":24,
+                          "textColor":"#000000",
+                          "alpha":1.0
+                      },
+                      "day" :{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":20,
+                          "textHeight":18,
+                          "textColor":"#000000",
+                          "alpha":1.0,
+                          "topSpacing":10,
+                          "bottomSpacing":10
+                      },
+                      "date":{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":16,
+                          "textHeight":15,
+                          "textColor":"#000000",
+                          "alpha":1.0
+                      }
+                  },
+                  {
+                      "size":3,
+                      "layoutType": 1,
+                      "name": "Time-Android-Large",
+                      "radius": 28,
+                      "source": "",
+                      "crop_props": defaultCropProps,
+                      "padding":16,
+                      "time":{
+                          "textAlignment":1,
+                          "font":"AvenirNext-HeavyItalic",
+                          "textSize":28,
+                          "textHeight":24,
+                          "textColor":"#000000",
+                          "alpha":1.0
+                      },
+                      "day" :{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":20,
+                          "textHeight":18,
+                          "textColor":"#000000",
+                          "alpha":1.0,
+                          "topSpacing":10,
+                          "bottomSpacing":10
+                      },
+                      "date":{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":16,
+                          "textHeight":15,
+                          "textColor":"#000000",
+                          "alpha":1.0
+                      }
+                  },
+            ]
+        },
+    },
 }
 export const IconPackDefaultConfig = {
     apps: {
