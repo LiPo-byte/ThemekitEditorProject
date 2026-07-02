@@ -13,7 +13,7 @@
         ]
       },
       {
-        "key": "Time-1",
+        "key": "Time_LayoutType_1",
         "label": "Layout 1: Top Aligned Time",
         "title": "Small / medium / large; left, right, or centered (medium shows single row)"
       },
@@ -23,7 +23,7 @@
         "title": "Solid background with battery text"
       },
       {
-        "key": "Time-3",
+        "key": "Time_LayoutType_3",
         "label": "Layout 3: Flip Time"
       },
       {

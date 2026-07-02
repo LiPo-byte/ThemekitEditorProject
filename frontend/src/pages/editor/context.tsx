@@ -20,6 +20,14 @@ import {
 const FONT_FACE_STYLE_ID = 'editor-font-face-manifest';
 const FONT_LOAD_TIMEOUT_MS = 4000;
 
+const getFontFaceFormat = (fileName: string) => {
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  if (ext === 'otf') return 'opentype';
+  if (ext === 'woff') return 'woff';
+  if (ext === 'woff2') return 'woff2';
+  return 'truetype';
+};
+
 type FontManifestItem = {
   file?: string;
   postscriptName?: string;
@@ -190,8 +198,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       if (!document.getElementById(FONT_FACE_STYLE_ID)) {
         const css = MANIFEST_FONTS.map((item) => {
           const fontFamily = item.postscriptName?.replace(/'/g, "\\'");
-          const fontUrl = `/fonts/${encodeURIComponent(String(item.file))}`;
-          return `@font-face{font-family:'${fontFamily}';src:url('${fontUrl}') format('truetype');font-style:normal;font-weight:400;}`;
+          const fileName = String(item.file);
+          const fontUrl = `/fonts/${encodeURIComponent(fileName)}`;
+          const format = getFontFaceFormat(fileName);
+          return `@font-face{font-family:'${fontFamily}';src:url('${fontUrl}') format('${format}');font-style:normal;font-weight:100 900;font-display:swap;}`;
         }).join('');
         const styleEl = document.createElement('style');
         styleEl.id = FONT_FACE_STYLE_ID;

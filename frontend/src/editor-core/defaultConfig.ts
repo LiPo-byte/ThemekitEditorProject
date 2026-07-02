@@ -226,7 +226,7 @@ export const WidgetDefaultConfig = {
                     "radius": 28,
                     "padding":16,
                     "time":{
-                        "font":"AvenirNext-HeavyItalic",
+                        "font":"AvenirNext-Bold",
                         "textSize":28,
                         "textHeight":24,
                         "textColor":"#000000",
@@ -340,26 +340,26 @@ export const WidgetDefaultConfig = {
                     "padding":16,
                     "time":{
                         "textAlignment":1,
-                        "font":"AvenirNext-HeavyItalic",
-                        "textSize":28,
-                        "textHeight":24,
-                        "textColor":"#000000",
+                        "font":"AvenirNext-Heavy",
+                        "textSize":43,
+                        "textHeight":30,
+                        "textColor":"#8C511B",
                         "alpha":1.0
                     },
                     "day" :{
-                        "font":"PingFangSC-Semibold",
-                        "textSize":20,
-                        "textHeight":18,
-                        "textColor":"#000000",
+                        "font":"Helvetica Neue-Bold",
+                        "textSize":17,
+                        "textHeight":21,
+                        "textColor":"#8C511B",
                         "alpha":1.0,
-                        "topSpacing":10,
-                        "bottomSpacing":10
+                        "topSpacing":8,
+                        "bottomSpacing":8
                     },
                     "date":{
                         "font":"PingFangSC-Semibold",
-                        "textSize":16,
-                        "textHeight":15,
-                        "textColor":"#000000",
+                        "textSize":11,
+                        "textHeight":14,
+                        "textColor":"#8C511B",
                         "alpha":1.0
                     }
                 },
@@ -374,25 +374,25 @@ export const WidgetDefaultConfig = {
                     "time":{
                         "textAlignment":1,
                         "font":"AvenirNext-HeavyItalic",
-                        "textSize":28,
-                        "textHeight":24,
-                        "textColor":"#000000",
+                        "textSize":53,
+                        "textHeight":40,
+                        "textColor":"#8C511B",
                         "alpha":1.0
                     },
                     "day" :{
                         "font":"PingFangSC-Semibold",
                         "textSize":20,
-                        "textHeight":18,
-                        "textColor":"#000000",
+                        "textHeight":24,
+                        "textColor":"#8C511B",
                         "alpha":1.0,
-                        "topSpacing":10,
-                        "bottomSpacing":10
+                        "topSpacing":0,
+                        "bottomSpacing":5
                     },
                     "date":{
                         "font":"PingFangSC-Semibold",
-                        "textSize":16,
+                        "textSize":13,
                         "textHeight":15,
-                        "textColor":"#000000",
+                        "textColor":"#8C511B",
                         "alpha":1.0
                     }
                 },
@@ -407,25 +407,25 @@ export const WidgetDefaultConfig = {
                     "time":{
                         "textAlignment":1,
                         "font":"AvenirNext-HeavyItalic",
-                        "textSize":28,
-                        "textHeight":24,
-                        "textColor":"#000000",
+                        "textSize":110,
+                        "textHeight":90,
+                        "textColor":"#8C511B",
                         "alpha":1.0
                     },
                     "day" :{
                         "font":"PingFangSC-Semibold",
-                        "textSize":20,
-                        "textHeight":18,
-                        "textColor":"#000000",
+                        "textSize":33,
+                        "textHeight":41,
+                        "textColor":"#8C511B",
                         "alpha":1.0,
-                        "topSpacing":10,
+                         "topSpacing":18,
                         "bottomSpacing":10
                     },
                     "date":{
                         "font":"PingFangSC-Semibold",
-                        "textSize":16,
-                        "textHeight":15,
-                        "textColor":"#000000",
+                        "textSize":22,
+                        "textHeight":25,
+                        "textColor":"#8C511B",
                         "alpha":1.0
                     }
                 },
@@ -446,26 +446,26 @@ export const WidgetDefaultConfig = {
                       "padding":16,
                       "time":{
                           "textAlignment":1,
-                          "font":"AvenirNext-HeavyItalic",
-                          "textSize":28,
-                          "textHeight":24,
-                          "textColor":"#000000",
+                          "font":"AvenirNext-Heavy",
+                          "textSize":43,
+                          "textHeight":30,
+                          "textColor":"#8C511B",
                           "alpha":1.0
                       },
                       "day" :{
-                          "font":"PingFangSC-Semibold",
-                          "textSize":20,
-                          "textHeight":18,
-                          "textColor":"#000000",
+                          "font":"Helvetica Neue-Bold",
+                          "textSize":17,
+                          "textHeight":21,
+                          "textColor":"#8C511B",
                           "alpha":1.0,
-                          "topSpacing":10,
-                          "bottomSpacing":10
+                          "topSpacing":8,
+                          "bottomSpacing":8
                       },
                       "date":{
                           "font":"PingFangSC-Semibold",
-                          "textSize":16,
-                          "textHeight":15,
-                          "textColor":"#000000",
+                          "textSize":11,
+                          "textHeight":14,
+                          "textColor":"#8C511B",
                           "alpha":1.0
                       }
                   },
@@ -480,25 +480,25 @@ export const WidgetDefaultConfig = {
                       "time":{
                           "textAlignment":1,
                           "font":"AvenirNext-HeavyItalic",
-                          "textSize":28,
-                          "textHeight":24,
-                          "textColor":"#000000",
+                          "textSize":53,
+                          "textHeight":40,
+                          "textColor":"#8C511B",
                           "alpha":1.0
                       },
                       "day" :{
                           "font":"PingFangSC-Semibold",
                           "textSize":20,
-                          "textHeight":18,
-                          "textColor":"#000000",
+                          "textHeight":24,
+                          "textColor":"#8C511B",
                           "alpha":1.0,
-                          "topSpacing":10,
-                          "bottomSpacing":10
+                          "topSpacing":0,
+                          "bottomSpacing":5
                       },
                       "date":{
                           "font":"PingFangSC-Semibold",
-                          "textSize":16,
+                          "textSize":13,
                           "textHeight":15,
-                          "textColor":"#000000",
+                          "textColor":"#8C511B",
                           "alpha":1.0
                       }
                   },
@@ -513,30 +513,150 @@ export const WidgetDefaultConfig = {
                       "time":{
                           "textAlignment":1,
                           "font":"AvenirNext-HeavyItalic",
-                          "textSize":28,
-                          "textHeight":24,
-                          "textColor":"#000000",
+                          "textSize":110,
+                          "textHeight":90,
+                          "textColor":"#8C511B",
                           "alpha":1.0
                       },
                       "day" :{
                           "font":"PingFangSC-Semibold",
-                          "textSize":20,
-                          "textHeight":18,
-                          "textColor":"#000000",
+                          "textSize":33,
+                          "textHeight":41,
+                          "textColor":"#8C511B",
                           "alpha":1.0,
-                          "topSpacing":10,
+                           "topSpacing":18,
                           "bottomSpacing":10
                       },
                       "date":{
                           "font":"PingFangSC-Semibold",
-                          "textSize":16,
-                          "textHeight":15,
-                          "textColor":"#000000",
+                          "textSize":22,
+                          "textHeight":25,
+                          "textColor":"#8C511B",
                           "alpha":1.0
                       }
                   },
             ]
+          },
+    },
+    Time_LayoutType_3: {
+        ios: {
+          "version":0,
+          "isLockScreen":false,
+          "type":1,
+          "textAlignment":1,
+          "sizes":[
+                {
+                    "size":1,
+                    "name": "Time-IOS-Small",
+                    "radius": 28,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "padding":16,
+                    "layoutType": 3,
+                    "time":{
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":28,
+                        "textHeight":24,
+                        "textColor":"#000000",
+                        "alpha":1.0,
+                        "backgroundColor": "#FFFFFF"
+                    },
+                },
+                {
+                    "size":2,
+                    "name": "Time-IOS-Medium",
+                    "padding":16,
+                    "radius": 28,
+                    "layoutType": 3,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "time":{
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":46,
+                        "textHeight":63,
+                        "textColor":"#252020",
+                        "alpha":0.5,
+                        "backgroundColor": "#FFFFFF"
+                    },
+                },
+                {
+                    "size":3,
+                    "name": "Time-IOS-Large",
+                    "padding":16,
+                    "radius": 28,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "layoutType": 3,
+                    "time":{
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":130,
+                        "textHeight":183,
+                        "textColor":"#252020",
+                        "alpha":0.5,
+                        "backgroundColor": "#DC143C"
+                    },
+                }
+          ]
         },
+        android: {
+          "version":0,
+          "isLockScreen":false,
+          "type":1,
+          "textAlignment":1,
+          "sizes":[
+                {
+                    "size":1,
+                    "name": "Time-Android-Small",
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "radius": 28,
+                    "padding": 16,
+                    "layoutType": 3,
+                    "time":{
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":28,
+                        "textHeight":24,
+                        "textColor":"#000000",
+                        "alpha":1.0,
+                        "backgroundColor": "#FFFFFF"
+                    },
+                },
+                {
+                    "size":2,
+                    "name": "Time-Android-Medium",
+                    "padding":16,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "radius": 28,
+                    "layoutType": 3,
+                    "time":{
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":28,
+                        "textHeight":24,
+                        "textColor":"#000000",
+                        "alpha":1.0,
+                        "backgroundColor": "#FFFFFF"
+                    },
+                },
+                {
+                    "size":3,
+                    "name": "Time-Android-Large",
+                    "padding":16,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "radius": 28,
+                    "layoutType": 3,
+                    "time":{
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":28,
+                        "textHeight":24,
+                        "textColor":"#000000",
+                        "alpha":1.0,
+                        "backgroundColor": "#FFFFFF"
+                    },
+                }
+          ]
+        }
     },
 }
 export const IconPackDefaultConfig = {

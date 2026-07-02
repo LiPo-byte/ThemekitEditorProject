@@ -44,9 +44,9 @@ export default class Time extends BaseNode {
           const date = widget.findOne(
             (node: any) => node.getAttr('itemKey') === 'date',
           );
-          const timeHeight = time.height();
-          const dayHeight = day.height();
-          const dateHeight = date.height();
+          const { width: timeWidth, height: timeHeight } = time.getClientRect({ relativeTo: widget });
+          const { width: dayWidth, height: dayHeight } = day.getClientRect({ relativeTo: widget });
+          const { width: dateWidth, height: dateHeight } = date.getClientRect({ relativeTo: widget });
           const {
             editProps: { topSpacing, bottomSpacing },
           } = day.attrs;
@@ -61,7 +61,7 @@ export default class Time extends BaseNode {
           const widgetHeight = widget.height();
 
           const alignX = (node: any) => {
-            const nodeWidth = node.width();
+            const { width: nodeWidth } = node.getClientRect({ relativeTo: widget });
             if (textAlignment === 2) {
               return (widgetWidth - nodeWidth) / 2;
             }
@@ -91,7 +91,7 @@ export default class Time extends BaseNode {
           );
         },
         // 1（兼容旧 key "0-1"）：仅展示 time，单组件按对齐方式横向摆放，纵向居中
-        1: ({ widget }: any) => {
+        '0-1': ({ widget }: any) => {
           const time = widget.findOne(
             (node: any) => node.getAttr('itemKey') === 'time',
           );
@@ -104,8 +104,7 @@ export default class Time extends BaseNode {
           const paddingPx = pt(padding);
           const widgetWidth = widget.width();
           const widgetHeight = widget.height();
-          const timeWidth = time.width();
-          const timeHeight = time.height();
+          const { width: timeWidth, height: timeHeight } = time.getClientRect({ relativeTo: widget });
 
           let timeX = paddingPx;
           if (textAlignment === 2) {
@@ -117,12 +116,103 @@ export default class Time extends BaseNode {
           time.x(timeX);
           time.y(Math.max(0, (widgetHeight - timeHeight) / 2));
         },
-        '0-1': ({ widget }: any) => this.layoutFns[1]({ widget }),
+        1: ({ widget }: any) => {
+          const { padding } = widget.getAttr('editProps');
+          const widgetWidth = widget.width();
+          // const widgetHeight = widget.height();
+
+          const time = widget.findOne(
+            (node: any) => node.getAttr('itemKey') === 'time',
+          );
+          const { textAlignment } = time.getAttr('editProps')
+          const day = widget.findOne(
+            (node: any) => node.getAttr('itemKey') === 'day',
+          );
+          const {
+            editProps: { topSpacing, bottomSpacing },
+          } = day.attrs;
+          const date = widget.findOne(
+            (node: any) => node.getAttr('itemKey') === 'date',
+          );
+
+          const paddingPx = pt(padding);
+          const alignX = (node: any) => {
+            times[0].text(textAlignment === 2 ? '10:09' : '10');
+            times[1].visible(textAlignment !== 2);
+            const { width: nodeWidth } = node.getClientRect({ relativeTo: widget });
+            times[1].y(times[0].height() + 10);
+            if (textAlignment === 2) {
+              return (widgetWidth - nodeWidth) / 2;
+            }
+            if (textAlignment === 3) {
+              return widgetWidth - paddingPx - nodeWidth;
+            }
+            return paddingPx;
+          };
+          const startY = 16;
+
+          const times = time.find('Text');
+
+          time.x(alignX(time));
+          time.y(startY);
+
+          const { height: timeHeight } = time.getClientRect({ relativeTo: widget });
+
+          day.x(padding);
+          day.y(time.y() + timeHeight + topSpacing);
+
+          const { height: dayHeight } = day.getClientRect({ relativeTo: widget });
+
+          date.x(padding);
+          date.y(day.y()+ dayHeight + bottomSpacing)
+        },
+        3: ({ widget }: any) => {
+          const time = widget.findOne(
+            (node: any) => node.getAttr('itemKey') === 'time',
+          );
+          const timebg1 = time.findOne(
+            (node: any) => node.getAttr('itemKey') === 'timebg1',
+          );
+          const timebg2 = widget.findOne(
+            (node: any) => node.getAttr('itemKey') === 'timebg2',
+          );
+          const time1 = widget.findOne(
+            (node: any) => node.getAttr('itemKey') === 'time1',
+          );
+          const time2 = widget.findOne(
+            (node: any) => node.getAttr('itemKey') === 'time2',
+          );
+          // timebg1.x(0);
+          // timebg1.y(0);
+          // timebg2.x(timebg1.width() + 10);
+          // timebg2.y(0);
+
+          time1.x(timebg1.x() + (timebg1.width() - time1.width())/2);
+          time1.y(timebg1.y() + (timebg1.height() - time1.height())/2);
+          time2.x(timebg2.x() + (timebg2.width() - time2.width())/2);
+          time2.y(timebg2.y() + (timebg2.height() - time2.height())/2);
+
+          const { width: timeWidth, height: timeHeight } = time.getClientRect({ relativeTo: widget });
+          time.x((widget.width() - timeWidth)/2)
+          time.y(Math.max(0, (widget.height() - timebg1.height()) / 2));
+        }
       };
     }
 
     init() {
       const { ios, android } = this.dataJson;
+      const iosPorps: any = {};
+      const androidProps: any = {};
+      Object.keys(ios).forEach((key: string) => {
+        if (typeof ios[key] !== 'object') {
+          iosPorps[key] = ios[key];
+        }
+      })
+      Object.keys(android).forEach((key: string) => {
+        if (typeof android[key] !== 'object') {
+          androidProps[key] = android[key];
+        }
+      })
       this.iosWidgetGroup = new Konva.Group({
         x: 0,
         y: 0,
@@ -130,8 +220,7 @@ export default class Time extends BaseNode {
         packable: true,
         title: `Time-${iosSystem}`,
         editProps: {
-          textAlignment: ios.textAlignment,
-          isLockScreen: ios.isLockScreen,
+          ...iosPorps,
           system: iosSystem,
         },
         // serialize 时用于把 editProps 回填到 data.ios
@@ -145,8 +234,7 @@ export default class Time extends BaseNode {
         packable: true,
         title: `Time-${androidSystem}`,
         editProps: {
-          textAlignment: android.textAlignment,
-          isLockScreen: android.isLockScreen,
+          ...androidProps,
           system: androidSystem,
         },
         // serialize 时用于把 editProps 回填到 data.android
@@ -214,7 +302,6 @@ export default class Time extends BaseNode {
 
       this.render();
     }
-
     createWidget(options: any) {
       const {
         agent,
@@ -250,6 +337,7 @@ export default class Time extends BaseNode {
             name,
             source,
             radius,
+            sizeKey,
             crop_props,
         },
         // Widget 容器级字段（padding/name/source/radius/crop_props）回填路径。
@@ -260,16 +348,95 @@ export default class Time extends BaseNode {
       const bgRect = this.createRect({ w: widthPx, h: heightPx })
       const bgImage = this.createSource({ w: widthPx, h: heightPx, source, crop_props, radius });
       let items:any = [bgRect, bgImage];
-      if (time) {
+      const layoutFnConfig: any = {
+        0: {
+          time: ['10:09'],
+        },
+        '0-1': {
+          time: ['10:09 AM'],
+        },
+        '1': {
+          time: ['10', '09'],
+        },
+      }
+      // 暂时layoutType = 3的时候单独处理Time
+      if (time && layoutType !== 3) {
+        const lc = layoutFnConfig[layoutType];
         const timeNode = this.createText({
           ...time,
-          text: '10:09',
+          text: lc ? lc.time : ['10:09'],
           key: 'time',
-        });
+        }, lc ? lc.time.length : 1);
         // 文本子节点映射到 data 的 time 分支。
         timeNode.setAttr('snapshotDataPath', `${dataPath}.time`);
         items.push(timeNode);
       }
+
+      if (time && layoutType === 3) {
+        const layoutType3Map: any = {
+          small: [60, 58, 3],
+          medium: [126, 120, 10],
+          large: [144, 136, 10],
+        }
+        const w = layoutType3Map[sizeKey][0];
+        const h = layoutType3Map[sizeKey][1];
+        const timeRect1 = new Konva.Rect({
+          x: 0,
+          y: 0,
+          width: w,
+          height: h,
+          fill: '#000000',
+          itemKey: 'timebg1',
+          cornerRadius: 5,
+          editProps: {
+            backgroundColor: time.backgroundColor,
+          }
+        });
+        const timeRect2 = new Konva.Rect({
+          x: layoutType3Map[sizeKey][0] + layoutType3Map[sizeKey][2],
+          y: 0,
+          width: w,
+          height: h,
+          fill: '#000000',
+          itemKey: 'timebg2',
+          cornerRadius: 5,
+          editProps: {
+            backgroundColor: time.backgroundColor,
+          }
+        });
+        const time1 = new Konva.Text({
+          x: 0,
+          y: 0,
+          text: '10',
+          verticalAlign: 'middle',
+          itemKey: 'time1',
+          lineHeight: 1,
+          padding: 0,
+        });
+        const time2 = new Konva.Text({
+          x: 0,
+          y: 0,
+          text: '09',
+          itemKey: 'time2',
+          verticalAlign: 'middle',
+          lineHeight: 1,
+          padding: 0,
+        });
+
+        const group1 = new Konva.Group({
+          x: 0,
+          y: 0,
+          itemKey: 'time',
+          selected: true,
+          snapshotDataPath: `${dataPath}.time`,
+          editProps: {
+            ...time
+          }
+        })
+        group1.add(timeRect1, timeRect2, time1, time2)
+        items.push(group1);
+      }
+
       if (day) {
         const dayNode = this.createText({
           ...day,

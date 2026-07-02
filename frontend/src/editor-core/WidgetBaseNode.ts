@@ -237,22 +237,37 @@ export default class BaseNode {
             fill: 'green',
             width: w,
             align: align || 'right',
+            // 调试标题仅用于展示，不应参与点击命中，避免抢占真实内容节点
+            listening: false,
         });
         return title;
     }
 
     /** 只负责造节点，不负责定位（定位交给 layoutFns） */
-    createText(params: any) {
-        const { text, key } = params;
-        return new Konva.Text({
-            text,
-            selected: true,
-            // align: 'center',
-            verticalAlign: 'middle',
-            editProps: { ...params },
-            itemKey: key,
-            snapshotNodeId: nanoid(),
+    createText(params: any, row?: number) {
+      const { text, key } = params;
+      row = row || 1;
+      const group = new Konva.Group({
+        x: 0,
+        y: 0,
+        selected: true,
+        itemKey: key,
+        editProps: {
+          ...params
+        },
+      });
+
+      for (let k = 1; k <= row; k++) {
+        const textNode = new Konva.Text({
+          text: Array.isArray(text) ? text[k - 1] : text,
+          verticalAlign: 'middle',
+          itemKey: key + '_' + k,
+          lineHeight: 1,
+          padding: 0,
         });
+        group.add(textNode);
+      }
+      return group;
     }
 
     render() {
@@ -316,14 +331,38 @@ export default class BaseNode {
                   (n: Konva.Node) => n.getAttr('radiusBox'),
                 );
                 radiusBox.setAttr('clipFunc', (ctx: any) => this.clipFuncBorderRadius(ctx, pt(radius), node.width(), node.height()))
-            }
+            },
+            textSize: (node: any, value: any) => {
+              const nodes = node.find('Text');
+              nodes.forEach((n: any) => {
+                n.setAttrs({
+                  'fontSize': value,
+                });
+              });
+            },
+            alpha: (node: any, value: any) => {
+              const nodes = node.find('Text');
+              nodes.forEach((n: any) => n.setAttr('opacity', value));
+            },
+            textHeight: (node: any, value: any) => {
+              const nodes = node.find('Text');
+              nodes.forEach((n: any) => n.setAttr('height', value));
+            },
+            textColor: (node: any, value: any) => {
+              const nodes = node.find('Text');
+              nodes.forEach((n: any) => n.setAttr('fill', value));
+            },
+            font: (node: any, value: any) => {
+              const nodes = node.find('Text');
+              nodes.forEach((n: any) => n.setAttr('fontFamily', value));
+            },
         }
         const editProps = node.getAttr('editProps');
         const attrs: any = {};
         Object.keys(editProps).forEach((key: string) => {
             const decorationFun = decorationFuns[key];
             if (decorationFun) {
-                decorationFun(node)
+                decorationFun(node, editProps[key])
             } else {
                 if (temp[key] !== undefined) {
                     attrs[temp[key]] = getValue(key, editProps[key]);

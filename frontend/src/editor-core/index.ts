@@ -12,7 +12,8 @@ import { defaultCropProps } from './defaultConfig';
 
 /** 96 DPI 下 1pt = 4/3 px；编辑器内部统一用 px 喂给 Konva，对外尺寸接口可以用 pt 表达 */
 const PT_TO_PX = 4 / 3;
-const pt = (n: number) => n * PT_TO_PX;
+// const pt = (n: number) => n * PT_TO_PX;
+const pt = (n: number) => n;
 
 export interface EditorCoreOptions {
   width?: number;
