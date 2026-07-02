@@ -1,0 +1,173 @@
+[
+  {
+    "key": "Time",
+    "label": "Time",
+    "children": [
+      {
+        "key": "Time-0",
+        "label": "Layout 0: Basic Time",
+        "title": "Time, date, and weekday; single or double row",
+        "children": [
+          { "key": "Time_LayoutType_0_1", "label": "Single Row" },
+          { "key": "Time_LayoutType_0", "label": "Double Row" }
+        ]
+      },
+      {
+        "key": "Time_LayoutType_1",
+        "label": "Layout 1: Top Aligned Time",
+        "title": "Small / medium / large; left, right, or centered (medium shows single row)"
+      },
+      {
+        "key": "Time-2",
+        "label": "Layout 2: Time + Battery",
+        "title": "Solid background with battery text"
+      },
+      {
+        "key": "Time_LayoutType_3",
+        "label": "Layout 3: Flip Time"
+      },
+      {
+        "key": "Time-4",
+        "label": "Layout 4: Time + Line Animation",
+        "title": "iOS: dual-image animation; Android: basic time only"
+      },
+      {
+        "key": "Time-5",
+        "label": "Layout 5: Time + Rotate / Static Animation",
+        "title": "Month and calendar; partitioned background"
+      },
+      {
+        "key": "Time-6",
+        "label": "Layout 6: Time + Rotate Animation",
+        "title": "Month display; no calendar"
+      }
+    ]
+  },
+  {
+    "key": "Calendar",
+    "label": "Calendar",
+    "children": [
+      {
+        "key": "Calendar-0",
+        "label": "Layout 0: Basic Calendar",
+        "title": "Date, month, and full calendar views"
+      },
+      {
+        "key": "Calendar-1",
+        "label": "Layout 1: Minimal Calendar",
+        "title": "Month and calendar grid; highlights today"
+      },
+      {
+        "key": "Calendar-2",
+        "label": "Layout 2: Animated Calendar",
+        "title": "Line or rotate image animation; size-dependent month/year display"
+      }
+    ]
+  },
+  {
+    "key": "Clock",
+    "label": "Clock",
+    "children": [
+      {
+        "key": "Clock-0",
+        "label": "Layout 0",
+        "title": "Customizable"
+      },
+      {
+        "key": "Clock-1",
+        "label": "Layout 1",
+        "title": "Not customizable"
+      }
+    ]
+  },
+  {
+    "key": "DigitalClock",
+    "label": "Digital Clock",
+    "title": "All layouts customizable"
+  },
+  {
+    "key": "Battery",
+    "label": "Battery",
+    "children": [
+      {
+        "key": "Battery-0",
+        "label": "Layout 0",
+        "title": "Not customizable"
+      },
+      {
+        "key": "Battery-1",
+        "label": "Layout 1",
+        "title": "Not customizable"
+      },
+      {
+        "key": "Battery-2",
+        "label": "Layout 2",
+        "title": "Customizable"
+      }
+    ]
+  },
+  {
+    "key": "Quotation",
+    "label": "Quotation",
+    "title": "All layouts customizable"
+  },
+  {
+    "key": "Steps",
+    "label": "Steps"
+  },
+  {
+    "key": "PureImage",
+    "label": "Pure Image",
+    "title": "Not customizable"
+  },
+  {
+    "key": "CountDown",
+    "label": "Count Down",
+    "title": "All layouts customizable"
+  },
+  {
+    "key": "PhotoImage",
+    "label": "Photo Image",
+    "title": "All layouts customizable"
+  },
+  {
+    "key": "CollageImage",
+    "label": "Collage Image",
+    "title": "Not customizable"
+  },
+  {
+    "key": "Weather",
+    "label": "Weather",
+    "title": "All layouts customizable"
+  },
+  {
+    "key": "Gif",
+    "label": "Gif / Dynamic",
+    "title": "Not customizable"
+  },
+  {
+    "key": "Launcher",
+    "label": "Launcher",
+    "title": "Not customizable"
+  },
+  {
+    "key": "TimeMixBattery",
+    "label": "Time Mix Battery",
+    "title": "All layouts customizable"
+  },
+  {
+    "key": "TimeMixCalendarMixBattery",
+    "label": "Time Mix Calendar Mix Battery",
+    "title": "All layouts customizable"
+  },
+  {
+    "key": "Music",
+    "label": "Music",
+    "title": "Not customizable"
+  },
+  {
+    "key": "ClockMixBattery",
+    "label": "Clock Mix Battery",
+    "title": "All layouts customizable"
+  }
+]

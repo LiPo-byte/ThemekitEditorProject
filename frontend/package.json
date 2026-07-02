@@ -50,7 +50,8 @@
     "konva": "^10.3.0",
     "nanoid": "^5.1.11",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "@xyflow/react": "^12.11.1"
   },
   "devDependencies": {
     "@ant-design/cli": "^6.4.2",

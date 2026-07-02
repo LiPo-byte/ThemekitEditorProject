@@ -24,6 +24,19 @@ export default [
     component: './editor',
   },
   {
+    name: 'editor-xyflow',
+    layout: false,
+    icon: 'edit',
+    path: '/editor-xyflow',
+    component: './editor-xyflow',
+  },
+  {
+    name: 'editor-xyflow-detail',
+    layout: false,
+    path: '/editor-xyflow/:projectId',
+    component: './editor-xyflow',
+  },
+  {
     name: 'project-list',
     icon: 'appstore',
     path: '/project-list',
