@@ -2,9 +2,9 @@ import React from 'react';
 import { useModel } from '@umijs/max';
 import { createStyles } from 'antd-style';
 import {
-  useEditorCoreLoading,
+//   useEditorCoreLoading,
   useEditorHeaderControlsVisible,
-  useEditorPreviewDevicesOpenSetter,
+//   useEditorPreviewDevicesOpenSetter,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { AvatarDropdown, InitialAvatar } from '@/components';
@@ -50,16 +50,14 @@ const HeaderControls: React.FC = () => {
   const visible = useEditorHeaderControlsVisible();
   const { initialState, setInitialState } = useModel('@@initialState');
   const currentUser = initialState?.currentUser;
-  const coreLoading = useEditorCoreLoading();
-  const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
-  const setPreviewDevicesOpen = useEditorPreviewDevicesOpenSetter();
+  const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
   if (!visible) return null;
 
   return (
     <div className={`${styles.headerControls} ${playEnterAnimation ? styles.barEnter : ''}`}>
         <Tooltip placement="rightTop" title="Preview Devices">
-            <Button type="text" onClick={() => {setPreviewDevicesOpen(true)}}>
+            <Button type="text" onClick={() => {}}>
                 <PlayCircleOutlined style={{fontSize: '12px'}} />
             </Button>
         </Tooltip>

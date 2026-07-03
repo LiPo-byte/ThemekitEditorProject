@@ -29,14 +29,10 @@ interface TimeLayoutData {
   source?: string;
   padding?: number;
   radius?: number;
+  layoutType?: any;
 }
 
-interface TimeLayoutProps {
-  id: string;
-  data?: TimeLayoutData;
-}
-
-export default function TimeLayout_1(props: TimeLayoutProps) {
+export default function TimeLayout_1(props: any) {
   const data = props.data;
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
 
@@ -81,19 +77,22 @@ export default function TimeLayout_1(props: TimeLayoutProps) {
     lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
     position: 'relative' as const,
     zIndex: 9,
+    whiteSpace: 'nowrap',
   });
 
-  const containerStyle = {
-    backgroundColor: '#ffffff',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems,
-    justifyContent: 'center',
-    borderRadius: `${data.radius ?? 0}px`,
-    padding: `0 ${data.padding ?? 0}px`,
-    position: 'relative' as const,
-  };
+  const containerStyle = useMemo(() => {
+    return {
+      backgroundColor: '#ffffff',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems,
+      justifyContent: 'center',
+      borderRadius: `${data.radius ?? 0}px`,
+      padding: textAlignment === 2 ? '0' : `0 ${data.padding ?? 0}px`,
+      position: 'relative' as const,
+    };
+  }, [textAlignment, data])
 
   const imageStyle = {
     position: 'absolute' as const,
@@ -115,15 +114,21 @@ export default function TimeLayout_1(props: TimeLayoutProps) {
           style={imageStyle}
         />
       ) : null}
-      <div style={getTextStyle(data.time)}>
-        10:29
-      </div>
-      <div style={{ ...getTextStyle(data.day), margin: `${(data.padding ?? 0) / 2}px 0` }}>
-        Wednesday
-      </div>
-      <div style={getTextStyle(data.date)}>
-        March 23
-      </div>
+      { data.time && (
+        <span style={getTextStyle(data.time)}>
+          { data?.layoutType == '0-1' ? '10:29 AM' : '10:29'}
+        </span>
+      )}
+      {data.day && (
+        <div style={{ ...getTextStyle(data.day), margin: `${(data.padding ?? 0) / 2}px 0` }}>
+          Wednesday
+        </div>
+      )}
+      {data.date && (
+        <div style={getTextStyle(data.date)}>
+          March 23
+        </div>
+      )}
     </div>
   );
 }

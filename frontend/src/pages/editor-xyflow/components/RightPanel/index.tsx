@@ -10,7 +10,7 @@ import {
   useEditorRightPanlOpenSetter,
   useEditorProjectId,
   useEditorSelectedBranchNodes,
-  useEditorSelectedBranchNodeIdsKey,
+  // useEditorSelectedBranchNodeIdsKey,
 } from '../../context';
 import { deleteProjectImage, uploadProjectImage } from '../../service';
 import { useEnterAnimation } from '../../hooks/useEnterAnimation';
@@ -180,12 +180,19 @@ const RightPanel: React.FC = () => {
           !Array.isArray(changeValue)
         ) {
           const prevValue = nextData[changeKey];
-          nextData[changeKey] =
-            prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)
-              ? { ...prevValue, ...changeValue }
-              : { ...changeValue };
+          if (!prevValue || typeof prevValue !== 'object' || Array.isArray(prevValue)) {
+            return;
+          }
+          const nextNested = { ...prevValue };
+          Object.keys(changeValue).forEach((nestedKey) => {
+            if (Object.hasOwn(nextNested, nestedKey)) {
+              nextNested[nestedKey] = changeValue[nestedKey];
+            }
+          });
+          nextData[changeKey] = nextNested;
           return;
         }
+        if (!Object.hasOwn(nextData, changeKey)) return;
         nextData[changeKey] = changeValue;
       });
       return nextData;

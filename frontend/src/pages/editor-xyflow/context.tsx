@@ -1,129 +1,21 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode
+} from 'react';
 import type { Node as FlowNode } from '@xyflow/react';
 import type { EditorCore } from '@/editor-core';
 import { useParams } from '@umijs/max';
-import { nanoid } from 'nanoid';  
-import { WidgetDefaultConfig } from '@/editor-core/defaultConfig';
-import { CONFIG_SIZE_MAP } from './widget/base-config'
-
-let x = 0;
-const config2Nodes: any = (config: any) => {
-  const gap = 30;
-  const res:any = [];
-  const { ios, android } = config;
-  const rootGroupId = nanoid();
-  const platformNodes: any[] = [];
-
-  const pushPlatformNodes = (platformConfig: any, groupX: number, system: string) => {
-    if (!platformConfig) {
-      return null;
-    }
-
-    const groupId = nanoid() + '_' + system;
-    let groupWidth = gap;
-    let groupHeight = gap;
-    let startY = gap;
-    const sizes = Array.isArray(platformConfig.sizes)
-      ? [...platformConfig.sizes].reverse()
-      : [];
-    const widgetNodes: any[] = [];
-
-    sizes.forEach((item: any) => {
-      const sizeConfig = CONFIG_SIZE_MAP[item.size] || CONFIG_SIZE_MAP[1];
-      const { width, height } = sizeConfig;
-      groupWidth = Math.max(groupWidth, width + gap * 2);
-
-      widgetNodes.push({
-        id: nanoid(),
-        type: 'time_1',
-        data: { ...item },
-        position: { x: gap, y: startY },
-        parentId: groupId,
-        extent: 'parent',
-        draggable: false,
-        selectable: false,
-        connectable: false,
-        focusable: false,
-        style: {
-          border: '2px solid transparent',
-        },
-      });
-
-      startY += height + gap;
-      groupHeight += height + gap;
-    });
-
-    platformNodes.push({
-      id: groupId,
-      type: 'group',
-      className: 'widget-group-node',
-      position: { x: groupX, y: gap },
-      data: {
-        isLockScreen: platformConfig.isLockScreen,
-        textAlignment: platformConfig.textAlignment,
-        type: platformConfig.type,
-        version: platformConfig.version,
-      },
-      parentId: rootGroupId,
-      extent: 'parent',
-      draggable: false,
-      selectable: false,
-      connectable: false,
-      focusable: false,
-      zIndex: 10,
-      style: {
-        width: groupWidth,
-        height: groupHeight,
-        background: '#eef3ff',
-        border: '1px solid #dfe5ff',
-        borderRadius: 12,
-        boxShadow: '0 2px 8px rgba(63, 93, 255, 0.06)',
-      },
-    });
-    platformNodes.push(...widgetNodes);
-
-    return {
-      width: groupWidth,
-      height: groupHeight,
-    };
-  };
-
-  const iosMeta = pushPlatformNodes(ios, gap, 'ios');
-  const androidMeta = pushPlatformNodes(
-    android,
-    iosMeta ? gap + iosMeta.width + gap : gap,
-    'android',
-  );
-
-  const rootWidth = iosMeta && androidMeta
-    ? gap + iosMeta.width + gap + androidMeta.width + gap
-    : gap + (iosMeta?.width || androidMeta?.width || 0) + gap;
-  const rootHeight = gap
-    + Math.max(iosMeta?.height || 0, androidMeta?.height || 0)
-    + gap;
-
-  res.push({
-    id: rootGroupId,
-    type: 'group',
-    className: 'widget-group-node',
-    position: { x: x, y: 0 },
-    draggable: false,
-    selectable: false,
-    connectable: false,
-    focusable: false,
-    zIndex: 1,
-    style: {
-      width: rootWidth,
-      height: rootHeight,
-      background: '#f5f7ff',
-      border: '1px solid #b4c0ff',
-      borderRadius: 16,
-    },
-  });
-  res.push(...platformNodes);
-  x += 1000;
-  return res;
-};
+// import { nanoid } from 'nanoid';
+// import { WidgetDefaultConfig } from '@/editor-core/defaultConfig';
+// import { CONFIG_SIZE_MAP } from './widget/base-config'
+import { widgetConfig2Nodes } from './widget/util';
+import { nanoid } from 'nanoid';
+import { isVisible } from '@rc-component/util';
 
 
 type EditorCoreCtxValue = {
@@ -134,17 +26,23 @@ type EditorCoreCtxValue = {
   setNodes: React.Dispatch<React.SetStateAction<FlowNode[]>>;
   changeNodeProp: (updater: (prev: FlowNode[]) => FlowNode[]) => void;
   selectedNodesMap: Map<string, FlowNode>;
+  actionPropNode: FlowNode;
+  setActionPropNode: (node: FlowNode) => void;
   selectedBranchNodes: FlowNode[];
   selectedBranchNodeIds: string[];
   selectedBranchNodeIdsKey: string;
   getParentNodeData: (nodeId: string) => Record<string, any> | null;
   selectNode: (fn: FlowNode, append?: boolean) => void;
   deselectedNode: (nodeId?: string) => void;
-  addWidget: () => void;
+  addWidget: (config: any) => void;
+  deleteSelectedNodes: () => void;
   undo: () => void;
   redo: () => void;
+  canDeleteSelected: boolean;
   canUndo: boolean;
   canRedo: boolean;
+  leftPanlOpen: boolean;
+  setLeftPanlOpen: (bool: boolean) => void;
   rightPanlOpen: boolean;
   setRightPanlOpen: (bool: boolean) => void;
 };
@@ -154,6 +52,7 @@ const noopChangeNodeProp = (_updater: (prev: FlowNode[]) => FlowNode[]) => {};
 const noopSelectNode = (_fn: FlowNode, _append?: boolean) => {};
 const noopDeselectedNode = (_nodeId?: string) => {};
 const noopAddNodeGroup = () => {};
+const noopDeleteSelectedNodes = () => {};
 const noopGetParentNodeData = (_nodeId: string) => null;
 
 const EditorCoreCtx = createContext<EditorCoreCtxValue>({
@@ -164,6 +63,13 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   setNodes: noopSetNodes,
   changeNodeProp: noopChangeNodeProp,
   selectedNodesMap: new Map(),
+  actionPropNode: {
+    id: nanoid(),
+    position: { x: 0, y: 0 },
+    type: 'node-with-toolbar',
+    data: { isVisible: false, actionList: [], },
+  },
+  setActionPropNode: (_node: FlowNode | null) => {},
   selectedBranchNodes: [],
   selectedBranchNodeIds: [],
   selectedBranchNodeIdsKey: '',
@@ -171,10 +77,14 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   selectNode: noopSelectNode,
   deselectedNode: noopDeselectedNode,
   addWidget: noopAddNodeGroup,
+  deleteSelectedNodes: noopDeleteSelectedNodes,
   undo: () => {},
   redo: () => {},
+  canDeleteSelected: false,
   canUndo: false,
   canRedo: false,
+  leftPanlOpen: false,
+  setLeftPanlOpen: (_bool: boolean) => {},
   rightPanlOpen: false,
   setRightPanlOpen: (bool: boolean) => {},
 });
@@ -192,12 +102,20 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const projectId = params.projectId ?? null;
   const [projectName, setProjectName] = useState<string>('Untitled Project');
   const [nodes, setNodes] = useState<FlowNode[]>([]);
+
   const [selectedNodesMap, setSelectedNodesMapState] = useState<Map<string, FlowNode>>(
     new Map(),
   );
+  const [actionPropNode, setActionPropNode] = useState<FlowNode>({
+    id: nanoid(),
+    position: { x: 0, y: 0 },
+    type: 'node-with-toolbar',
+    data: { isVisible: false, actionList: [], },
+  });
   const [past, setPast] = useState<FlowNode[][]>([]);
   const [future, setFuture] = useState<FlowNode[][]>([]);
 
+  const [leftPanlOpen, setLeftPanlOpen] = useState<boolean>(false);
   const [rightPanlOpen, setRightPanlOpen] = useState<boolean>(false);
 
   const selectNode = (fn: FlowNode, append = false) => {
@@ -295,9 +213,48 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const canRedo = future.length > 0;
   // 撤销回退
 
-  const addWidget = () => {
-    const group = config2Nodes(WidgetDefaultConfig['Time_LayoutType_0']);
-    commitNodes((prev) => [...prev, ...cloneNodes(group)]);
+  const addWidget = (config: any) => {
+    const { nodes: newNodes, rootNode } = widgetConfig2Nodes(config);
+    if (!rootNode) return;
+
+    commitNodes((prev) => {
+      const SLOT_SIZE = 1000;
+      const COLUMN_COUNT = 6;
+      const occupiedSlots = new Set<number>();
+
+      prev
+        .filter((node) => node.type === 'group' && !node.parentId)
+        .forEach((node) => {
+          const x = typeof node.position?.x === 'number' ? node.position.x : 0;
+          const y = typeof node.position?.y === 'number' ? node.position.y : 0;
+          const col = Math.round(x / SLOT_SIZE);
+          const row = Math.round(y / SLOT_SIZE);
+          if (col < 0 || row < 0 || col >= COLUMN_COUNT) return;
+          occupiedSlots.add(row * COLUMN_COUNT + col);
+        });
+
+      let slotIndex = 0;
+      while (occupiedSlots.has(slotIndex)) {
+        slotIndex += 1;
+      }
+      const nextPosition = {
+        x: (slotIndex % COLUMN_COUNT) * SLOT_SIZE,
+        y: Math.floor(slotIndex / COLUMN_COUNT) * SLOT_SIZE,
+      };
+
+      const patchedNodes = cloneNodes(newNodes);
+      const rootNodeIndex = patchedNodes.findIndex(
+        (node) => node.id === rootNode.id && node.type === 'group' && !node.parentId,
+      );
+      if (rootNodeIndex >= 0) {
+        patchedNodes[rootNodeIndex] = {
+          ...patchedNodes[rootNodeIndex],
+          position: nextPosition,
+        };
+      }
+
+      return [...prev, ...patchedNodes];
+    });
   };
 
   const selectedBranchNodes = useMemo(
@@ -346,11 +303,83 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     [selectedBranchNodeIds],
   );
 
+  useEffect(() => {
+    const action:any = [];
+    let nodeid:string = ';'
+    if (selectedNodesMap.size === 1) {
+      selectedNodesMap.forEach((node: any, id: string) => {
+        const { packable, deleteable, cropable, data } = node;
+        packable && action.push('packable');
+        deleteable && action.push('deleteable');
+        cropable && data && data.source && action.push('cropable');
+        nodeid = id;
+      })
+    }
+    if (action.length) {
+      setActionPropNode({
+        ...actionPropNode,
+        data: {
+          nodeId: nodeid,
+          actionList: action,
+          isVisible: true,
+        }
+      })
+    } else {
+      setActionPropNode({
+        ...actionPropNode,
+        data: {
+          nodeId: '',
+          actionList: [],
+          isVisible: false,
+        }
+      })
+    }
+  }, [selectedNodesMap])
+
   const getParentNodeData = (nodeId: string) => {
     const node = nodes.find((item) => item.id === nodeId);
     if (!node?.parentId) return null;
     const parentNode = nodes.find((item) => item.id === node.parentId);
     return (parentNode?.data as Record<string, any> | undefined) ?? null;
+  };
+
+  const selectedDirectNodes = useMemo(
+    () =>
+      Array.from(selectedNodesMap.keys())
+        .map((id) => nodes.find((node) => node.id === id))
+        .filter((node): node is FlowNode => Boolean(node)),
+    [nodes, selectedNodesMap],
+  );
+
+  const canDeleteSelected =
+    selectedDirectNodes.length > 0 &&
+    selectedDirectNodes.every((node) => !node.parentId);
+
+  const deleteSelectedNodes = () => {
+    if (!canDeleteSelected) return;
+    const rootIds = selectedDirectNodes.map((node) => node.id);
+    const idsToDelete = new Set<string>();
+    const stack = [...rootIds];
+    const childrenByParent = new Map<string, string[]>();
+    nodes.forEach((node) => {
+      if (!node.parentId) return;
+      const list = childrenByParent.get(node.parentId) ?? [];
+      list.push(node.id);
+      childrenByParent.set(node.parentId, list);
+    });
+    while (stack.length) {
+      const currentId = stack.pop()!;
+      if (idsToDelete.has(currentId)) continue;
+      idsToDelete.add(currentId);
+      const children = childrenByParent.get(currentId) ?? [];
+      for (let i = 0; i < children.length; i += 1) {
+        stack.push(children[i]);
+      }
+    }
+
+    commitNodes((prev) => prev.filter((node) => !idsToDelete.has(node.id)));
+    setSelectedNodesMapState(new Map());
+    setRightPanlOpen(false);
   };
 
   const value = useMemo<EditorCoreCtxValue>(
@@ -362,6 +391,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       setNodes,
       changeNodeProp: commitNodes,
       selectedNodesMap,
+      actionPropNode,
+      setActionPropNode,
       selectedBranchNodes,
       selectedBranchNodeIds,
       selectedBranchNodeIdsKey,
@@ -369,10 +400,14 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       selectNode,
       deselectedNode,
       addWidget,
+      deleteSelectedNodes,
       undo,
       redo,
+      canDeleteSelected,
       canUndo,
       canRedo,
+      leftPanlOpen,
+      setLeftPanlOpen,
       rightPanlOpen,
       setRightPanlOpen,
     }),
@@ -381,12 +416,17 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       projectId,
       projectName,
       selectedNodesMap,
+      actionPropNode,
       selectedBranchNodes,
       selectedBranchNodeIds,
       selectedBranchNodeIdsKey,
+      selectedDirectNodes,
       getParentNodeData,
+      deleteSelectedNodes,
+      canDeleteSelected,
       canUndo,
       canRedo,
+      leftPanlOpen,
       rightPanlOpen,
     ],
   );
@@ -398,6 +438,8 @@ export const useEditorNodes = () => useContext(EditorCoreCtx).nodes;
 export const useEditorNodesSetter = () => useContext(EditorCoreCtx).setNodes;
 export const useEditorChangeNodeProp = () => useContext(EditorCoreCtx).changeNodeProp;
 export const useEditorSelectedNodesMap = () => useContext(EditorCoreCtx).selectedNodesMap;
+export const useEditorActionPropNode = () => useContext(EditorCoreCtx).actionPropNode;
+export const useEditorActionPropNodeSetter = () => useContext(EditorCoreCtx).setActionPropNode;
 export const useEditorSelectedBranchNodes = () => useContext(EditorCoreCtx).selectedBranchNodes;
 export const useEditorSelectedBranchNodeIds = () => useContext(EditorCoreCtx).selectedBranchNodeIds;
 export const useEditorSelectedBranchNodeIdsKey = () =>
@@ -406,8 +448,10 @@ export const useEditorGetParentNodeData = () => useContext(EditorCoreCtx).getPar
 export const useEditorSelectNode = () => useContext(EditorCoreCtx).selectNode;
 export const useEditorDeselectedNode = () => useContext(EditorCoreCtx).deselectedNode;
 export const useEditorAddWidget = () => useContext(EditorCoreCtx).addWidget;
+export const useEditorDeleteSelectedNodes = () => useContext(EditorCoreCtx).deleteSelectedNodes;
 export const useEditorUndo = () => useContext(EditorCoreCtx).undo;
 export const useEditorRedo = () => useContext(EditorCoreCtx).redo;
+export const useEditorCanDeleteSelected = () => useContext(EditorCoreCtx).canDeleteSelected;
 export const useEditorCanUndo = () => useContext(EditorCoreCtx).canUndo;
 export const useEditorCanRedo = () => useContext(EditorCoreCtx).canRedo;
 export const useEditorRightPanlOpen = () => useContext(EditorCoreCtx).rightPanlOpen;
@@ -455,8 +499,8 @@ export const useEditorCoreLoading = () => false;
 export const useEditorCoreSetter = () => noopCoreSetter;
 export const useEditorUIVisibility = () => DEFAULT_EDITOR_UI_VISIBILITY;
 export const useEditorUIVisibilitySetter = () => noopUISetter;
-export const useEditorLeftPanlOpen = () => DEFAULT_EDITOR_UI_VISIBILITY.leftPanel;
-export const useEditorLeftPanlOpenSetter = () => noopBooleanSetter;
+export const useEditorLeftPanlOpen = () => useContext(EditorCoreCtx).leftPanlOpen;
+export const useEditorLeftPanlOpenSetter = () => useContext(EditorCoreCtx).setLeftPanlOpen;
 // export const useEditorRightPanlOpen = () => DEFAULT_EDITOR_UI_VISIBILITY.rightPanel;
 // export const useEditorRightPanlOpenSetter = () => noopBooleanSetter;
 export const useEditorToolbarVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.editorToolbar;

@@ -1,6 +1,6 @@
 import { createStyles } from 'antd-style';
 import React from 'react';
-import { useEditorCore, useEditorCoreLoading, useEditorLeftPanlOpen, useEditorLeftPanlOpenSetter } from '../context';
+import { useEditorLeftPanlOpen, useEditorLeftPanlOpenSetter, useEditorAddWidget } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { Button, Col, Menu, Row, Typography, type MenuProps, Flex } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
@@ -67,19 +67,14 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const LeftPanel: React.FC<any> = () => {
   const { styles } = useStyles();
-  const core = useEditorCore();
-  const coreLoading = useEditorCoreLoading();
+  const addWidget = useEditorAddWidget();
   const open = useEditorLeftPanlOpen();
   const setOpen = useEditorLeftPanlOpenSetter();
-  const playEnterAnimation = useEnterAnimation(coreLoading || open, { durationMs: 280 });
+  const playEnterAnimation = useEnterAnimation(true || open, { durationMs: 280 });
   const handleAddWidget = (param: { key: keyof typeof WidgetDefaultConfig }) => {
     const { key } = param;
-    if (!core) {
-      console.warn('[LeftPanel] EditorCore 尚未初始化');
-      return;
-    }
     if (WidgetDefaultConfig[key]) {
-      core.addWidget(WidgetDefaultConfig[key]);
+      addWidget(WidgetDefaultConfig[key]);
     }
   };
 
