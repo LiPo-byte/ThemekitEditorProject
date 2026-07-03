@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Handle, Position, NodeToolbar } from '@xyflow/react';
+import React from 'react';
+import { Position, NodeToolbar } from '@xyflow/react';
 // import { createStyles } from 'antd-style';
-import { useEditorCore, useEditorHideUISetter, useEditorCropToolOpenSetter, useEditorSelectedBranchNodeIdsKey } from '../context';
+import { useEditorHideUISetter, useEditorCropToolOpenSetter } from '../context';
 import { Button } from 'antd';
 import { ExportOutlined, DeleteTwoTone } from '@ant-design/icons';
 import { CropSvg } from '@/icons';
@@ -45,7 +45,12 @@ import { CropSvg } from '@/icons';
  */
 const ActionPopover: React.FC = (props: any) => {
   const { data: { isVisible, actionList, nodeId } } = props;
-  const onCrop = () => {}
+  const setHideUI = useEditorHideUISetter();
+  const setCropOpen = useEditorCropToolOpenSetter();
+  const onCrop = () => {
+    setHideUI(true);
+    setCropOpen(true);
+  };
   return (
     <>
       <NodeToolbar nodeId={nodeId} isVisible={isVisible} position={Position.Top} align='end'>

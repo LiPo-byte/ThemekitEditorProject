@@ -2,7 +2,6 @@ import { Button, Flex } from 'antd';
 import { createStyles } from 'antd-style';
 import React from 'react';
 import {
-  useEditorCore,
   useEditorCropToolOpen,
   useEditorCropToolOpenSetter,
   useEditorHideUISetter,
@@ -49,10 +48,9 @@ const CropTool: React.FC = () => {
   const setHideUI = useEditorHideUISetter();
   const open = useEditorCropToolOpen();
   const setOpen = useEditorCropToolOpenSetter();
-  const core = useEditorCore();
   const playEnterAnimation = useEnterAnimation(open, { durationMs: 260 });
 
-  if (!open || !core) return null;
+  if (!open) return null;
   return (
     <div
       className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}
@@ -67,7 +65,6 @@ const CropTool: React.FC = () => {
           onClick={() => {
             setOpen(false);
             setHideUI(false);
-            core.closeCrop();
           }}
         >
           Cancel
@@ -76,7 +73,6 @@ const CropTool: React.FC = () => {
           onClick={() => {
             setOpen(false);
             setHideUI(false);
-            void core.confirmCrop();
           }}
           type="primary"
         >

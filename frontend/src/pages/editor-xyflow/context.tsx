@@ -45,6 +45,10 @@ type EditorCoreCtxValue = {
   setLeftPanlOpen: (bool: boolean) => void;
   rightPanlOpen: boolean;
   setRightPanlOpen: (bool: boolean) => void;
+  cropToolOpen: boolean;
+  setCropToolOpen: (bool: boolean) => void;
+  hideUI: boolean;
+  setHideUI: (bool: boolean) => void;
 };
 
 const noopSetNodes: React.Dispatch<React.SetStateAction<FlowNode[]>> = () => {};
@@ -87,6 +91,10 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   setLeftPanlOpen: (_bool: boolean) => {},
   rightPanlOpen: false,
   setRightPanlOpen: (bool: boolean) => {},
+  cropToolOpen: false,
+  setCropToolOpen: (_bool: boolean) => {},
+  hideUI: false,
+  setHideUI: (_bool: boolean) => {},
 });
 
 const cloneNodes = (items: FlowNode[]): FlowNode[] => {
@@ -117,6 +125,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const [leftPanlOpen, setLeftPanlOpen] = useState<boolean>(false);
   const [rightPanlOpen, setRightPanlOpen] = useState<boolean>(false);
+  const [cropToolOpen, setCropToolOpen] = useState<boolean>(false);
+  const [hideUI, setHideUI] = useState<boolean>(false);
 
   const selectNode = (fn: FlowNode, append = false) => {
     setRightPanlOpen(true);
@@ -382,6 +392,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     setRightPanlOpen(false);
   };
 
+  useEffect(() => {
+    if (!hideUI) return;
+    setLeftPanlOpen(false);
+    setRightPanlOpen(false);
+  }, [hideUI]);
+
   const value = useMemo<EditorCoreCtxValue>(
     () => ({
       projectId,
@@ -410,6 +426,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       setLeftPanlOpen,
       rightPanlOpen,
       setRightPanlOpen,
+      cropToolOpen,
+      setCropToolOpen,
+      hideUI,
+      setHideUI,
     }),
     [
       nodes,
@@ -428,6 +448,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       canRedo,
       leftPanlOpen,
       rightPanlOpen,
+      cropToolOpen,
+      hideUI,
     ],
   );
 
@@ -503,12 +525,13 @@ export const useEditorLeftPanlOpen = () => useContext(EditorCoreCtx).leftPanlOpe
 export const useEditorLeftPanlOpenSetter = () => useContext(EditorCoreCtx).setLeftPanlOpen;
 // export const useEditorRightPanlOpen = () => DEFAULT_EDITOR_UI_VISIBILITY.rightPanel;
 // export const useEditorRightPanlOpenSetter = () => noopBooleanSetter;
-export const useEditorToolbarVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.editorToolbar;
-export const useEditorBottomToolBarVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.bottomToolBar;
-export const useEditorHeaderControlsVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.headerControls;
+export const useEditorToolbarVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.editorToolbar && !useContext(EditorCoreCtx).hideUI;
+export const useEditorBottomToolBarVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.bottomToolBar && !useContext(EditorCoreCtx).hideUI;
+export const useEditorHeaderControlsVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.headerControls && !useContext(EditorCoreCtx).hideUI;
 export const useEditorZoomToolBarVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.zoomToolBar;
 export const useEditorPreviewDevicesOpen = () => false;
 export const useEditorPreviewDevicesOpenSetter = () => noopBooleanSetter;
-export const useEditorCropToolOpen = () => false;
-export const useEditorCropToolOpenSetter = () => noopBooleanSetter;
-export const useEditorHideUISetter = () => noopBooleanSetter;
+export const useEditorCropToolOpen = () => useContext(EditorCoreCtx).cropToolOpen;
+export const useEditorCropToolOpenSetter = () => useContext(EditorCoreCtx).setCropToolOpen;
+export const useEditorHideUI = () => useContext(EditorCoreCtx).hideUI;
+export const useEditorHideUISetter = () => useContext(EditorCoreCtx).setHideUI;

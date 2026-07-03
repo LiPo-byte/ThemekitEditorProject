@@ -13,6 +13,7 @@ import {
   useEditorDeleteSelectedNodes,
   useEditorCanDeleteSelected,
   useEditorActionPropNode,
+  useEditorCropToolOpen,
 } from './context';
 
 export default function EditorStage() {
@@ -22,14 +23,16 @@ export default function EditorStage() {
   const deselectedNode = useEditorDeselectedNode();
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
   const canDeleteSelected = useEditorCanDeleteSelected();
+  const cropToolOpen = useEditorCropToolOpen();
   const deleteKeyPressed = useKeyPress(['Delete', 'Backspace']);
 
   useEffect(() => {
+    if (cropToolOpen) return;
     if (!deleteKeyPressed || !canDeleteSelected) return;
     const activeTagName = document.activeElement?.tagName?.toLowerCase();
     if (activeTagName === 'input' || activeTagName === 'textarea') return;
     deleteSelectedNodes();
-  }, [deleteKeyPressed, canDeleteSelected, deleteSelectedNodes]);
+  }, [cropToolOpen, deleteKeyPressed, canDeleteSelected, deleteSelectedNodes]);
 
   return (
     <div className="xyflow-stage" style={{ height: '100%', width: '100%' }}>
@@ -40,17 +43,22 @@ export default function EditorStage() {
           time_1: TimeLayout_1,
         }}
         nodesDraggable={false}
-        elementsSelectable
+        elementsSelectable={!cropToolOpen}
         nodesConnectable={false}
         nodesFocusable={false}
         selectionOnDrag={false}
         onNodeClick={(event, node) => {
+          if (cropToolOpen) return;
           seletNode(node, Boolean(event.shiftKey));
         }}
         onPaneClick={(_) => {
+          if (cropToolOpen) return;
           deselectedNode()
         }}
-        panOnDrag
+        panOnDrag={!cropToolOpen}
+        zoomOnScroll={!cropToolOpen}
+        zoomOnPinch={!cropToolOpen}
+        zoomOnDoubleClick={!cropToolOpen}
         fitView
         maxZoom={1.5}
         minZoom={0.1}
@@ -58,6 +66,8 @@ export default function EditorStage() {
         <Background />
         <Controls
             showInteractive={false}
+            showZoom={!cropToolOpen}
+            showFitView={!cropToolOpen}
             position="bottom-right"
             orientation="horizontal"
             style={{

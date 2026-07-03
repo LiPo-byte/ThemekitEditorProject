@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 // import { message } from 'antd';
-// import CropTool from './components/CropTool';
+import CropTool from './components/CropTool';
 import EditorBottomToolBar from './components/EditorBottomToolBar';
 // import ActionPopover from './components/ActionPopover';
 // import EditorCanvas from './components/EditorCanvas';
@@ -29,6 +29,7 @@ const EditorPageContent: React.FC = () => {
         <RightPanel />
         <EditorBottomToolBar />
         <HeaderControls />
+        <CropTool />
         {/* <ActionPopover /> */}
       </div>
     </div>

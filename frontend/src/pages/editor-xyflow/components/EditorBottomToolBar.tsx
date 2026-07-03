@@ -20,7 +20,7 @@ const useStyles = createStyles(({ token, css }) => ({
     left: 50%;
     // right: 0;
     margin: auto;
-    transform: translateY(0px) translateX(-50%);
+    // transform: translateY(0px) translateX(-50%);
     // width: 500px;
     // height: 50px;
   `,
@@ -41,6 +41,7 @@ const useStyles = createStyles(({ token, css }) => ({
   toolbarbody: css`
     overflow: hidden;
     border-radius: 12px;
+    transform: translateY(0px) translateX(-50%);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     user-select: none;
