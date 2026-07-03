@@ -53,7 +53,7 @@ const FontSelect: React.FC<FontSelectProps> = ({
       variant="filled"
       size='small'
       placeholder={isMixed ? 'Multiple values' : 'Filled'}
-      style={{ width: '100%' }}
+      style={{ width: '50%' }}
       suffixIcon={null}
       optionRender={(option) => (
         <span

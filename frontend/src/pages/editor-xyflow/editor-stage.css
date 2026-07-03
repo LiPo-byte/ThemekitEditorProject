@@ -1,0 +1,13 @@
+.xyflow-stage .react-flow__node {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  /* border: 2px solid transparent !important; */
+  box-sizing: border-box !important;
+}
+/* react-flow__node */
+.xyflow-stage .react-flow__node.selected {
+  border: 2px solid #4c6fff !important;
+  box-shadow:
+    0 0 0 2px rgba(76, 111, 255, 0.22),
+    0 10px 22px rgba(76, 111, 255, 0.18);
+  border-radius: 0 !important;
+}

@@ -26,7 +26,8 @@ import {
   type UploadProps,
   // Space,
   Typography,
-  Slider
+  Slider,
+  Space
 } from 'antd';
 // import type { ColorPickerProps } from 'antd';
 
@@ -37,7 +38,7 @@ import FontSelect from '../FontSelect';
 
 const MIXED_VALUE = '__MIXED__';
 // type Color = GetProp<ColorPickerProps, 'value'>;
-const { Paragraph, Text } = Typography;
+// const { Paragraph, Text } = Typography;
 
 const InputTitle: React.FC<{ label: string }> = ({ label }) => {
   return <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{label}</span>;
@@ -73,9 +74,6 @@ const useImageUploadStyles = createStyles(({ css }) => ({
   itemRow: css`
     width: 100%;
     margin-bottom: 5px;
-  `,
-  uploadRoot: css`
-    width: 170px;
   `,
   iconBox: css`
     width: 28px;
@@ -211,16 +209,14 @@ const FontFamilyInput: React.FC<{
     <>
       <Row style={{ marginBottom: '5px' }}>
         <Col span={24}>
-          <InputTitle label="Font" />
-        </Col>
-      </Row>
-      <Row>
-        <Col span={24}>
-          <FontSelect
+          <Flex justify="space-between" align="center">
+            <InputTitle label="Font" />
+            <FontSelect
               value={fontValue}
               onChange={onChange}
               isMixed={isMixed}
             />
+          </Flex>
         </Col>
       </Row>
     </>
@@ -268,11 +264,8 @@ const TextAlignment: React.FC<{
     <>
       <Row style={{ marginBottom: '5px' }}>
         <Col span={24}>
+        <Flex align='center' justify='space-between'>
           <InputTitle label="TextAlignment" />
-        </Col>
-      </Row>
-      <Row>
-        <Col span={24}>
           <Segmented
             value={value}
             block
@@ -283,6 +276,7 @@ const TextAlignment: React.FC<{
               { value: 3, label: <AlignRightOutlined /> },
             ]}
           />
+        </Flex>
         </Col>
       </Row>
     </>
@@ -302,18 +296,8 @@ export const IsGIFInput: React.FC = () => {
   );
 };
 
-type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
-
-const getBase64 = (file: FileType): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-});
-
 export const ImageUpload: React.FC<{
-  value: any[];
+  value: any;
   onChange: (payload: { id: any; value: any, deletePath?: any }) => void;
 }> = ({ value, onChange }) => {
   const { styles } = useImageUploadStyles();
@@ -334,10 +318,7 @@ export const ImageUpload: React.FC<{
         id,
         value: latestFile.originFileObj,
       });
-      // getBase64(latestFile.originFileObj as FileType).then(res => {
-      // });
     };
-
   const onDeleteSource = (id: any, deletePath: any) => {
     onChange({
       id: id,
@@ -350,62 +331,36 @@ export const ImageUpload: React.FC<{
     <>
       <Row className={styles.formRow}>
         <Col span={24}>
-          <InputTitle label="Source" />
+            <InputTitle label="Source" />
         </Col>
       </Row>
-      {value.map((sourceObj: any) => {
-        const { source, name, id } = sourceObj;
-        if (!source) {
-          return (
-            <Row key={id} className={styles.itemRow}>
-              <Col span={24}>
+      <Row>
+        <Col span={24}>
+          {value.map((v: any) => {
+            return (v.value ? (
+                <Flex key={v.id} align='center' justify='space-between' style={{ marginBottom: '5px' }}>
+                  <Button variant="filled" color="default" style={{ width: '80%' }} >
+                    <img className={styles.previewImg} src={v.value} alt="" />
+                    {v.name}
+                  </Button>
+                  <Button type="text" onClick={() => {onDeleteSource(v.id, v.value)}} icon={<DeleteOutlined />} />
+                </Flex>
+            ) : (
                 <Upload
+                  key={v.id}
                   accept="image/*"
                   maxCount={1}
                   fileList={[]}
                   beforeUpload={() => false}
-                  onChange={handleChange(id)}
-                  className={styles.uploadRoot}
+                  onChange={handleChange(v.id)}
                 >
-                  <Button variant="filled" color="default">
-                    <Flex
-                      className={styles.iconBox}
-                      align="center"
-                      justify="center"
-                    >
-                      <UploadOutlined />
-                    </Flex>
-                    <Text
-                      className={styles.itemText}
-                      ellipsis={{ tooltip: name }}
-                    >
-                      {name}
-                    </Text>
+                  <Button variant="filled" color="default" style={{ marginBottom: '5px'}}>
+                      <UploadOutlined /> {v.name}
                   </Button>
                 </Upload>
-              </Col>
-            </Row>
-          );
-        }
-        return (
-          <Row key={id} className={styles.itemRow}>
-            <Col span={24}>
-              <Flex align='center' justify='space-between'>
-                <Button variant="filled" color="default">
-                  <img className={styles.previewImg} src={source} alt="" />
-                  <Text
-                    className={styles.itemText}
-                    ellipsis={{ tooltip: name }}
-                  >
-                    {name}
-                  </Text>
-                </Button>
-                <Button type="text" onClick={() => {onDeleteSource(id, source)}} icon={<DeleteOutlined />} />
-              </Flex>
-            </Col>
-          </Row>
-        );
-      })}
+            ))})}
+        </Col>
+      </Row>
     </>
   );
 };
@@ -421,46 +376,51 @@ export const AlphaSlider:React.FC<{
   return (
     <Row>
       <Col span={24}>
-        <InputTitle label="Alpha" />
-        <Slider
-          min={1}
-          max={100}
-          styles={{
-            rail: {
-              height: 12,
-              borderRadius: 6,
-              backgroundImage: `
-                linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,1)),
-                linear-gradient(45deg, #ccc 25%, transparent 25%),
-                linear-gradient(-45deg, #ccc 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #ccc 75%),
-                linear-gradient(-45deg, transparent 75%, #ccc 75%)
-              `,
-              backgroundSize: '100% 100%, 8px 8px, 8px 8px, 8px 8px, 8px 8px',
-              backgroundPosition: '0 0, 0 0, 0 4px, 4px -4px, -4px 0',
-              backgroundColor: '#fff',
-              opacity: 1,
-            },
-            track: {
-              height: 12,
-              background: 'transparent',
-            },
-            handle: {
-              marginTop: 4
-            },
-          }}
-          tooltip={{
-            formatter: (v: any) => {
-              return <>{v}%</>
-            }
-          }}
-          onChangeComplete={(v: any) => {
-            onChange?.(v/100)
-          }}
+        <Flex align='center' justify='space-between'>
+          <InputTitle label="Alpha" />
+          <Slider
+            min={1}
+            max={100}
+            style={{
+              width: '50%'
+            }}
+            styles={{
+              rail: {
+                height: 12,
+                borderRadius: 6,
+                backgroundImage: `
+                  linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,1)),
+                  linear-gradient(45deg, #ccc 25%, transparent 25%),
+                  linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                  linear-gradient(45deg, transparent 75%, #ccc 75%),
+                  linear-gradient(-45deg, transparent 75%, #ccc 75%)
+                `,
+                backgroundSize: '100% 100%, 8px 8px, 8px 8px, 8px 8px, 8px 8px',
+                backgroundPosition: '0 0, 0 0, 0 4px, 4px -4px, -4px 0',
+                backgroundColor: '#fff',
+                opacity: 1,
+              },
+              track: {
+                height: 12,
+                background: 'transparent',
+              },
+              handle: {
+                marginTop: 4
+              },
+            }}
+            tooltip={{
+              formatter: (v: any) => {
+                return <>{v}%</>
+              }
+            }}
+            onChangeComplete={(v: any) => {
+              onChange?.(v/100)
+            }}
 
-          onChange={setAlphaValue}
-          value={alphaValue || 0}
-        />
+            onChange={setAlphaValue}
+            value={alphaValue || 0}
+          />
+        </Flex>
       </Col>
     </Row>
   )
@@ -477,14 +437,19 @@ export const RadiusSlider:React.FC<{
   return (
     <Row>
       <Col span={24}>
-        <InputTitle label="Radius" />
-        <Slider
-          min={0}
-          max={200}
-          onChangeComplete={onChange}
-          onChange={setRadiusValue}
-          value={radiusValue}
-        />
+        <Flex align='center' justify='space-between'>
+          <InputTitle label="Radius" />
+          <Slider
+            min={0}
+            max={200}
+            onChangeComplete={onChange}
+            onChange={setRadiusValue}
+            value={radiusValue}
+            style={{
+              width: '50%'
+            }}
+          />
+        </Flex>
       </Col>
     </Row>
   )
@@ -502,45 +467,56 @@ export const PropInput: React.FC<{
     <>
       <Row style={{ marginBottom: '5px' }}>
         <Col span={24}>
-          <InputTitle label={LabelName} />
-        </Col>
-      </Row>
-      <Row>
-        <Col span={24}>
-          {type === 'number' ? (
-            <InputNumber
-              style={{ width: '100%' }}
-              size="small"
-              onChange={onChange}
-              value={inputValue}
-              placeholder={isMixed ? 'Multiple values' : 'Filled'}
-              variant="filled"
-            />
-          ) : (
-            <Input
-              size="small"
-              onChange={(event) => onChange?.(event.target.value)}
-              value={inputValue}
-              placeholder={isMixed ? 'Multiple values' : 'Filled'}
-              variant="filled"
-            />
-          )}
+          <Flex align='center' justify='space-between'>
+            <InputTitle label={LabelName} />
+            {type === 'number' ? (
+              <InputNumber
+                size="small"
+                onChange={onChange}
+                value={inputValue}
+                placeholder={isMixed ? 'Multiple values' : 'Filled'}
+                variant="filled"
+                style={{
+                  width: '50%'
+                }}
+              />
+            ) : (
+              <Input
+                size="small"
+                onChange={(event) => onChange?.(event.target.value)}
+                value={inputValue}
+                placeholder={isMixed ? 'Multiple values' : 'Filled'}
+                variant="filled"
+                style={{
+                  width: '50%'
+                }}
+              />
+            )}
+          </Flex>
         </Col>
       </Row>
     </>
   );
 };
 
-export const SelectedNodePropForm: React.FC<{
+export const BaseSelectedNodePropForm: React.FC<{
   editProps: Record<string, any>;
   onChange?: (key: string, value: any) => void;
-}> = ({ editProps, onChange }) => {
+  title?: string;
+}> = ({ editProps, onChange, title }) => {
   const hasKey = (key: string) => Object.hasOwn(editProps, key);
   return (
     <>
+      <Divider style={{
+        width: '280px',
+        marginLeft: '-16px',
+      }} size="small"></Divider>
+      <Space orientation="vertical" size="medium" style={{ display: 'flex' }}>
+      <Typography.Title level={5} style={{ margin: 0 }}>
+          {title}
+      </Typography.Title>
       {hasKey('name') && (
         <>
-          <Divider size="small" />
           <PropInput
             LabelName="Name"
             value={editProps.name}
@@ -550,13 +526,11 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('radius') && (
         <>
-          <Divider size="small" />
           <RadiusSlider value={editProps.radius} onChange={(nextValue) => onChange?.('radius', nextValue)} />
         </>
       )}
       {hasKey('padding') && (
         <>
-          <Divider size="small" />
           <PropInput
             LabelName="Padding"
             value={editProps.padding}
@@ -567,13 +541,11 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('isGIF') && (
         <>
-          <Divider size="small" />
           <IsGIFInput />
         </>
       )}
       {hasKey('isLockScreen') && (
         <>
-          <Divider size="small" />
           <Row style={{ marginBottom: '5px' }}>
             <Col span={24}>
               <Flex align='center' justify='space-between'>
@@ -590,7 +562,6 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('textSize') && (
         <>
-          <Divider size="small" />
           <PropInput
             LabelName="TextSize"
             value={editProps.textSize}
@@ -601,7 +572,6 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('font') && (
         <>
-          <Divider size="small" />
           <FontFamilyInput
             value={editProps.font}
             onChange={(nextValue) => onChange?.('font', nextValue)}
@@ -610,7 +580,6 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('textAlignment') && (
         <>
-          <Divider size="small" />
           <TextAlignment
             value={editProps.textAlignment}
             onChange={(nextValue) => onChange?.('textAlignment', nextValue)}
@@ -619,13 +588,11 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('alpha') && (
         <>
-          <Divider size="small" />
           <AlphaSlider value={editProps.alpha} onChange={(nextValue) => onChange?.('alpha', nextValue)} />
         </>
       )}
       {hasKey('textHeight') && (
         <>
-          <Divider size="small" />
           <PropInput
             LabelName="TextHeight"
             value={editProps.textHeight}
@@ -636,7 +603,6 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('textColor') && (
         <>
-          <Divider size="small" />
           <FontColorInput
             value={editProps.textColor}
             onChange={(nextValue) => onChange?.('textColor', nextValue)}
@@ -645,13 +611,47 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('source') && (
         <>
-          <Divider size="small" />
           <ImageUpload
             value={editProps.source}
             onChange={(nextValue) => onChange?.('source', nextValue)}
           />
         </>
       )}
+      </Space>
     </>
   );
 };
+
+export const SelectedNodePropForm: React.FC<{
+  editProps: Record<string, any>;
+  onChange?: (key: string, value: any, keyClass?: string) => void;
+}> = ({ editProps, onChange }) => {
+  const hasKey = (key: string) => Object.hasOwn(editProps, key);
+  return (
+    <>
+      <BaseSelectedNodePropForm editProps={editProps} onChange={onChange} />
+      {hasKey('time') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.time} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'time');
+          }} title="Time"/>
+        </>
+      )}
+      {hasKey('date') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.date} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'date');
+          }} title="Date"/>
+        </>
+      )}
+      {hasKey('day') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.day} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'day');
+          }} title="Day"/>
+        </>
+      )}
+    </>
+  );
+};
+

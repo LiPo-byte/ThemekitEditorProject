@@ -1,17 +1,21 @@
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Divider, Row, Typography } from 'antd';
 import { createStyles } from 'antd-style';
+import type { Node as FlowNode } from '@xyflow/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  useEditorCore,
+  // useEditorCore,
+  useEditorChangeNodeProp,
   useEditorRightPanlOpen,
   useEditorRightPanlOpenSetter,
   useEditorProjectId,
+  useEditorSelectedBranchNodes,
+  useEditorSelectedBranchNodeIdsKey,
 } from '../../context';
 import { deleteProjectImage, uploadProjectImage } from '../../service';
 import { useEnterAnimation } from '../../hooks/useEnterAnimation';
 import { CanvasSettingsForm, SelectedNodePropForm } from './PropForm';
-
+const MIXED_VALUE = '__MIXED__';
 
 const useStyles = createStyles(({ token, css }) => ({
   shell: css`
@@ -73,67 +77,127 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const RightPanel: React.FC = () => {
   const { styles } = useStyles();
-  const [selectNodes, setSelectNodes] = useState<any[]>([]);
-  const [selectNodesTitle, setSelectNodesTitle] = useState<any[]>([]);
+  // const [selectNodes, setSelectNodes] = useState<any[]>([]);
+  // const [selectNodesTitle, setSelectNodesTitle] = useState<any[]>([]);
   const [editProps, setEditProps] = useState<Record<string, any>>({});
-  const selectNodesRef = useRef<any[]>([]);
+  // const selectNodesRef = useRef<any[]>([]);
   const projectId = useEditorProjectId();
   const open = useEditorRightPanlOpen();
   const setOpen = useEditorRightPanlOpenSetter();
+  const changeNodeProp = useEditorChangeNodeProp();
+  const selectedBranchNodes = useEditorSelectedBranchNodes();
   const playEnterAnimation = useEnterAnimation(open, { durationMs: 280 });
-  const core = useEditorCore();
 
-  const handleEditProps = useCallback((nodes: any[]) => {
-    if (!core) return;
-    const nextEditProps = core.getSelectedEditProps();
-    setEditProps(nextEditProps);
-  }, [core]);
-
-  useEffect(() => {
-    if (!core) return;
-    const offSelection = core.onSelectionChange((sn: any) => {
-      const nextSelectedNodes = Array.isArray(sn) ? sn : [];
-      selectNodesRef.current = nextSelectedNodes;
-      const titles:any = [];
-      nextSelectedNodes.forEach(node => {
-        titles.push(core.getOwnerTitleForNode(node))
-      })
-      setSelectNodesTitle(titles);
-      setSelectNodes(nextSelectedNodes);
-      handleEditProps(nextSelectedNodes);
-      setOpen(true);
+  const handleEditProps = (nodeList: any[]) => {
+    const editPropsMap:any = new Map();
+    nodeList.forEach((item: any) => {
+      const node = item as FlowNode;
+      const data = (item?.data ?? item) as Record<string, any> | undefined;
+      if (!data) return;
+      Object.keys(data).forEach((key: string) => {
+        const value = data[key];
+        const prevValue = editPropsMap.get(key);
+        if (key === 'source') {
+          const sourceList = prevValue ?? [];
+          sourceList.push({
+            name: data.name ?? node?.id ?? '',
+            id: node?.id ?? data.id ?? '',
+            value: value ?? '',
+          });
+          editPropsMap.set(key, sourceList);
+          return;
+        }
+        if (typeof value === 'object') {
+          editPropsMap.set(key, [...(prevValue ?? []), value]);
+          return;
+        }
+        if (editPropsMap.has(key) && prevValue !== value) {
+          editPropsMap.set(key, MIXED_VALUE);
+          return;
+        }
+        editPropsMap.set(key, value);
+      });
     });
-    const offEditProps = core.onEditPropsChange(() => {
-      handleEditProps(selectNodesRef.current);
-    });
-    return () => {
-      offSelection();
-      offEditProps();
-    };
-  }, [core, handleEditProps, setOpen]);
-
-  const handleSelectedNodePropChange = (key: string, v: any) => {
-    if (!projectId) return;
-    if (key === 'source') {
-      // projectId
-      if (v  && v.value) {
-        uploadProjectImage(projectId, v.value).then(res => {
-          const { url } = res;
-          const { id } = v;
-          core?.changeNodeProps({ key, value: url, ids: [id] });
-        })
+    const obj:any = {};
+    editPropsMap.forEach((value: any, key: any) => {
+      if (key === 'source') {
+        obj[key] = value;
         return;
       }
-      if (v && v.deletePath) {
-        const path = new URL(v.deletePath).pathname.replace(/^\/+/, '');
-        deleteProjectImage(projectId, path).then(res => {
-          const { id } = v;
-          core?.changeNodeProps({ key, value: '', ids: [id] });
-        })
-      }
+      obj[key] = Array.isArray(value) ? handleEditProps(value) : value;
+    });
+    return obj;
+  }
+
+  useEffect(() => {
+    setEditProps(handleEditProps(selectedBranchNodes));
+  }, [selectedBranchNodes])
+
+
+  const handleSourceChange = async (payload: any) => {
+    if (!projectId) return;
+    const { id, value, deletePath } = payload;
+    let v = value;
+    if (id && value) {
+      const { url } = await uploadProjectImage(projectId, value);
+      v = url;
+    }
+    if (deletePath && !value) {
+      // await deleteProjectImage(projectId, new URL(deletePath).pathname.replace(/^\/+/, ''));
+    }
+    const selectedNodeIds = new Set(selectedBranchNodes.map((node) => node.id));
+    changeNodeProp((prevNodes) =>
+      prevNodes.map((node) => {
+        if (!selectedNodeIds.has(node.id) || node.id !== id) return node;
+        const nextData = {...node.data, source: v };
+        return { ...node, data: nextData };
+      }),
+    );
+  }
+  const handleSelectedNodePropChange = (key: string, val: any, keyClass?: string) => {
+    if (!projectId) return;
+    let v = val;
+    // 资源需要单独处理
+    if (key === 'source') {
+      handleSourceChange(v);
       return;
     }
-    core?.changeNodeProps({ key, value: v });
+    const changesNode: Record<string, any> = {};
+    if (keyClass) {
+      changesNode[keyClass] = { [key]: v };
+    } else {
+      changesNode[key] = v;
+    }
+
+    const selectedNodeIds = new Set(selectedBranchNodes.map((node) => node.id));
+    const mergeChanges = (targetData: Record<string, any>) => {
+      const nextData: Record<string, any> = { ...targetData };
+      Object.keys(changesNode).forEach((changeKey) => {
+        const changeValue = changesNode[changeKey];
+        if (
+          changeValue &&
+          typeof changeValue === 'object' &&
+          !Array.isArray(changeValue)
+        ) {
+          const prevValue = nextData[changeKey];
+          nextData[changeKey] =
+            prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)
+              ? { ...prevValue, ...changeValue }
+              : { ...changeValue };
+          return;
+        }
+        nextData[changeKey] = changeValue;
+      });
+      return nextData;
+    };
+
+    changeNodeProp((prevNodes) =>
+      prevNodes.map((node) => {
+        if (!selectedNodeIds.has(node.id)) return node;
+        const nextData = mergeChanges((node.data as Record<string, any>) ?? {});
+        return { ...node, data: nextData };
+      }),
+    );
   };
 
   return (
@@ -157,12 +221,7 @@ const RightPanel: React.FC = () => {
             />
           </Col>
         </Row>
-        <Divider size="small" />
-        <Typography.Title level={5} style={{ margin: 0 }}>
-          {selectNodesTitle[0]}
-        </Typography.Title>
-        {/* <Divider size="small" /> */}
-        {selectNodes.length ? (
+        {selectedBranchNodes.length ? (
           <SelectedNodePropForm
             editProps={editProps}
             onChange={handleSelectedNodePropChange}

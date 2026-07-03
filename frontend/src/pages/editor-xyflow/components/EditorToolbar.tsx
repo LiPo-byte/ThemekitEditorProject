@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createStyles } from 'antd-style';
 import {
-  useEditorCore,
-  useEditorCoreLoading,
   useEditorToolbarVisible,
-  useEditorSaveAllNow,
+  // useEditorSaveAllNow,
   useEditorProjectNameSetter,
   useEditorProjectName,
   useEditorProjectId,
+  useEditorCanUndo,
+  useEditorCanRedo,
+  useEditorUndo,
+  useEditorRedo,
 } from '../context';
 import { patchProjectName } from '../service';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
@@ -175,41 +177,18 @@ const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, 
 
 const EditorToolbar: React.FC = () => {
   const { styles } = useStyles();
-  const core = useEditorCore();
+  const canUndo = useEditorCanUndo();
+  const canRedo = useEditorCanRedo();
+  const undo = useEditorUndo();
+  const redo = useEditorRedo();
+
   const projectName = useEditorProjectName();
   const setProjectName = useEditorProjectNameSetter();
   const projectId = useEditorProjectId();
-  const saveAllNow = useEditorSaveAllNow();
   const visible = useEditorToolbarVisible();
-  const coreLoading = useEditorCoreLoading();
-  const playEnterAnimation = useEnterAnimation(coreLoading, { durationMs: 260 });
-  const [historyState, setHistoryState] = useState({ canUndo: false, canRedo: false });
+  const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  
-  useEffect(() => {
-    if (!core) {
-      setHistoryState({ canUndo: false, canRedo: false });
-      return;
-    }
-    return core.onHistoryChange((state) => {
-      setHistoryState(state);
-    });
-  }, [core]);
-
-  let timer:any = null;
-  const onSave = async () => {
-    if (!core) return;
-    if (timer) {
-      clearTimeout(timer);
-    }
-    timer = setTimeout(() => {
-      saveAllNow();
-      clearTimeout(timer);
-      timer = null;
-    }, 200)
-  }
 
   if (!visible) return null;
 
@@ -235,22 +214,26 @@ const EditorToolbar: React.FC = () => {
               </Tooltip>
           </Dropdown>
           <Tooltip title="Save">
-              <Button type='text' onClick={onSave} icon={<SaveOutlined />} />
+              <Button type='text' onClick={() => {}} icon={<SaveOutlined />} />
           </Tooltip>
           <Tooltip title="Undo">
               <Button
                 type='text'
                 icon={<UndoOutlined />}
-                disabled={!historyState.canUndo}
-                onClick={() => core?.undo()}
+                disabled={!canUndo}
+                onClick={() => {
+                  undo()
+                }}
               />
           </Tooltip>
           <Tooltip title="Redo">
               <Button
                 type='text'
                 icon={<RedoOutlined />}
-                disabled={!historyState.canRedo}
-                onClick={() => core?.redo()}
+                disabled={!canRedo}
+                onClick={() => {
+                  redo()
+                }}
               />
           </Tooltip>
           <EditableFileNameButton value={projectName} onChange={(name: string) => {
