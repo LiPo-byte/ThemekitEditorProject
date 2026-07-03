@@ -601,6 +601,26 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('topSpacing') && (
+        <>
+          <PropInput
+            LabelName="TopSpacing"
+            value={editProps.topSpacing}
+            type="number"
+            onChange={(nextValue) => onChange?.('topSpacing', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('bottomSpacing') && (
+        <>
+          <PropInput
+            LabelName="BottomSpacing"
+            value={editProps.bottomSpacing}
+            type="number"
+            onChange={(nextValue) => onChange?.('bottomSpacing', nextValue)}
+          />
+        </>
+      )}
       {hasKey('textColor') && (
         <>
           <FontColorInput

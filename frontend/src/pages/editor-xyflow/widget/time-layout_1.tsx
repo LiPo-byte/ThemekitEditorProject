@@ -1,6 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useEditorGetParentNodeData } from '../context';
-import { getImageSize } from './util';
+import { useMemo } from 'react';
+import {
+  useEditorCropEditingNodeId,
+  useEditorCropToolOpen,
+  useEditorGetParentNodeData,
+  type CropProps,
+} from '../context';
+import CropEditableImage from '../components/CropEditableImage';
 import './style.css';
 
 interface TimeLayoutData {
@@ -18,6 +23,8 @@ interface TimeLayoutData {
     alpha?: number;
     textColor?: string,
     textHeight?: string,
+    topSpacing?: number,
+    bottomSpacing?: number,
   };
   date?: {
     textSize?: number;
@@ -30,38 +37,19 @@ interface TimeLayoutData {
   padding?: number;
   radius?: number;
   layoutType?: any;
+  crop_props?: CropProps;
 }
 
 export default function TimeLayout_1(props: any) {
   const data = props.data;
-  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
+  const cropToolOpen = useEditorCropToolOpen();
+  const cropEditingNodeId = useEditorCropEditingNodeId();
 
   const getParentNodeData = useEditorGetParentNodeData();
   const { textAlignment } = getParentNodeData(props.id) || {};
+  const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
 
   if (!data) return null;
-
-  useEffect(() => {
-    if (!data.source) {
-      setImageSize(null);
-      return;
-    }
-
-    let disposed = false;
-    void getImageSize(data.source)
-      .then((size) => {
-        if (disposed) return;
-        setImageSize(size);
-      })
-      .catch(() => {
-        if (disposed) return;
-        setImageSize(null);
-      });
-
-    return () => {
-      disposed = true;
-    };
-  }, [data.source]);
 
   const alignItems = useMemo(() => {
     if (textAlignment === 1) return 'flex-start';
@@ -69,7 +57,8 @@ export default function TimeLayout_1(props: any) {
     return 'flex-end';
   }, [textAlignment]);
 
-  const getTextStyle = (textData?: TimeLayoutData['time']) => ({
+  // const getTextStyle = (textData?: TimeLayoutData['time'] | TimeLayoutData['day']) => ({
+  const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
     fontFamily: textData?.font,
     opacity: textData?.alpha ?? 1,
@@ -78,12 +67,14 @@ export default function TimeLayout_1(props: any) {
     position: 'relative' as const,
     zIndex: 9,
     whiteSpace: 'nowrap',
+    marginTop: (textData?.topSpacing || 0) + 'px',
+    marginBottom: (textData?.bottomSpacing || 0) + 'px',
   });
 
   const containerStyle = useMemo(() => {
     return {
       backgroundColor: '#ffffff',
-      overflow: 'hidden',
+      overflow: isCropEditingNode ? 'visible' : 'hidden',
       display: 'flex',
       flexDirection: 'column' as const,
       alignItems,
@@ -92,35 +83,23 @@ export default function TimeLayout_1(props: any) {
       padding: textAlignment === 2 ? '0' : `0 ${data.padding ?? 0}px`,
       position: 'relative' as const,
     };
-  }, [textAlignment, data])
-
-  const imageStyle = {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    width: imageSize ? `${imageSize.width}px` : 'auto',
-    height: imageSize ? `${imageSize.height}px` : 'auto',
-    maxWidth: 'none',
-    maxHeight: 'none',
-    pointerEvents: 'none' as const,
-  };
+  }, [textAlignment, data, isCropEditingNode])
 
   return (
     <div className={`size_${data?.size}`} style={containerStyle}>
-      {data.source ? (
-        <img
-          src={data.source}
-          alt=""
-          style={imageStyle}
-        />
-      ) : null}
+      <CropEditableImage
+        nodeId={props.id}
+        source={data.source}
+        radius={data.radius}
+        cropProps={data.crop_props}
+      />
       { data.time && (
         <span style={getTextStyle(data.time)}>
           { data?.layoutType == '0-1' ? '10:29 AM' : '10:29'}
         </span>
       )}
       {data.day && (
-        <div style={{ ...getTextStyle(data.day), margin: `${(data.padding ?? 0) / 2}px 0` }}>
+        <div style={{ ...getTextStyle(data.day) }}>
           Wednesday
         </div>
       )}

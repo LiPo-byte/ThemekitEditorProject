@@ -15,7 +15,38 @@ import { useParams } from '@umijs/max';
 // import { CONFIG_SIZE_MAP } from './widget/base-config'
 import { widgetConfig2Nodes } from './widget/util';
 import { nanoid } from 'nanoid';
-import { isVisible } from '@rc-component/util';
+
+export type CropProps = {
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+  translateX: number;
+  translateY: number;
+};
+
+const DEFAULT_CROP_PROPS: CropProps = {
+  scaleX: 1,
+  scaleY: 1,
+  rotation: 0,
+  translateX: 0,
+  translateY: 0,
+};
+
+const toCropProps = (value: unknown): CropProps => {
+  if (!value || typeof value !== 'object') return { ...DEFAULT_CROP_PROPS };
+  const source = value as Record<string, unknown>;
+  const readNumber = (key: keyof CropProps, fallback: number) => {
+    const next = source[key];
+    return typeof next === 'number' && Number.isFinite(next) ? next : fallback;
+  };
+  return {
+    scaleX: readNumber('scaleX', DEFAULT_CROP_PROPS.scaleX),
+    scaleY: readNumber('scaleY', DEFAULT_CROP_PROPS.scaleY),
+    rotation: readNumber('rotation', DEFAULT_CROP_PROPS.rotation),
+    translateX: readNumber('translateX', DEFAULT_CROP_PROPS.translateX),
+    translateY: readNumber('translateY', DEFAULT_CROP_PROPS.translateY),
+  };
+};
 
 
 type EditorCoreCtxValue = {
@@ -49,6 +80,12 @@ type EditorCoreCtxValue = {
   setCropToolOpen: (bool: boolean) => void;
   hideUI: boolean;
   setHideUI: (bool: boolean) => void;
+  cropEditingNodeId: string;
+  cropDraftProps: CropProps | null;
+  setCropDraftProps: React.Dispatch<React.SetStateAction<CropProps | null>>;
+  openCropEditor: (nodeId: string) => void;
+  closeCropEditor: () => void;
+  confirmCropEditor: () => void;
 };
 
 const noopSetNodes: React.Dispatch<React.SetStateAction<FlowNode[]>> = () => {};
@@ -95,6 +132,12 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   setCropToolOpen: (_bool: boolean) => {},
   hideUI: false,
   setHideUI: (_bool: boolean) => {},
+  cropEditingNodeId: '',
+  cropDraftProps: null,
+  setCropDraftProps: () => {},
+  openCropEditor: (_nodeId: string) => {},
+  closeCropEditor: () => {},
+  confirmCropEditor: () => {},
 });
 
 const cloneNodes = (items: FlowNode[]): FlowNode[] => {
@@ -127,6 +170,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [rightPanlOpen, setRightPanlOpen] = useState<boolean>(false);
   const [cropToolOpen, setCropToolOpen] = useState<boolean>(false);
   const [hideUI, setHideUI] = useState<boolean>(false);
+  const [cropEditingNodeId, setCropEditingNodeId] = useState<string>('');
+  const [cropDraftProps, setCropDraftProps] = useState<CropProps | null>(null);
 
   const selectNode = (fn: FlowNode, append = false) => {
     setRightPanlOpen(true);
@@ -228,7 +273,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     if (!rootNode) return;
 
     commitNodes((prev) => {
-      const SLOT_SIZE = 1000;
+      const SLOT_SIZE = 1200;
       const COLUMN_COUNT = 6;
       const occupiedSlots = new Set<number>();
 
@@ -392,6 +437,43 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     setRightPanlOpen(false);
   };
 
+  const openCropEditor = (nodeId: string) => {
+    if (!nodeId) return;
+    const targetNode = nodes.find((node) => node.id === nodeId);
+    const nextCropProps = toCropProps((targetNode?.data as Record<string, unknown> | undefined)?.crop_props);
+    setCropEditingNodeId(nodeId);
+    setCropDraftProps(nextCropProps);
+    setHideUI(true);
+    setCropToolOpen(true);
+  };
+
+  const closeCropEditor = () => {
+    setCropToolOpen(false);
+    setHideUI(false);
+    setCropEditingNodeId('');
+    setCropDraftProps(null);
+  };
+
+  const confirmCropEditor = () => {
+    if (!cropEditingNodeId || !cropDraftProps) {
+      closeCropEditor();
+      return;
+    }
+    commitNodes((prevNodes) =>
+      prevNodes.map((node) => {
+        if (node.id !== cropEditingNodeId) return node;
+        return {
+          ...node,
+          data: {
+            ...(node.data as Record<string, unknown>),
+            crop_props: cropDraftProps,
+          },
+        };
+      }),
+    );
+    closeCropEditor();
+  };
+
   useEffect(() => {
     if (!hideUI) return;
     setLeftPanlOpen(false);
@@ -430,6 +512,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       setCropToolOpen,
       hideUI,
       setHideUI,
+      cropEditingNodeId,
+      cropDraftProps,
+      setCropDraftProps,
+      openCropEditor,
+      closeCropEditor,
+      confirmCropEditor,
     }),
     [
       nodes,
@@ -450,6 +538,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       rightPanlOpen,
       cropToolOpen,
       hideUI,
+      cropEditingNodeId,
+      cropDraftProps,
     ],
   );
 
@@ -535,3 +625,9 @@ export const useEditorCropToolOpen = () => useContext(EditorCoreCtx).cropToolOpe
 export const useEditorCropToolOpenSetter = () => useContext(EditorCoreCtx).setCropToolOpen;
 export const useEditorHideUI = () => useContext(EditorCoreCtx).hideUI;
 export const useEditorHideUISetter = () => useContext(EditorCoreCtx).setHideUI;
+export const useEditorCropEditingNodeId = () => useContext(EditorCoreCtx).cropEditingNodeId;
+export const useEditorCropDraftProps = () => useContext(EditorCoreCtx).cropDraftProps;
+export const useEditorCropDraftPropsSetter = () => useContext(EditorCoreCtx).setCropDraftProps;
+export const useEditorOpenCropEditor = () => useContext(EditorCoreCtx).openCropEditor;
+export const useEditorCloseCropEditor = () => useContext(EditorCoreCtx).closeCropEditor;
+export const useEditorConfirmCropEditor = () => useContext(EditorCoreCtx).confirmCropEditor;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Position, NodeToolbar } from '@xyflow/react';
 // import { createStyles } from 'antd-style';
-import { useEditorHideUISetter, useEditorCropToolOpenSetter } from '../context';
+import { useEditorDeleteSelectedNodes, useEditorOpenCropEditor } from '../context';
 import { Button } from 'antd';
 import { ExportOutlined, DeleteTwoTone } from '@ant-design/icons';
 import { CropSvg } from '@/icons';
@@ -45,18 +45,20 @@ import { CropSvg } from '@/icons';
  */
 const ActionPopover: React.FC = (props: any) => {
   const { data: { isVisible, actionList, nodeId } } = props;
-  const setHideUI = useEditorHideUISetter();
-  const setCropOpen = useEditorCropToolOpenSetter();
+  const openCropEditor = useEditorOpenCropEditor();
+  const deleteSelectedNodes = useEditorDeleteSelectedNodes();
   const onCrop = () => {
-    setHideUI(true);
-    setCropOpen(true);
+    openCropEditor(nodeId);
+  };
+  const onDelete = () => {
+    deleteSelectedNodes();
   };
   return (
     <>
       <NodeToolbar nodeId={nodeId} isVisible={isVisible} position={Position.Top} align='end'>
         { actionList.includes('cropable') && <Button onClick={onCrop} icon={<CropSvg/>}  shape="circle" /> }
         { actionList.includes('packable') && <Button onClick={() => {}} icon={<ExportOutlined/>}  shape="circle" /> }
-        { actionList.includes('deleteable') && <Button onClick={onCrop} icon={<DeleteTwoTone/>}  shape="circle" /> }
+        { actionList.includes('deleteable') && <Button onClick={onDelete} icon={<DeleteTwoTone/>}  shape="circle" /> }
       </NodeToolbar>
     </>
   )
