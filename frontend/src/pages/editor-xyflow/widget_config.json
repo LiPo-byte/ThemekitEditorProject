@@ -18,7 +18,7 @@
         "title": "Small / medium / large; left, right, or centered (medium shows single row)"
       },
       {
-        "key": "Time-2",
+        "key": "Time_LayoutType_2",
         "label": "Layout 2: Time + Battery",
         "title": "Solid background with battery text"
       },
@@ -27,12 +27,12 @@
         "label": "Layout 3: Flip Time"
       },
       {
-        "key": "Time-4",
+        "key": "Time_LayoutType_4",
         "label": "Layout 4: Time + Line Animation",
         "title": "iOS: dual-image animation; Android: basic time only"
       },
       {
-        "key": "Time-5",
+        "key": "Time_LayoutType_5",
         "label": "Layout 5: Time + Rotate / Static Animation",
         "title": "Month and calendar; partitioned background"
       },

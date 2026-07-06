@@ -29,7 +29,7 @@ const ProjectList: React.FC = () => {
                 setFocuseCard(i.project_id);
               }}
               onDoubleClick={() => {
-                history.push('/editor/' + i.project_id);
+                history.push('/editor-xyflow/' + i.project_id);
               }}
               cover={
                 <img

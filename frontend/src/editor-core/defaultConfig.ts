@@ -220,7 +220,6 @@ export const WidgetDefaultConfig = {
                 {
                     "size":1,
                     "name": "Time-IOS-Small",
-                    "layoutType": '0-1',
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
@@ -240,7 +239,6 @@ export const WidgetDefaultConfig = {
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
-                    "layoutType": '0-1',
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":32,
@@ -256,7 +254,6 @@ export const WidgetDefaultConfig = {
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
-                    "layoutType": '0-1',
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":54,
@@ -280,7 +277,6 @@ export const WidgetDefaultConfig = {
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
-                    "layoutType": '0-1',
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":28,
@@ -296,7 +292,6 @@ export const WidgetDefaultConfig = {
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
-                    "layoutType": '0-1',
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":32,
@@ -312,7 +307,6 @@ export const WidgetDefaultConfig = {
                     "crop_props": defaultCropProps,
                     "radius": 28,
                     "padding":16,
-                    "layoutType": '0-1',
                     "time":{
                         "font":"AvenirNext-Bold",
                         "textSize":54,
@@ -538,6 +532,240 @@ export const WidgetDefaultConfig = {
             ]
           },
     },
+    Time_LayoutType_2: {
+        ios: {
+          "version":0,
+          "isLockScreen":false,
+          "type":1,
+          "textAlignment":3,
+          "sizes":[
+                {
+                    "size":1,
+                    "layoutType": 2,
+                    "name": "Time-IOS-Small",
+                    "radius": 28,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "padding":16,
+                    "battery": {
+                        "backgroundColor": "#252020",
+                        "textColor":"#252020",
+                    },
+                    "time":{
+                        "font":"AvenirNext-Heavy",
+                        "textSize":43,
+                        "textHeight":30,
+                        "textColor":"#8C511B",
+                        "alpha":1.0
+                    },
+                    "day" :{
+                        "font":"Helvetica Neue-Bold",
+                        "textSize":17,
+                        "textHeight":21,
+                        "textColor":"#8C511B",
+                        "alpha":1.0,
+                        "topSpacing":8,
+                        "bottomSpacing":8
+                    },
+                    "date":{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":11,
+                        "textHeight":14,
+                        "textColor":"#8C511B",
+                        "alpha":1.0
+                    }
+                },
+                {
+                    "size":2,
+                    "layoutType": 2,
+                    "name": "Time-IOS-Medium",
+                    "radius": 28,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "padding":16,
+                    "battery": {
+                        "backgroundColor": "#252020",
+                        "textColor":"#252020",
+                    },
+                    "time":{
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":53,
+                        "textHeight":40,
+                        "textColor":"#8C511B",
+                        "alpha":1.0
+                    },
+                    "day" :{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":20,
+                        "textHeight":24,
+                        "textColor":"#8C511B",
+                        "alpha":1.0,
+                        "topSpacing":0,
+                        "bottomSpacing":5
+                    },
+                    "date":{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":13,
+                        "textHeight":15,
+                        "textColor":"#8C511B",
+                        "alpha":1.0
+                    }
+                },
+                {
+                    "size":3,
+                    "layoutType": 2,
+                    "name": "Time-IOS-Large",
+                    "radius": 28,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    "padding":16,
+                    "battery": {
+                        "backgroundColor": "#252020",
+                        "textColor":"#252020",
+                    },
+                    "time":{
+                        "font":"AvenirNext-HeavyItalic",
+                        "textSize":110,
+                        "textHeight":90,
+                        "textColor":"#8C511B",
+                        "alpha":1.0
+                    },
+                    "day" :{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":33,
+                        "textHeight":41,
+                        "textColor":"#8C511B",
+                        "alpha":1.0,
+                         "topSpacing":18,
+                        "bottomSpacing":10
+                    },
+                    "date":{
+                        "font":"PingFangSC-Semibold",
+                        "textSize":22,
+                        "textHeight":25,
+                        "textColor":"#8C511B",
+                        "alpha":1.0
+                    }
+                },
+          ]
+        },
+        android: {
+            "version":0,
+            "isLockScreen":false,
+            "type":1,
+            "textAlignment":3,
+            "sizes":[
+                  {
+                      "size":1,
+                      "layoutType": 2,
+                      "name": "Time-Android-Small",
+                      "radius": 28,
+                      "source": "",
+                      "crop_props": defaultCropProps,
+                      "padding":16,
+                      "battery": {
+                            "backgroundColor": "#252020",
+                            "textColor":"#252020",
+                        },
+                      "time":{
+                          "font":"AvenirNext-Heavy",
+                          "textSize":43,
+                          "textHeight":30,
+                          "textColor":"#8C511B",
+                          "alpha":1.0
+                      },
+                      "day" :{
+                          "font":"Helvetica Neue-Bold",
+                          "textSize":17,
+                          "textHeight":21,
+                          "textColor":"#8C511B",
+                          "alpha":1.0,
+                          "topSpacing":8,
+                          "bottomSpacing":8
+                      },
+                      "date":{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":11,
+                          "textHeight":14,
+                          "textColor":"#8C511B",
+                          "alpha":1.0
+                      }
+                  },
+                  {
+                      "size":2,
+                      "layoutType": 2,
+                      "name": "Time-Android-Medium",
+                      "radius": 28,
+                      "source": "",
+                      "crop_props": defaultCropProps,
+                      "padding":16,
+                      "battery": {
+                        "backgroundColor": "#252020",
+                        "textColor":"#252020",
+                    },
+                      "time":{
+                          "font":"AvenirNext-HeavyItalic",
+                          "textSize":53,
+                          "textHeight":40,
+                          "textColor":"#8C511B",
+                          "alpha":1.0
+                      },
+                      "day" :{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":20,
+                          "textHeight":24,
+                          "textColor":"#8C511B",
+                          "alpha":1.0,
+                          "topSpacing":0,
+                          "bottomSpacing":5
+                      },
+                      "date":{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":13,
+                          "textHeight":15,
+                          "textColor":"#8C511B",
+                          "alpha":1.0
+                      }
+                  },
+                  {
+                      "size":3,
+                      "layoutType": 2,
+                      "name": "Time-Android-Large",
+                      "radius": 28,
+                      "source": "",
+                      "crop_props": defaultCropProps,
+                      "padding":16,
+                      "battery": {
+                        "backgroundColor": "#252020",
+                        "textColor":"#252020",
+                    },
+                      "time":{
+                          "font":"AvenirNext-HeavyItalic",
+                          "textSize":110,
+                          "textHeight":90,
+                          "textColor":"#8C511B",
+                          "alpha":1.0
+                      },
+                      "day" :{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":33,
+                          "textHeight":41,
+                          "textColor":"#8C511B",
+                          "alpha":1.0,
+                           "topSpacing":18,
+                          "bottomSpacing":10
+                      },
+                      "date":{
+                          "font":"PingFangSC-Semibold",
+                          "textSize":22,
+                          "textHeight":25,
+                          "textColor":"#8C511B",
+                          "alpha":1.0
+                      }
+                  },
+            ]
+          },
+    },
     Time_LayoutType_3: {
         ios: {
           "version":0,
@@ -658,6 +886,458 @@ export const WidgetDefaultConfig = {
           ]
         }
     },
+    Time_LayoutType_4: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":1,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 4,
+                 "name":"Time-IOS-Small",
+                 "radius": 28,
+                  "source": "",
+                "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":21,
+                       "textHeight":29,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                       "textAlignment": 1
+                 },
+                 "firstImageAnimation": {
+                     "animationType": 3,
+                     "padding": 4,
+                     "crossPadding": 3,
+                     "duration": 2,
+                     "distance": 10,
+                     "imageHeight": 136,
+                     "imageWidth": 149,
+                     "source": "https://plus.unsplash.com/premium_photo-1692641346414-02a56f346626?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyfHx8ZW58MHx8fHx8",
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationType": 2,
+                     "padding": 18,
+                     "crossPadding": 33,
+                     "duration": 2,
+                     "distance": 10,
+                     "imageHeight": 89,
+                     "imageWidth": 79,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 }
+             }, 
+             {
+                 "size":2,
+                 "layoutType": 4,
+                 "name":"Time-IOS-Medium",
+                 "radius": 28,
+                 "source": "",
+               "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":48,
+                       "textHeight":66,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                       "textAlignment": 3
+                 },
+                 "firstImageAnimation": {
+                     "animationType": 3,
+                     "padding": 0,
+                     "crossPadding": 0,
+                     "duration": 2,
+                     "distance": 15,
+                     "imageHeight": 155,
+                     "imageWidth": 170,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationType": 2,
+                     "padding": 30,
+                     "crossPadding": 28,
+                     "duration": 2,
+                     "distance": 10,
+                     "imageHeight": 88,
+                     "imageWidth": 66,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 }
+             }, 
+             {
+                 "size":3,
+                 "layoutType": 4,
+                 "name":"Time-IOS-Large",
+                 "radius": 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":60,
+                       "textHeight":82,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                       "textAlignment": 2
+                 },
+                 "firstImageAnimation": {
+                     "animationType": 3,
+                     "padding": 2,
+                     "crossPadding": 22,
+                     "duration": 6,
+                     "distance": 19,
+                     "imageHeight": 300,
+                     "imageWidth": 300,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationType": 2,
+                     "padding": 8,
+                     "crossPadding": 67,
+                     "duration": 2,
+                     "distance": 38,
+                     "imageHeight": 200,
+                     "imageWidth": 180,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 }
+             }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":1,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 4,
+                 "name":"Time-Android-Small",
+                 "radius": 28,
+                  "source": "",
+                "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":21,
+                       "textHeight":29,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                       "textAlignment": 1
+                 },
+             },
+             {
+                 "size":2,
+                 "layoutType": 4,
+                 "name":"Time-Android-Medium",
+                 "radius": 28,
+                 "source": "",
+               "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":48,
+                       "textHeight":66,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                       "textAlignment": 3
+                 },
+             }, 
+             {
+                 "size":3,
+                 "layoutType": 4,
+                 "name":"Time-Android-Large",
+                 "radius": 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":60,
+                       "textHeight":82,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                       "textAlignment": 2
+                 },
+             }
+            ]
+         }
+    },
+    Time_LayoutType_5: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":1,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 5,
+                 "name":"Time-IOS-Small",
+                 "radius": 28,
+                  "source": "",
+                "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":21,
+                       "textHeight":29,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "firstImageAnimation": {
+                    "animationCategory": 1,
+                    "animationType": 0,
+                    "padding": 0,
+                    "crossPadding": -1,
+                    "duration": 3,
+                    "distance": 10,
+                    "imageHeight": 112,
+                    "imageWidth": 112,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                "secondImageAnimation": {
+                    "animationCategory": 2,
+                    "animationType": 0,
+                    "padding": 26,
+                    "crossPadding": -1,
+                    "duration": 2,
+                    "distance": 10,
+                    "imageHeight": 60,
+                    "imageWidth": 60,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+                "calendar": {
+                    "font":"AvenirNext-BoldItalic",
+                    "textColor": "#333333"
+                }
+             }, 
+             {
+                 "size":2,
+                 "layoutType": 5,
+                 "name":"Time-IOS-Medium",
+                 "radius": 28,
+                 "source": "",
+               "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":48,
+                       "textHeight":66,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "firstImageAnimation": {
+                    "animationCategory": 1,
+                    "animationType": 3,
+                    "padding": 16,
+                    "crossPadding": -1,
+                    "duration": 4,
+                    "distance": 15,
+                    "imageHeight": 122,
+                    "imageWidth": 122,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                 "secondImageAnimation": {
+                    "animationCategory": 1,
+                    "animationType": 3,
+                    "padding": 50,
+                    "crossPadding": -1,
+                    "duration": -5,
+                    "distance": 10,
+                    "imageHeight": 50,
+                    "imageWidth": 50,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+                "calendar": {
+                    "font":"AvenirNext-BoldItalic",
+                    "textColor": "#333333"
+                }
+             }, 
+             {
+                 "size":3,
+                 "layoutType": 5,
+                 "name":"Time-IOS-Large",
+                 "radius": 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":60,
+                       "textHeight":82,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "firstImageAnimation": {
+                    "animationCategory": 1,
+                    "animationType": 0,
+                    "padding": 26,
+                    "crossPadding": 18,
+                    "duration": 4,
+                    "distance": 19,
+                    "imageHeight": 198,
+                    "imageWidth": 198,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                "secondImageAnimation": {
+                    "animationCategory": 2,
+                    "animationType": 0,
+                    "padding": 60,
+                    "crossPadding": 63,
+                    "duration": 4,
+                    "distance": 38,
+                    "imageHeight": 108,
+                    "imageWidth": 108,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+                "calendar": {
+                    "font":"AvenirNext-BoldItalic",
+                    "textColor": "#333333"
+                }
+             }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":1,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 5,
+                 "name":"Time-Android-Small",
+                 "radius": 28,
+                  "source": "",
+                "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":21,
+                       "textHeight":29,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+                "calendar": {
+                    "font":"AvenirNext-BoldItalic",
+                    "textColor": "#333333"
+                }
+             },
+             {
+                 "size":2,
+                 "layoutType": 5,
+                 "name":"Time-Android-Medium",
+                 "radius": 28,
+                 "source": "",
+               "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":48,
+                       "textHeight":66,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+                "calendar": {
+                    "font":"AvenirNext-BoldItalic",
+                    "textColor": "#333333"
+                }
+             }, 
+             {
+                 "size":3,
+                 "layoutType": 5,
+                 "name":"Time-Android-Large",
+                 "radius": 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":60,
+                       "textHeight":82,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+                "calendar": {
+                    "font":"AvenirNext-BoldItalic",
+                    "textColor": "#333333"
+                }
+             }
+            ]
+         }
+    }
+
 }
 export const IconPackDefaultConfig = {
     apps: {

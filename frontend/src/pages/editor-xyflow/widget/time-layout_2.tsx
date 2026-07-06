@@ -32,6 +32,63 @@ export default function TimeLayout_1(props: any) {
     textAlign:
       textData.textAlignment === 1 ? 'left' : (data.time.textAlignment === 2 ? 'center' : 'right')
   });
+  const batteryStyle = useMemo(() => {
+    const batteryColor = data?.battery?.textColor ?? '#111827';
+    const batteryFillColor = data?.battery?.backgroundColor ?? batteryColor;
+    const batteryPercentValue = Number.isFinite(Number(data?.battery?.percent))
+      ? Number(data.battery.percent)
+      : 98;
+    const batteryPercent = Math.max(0, Math.min(100, Math.round(batteryPercentValue)));
+    return {
+      wrap: {
+        position: 'absolute' as const,
+        top: '16px',
+        left: `${data.padding ?? 0}px`,
+        display: 'flex',
+        alignItems: 'center',
+        zIndex: 9,
+      },
+      body: {
+        width: '30px',
+        height: '12px',
+        border: `1.5px solid ${batteryColor}`,
+        borderRadius: '3px',
+        padding: '1px',
+        position: 'relative' as const,
+        boxSizing: 'border-box' as const,
+        overflow: 'hidden' as const,
+      },
+      fill: {
+        width: `${batteryPercent}%`,
+        height: '100%',
+        borderRadius: '1px',
+        backgroundColor: batteryFillColor,
+        opacity: 0.9,
+      },
+      text: {
+        position: 'absolute' as const,
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#ffffff',
+        fontSize: '7px',
+        lineHeight: 1,
+        fontWeight: 700,
+        letterSpacing: '0.1px',
+        textShadow: '0 1px 1px rgba(0, 0, 0, 0.35)',
+        pointerEvents: 'none' as const,
+      },
+      cap: {
+        width: '2px',
+        height: '5px',
+        marginLeft: '2px',
+        borderRadius: '1px',
+        backgroundColor: batteryColor,
+      },
+      percentText: `${batteryPercent}`,
+    };
+  }, [data]);
 
   const containerStyle = useMemo(() => {
     return {
@@ -85,6 +142,13 @@ export default function TimeLayout_1(props: any) {
         radius={data.radius}
         cropProps={data.crop_props}
       />
+      <div style={batteryStyle.wrap}>
+        <div style={batteryStyle.body}>
+          <div style={batteryStyle.fill} />
+          <span style={batteryStyle.text}>{batteryStyle.percentText}</span>
+        </div>
+        <div style={batteryStyle.cap} />
+      </div>
       { data.time && timeElement}
       {data.day && (
         <div style={{ ...getTextStyle(data.day) }}>

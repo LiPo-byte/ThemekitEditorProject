@@ -8,74 +8,82 @@ import {
 import CropEditableImage from '../components/CropEditableImage';
 import './style.css';
 
+// interface TimeLayoutData {
+//   size?: 1 | 2 | 3;
+//   time?: {
+//     textSize?: number;
+//     font?: string;
+//     alpha?: number;
+//     textColor?: string,
+//     textHeight?: string,
+//   };
+//   day?: {
+//     textSize?: number;
+//     font?: string;
+//     alpha?: number;
+//     textColor?: string,
+//     textHeight?: string,
+//     topSpacing?: number,
+//     bottomSpacing?: number,
+//   };
+//   date?: {
+//     textSize?: number;
+//     font?: string;
+//     alpha?: number;
+//     textColor?: string,
+//     textHeight?: string,
+//   };
+//   source?: string;
+//   padding?: number;
+//   radius?: number;
+//   layoutType?: any;
+//   crop_props?: CropProps;
+// }
 
 export default function TimeLayout_1(props: any) {
   const data = props.data;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
+
+  const getParentNodeData = useEditorGetParentNodeData();
+  const { textAlignment } = getParentNodeData(props.id) || {};
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
 
   if (!data) return null;
+
+  const alignItems = useMemo(() => {
+    if (textAlignment === 1) return 'flex-start';
+    if (textAlignment === 2) return 'center';
+    return 'flex-end';
+  }, [textAlignment]);
+
+  // const getTextStyle = (textData?: TimeLayoutData['time'] | TimeLayoutData['day']) => ({
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
     fontFamily: textData?.font,
     opacity: textData?.alpha ?? 1,
     color: textData?.textColor ?? '#111827',
     lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
-    zIndex: 9,
     position: 'relative' as const,
+    zIndex: 9,
     whiteSpace: 'nowrap',
     marginTop: (textData?.topSpacing || 0) + 'px',
     marginBottom: (textData?.bottomSpacing || 0) + 'px',
-  });
-  const getTimeStyle:any = (textData?: any) => ({
-    textAlign:
-      textData.textAlignment === 1 ? 'left' : (data.time.textAlignment === 2 ? 'center' : 'right')
   });
 
   const containerStyle = useMemo(() => {
     return {
       backgroundColor: '#ffffff',
       overflow: isCropEditingNode ? 'visible' : 'hidden',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems,
+      justifyContent: 'center',
       borderRadius: `${data.radius ?? 0}px`,
+      padding: textAlignment === 2 ? '0' : `0 ${data.padding ?? 0}px`,
       position: 'relative' as const,
-      paddingLeft: `${data.padding ?? 0}px`,
-      paddingRight: `${data.padding ?? 0}px`,
-      paddingTop: '16px',
-      paddingBottom: data.size === 3 ? '32px' : '16px',
     };
-  }, [data, isCropEditingNode])
-
-  const timeElement = useMemo(() => {
-    if (data.time.textAlignment === 2) {
-        return (
-            <div style={{
-                ...getTextStyle(data.time),
-                ...getTimeStyle(data.time),
-                // marginBottom: data.size === 1 ? '4px' : '10px'
-            }}>
-                10:09
-            </div>
-        )
-    }
-    return (
-        <>
-            <div style={{
-                ...getTextStyle(data.time),
-                ...getTimeStyle(data.time),
-                marginBottom: data.size === 1 ? '4px' : '10px'
-            }}>
-                10
-            </div>
-            <div style={{
-                ...getTextStyle(data.time),
-                ...getTimeStyle(data.time),
-            }}>
-                09
-            </div>
-        </>
-    )
-  }, [data])
+  }, [textAlignment, data, isCropEditingNode])
 
   return (
     <div className={`size_${data?.size}`} style={containerStyle}>
@@ -85,7 +93,11 @@ export default function TimeLayout_1(props: any) {
         radius={data.radius}
         cropProps={data.crop_props}
       />
-      { data.time && timeElement}
+      { data.time && (
+        <span style={getTextStyle(data.time)}>
+          { !data.day && !data.date ? '10:29 AM' : '10:29'}
+        </span>
+      )}
       {data.day && (
         <div style={{ ...getTextStyle(data.day) }}>
           Wednesday

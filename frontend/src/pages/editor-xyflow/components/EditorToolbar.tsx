@@ -10,6 +10,8 @@ import {
   useEditorCanRedo,
   useEditorUndo,
   useEditorRedo,
+  useEditorGenerateProjectPayload,
+  useEditorSaveProjectPayload,
 } from '../context';
 import { patchProjectName } from '../service';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
@@ -177,6 +179,8 @@ const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, 
 
 const EditorToolbar: React.FC = () => {
   const { styles } = useStyles();
+  // const generateProjectPayload = useEditorGenerateProjectPayload();
+  const saveProjectPayload = useEditorSaveProjectPayload();
   const canUndo = useEditorCanUndo();
   const canRedo = useEditorCanRedo();
   const undo = useEditorUndo();
@@ -214,7 +218,9 @@ const EditorToolbar: React.FC = () => {
               </Tooltip>
           </Dropdown>
           <Tooltip title="Save">
-              <Button type='text' onClick={() => {}} icon={<SaveOutlined />} />
+              <Button type='text' onClick={async () => {
+                  await saveProjectPayload();
+              }} icon={<SaveOutlined />} />
           </Tooltip>
           <Tooltip title="Undo">
               <Button

@@ -52,12 +52,13 @@ export const widgetConfig2Nodes: any = (config: any) => {
 
     sizes.forEach((item: any) => {
       const sizeConfig = CONFIG_SIZE_MAP[item.size] || CONFIG_SIZE_MAP[1];
+      const { layoutType } = item;
       const { width, height } = sizeConfig;
       groupWidth = Math.max(groupWidth, width + gap * 2);
 
       widgetNodes.push({
         id: nanoid(),
-        type: 'time_1',
+        type: `time_${layoutType || 0}`,
         data: { ...item },
         cropable: true,
         position: { x: gap, y: startY },
@@ -82,10 +83,7 @@ export const widgetConfig2Nodes: any = (config: any) => {
       className: 'widget-group-node',
       position: { x: groupX, y: gap },
       data: {
-        isLockScreen: platformConfig.isLockScreen,
-        textAlignment: platformConfig.textAlignment,
-        type: platformConfig.type,
-        version: platformConfig.version,
+        ...platformConfig
       },
       packable: true,
       parentId: rootGroupId,

@@ -3,7 +3,12 @@ import { useEffect } from 'react';
 import { ReactFlow, Background, useKeyPress, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './editor-stage.css';
+import TimeLayout_0 from './widget/time-layout_0';
 import TimeLayout_1 from './widget/time-layout_1';
+import TimeLayout_2 from './widget/time-layout_2';
+import TimeLayout_3 from './widget/time-layout_3';
+import TimeLayout_4 from './widget/time-layout_4';
+import TimeLayout_5 from './widget/time-layout_5';
 import ActionPopover from './components/ActionPopover';
 // import { useMemo, useState } from 'react';
 import {
@@ -40,7 +45,12 @@ export default function EditorStage() {
         nodes={[actionNode, ...nodes]}
         nodeTypes={{
           'node-with-toolbar': ActionPopover,
+          time_0: TimeLayout_0,
           time_1: TimeLayout_1,
+          time_2: TimeLayout_2,
+          time_3: TimeLayout_3,
+          time_4: TimeLayout_4,
+          time_5: TimeLayout_5,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}

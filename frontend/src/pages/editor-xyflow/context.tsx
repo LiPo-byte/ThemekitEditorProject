@@ -9,12 +9,14 @@ import React, {
 } from 'react';
 import type { Node as FlowNode } from '@xyflow/react';
 import type { EditorCore } from '@/editor-core';
-import { useParams } from '@umijs/max';
+import { history, useLocation, useParams } from '@umijs/max';
 // import { nanoid } from 'nanoid';
 // import { WidgetDefaultConfig } from '@/editor-core/defaultConfig';
 // import { CONFIG_SIZE_MAP } from './widget/base-config'
 import { widgetConfig2Nodes } from './widget/util';
 import { nanoid } from 'nanoid';
+import { getProjectDetail, postApiV1Project, putApiV1ProjectElementsBatch } from './service';
+import { toPng } from 'html-to-image';
 
 export type CropProps = {
   scaleX: number;
@@ -86,6 +88,9 @@ type EditorCoreCtxValue = {
   openCropEditor: (nodeId: string) => void;
   closeCropEditor: () => void;
   confirmCropEditor: () => void;
+  generatePreviewImage: () => Promise<string | null>;
+  generateProjectPayload: () => Promise<Record<string, any> | null>;
+  saveProjectPayload: () => Promise<Record<string, any> | null>;
 };
 
 const noopSetNodes: React.Dispatch<React.SetStateAction<FlowNode[]>> = () => {};
@@ -138,6 +143,9 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   openCropEditor: (_nodeId: string) => {},
   closeCropEditor: () => {},
   confirmCropEditor: () => {},
+  generatePreviewImage: async () => null,
+  generateProjectPayload: async () => null,
+  saveProjectPayload: async () => null,
 });
 
 const cloneNodes = (items: FlowNode[]): FlowNode[] => {
@@ -147,10 +155,50 @@ const cloneNodes = (items: FlowNode[]): FlowNode[] => {
   return JSON.parse(JSON.stringify(items)) as FlowNode[];
 };
 
+const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
+  if (!Array.isArray(elements)) return [];
+  const allNodes: FlowNode[] = [];
+  elements.forEach((element) => {
+    if (!element || element.category !== 'widget') return;
+    const configJson = element.config_json;
+    if (!configJson || typeof configJson !== 'object') return;
+    const { nodes: createdNodes, rootNode } = widgetConfig2Nodes(configJson);
+    if (!Array.isArray(createdNodes) || !rootNode) return;
+
+    const rootKey = String(element.element_key ?? rootNode.id);
+    const baseX =
+      typeof element.x === 'number' && Number.isFinite(element.x) ? element.x : 0;
+    const baseY =
+      typeof element.y === 'number' && Number.isFinite(element.y) ? element.y : 0;
+
+    const normalizedNodes = createdNodes.map((node: any) => {
+      if (!node || typeof node !== 'object') return node;
+      if (node.id === rootNode.id) {
+        return {
+          ...node,
+          id: rootKey,
+          position: { x: baseX, y: baseY },
+        };
+      }
+      if (node.parentId === rootNode.id) {
+        return {
+          ...node,
+          parentId: rootKey,
+        };
+      }
+      return node;
+    });
+    allNodes.push(...(normalizedNodes as FlowNode[]));
+  });
+  return allNodes;
+};
+
 // /** 目前上下文只保留 nodes/setNodes */
 export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const location = useLocation();
   const params = useParams<{ projectId?: string }>();
   const projectId = params.projectId ?? null;
+  const creatingProjectRef = useRef(false);
   const [projectName, setProjectName] = useState<string>('Untitled Project');
   const [nodes, setNodes] = useState<FlowNode[]>([]);
 
@@ -172,6 +220,52 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [hideUI, setHideUI] = useState<boolean>(false);
   const [cropEditingNodeId, setCropEditingNodeId] = useState<string>('');
   const [cropDraftProps, setCropDraftProps] = useState<CropProps | null>(null);
+
+  useEffect(() => {
+    if (params.projectId) return;
+    if (creatingProjectRef.current) return;
+    creatingProjectRef.current = true;
+    const createProjectAndReplacePath = async () => {
+      try {
+        const { project_id: createdProjectId } = await postApiV1Project();
+        const latestPath = history.location.pathname;
+        if (latestPath.includes(`/${createdProjectId}`)) return;
+        history.replace({
+          pathname: `${location.pathname.replace(/\/$/, '')}/${createdProjectId}`,
+          search: history.location.search,
+          hash: history.location.hash,
+        });
+      } catch (error) {
+        console.warn('[EditorCoreProvider] create project failed:', error);
+      } finally {
+        creatingProjectRef.current = false;
+      }
+    };
+    void createProjectAndReplacePath();
+  }, [location.pathname, params.projectId]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    let disposed = false;
+    const loadProjectName = async () => {
+      try {
+        const detail = await getProjectDetail(projectId);
+        if (disposed) return;
+        if (detail?.name) {
+          setProjectName(detail.name);
+        }
+        if (Array.isArray(detail?.elements)) {
+          setNodes(mapProjectElementsToNodes(detail.elements));
+        }
+      } catch (error) {
+        console.warn('[EditorCoreProvider] fetch project detail failed:', error);
+      }
+    };
+    void loadProjectName();
+    return () => {
+      disposed = true;
+    };
+  }, [projectId]);
 
   const selectNode = (fn: FlowNode, append = false) => {
     setRightPanlOpen(true);
@@ -474,6 +568,107 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     closeCropEditor();
   };
 
+  const generatePreviewImage = async () => {
+    if (typeof document === 'undefined') return null;
+    const viewportEl = document.querySelector('.xyflow-stage .react-flow__viewport') as HTMLElement | null;
+    if (!viewportEl) return null;
+    try {
+      return await toPng(viewportEl, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+      });
+    } catch (error) {
+      console.warn('[EditorCoreProvider] generate preview image failed:', error);
+      return null;
+    }
+  };
+
+  const buildElementsPayloadFromNodes = () => {
+    const rootNodes = nodes.filter((node) => node.type === 'group' && !node.parentId);
+    return rootNodes.map((rootNode) => {
+      const platformNodes = nodes.filter(
+        (node) => node.type === 'group' && node.parentId === rootNode.id,
+      );
+      const pickPlatformNode = (platform: 'ios' | 'android') => {
+        const bySuffix = platformNodes.find((node) => String(node.id).endsWith(`_${platform}`));
+        if (bySuffix) return bySuffix;
+        const sorted = [...platformNodes].sort(
+          (a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0),
+        );
+        return platform === 'ios' ? sorted[0] : sorted[1];
+      };
+      const buildPlatformConfig = (platformNode: FlowNode | undefined) => {
+        if (!platformNode) return null;
+        const platformData = ((platformNode.data as Record<string, any>) ?? {}) as Record<string, any>;
+        const sizeNodes = nodes
+          .filter((node) => node.parentId === platformNode.id && String(node.type).startsWith('time_'))
+          .map((node) => ({ ...((node.data as Record<string, any>) ?? {}) }))
+          .sort((a: any, b: any) => Number(a.size ?? 0) - Number(b.size ?? 0));
+        return {
+          ...platformData,
+          sizes: sizeNodes,
+        };
+      };
+
+      const iosConfig = buildPlatformConfig(pickPlatformNode('ios'));
+      const androidConfig = buildPlatformConfig(pickPlatformNode('android'));
+
+      return {
+        element_key: rootNode.id,
+        category: 'widget',
+        subtype: 'time',
+        x: rootNode.position?.x ?? 0,
+        y: rootNode.position?.y ?? 0,
+        visible: true,
+        locked: false,
+        schema_version: 1,
+        config_json: {
+          ios: iosConfig,
+          android: androidConfig,
+        },
+      };
+    });
+  };
+
+  const generateProjectPayload = async () => {
+    if (!projectId) return null;
+    let projectDetail: Record<string, any> | null = null;
+    try {
+      projectDetail = await getProjectDetail(projectId);
+    } catch (error) {
+      console.warn('[EditorCoreProvider] generate payload detail fetch failed:', error);
+    }
+
+    const previewImage = await generatePreviewImage();
+    return {
+      project_id: projectId,
+      name: projectName,
+      status: projectDetail?.status ?? 'draft',
+      current_version: projectDetail?.current_version ?? 0,
+      preview_image: previewImage ?? projectDetail?.preview_image ?? null,
+      created_at: projectDetail?.created_at ?? null,
+      updated_at: new Date().toISOString(),
+      elements: buildElementsPayloadFromNodes(),
+    };
+  };
+
+  const saveProjectPayload = async () => {
+    if (!projectId) return null;
+    const payload = await generateProjectPayload();
+    if (!payload) return null;
+    try {
+      const response = await putApiV1ProjectElementsBatch(projectId, {
+        elements: payload.elements ?? [],
+        preview_image: payload.preview_image ?? null,
+      });
+      return { payload, response };
+    } catch (error) {
+      console.warn('[EditorCoreProvider] save project payload failed:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (!hideUI) return;
     setLeftPanlOpen(false);
@@ -518,6 +713,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       openCropEditor,
       closeCropEditor,
       confirmCropEditor,
+      generatePreviewImage,
+      generateProjectPayload,
+      saveProjectPayload,
     }),
     [
       nodes,
@@ -540,6 +738,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       hideUI,
       cropEditingNodeId,
       cropDraftProps,
+      generatePreviewImage,
+      generateProjectPayload,
+      saveProjectPayload,
     ],
   );
 
@@ -631,3 +832,6 @@ export const useEditorCropDraftPropsSetter = () => useContext(EditorCoreCtx).set
 export const useEditorOpenCropEditor = () => useContext(EditorCoreCtx).openCropEditor;
 export const useEditorCloseCropEditor = () => useContext(EditorCoreCtx).closeCropEditor;
 export const useEditorConfirmCropEditor = () => useContext(EditorCoreCtx).confirmCropEditor;
+export const useEditorGeneratePreviewImage = () => useContext(EditorCoreCtx).generatePreviewImage;
+export const useEditorGenerateProjectPayload = () => useContext(EditorCoreCtx).generateProjectPayload;
+export const useEditorSaveProjectPayload = () => useContext(EditorCoreCtx).saveProjectPayload;

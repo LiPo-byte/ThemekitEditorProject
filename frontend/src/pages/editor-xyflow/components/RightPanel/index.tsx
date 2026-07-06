@@ -88,46 +88,76 @@ const RightPanel: React.FC = () => {
   const selectedBranchNodes = useEditorSelectedBranchNodes();
   const playEnterAnimation = useEnterAnimation(open, { durationMs: 280 });
 
+  const getValueByPath = (target: Record<string, any>, path: string) => {
+    const parts = path.split('.');
+    let cursor: any = target;
+    for (let i = 0; i < parts.length; i += 1) {
+      if (!cursor || typeof cursor !== 'object') return undefined;
+      cursor = cursor[parts[i]];
+    }
+    return cursor;
+  };
+
+  const setValueByPath = (target: Record<string, any>, path: string, value: any) => {
+    const parts = path.split('.');
+    let cursor: any = target;
+    for (let i = 0; i < parts.length - 1; i += 1) {
+      const key = parts[i];
+      if (!cursor[key] || typeof cursor[key] !== 'object') {
+        cursor[key] = {};
+      }
+      cursor = cursor[key];
+    }
+    cursor[parts[parts.length - 1]] = value;
+  };
+
+  const walkNodeData = (
+    value: any,
+    ctx: { nodeId: string; nodeName: string; pathPrefix: string },
+    output: Record<string, any>,
+  ) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return;
+    Object.keys(value).forEach((key) => {
+      const nextPath = ctx.pathPrefix ? `${ctx.pathPrefix}.${key}` : key;
+      const current = value[key];
+      if (key === 'source') {
+        const prevList = (getValueByPath(output, nextPath) ?? []) as any[];
+        prevList.push({
+          name: ctx.pathPrefix || ctx.nodeName,
+          id: ctx.nodeId,
+          path: nextPath,
+          value: current ?? '',
+        });
+        setValueByPath(output, nextPath, prevList);
+        return;
+      }
+      if (current && typeof current === 'object' && !Array.isArray(current)) {
+        walkNodeData(current, { ...ctx, pathPrefix: nextPath }, output);
+        return;
+      }
+      const prevValue = getValueByPath(output, nextPath);
+      if (typeof prevValue === 'undefined') {
+        setValueByPath(output, nextPath, current);
+        return;
+      }
+      if (prevValue !== current) {
+        setValueByPath(output, nextPath, MIXED_VALUE);
+      }
+    });
+  };
+
   const handleEditProps = (nodeList: any[]) => {
-    const editPropsMap:any = new Map();
+    const output: Record<string, any> = {};
     nodeList.forEach((item: any) => {
       const node = item as FlowNode;
       const data = (item?.data ?? item) as Record<string, any> | undefined;
       if (!data) return;
-      Object.keys(data).forEach((key: string) => {
-        const value = data[key];
-        const prevValue = editPropsMap.get(key);
-        if (key === 'source') {
-          const sourceList = prevValue ?? [];
-          sourceList.push({
-            name: data.name ?? node?.id ?? '',
-            id: node?.id ?? data.id ?? '',
-            value: value ?? '',
-          });
-          editPropsMap.set(key, sourceList);
-          return;
-        }
-        if (typeof value === 'object') {
-          editPropsMap.set(key, [...(prevValue ?? []), value]);
-          return;
-        }
-        if (editPropsMap.has(key) && prevValue !== value) {
-          editPropsMap.set(key, MIXED_VALUE);
-          return;
-        }
-        editPropsMap.set(key, value);
-      });
+      const nodeId = node?.id ?? data.id ?? '';
+      const nodeName = data.name ?? nodeId;
+      walkNodeData(data, { nodeId, nodeName, pathPrefix: '' }, output);
     });
-    const obj:any = {};
-    editPropsMap.forEach((value: any, key: any) => {
-      if (key === 'source') {
-        obj[key] = value;
-        return;
-      }
-      obj[key] = Array.isArray(value) ? handleEditProps(value) : value;
-    });
-    return obj;
-  }
+    return output;
+  };
 
   useEffect(() => {
     setEditProps(handleEditProps(selectedBranchNodes));
@@ -136,7 +166,7 @@ const RightPanel: React.FC = () => {
 
   const handleSourceChange = async (payload: any) => {
     if (!projectId) return;
-    const { id, value, deletePath } = payload;
+    const { id, value, deletePath, path } = payload;
     let v = value;
     if (id && value) {
       const { url } = await uploadProjectImage(projectId, value);
@@ -146,10 +176,35 @@ const RightPanel: React.FC = () => {
       // await deleteProjectImage(projectId, new URL(deletePath).pathname.replace(/^\/+/, ''));
     }
     const selectedNodeIds = new Set(selectedBranchNodes.map((node) => node.id));
+    const setNestedValue = (targetData: Record<string, any>, nestedPath: string, nextValue: any) => {
+      const nextData = { ...targetData };
+      const pathParts = nestedPath.split('.');
+      if (!pathParts.length) return nextData;
+      if (pathParts.length === 1) {
+        if (!Object.hasOwn(nextData, nestedPath)) return nextData;
+        nextData[nestedPath] = nextValue;
+        return nextData;
+      }
+      let cursor: any = nextData;
+      for (let i = 0; i < pathParts.length - 1; i += 1) {
+        const key = pathParts[i];
+        const currentValue = cursor[key];
+        if (!currentValue || typeof currentValue !== 'object' || Array.isArray(currentValue)) {
+          return nextData;
+        }
+        cursor[key] = { ...currentValue };
+        cursor = cursor[key];
+      }
+      const leafKey = pathParts[pathParts.length - 1];
+      if (!Object.hasOwn(cursor, leafKey)) return nextData;
+      cursor[leafKey] = nextValue;
+      return nextData;
+    };
     changeNodeProp((prevNodes) =>
       prevNodes.map((node) => {
         if (!selectedNodeIds.has(node.id) || node.id !== id) return node;
-        const nextData = {...node.data, source: v };
+        const sourcePath = typeof path === 'string' && path ? path : 'source';
+        const nextData = setNestedValue((node.data as Record<string, any>) ?? {}, sourcePath, v);
         return { ...node, data: nextData };
       }),
     );

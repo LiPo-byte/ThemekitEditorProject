@@ -29,3 +29,33 @@ export const WIDGET_SIZE: any = {
     width: 329px;
     height: 345px;
 }
+
+@keyframes xyflow-time4-move-x {
+    0%,
+    100% {
+        transform: translate3d(var(--xyflow-time4-start-offset, 0px), 0, 0);
+    }
+    50% {
+        transform: translate3d(var(--xyflow-time4-end-offset, 0px), 0, 0);
+    }
+}
+
+@keyframes xyflow-time4-move-y {
+    0%,
+    100% {
+        transform: translate3d(0, var(--xyflow-time4-start-offset, 0px), 0);
+    }
+    50% {
+        transform: translate3d(0, var(--xyflow-time4-end-offset, 0px), 0);
+    }
+}
+
+@keyframes xyflow-time5-rotate {
+    0%,
+    100% {
+        transform: rotate(var(--xyflow-time5-rotate-start, 0deg));
+    }
+    50% {
+        transform: rotate(var(--xyflow-time5-rotate-end, 360deg));
+    }
+}

@@ -7,6 +7,10 @@ import {
   // PlusOutlined,
   UploadOutlined,
   DeleteOutlined,
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined
 } from '@ant-design/icons';
 import {
   Col,
@@ -255,6 +259,38 @@ const FontColorInput: React.FC<{
     </>
   );
 };
+const BackgroundColorInput: React.FC<{
+  value?: string;
+  onChange?: (value: string) => void;
+}> = ({ value, onChange }) => {
+  const colorValue = value === MIXED_VALUE ? undefined : value;
+  return (
+    <>
+      <Row>
+        <Col span={24}>
+          <Flex align='center' justify='space-between'>
+            <InputTitle label="BackgroundColor" />
+            <ColorPicker
+              value={colorValue}
+              size="small"
+              disabledAlpha
+              showText={(color) => {
+                if (colorValue) {
+                  return <span>{color.toHexString()}</span>
+                } else {
+                  return <span>Multiple values</span>
+                }
+              }}
+              onChangeComplete={(color: any) => {
+                onChange?.(color.toHexString().toUpperCase());
+              }}
+            />
+          </Flex>
+        </Col>
+      </Row>
+    </>
+  );
+};
 
 const TextAlignment: React.FC<{
   value?: number;
@@ -283,14 +319,68 @@ const TextAlignment: React.FC<{
   );
 };
 
+const AnimationType: React.FC<{
+  value?: number;
+  onChange?: (value: number) => void;
+}> = ({ value, onChange }) => {
+  return (
+    <>
+      <Row style={{ marginBottom: '5px' }}>
+        <Col span={24}>
+        <Flex align='center' justify='space-between'>
+          <InputTitle label="AnimationType" />
+          <Segmented
+            value={value}
+            block
+            onChange={onChange}
+            options={[
+              { value: 1, label: <ArrowDownOutlined /> },
+              { value: 2, label: <ArrowUpOutlined /> },
+              { value: 3, label: <ArrowRightOutlined /> },
+              { value: 4, label: <ArrowLeftOutlined /> },
+            ]}
+          />
+        </Flex>
+        </Col>
+      </Row>
+    </>
+  );
+};
+const AnimationCategory: React.FC<{
+  value?: number;
+  onChange?: (value: number) => void;
+}> = ({ value, onChange }) => {
+  return (
+    <>
+      <Row style={{ marginBottom: '5px' }}>
+        <Col span={24}>
+        <Flex align='center' justify='space-between'>
+          <InputTitle label="AnimationCategory" />
+          <Segmented
+            value={value}
+            block
+            onChange={onChange}
+            options={[
+              { value: 0, label: 0 },
+              { value: 1, label: 1 },
+              { value: 2, label: 2 },
+            ]}
+          />
+        </Flex>
+        </Col>
+      </Row>
+    </>
+  );
+};
+
 export const IsGIFInput: React.FC = () => {
   return (
     <Row style={{ marginBottom: '5px' }}>
-      <Col span={4}>
-        <InputTitle label="IsGIF" />
-      </Col>
-      <Col span={20}>
-        <Switch size="small" defaultChecked onChange={() => {}} />
+      <Col span={24}>
+        <Flex align='center' justify='space-between'>
+          <InputTitle label="IsGIF" />
+          <Switch size="small" defaultChecked onChange={() => {}} />
+        </Flex>
       </Col>
     </Row>
   );
@@ -298,30 +388,32 @@ export const IsGIFInput: React.FC = () => {
 
 export const ImageUpload: React.FC<{
   value: any;
-  onChange: (payload: { id: any; value: any, deletePath?: any }) => void;
+  onChange: (payload: { id: any; value: any; path?: string; deletePath?: any }) => void;
 }> = ({ value, onChange }) => {
   const { styles } = useImageUploadStyles();
   const handleChange =
-    (id: any): UploadProps['onChange'] =>
+    (id: any, path?: string): UploadProps['onChange'] =>
     ({ fileList: nextFileList }) => {
       const singleList = nextFileList.slice(-1);
       const latestFile = singleList[0];
       if (!latestFile) {
-        onChange({ id, value: '' });
+        onChange({ id, path, value: '' });
         return;
       }
       if (latestFile.url) {
-        onChange({ id, value: latestFile.url });
+        onChange({ id, path, value: latestFile.url });
         return;
       }
       onChange({
         id,
+        path,
         value: latestFile.originFileObj,
       });
     };
-  const onDeleteSource = (id: any, deletePath: any) => {
+  const onDeleteSource = (id: any, path: string | undefined, deletePath: any) => {
     onChange({
       id: id,
+      path,
       value: null,
       deletePath: deletePath,
     });
@@ -343,7 +435,7 @@ export const ImageUpload: React.FC<{
                     <img className={styles.previewImg} src={v.value} alt="" />
                     {v.name}
                   </Button>
-                  <Button type="text" onClick={() => {onDeleteSource(v.id, v.value)}} icon={<DeleteOutlined />} />
+                  <Button type="text" onClick={() => {onDeleteSource(v.id, v.path, v.value)}} icon={<DeleteOutlined />} />
                 </Flex>
             ) : (
                 <Upload
@@ -352,7 +444,7 @@ export const ImageUpload: React.FC<{
                   maxCount={1}
                   fileList={[]}
                   beforeUpload={() => false}
-                  onChange={handleChange(v.id)}
+                  onChange={handleChange(v.id, v.path)}
                 >
                   <Button variant="filled" color="default" style={{ marginBottom: '5px'}}>
                       <UploadOutlined /> {v.name}
@@ -539,7 +631,17 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
-      {hasKey('isGIF') && (
+      {hasKey('crossPadding') && (
+        <>
+          <PropInput
+            LabelName="CrossPadding"
+            value={editProps.crossPadding}
+            type="number"
+            onChange={(nextValue) => onChange?.('crossPadding', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('isGif') && (
         <>
           <IsGIFInput />
         </>
@@ -629,6 +731,70 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('backgroundColor') && (
+        <>
+          <BackgroundColorInput
+            value={editProps.backgroundColor}
+            onChange={(nextValue) => onChange?.('backgroundColor', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('animationCategory') && (
+        <>
+          <AnimationCategory
+            value={editProps.animationCategory}
+            onChange={(nextValue) => onChange?.('animationCategory', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('animationType') && (
+        <>
+          <AnimationType
+            value={editProps.animationType}
+            onChange={(nextValue) => onChange?.('animationType', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('distance') && (
+        <>
+          <PropInput
+            LabelName="Distance"
+            value={editProps.distance}
+            type="number"
+            onChange={(nextValue) => onChange?.('distance', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('duration') && (
+        <>
+          <PropInput
+            LabelName="Duration"
+            value={editProps.duration}
+            type="number"
+            onChange={(nextValue) => onChange?.('duration', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('imageWidth') && (
+        <>
+          <PropInput
+            LabelName="ImageWidth"
+            value={editProps.imageWidth}
+            type="number"
+            onChange={(nextValue) => onChange?.('imageWidth', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('imageHeight') && (
+        <>
+          <PropInput
+            LabelName="ImageHeight"
+            value={editProps.imageHeight}
+            type="number"
+            onChange={(nextValue) => onChange?.('imageHeight', nextValue)}
+          />
+        </>
+      )}
       {hasKey('source') && (
         <>
           <ImageUpload
@@ -650,11 +816,25 @@ export const SelectedNodePropForm: React.FC<{
   return (
     <>
       <BaseSelectedNodePropForm editProps={editProps} onChange={onChange} />
+      {hasKey('battery') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.battery} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'battery');
+          }} title="Battery"/>
+        </>
+      )}
       {hasKey('time') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.time} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'time');
           }} title="Time"/>
+        </>
+      )}
+      {hasKey('day') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.day} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'day');
+          }} title="Day"/>
         </>
       )}
       {hasKey('date') && (
@@ -664,11 +844,39 @@ export const SelectedNodePropForm: React.FC<{
           }} title="Date"/>
         </>
       )}
-      {hasKey('day') && (
+      {hasKey('other') && (
         <>
-          <BaseSelectedNodePropForm editProps={editProps.day} onChange={(key: string, value: any) => {
-            onChange && onChange(key, value, 'day');
-          }} title="Day"/>
+          <BaseSelectedNodePropForm editProps={editProps.other} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'other');
+          }} title="Other"/>
+        </>
+      )}
+      {hasKey('month') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.month} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'month');
+          }} title="Month"/>
+        </>
+      )}
+      {hasKey('calendar') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.calendar} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'calendar');
+          }} title="Calendar"/>
+        </>
+      )}
+      {hasKey('firstImageAnimation') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.firstImageAnimation} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'firstImageAnimation');
+          }} title="FirstImageAnimation"/>
+        </>
+      )}
+      {hasKey('secondImageAnimation') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.secondImageAnimation} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'secondImageAnimation');
+          }} title="SecondImageAnimation"/>
         </>
       )}
     </>
