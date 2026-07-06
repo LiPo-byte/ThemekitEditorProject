@@ -9,6 +9,7 @@ import TimeLayout_2 from './widget/time-layout_2';
 import TimeLayout_3 from './widget/time-layout_3';
 import TimeLayout_4 from './widget/time-layout_4';
 import TimeLayout_5 from './widget/time-layout_5';
+import TimeLayout_6 from './widget/time-layout_6';
 import ActionPopover from './components/ActionPopover';
 // import { useMemo, useState } from 'react';
 import {
@@ -51,6 +52,7 @@ export default function EditorStage() {
           time_3: TimeLayout_3,
           time_4: TimeLayout_4,
           time_5: TimeLayout_5,
+          time_6: TimeLayout_6,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}

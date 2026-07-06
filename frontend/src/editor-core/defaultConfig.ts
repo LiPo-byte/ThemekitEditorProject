@@ -17,7 +17,7 @@ export const WidgetDefaultConfig = {
                     "size":1,
                     "name": "Time-IOS-Small",
                     "radius": 28,
-                    "source": "https://plus.unsplash.com/premium_photo-1692641346414-02a56f346626?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyfHx8ZW58MHx8fHx8",
+                    "source": "",
                     "crop_props": defaultCropProps,
                     "padding":16,
                     "time":{
@@ -916,7 +916,7 @@ export const WidgetDefaultConfig = {
                      "distance": 10,
                      "imageHeight": 136,
                      "imageWidth": 149,
-                     "source": "https://plus.unsplash.com/premium_photo-1692641346414-02a56f346626?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyfHx8ZW58MHx8fHx8",
+                     "source": "",
                      "crop_props": defaultCropProps,
                  },
                  "secondImageAnimation": {
@@ -1333,6 +1333,253 @@ export const WidgetDefaultConfig = {
                     "font":"AvenirNext-BoldItalic",
                     "textColor": "#333333"
                 }
+             }
+            ]
+         }
+    },
+    Time_LayoutType_6: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":1,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 6,
+                 "name":"Time-IOS-Small",
+                 "radius": 28,
+                  "source": "",
+                "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":21,
+                       "textHeight":29,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "firstImageAnimation": {
+                    "animationCategory": 1,
+                    "animationType": 0,
+                    "padding": 0,
+                    "crossPadding": -1,
+                    "duration": 3,
+                    "distance": 10,
+                    "imageHeight": 112,
+                    "imageWidth": 112,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                "secondImageAnimation": {
+                    "animationCategory": 2,
+                    "animationType": 0,
+                    "padding": 26,
+                    "crossPadding": -1,
+                    "duration": 2,
+                    "distance": 10,
+                    "imageHeight": 60,
+                    "imageWidth": 60,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+             }, 
+             {
+                 "size":2,
+                 "layoutType": 6,
+                 "name":"Time-IOS-Medium",
+                 "radius": 28,
+                 "source": "",
+               "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":48,
+                       "textHeight":66,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "firstImageAnimation": {
+                    "animationCategory": 1,
+                    "animationType": 3,
+                    "padding": 16,
+                    "crossPadding": -1,
+                    "duration": 4,
+                    "distance": 15,
+                    "imageHeight": 122,
+                    "imageWidth": 122,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                 "secondImageAnimation": {
+                    "animationCategory": 1,
+                    "animationType": 3,
+                    "padding": 50,
+                    "crossPadding": -1,
+                    "duration": -5,
+                    "distance": 10,
+                    "imageHeight": 50,
+                    "imageWidth": 50,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+             }, 
+             {
+                 "size":3,
+                 "layoutType": 6,
+                 "name":"Time-IOS-Large",
+                 "radius": 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":60,
+                       "textHeight":82,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "firstImageAnimation": {
+                    "animationCategory": 1,
+                    "animationType": 0,
+                    "padding": 26,
+                    "crossPadding": 18,
+                    "duration": 4,
+                    "distance": 19,
+                    "imageHeight": 198,
+                    "imageWidth": 198,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+                "secondImageAnimation": {
+                    "animationCategory": 2,
+                    "animationType": 0,
+                    "padding": 60,
+                    "crossPadding": 63,
+                    "duration": 4,
+                    "distance": 38,
+                    "imageHeight": 108,
+                    "imageWidth": 108,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                },
+
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+             }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":1,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 6,
+                 "name":"Time-Android-Small",
+                 "radius": 28,
+                  "source": "",
+                "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":21,
+                       "textHeight":29,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+             },
+             {
+                 "size":2,
+                 "layoutType": 6,
+                 "name":"Time-Android-Medium",
+                 "radius": 28,
+                 "source": "",
+               "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":48,
+                       "textHeight":66,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
+             }, 
+             {
+                 "size":3,
+                 "layoutType": 6,
+                 "name":"Time-Android-Large",
+                 "radius": 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "time":{
+                       "font":"AvenirNext-DemiBold",
+                       "textSize":60,
+                       "textHeight":82,
+                       "textColor":"#ff413d",
+                       "alpha":1.0,
+                 },
+                 "other": {
+                    "backgroundColor": "#B4B4B4",
+                    "alpha": 1
+                },
+                "month":{
+                   "font": "AvenirNext-BoldItalic",
+                   "textSize": 11,
+                   "textHeight":15,
+                   "textColor": "#000000",
+                   "alpha": 1
+                },
              }
             ]
          }

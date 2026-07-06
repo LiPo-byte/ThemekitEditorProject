@@ -53,9 +53,9 @@ export default function TimeLayout_1(props: any) {
       duration,
       distance,
     } = animationConfig ?? {};
-    const axis = animationType === 2 || animationType === 0 || animationType === 1 ? 'y' : 'x';
+    const axis = animationType === 0 || animationType === 1 ? 'y' : 'x';
     const absDistance = Math.abs(distance ?? 0);
-    const isReverse = animationType === 1 || animationType === 2 || animationType === 3;
+    const isReverse = animationType === 1 || animationType === 3;
     const startOffset = isReverse ? absDistance : 0;
     const endOffset = isReverse ? 0 : absDistance;
 

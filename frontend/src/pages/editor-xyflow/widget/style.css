@@ -51,11 +51,10 @@ export const WIDGET_SIZE: any = {
 }
 
 @keyframes xyflow-time5-rotate {
-    0%,
-    100% {
-        transform: rotate(var(--xyflow-time5-rotate-start, 0deg));
+    0% {
+        transform: rotate(0deg);
     }
-    50% {
-        transform: rotate(var(--xyflow-time5-rotate-end, 360deg));
+    100% {
+        transform: rotate(360deg);
     }
 }

@@ -10,7 +10,12 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   ArrowUpOutlined,
-  ArrowDownOutlined
+  ArrowDownOutlined,
+  SyncOutlined,
+  LineOutlined,
+  StopOutlined,
+  // <LineOutlined />
+  // <SyncOutlined />
 } from '@ant-design/icons';
 import {
   Col,
@@ -334,10 +339,10 @@ const AnimationType: React.FC<{
             block
             onChange={onChange}
             options={[
-              { value: 1, label: <ArrowDownOutlined /> },
-              { value: 2, label: <ArrowUpOutlined /> },
-              { value: 3, label: <ArrowRightOutlined /> },
-              { value: 4, label: <ArrowLeftOutlined /> },
+              { value: 0, label: <ArrowDownOutlined /> },
+              { value: 1, label: <ArrowUpOutlined /> },
+              { value: 2, label: <ArrowRightOutlined /> },
+              { value: 3, label: <ArrowLeftOutlined /> },
             ]}
           />
         </Flex>
@@ -361,9 +366,9 @@ const AnimationCategory: React.FC<{
             block
             onChange={onChange}
             options={[
-              { value: 0, label: 0 },
-              { value: 1, label: 1 },
-              { value: 2, label: 2 },
+              { value: 0, label: <LineOutlined /> },
+              { value: 1, label: <SyncOutlined /> },
+              { value: 2, label: <StopOutlined /> },
             ]}
           />
         </Flex>

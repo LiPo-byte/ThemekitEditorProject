@@ -6,24 +6,6 @@ import {
 import CropEditableImage from '../components/CropEditableImage';
 import './style.css';
 
-const ROTATE_BLOCK_MAP: Record<number, any> = {
-  1: {
-    outer: { x: 22, y: 10, size: 112 },
-    inner: { offset: 26, size: 60 },
-    icon: { x: 34, y: 36, w: 44, h: 40 },
-  },
-  2: {
-    outer: { x: 191, y: 17, size: 122 },
-    inner: { offset: 26, size: 70 },
-    icon: { x: 34, y: 36, w: 55, h: 50 },
-  },
-  3: {
-    outer: { x: 18, y: 26, size: 198 },
-    inner: { offset: 45, size: 108 },
-    icon: { x: 53, y: 59, w: 89, h: 81 },
-  },
-};
-
 export default function TimeLayout_5(props: any) {
   const data = props.data;
   const firstImageAnimation = data?.firstImageAnimation;
@@ -73,107 +55,70 @@ export default function TimeLayout_5(props: any) {
     return index === 0 ? 0 : 1;
   };
 
-  const getMoveBlockStyle = (animationConfig: any) => {
+  const getAnimationLayerStyle = (animationConfig: any, category: number) => {
     if (!animationConfig || typeof animationConfig !== 'object') return null;
     const {
       imageHeight,
       imageWidth,
-      source,
       animationType,
       padding,
       crossPadding,
       duration,
       distance,
-      animationCategory,
     } = animationConfig ?? {};
-    const axis = animationType === 2 || animationType === 0 || animationType === 1 ? 'y' : 'x';
+    const width = Number(imageWidth) || 40;
+    const height = Number(imageHeight) || 40;
+    const axis = animationType === 0 || animationType === 1 ? 'y' : 'x';
     const absDistance = Math.abs(distance ?? 0);
-    const isReverse = animationType === 1 || animationType === 2 || animationType === 3;
+    const isReverse = animationType === 1 || animationType === 3;
     const startOffset = isReverse ? absDistance : 0;
     const endOffset = isReverse ? 0 : absDistance;
+    const resolvedCrossPadding = Number(crossPadding);
+    const resolvedPadding = Number(padding);
+    const isCrossCentered = resolvedCrossPadding === -1;
+    const left = isCrossCentered
+      ? `calc(50% - ${width / 2}px)`
+      : `${Number.isFinite(resolvedCrossPadding) ? resolvedCrossPadding : 0}px`;
+    const top = `${Number.isFinite(resolvedPadding) ? resolvedPadding : 0}px`;
 
     const baseStyle: CSSProperties = {
       position: 'absolute',
-      width: `${imageWidth ?? 40}px`,
-      height: `${imageHeight ?? 40}px`,
+      width: `${width}px`,
+      height: `${height}px`,
       borderRadius: 8,
-      background: source ? 'transparent' : 'rgba(59, 130, 246, 0.35)',
-      border: source ? 'none' : '1px solid rgba(59, 130, 246, 0.85)',
       boxSizing: 'border-box',
       overflow: 'hidden',
       zIndex: 8,
+      left,
+      top,
       '--xyflow-time4-start-offset': `${startOffset}px`,
       '--xyflow-time4-end-offset': `${endOffset}px`,
     } as CSSProperties;
-
-    if (Number(animationCategory) !== 2) {
+    if (category === 0) {
       baseStyle.animation = `${Math.max(Number(duration) || 0, 0.1)}s ease-in-out infinite ${
         axis === 'x' ? 'xyflow-time4-move-x' : 'xyflow-time4-move-y'
       }`;
-    }
-
-    const resolvedCrossPadding = Number(crossPadding);
-    const isCrossCentered = resolvedCrossPadding === -1;
-    if (axis === 'y') {
-      baseStyle.top = `${padding ?? 0}px`;
-      baseStyle.left = isCrossCentered
-        ? `calc(50% - ${(imageWidth ?? 40) / 2}px)`
-        : `${resolvedCrossPadding || 0}px`;
       return baseStyle;
     }
-
-    baseStyle.left = `${padding ?? 0}px`;
-    baseStyle.top = isCrossCentered
-      ? `calc(50% - ${(imageHeight ?? 40) / 2}px)`
-      : `${resolvedCrossPadding || 0}px`;
+    if (category === 1) {
+      const rawRotateDuration = Number(animationConfig?.duration2 ?? duration);
+      const rotateDuration = Math.max(Math.abs(rawRotateDuration) || 0, 0.1);
+      const rotateDirection = rawRotateDuration < 0 ? 'reverse' : 'normal';
+      baseStyle.animation = `${rotateDuration}s linear infinite xyflow-time5-rotate`;
+      baseStyle.animationDirection = rotateDirection;
+      baseStyle.transformOrigin = '50% 50%';
+      return baseStyle;
+    }
     return baseStyle;
   };
 
-  const getRotateImageStyle = (animationConfig: any, fallbackLayout: any) => {
-    const imageWidth = Number(animationConfig?.imageWidth) || fallbackLayout.icon.w;
-    const imageHeight = Number(animationConfig?.imageHeight) || fallbackLayout.icon.h;
-    const resolvedCrossPadding = Number(animationConfig?.crossPadding);
-    const isCrossCentered = resolvedCrossPadding === -1;
-    const resolvedPadding = Number(animationConfig?.padding);
-    const top = Number.isFinite(resolvedPadding)
-      ? resolvedPadding
-      : fallbackLayout.icon.y;
-    const left = isCrossCentered
-      ? (fallbackLayout.outer.size - imageWidth) / 2
-      : (Number.isFinite(resolvedCrossPadding) ? resolvedCrossPadding : fallbackLayout.icon.x);
-
-    const duration = Math.max(Number(animationConfig?.duration) || 0, 0.1);
-    const absDistance = Math.abs(Number(animationConfig?.distance));
-    const rotateDistance = absDistance > 0 ? absDistance : 360;
-    const animationType = Number(animationConfig?.animationType);
-    const isReverse = animationType === 1 || animationType === 2 || animationType === 3;
-    const startAngle = isReverse ? rotateDistance : 0;
-    const endAngle = isReverse ? 0 : rotateDistance;
-
-    const imageStyle: CSSProperties = {
-      position: 'absolute',
-      left,
-      top,
-      width: imageWidth,
-      height: imageHeight,
-      objectFit: 'cover',
-      display: 'block',
-      transformOrigin: '50% 50%',
-      '--xyflow-time5-rotate-start': `${startAngle}deg`,
-      '--xyflow-time5-rotate-end': `${endAngle}deg`,
-    } as CSSProperties;
-    if (Number(animationConfig?.animationCategory) !== 2) {
-      imageStyle.animation = `${duration}s linear infinite xyflow-time5-rotate`;
-    }
-    return imageStyle;
-  };
-
-  const renderLineOrStaticBlock = (animationConfig: any, index: number) => {
-    const style = getMoveBlockStyle(animationConfig);
+  const renderAnimationLayer = (animationConfig: any, index: number) => {
+    const category = resolveAnimationCategory(animationConfig, index);
+    const style = getAnimationLayerStyle(animationConfig, category);
     if (!style) return null;
     const source = animationConfig?.source;
     return (
-      <div key={`line-static-${index}`} style={style}>
+      <div key={`anim-layer-${index}`} style={style}>
         {source ? (
           <img
             src={source}
@@ -190,47 +135,15 @@ export default function TimeLayout_5(props: any) {
             style={{
               width: '100%',
               height: '100%',
-              background: 'rgba(59, 130, 246, 0.35)',
-              border: '1px solid rgba(59, 130, 246, 0.85)',
+              background: category === 1 ? 'rgba(99, 102, 241, 0.28)' : 'rgba(59, 130, 246, 0.35)',
+              border: category === 1
+                ? '1px solid rgba(99, 102, 241, 0.75)'
+                : '1px solid rgba(59, 130, 246, 0.85)',
               borderRadius: 8,
               boxSizing: 'border-box',
             }}
           />
         )}
-      </div>
-    );
-  };
-
-  const renderRotateBlock = () => {
-    const layout = ROTATE_BLOCK_MAP[data?.size] || ROTATE_BLOCK_MAP[1];
-    const outerColor = data?.other?.backgroundColor || '#B4B4B4';
-    const rotateAnimationConfigs = animationConfigs.filter(
-      (item: any, index: number) => resolveAnimationCategory(item, index) === 1,
-    );
-    return (
-      <div>
-        {rotateAnimationConfigs.map((rotateAnimationConfig: any, index: number) => {
-          const rotateSource = rotateAnimationConfig?.source || '';
-          return rotateSource ? (
-            <img
-              key={`rotate-image-${index}`}
-              src={rotateSource}
-              alt=""
-              style={getRotateImageStyle(rotateAnimationConfig, layout)}
-            />
-          ) : (
-            <div
-              key={`rotate-placeholder-${index}`}
-              style={{
-                ...getRotateImageStyle(rotateAnimationConfig, layout),
-                background: 'rgba(99, 102, 241, 0.28)',
-                border: '1px solid rgba(99, 102, 241, 0.75)',
-                borderRadius: 8,
-                boxSizing: 'border-box',
-              }}
-            />
-          );
-        })}
       </div>
     );
   };
@@ -264,17 +177,12 @@ export default function TimeLayout_5(props: any) {
       />
       {hasAnimationFields
         ? animationConfigs.map((item: any, index: number) => {
-            const category = resolveAnimationCategory(item, index);
-            if (category === 0 || category === 2) {
-              return renderLineOrStaticBlock(item, index);
-            }
-            return null;
+            return renderAnimationLayer(item, index);
           })
         : null}
 
       {data?.size === 1 && (
         <>
-          {hasAnimationFields ? renderRotateBlock() : null}
           <div
             style={{
               position: 'absolute',
@@ -290,7 +198,6 @@ export default function TimeLayout_5(props: any) {
               style={{
                 width: 40,
                 height: 18,
-                // backgroundColor: '#000',
                 backgroundColor: data?.other?.backgroundColor || '#000000',
                 display: 'flex',
                 alignItems: 'center',
@@ -326,7 +233,6 @@ export default function TimeLayout_5(props: any) {
 
       {data?.size === 2 && (
         <>
-          {hasAnimationFields ? renderRotateBlock() : null}
           <div
             style={{
               position: 'absolute',
@@ -408,7 +314,6 @@ export default function TimeLayout_5(props: any) {
 
       {data?.size === 3 && (
         <>
-          {hasAnimationFields ? renderRotateBlock() : null}
           <div
             style={{
               position: 'absolute',

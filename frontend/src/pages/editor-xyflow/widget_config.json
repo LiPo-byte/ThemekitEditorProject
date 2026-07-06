@@ -37,7 +37,7 @@
         "title": "Month and calendar; partitioned background"
       },
       {
-        "key": "Time-6",
+        "key": "Time_LayoutType_6",
         "label": "Layout 6: Time + Rotate Animation",
         "title": "Month display; no calendar"
       }
