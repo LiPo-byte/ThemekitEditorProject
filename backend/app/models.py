@@ -227,6 +227,12 @@ class ProjectUpdateNameResponse(SQLModel):
     updated_at: datetime
 
 
+class ProjectDeleteResponse(SQLModel):
+    project_id: uuid.UUID
+    deleted: bool
+    updated_at: datetime
+
+
 class ProjectUploadImageResponse(SQLModel):
     url: str
     path: str

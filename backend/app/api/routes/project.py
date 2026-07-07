@@ -17,6 +17,7 @@ from app.models import (
     ProjectCreate,
     ProjectCreateResponse,
     ProjectDeleteImageResponse,
+    ProjectDeleteResponse,
     ProjectDetailElement,
     ProjectDetailResponse,
     ProjectElement,
@@ -326,6 +327,32 @@ def update_project_name(
         project_id=project.id,
         name=project.name,
         updated_at=project.updated_at or datetime.now(timezone.utc),
+    )
+
+
+@router.delete("/{project_id}", response_model=ProjectDeleteResponse)
+def delete_project(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    project_id: uuid.UUID,
+) -> Any:
+    project = session.get(Project, project_id)
+    if not project or project.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if not current_user.is_superuser and project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    now_utc = datetime.now(timezone.utc)
+    project.deleted_at = now_utc
+    project.updated_at = now_utc
+    session.add(project)
+    session.commit()
+
+    return ProjectDeleteResponse(
+        project_id=project.id,
+        deleted=True,
+        updated_at=now_utc,
     )
 
 

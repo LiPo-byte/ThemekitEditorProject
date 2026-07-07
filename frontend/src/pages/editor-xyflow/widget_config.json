@@ -126,16 +126,6 @@
     "title": "All layouts customizable"
   },
   {
-    "key": "PhotoImage",
-    "label": "Photo Image",
-    "title": "All layouts customizable"
-  },
-  {
-    "key": "CollageImage",
-    "label": "Collage Image",
-    "title": "Not customizable"
-  },
-  {
     "key": "Weather",
     "label": "Weather",
     "title": "All layouts customizable"

@@ -340,6 +340,74 @@ def test_update_project_name_not_enough_permissions(
     assert update_response.json()["detail"] == "Not enough permissions"
 
 
+def test_delete_project(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Delete Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+    project_uuid = uuid.UUID(project_id)
+
+    delete_response = client.delete(
+        f"{settings.API_V1_STR}/project/{project_id}",
+        headers=normal_user_token_headers,
+    )
+    assert delete_response.status_code == 200
+    delete_content = delete_response.json()
+    assert delete_content["project_id"] == project_id
+    assert delete_content["deleted"] is True
+    assert "updated_at" in delete_content
+
+    deleted_project = db.get(Project, project_uuid)
+    assert deleted_project is not None
+    assert deleted_project.deleted_at is not None
+
+    list_response = client.get(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+    )
+    assert list_response.status_code == 200
+    ids = {item["project_id"] for item in list_response.json()["data"]}
+    assert project_id not in ids
+
+
+def test_delete_project_not_enough_permissions(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=superuser_token_headers,
+        json={"name": "Owner Delete Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    delete_response = client.delete(
+        f"{settings.API_V1_STR}/project/{project_id}",
+        headers=normal_user_token_headers,
+    )
+    assert delete_response.status_code == 403
+    assert delete_response.json()["detail"] == "Not enough permissions"
+
+
+def test_delete_project_not_found(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    non_existing_project_id = uuid.uuid4()
+    delete_response = client.delete(
+        f"{settings.API_V1_STR}/project/{non_existing_project_id}",
+        headers=normal_user_token_headers,
+    )
+    assert delete_response.status_code == 404
+    assert delete_response.json()["detail"] == "Project not found"
+
+
 def test_upload_project_image(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
