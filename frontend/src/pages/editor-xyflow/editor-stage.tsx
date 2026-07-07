@@ -1,6 +1,13 @@
 
 import { useEffect } from 'react';
-import { ReactFlow, Background, useKeyPress, Controls } from '@xyflow/react';
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  useKeyPress,
+  Controls,
+  ViewportPortal,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './editor-stage.css';
 import TimeLayout_0 from './widget/time-layout_0';
@@ -11,6 +18,7 @@ import TimeLayout_4 from './widget/time-layout_4';
 import TimeLayout_5 from './widget/time-layout_5';
 import TimeLayout_6 from './widget/time-layout_6';
 import ActionPopover from './components/ActionPopover';
+import PlatformGroupNode from './components/PlatformGroupNode';
 // import { useMemo, useState } from 'react';
 import {
   useEditorNodes,
@@ -20,6 +28,9 @@ import {
   useEditorCanDeleteSelected,
   useEditorActionPropNode,
   useEditorCropToolOpen,
+  useEditorShowAxis,
+  useEditorBackgroundVariant,
+  useEditorBackgroundColor,
 } from './context';
 
 export default function EditorStage() {
@@ -30,7 +41,16 @@ export default function EditorStage() {
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
   const canDeleteSelected = useEditorCanDeleteSelected();
   const cropToolOpen = useEditorCropToolOpen();
+  const showAxis = useEditorShowAxis();
+  const backgroundVariant = useEditorBackgroundVariant();
+  const backgroundColor = useEditorBackgroundColor();
   const deleteKeyPressed = useKeyPress(['Delete', 'Backspace']);
+
+  const backgroundVariantMap: Record<'lines' | 'dots' | 'cross', BackgroundVariant> = {
+    lines: BackgroundVariant.Lines,
+    dots: BackgroundVariant.Dots,
+    cross: BackgroundVariant.Cross,
+  };
 
   useEffect(() => {
     if (cropToolOpen) return;
@@ -41,11 +61,15 @@ export default function EditorStage() {
   }, [cropToolOpen, deleteKeyPressed, canDeleteSelected, deleteSelectedNodes]);
 
   return (
-    <div className="xyflow-stage" style={{ height: '100%', width: '100%' }}>
+    <div
+      className="xyflow-stage"
+      style={{ height: '100%', width: '100%', background: backgroundColor }}
+    >
       <ReactFlow
         nodes={[actionNode, ...nodes]}
         nodeTypes={{
           'node-with-toolbar': ActionPopover,
+          platform_group: PlatformGroupNode,
           time_0: TimeLayout_0,
           time_1: TimeLayout_1,
           time_2: TimeLayout_2,
@@ -75,7 +99,18 @@ export default function EditorStage() {
         maxZoom={1.5}
         minZoom={0.1}
       >
-        <Background />
+        {showAxis && (
+          <ViewportPortal>
+            <div className="xyflow-origin-axis" aria-hidden>
+              <div className="xyflow-origin-axis__line xyflow-origin-axis__line--horizontal" />
+              <div className="xyflow-origin-axis__line xyflow-origin-axis__line--vertical" />
+            </div>
+          </ViewportPortal>
+        )}
+        <Background
+          variant={backgroundVariantMap[backgroundVariant]}
+          bgColor={backgroundColor}
+        />
         <Controls
             showInteractive={false}
             showZoom={!cropToolOpen}

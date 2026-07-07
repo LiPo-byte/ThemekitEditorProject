@@ -1,66 +1,149 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Position, NodeToolbar } from '@xyflow/react';
-// import { createStyles } from 'antd-style';
 import { useEditorDeleteSelectedNodes, useEditorOpenCropEditor } from '../context';
-import { Button } from 'antd';
+import { App, Button, Modal, Typography } from 'antd';
 import { ExportOutlined, DeleteTwoTone } from '@ant-design/icons';
 import { CropSvg } from '@/icons';
-
-// const useStyles = createStyles(({ css, token }) => ({
-//   popover: css`
-//     position: absolute;
-//     z-index: 10;
-//     /* 中心对齐到选中节点正上方，再上抬 GAP px */
-//     transform: translate(-50%, calc(-100% - 8px));
-//     padding: 4px 8px;
-//     background: ${token.colorBgElevated};
-//     border: 1px solid ${token.colorBorderSecondary};
-//     border-radius: ${token.borderRadius}px;
-//     box-shadow: ${token.boxShadowSecondary};
-//     pointer-events: auto;
-//     user-select: none;
-//     white-space: nowrap;
-//     font-size: 12px;
-//     color: ${token.colorTextSecondary};
-//     /* 出现动画：从下方滑入 + 淡入；结束后无缝衔接到上面的静态 transform */
-//     animation: action-popover-in 1s cubic-bezier(0.16, 1, 0.3, 1);
-
-//     @keyframes action-popover-in {
-//       from {
-//         opacity: 0;
-//         transform: translate(-50%, calc(-100% - 2px));
-//       }
-//       to {
-//         opacity: 1;
-//         transform: translate(-50%, calc(-100% - 8px));
-//       }
-//     }
-//   `,
-// }));
+import {
+  type ExportProgressLine,
+  useWidgetExportBundle,
+} from '../hooks/useWidgetExportBundle';
 
 /**
  * 选中节点上方的浮动操作栏（Action Popover）。
- * 通过订阅 EditorCore 的选中/布局事件实时更新位置；
- * 未选中时不渲染。
  */
 const ActionPopover: React.FC = (props: any) => {
-  const { data: { isVisible, actionList, nodeId } } = props;
+  const {
+    data: { isVisible, actionList, nodeId },
+  } = props;
+  const { message } = App.useApp();
   const openCropEditor = useEditorOpenCropEditor();
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
+  const { exporting, exportBundle } = useWidgetExportBundle(nodeId);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportLogs, setExportLogs] = useState<ExportProgressLine[]>([]);
+  const [runningDots, setRunningDots] = useState('');
+  const logContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (logContainerRef.current) {
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+    }
+  }, [exportLogs]);
+  useEffect(() => {
+    if (!exporting) {
+      setRunningDots('');
+      return;
+    }
+    let index = 0;
+    const dots = ['', '.', '..', '...'];
+    const timer = window.setInterval(() => {
+      index = (index + 1) % dots.length;
+      setRunningDots(dots[index]);
+    }, 400);
+    return () => window.clearInterval(timer);
+  }, [exporting]);
+
   const onCrop = () => {
     openCropEditor(nodeId);
   };
   const onDelete = () => {
     deleteSelectedNodes();
   };
+  const onExport = async () => {
+    if (exporting) return;
+    setExportModalOpen(true);
+    setExportLogs([{ level: 'info', text: '准备导出资源...' }]);
+
+    await exportBundle({
+      onProgressLine: (line) => {
+        setExportLogs((prev) => [...prev, line]);
+      },
+      onSuccess: (text) => message.success(text),
+    });
+  };
+
   return (
     <>
-      <NodeToolbar nodeId={nodeId} isVisible={isVisible} position={Position.Top} align='end'>
-        { actionList.includes('cropable') && <Button onClick={onCrop} icon={<CropSvg/>}  shape="circle" /> }
-        { actionList.includes('packable') && <Button onClick={() => {}} icon={<ExportOutlined/>}  shape="circle" /> }
-        { actionList.includes('deleteable') && <Button onClick={onDelete} icon={<DeleteTwoTone/>}  shape="circle" /> }
+      <NodeToolbar
+        nodeId={nodeId}
+        isVisible={isVisible}
+        position={Position.Top}
+        align="end"
+      >
+        {actionList.includes('cropable') && (
+          <Button onClick={onCrop} icon={<CropSvg />} shape="circle" />
+        )}
+        {actionList.includes('packable') && !exporting && (
+          <Button
+            onClick={onExport}
+            icon={<ExportOutlined />}
+            shape="circle"
+            loading={exporting}
+          />
+        )}
+        {actionList.includes('deleteable') && (
+          <Button onClick={onDelete} icon={<DeleteTwoTone />} shape="circle" />
+        )}
       </NodeToolbar>
+      <Modal
+        title="正在导出"
+        open={exportModalOpen}
+        width={680}
+        footer={
+          exporting
+            ? null
+            : [
+                <Button key="close" onClick={() => setExportModalOpen(false)}>
+                  关闭
+                </Button>,
+              ]
+        }
+        closable={false}
+        mask={{
+          enabled: true,
+          blur: true,
+          closable: false
+        }}
+      >
+        <div
+          ref={logContainerRef}
+          style={{
+            height: 320,
+            overflowY: 'auto',
+            background: '#fafafa',
+            border: '1px solid #f0f0f0',
+            borderRadius: 6,
+            padding: 12,
+          }}
+        >
+          {exportLogs.map((line, index) => (
+            <div key={`${line.level}-${line.text}-${index}`} style={{ marginBottom: 6 }}>
+              <Typography.Text
+                code
+                type={
+                  line.level === 'error'
+                    ? 'danger'
+                    : line.level === 'warning'
+                      ? 'warning'
+                      : line.level === 'success'
+                        ? 'success'
+                        : 'secondary'
+                }
+              >
+                {`[${line.level.toUpperCase()}] ${line.text}`}
+              </Typography.Text>
+            </div>
+          ))}
+          {exporting && (
+            <div style={{ marginTop: 8 }}>
+              <Typography.Text type="secondary">{`[INFO] 进行中${runningDots}`}</Typography.Text>
+            </div>
+          )}
+        </div>
+      </Modal>
     </>
-  )
-}
+  );
+};
+
 export default ActionPopover;

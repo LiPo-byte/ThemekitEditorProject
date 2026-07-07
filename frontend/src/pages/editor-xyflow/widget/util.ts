@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { CONFIG_SIZE_MAP } from './base-config';
+import { WIDGET_BORDER_RADIUS } from '@/editor-core/WidgetBaseNode';
 export type ImageSize = {
   width: number;
   height: number;
@@ -42,6 +43,7 @@ export const widgetConfig2Nodes: any = (config: any) => {
     }
 
     const groupId = nanoid() + '_' + system;
+    const platformLabel = system === 'ios' ? 'iOS' : 'Android';
     let groupWidth = gap;
     let groupHeight = gap;
     let startY = gap;
@@ -79,11 +81,12 @@ export const widgetConfig2Nodes: any = (config: any) => {
 
     platformNodes.push({
       id: groupId,
-      type: 'group',
+      type: 'platform_group',
       className: 'widget-group-node',
       position: { x: groupX, y: gap },
       data: {
-        ...platformConfig
+        ...platformConfig,
+        label: platformLabel,
       },
       packable: true,
       parentId: rootGroupId,

@@ -153,50 +153,87 @@ export default function TimeLayout_6(props: any) {
   };
 
   return (
-    <div className={`size_${data?.size}`} style={containerStyle}>
-      <CropEditableImage
-        nodeId={props.id}
-        source={data.source}
-        radius={data.radius}
-        cropProps={data.crop_props}
-      />
-      {hasAnimationFields
-        ? animationConfigs.map((item: any, index: number) => renderAnimationLayer(item, index))
-        : null}
+    <>
+      <div className={`size_${data?.size}`} style={containerStyle}>
+        {hasAnimationFields
+          ? animationConfigs.map((item: any, index: number) => renderAnimationLayer(item, index))
+          : null}
 
-      {data?.size === 1 && (
-        <>
-          <div
-           style={{
-            position: 'absolute',
-            left: 22,
-            right: 22,
-            bottom: 6,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-           }}
-          >
+        {data?.size === 1 && (
+          <>
             <div
-              style={{
-                zIndex: 9,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...getTextStyle({ ...data.month }),
-              }}
+            style={{
+              position: 'absolute',
+              left: 22,
+              right: 22,
+              bottom: 6,
+              zIndex: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
             >
-              {monthText}
+              <div
+                style={{
+                  zIndex: 9,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...getTextStyle({ ...data.month }),
+                }}
+              >
+                {monthText}
+              </div>
+              <div style={{
+                width: 2,
+                height: 5,
+                borderRadius: 1,
+                flex: 'none',
+                backgroundColor: data?.other?.backgroundColor,
+              }} />
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...getTextStyle({ ...data.time }),
+                }}
+              >
+                {timeText}
+              </div>
+              <div style={{
+                width: 2,
+                height: 5,
+                flex: 'none',
+                backgroundColor: data?.other?.backgroundColor,
+                borderRadius: 1,
+              }} />
+              <div
+                style={{
+                  zIndex: 9,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...getTextStyle({ ...data.month }),
+                }}
+              >
+                {dayText}
+              </div>
+
             </div>
-            <div style={{
-              width: 2,
-              height: 5,
-              borderRadius: 1,
-              flex: 'none',
-              backgroundColor: data?.other?.backgroundColor,
-            }} />
+          </>
+        )}
+
+        {data?.size === 2 && (
+          <>
             <div
               style={{
+                position: 'absolute',
+                left: 33,
+                top: 55,
+                width: 132,
+                height: 61,
+                zIndex: 9,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -205,75 +242,41 @@ export default function TimeLayout_6(props: any) {
             >
               {timeText}
             </div>
-            <div style={{
-              width: 2,
-              height: 5,
-              flex: 'none',
-              backgroundColor: data?.other?.backgroundColor,
-              borderRadius: 1,
-            }} />
+            <div style={{ ...monthTagBase, left: 38, width: 34, ...getTextStyle({ ...data.month }) }}>12/25</div>
+            <div style={{ ...monthTagBase, left: 134, width: 26, ...getTextStyle({ ...data.month }) }}>{dayText}</div>
+            <div style={{ position: 'absolute', left: 16, top: 76, width: 3, height: 15, backgroundColor: data?.other?.backgroundColor, zIndex: 9, borderRadius: 2 }} />
+          </>
+        )}
+
+        {data?.size === 3 && (
+          <>
             <div
               style={{
+                position: 'absolute',
+                left: 80,
+                top: 246,
+                width: 170,
+                height: 79,
                 zIndex: 9,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                ...getTextStyle({ ...data.month }),
+                ...getTextStyle({ ...data.time }),
               }}
             >
-              {dayText}
+              {timeText}
             </div>
-
-          </div>
-        </>
-      )}
-
-      {data?.size === 2 && (
-        <>
-          <div
-            style={{
-              position: 'absolute',
-              left: 33,
-              top: 55,
-              width: 132,
-              height: 61,
-              zIndex: 9,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              ...getTextStyle({ ...data.time }),
-            }}
-          >
-            {timeText}
-          </div>
-          <div style={{ ...monthTagBase, left: 38, width: 34, ...getTextStyle({ ...data.month }) }}>12/25</div>
-          <div style={{ ...monthTagBase, left: 134, width: 26, ...getTextStyle({ ...data.month }) }}>{dayText}</div>
-          <div style={{ position: 'absolute', left: 16, top: 76, width: 3, height: 15, backgroundColor: data?.other?.backgroundColor, zIndex: 9, borderRadius: 2 }} />
-        </>
-      )}
-
-      {data?.size === 3 && (
-        <>
-          <div
-            style={{
-              position: 'absolute',
-              left: 80,
-              top: 246,
-              width: 170,
-              height: 79,
-              zIndex: 9,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              ...getTextStyle({ ...data.time }),
-            }}
-          >
-            {timeText}
-          </div>
-          <div style={{ ...monthTagBase, left: 104, top: 230, width: 34, ...getTextStyle({ ...data.month, textSize: 12, textHeight: 16 }) }}>12/25</div>
-          <div style={{ ...monthTagBase, left: 200, top: 230, width: 26, ...getTextStyle({ ...data.month, textSize: 12, textHeight: 16 }) }}>{dayText}</div>
-        </>
-      )}
-    </div>
+            <div style={{ ...monthTagBase, left: 104, top: 230, width: 34, ...getTextStyle({ ...data.month }) }}>12/25</div>
+            <div style={{ ...monthTagBase, left: 200, top: 230, width: 26, ...getTextStyle({ ...data.month }) }}>{dayText}</div>
+          </>
+        )}
+        <CropEditableImage
+          nodeId={props.id}
+          source={data.source}
+          radius={data.radius}
+          cropProps={data.crop_props}
+        />
+      </div>
+    </>
   );
 }

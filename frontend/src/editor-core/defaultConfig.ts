@@ -12,6 +12,7 @@ export const WidgetDefaultConfig = {
           "isLockScreen":false,
           "type":1,
           "textAlignment":1,
+          "isGif": true,
           "sizes":[
                 {
                     "size":1,
@@ -113,6 +114,7 @@ export const WidgetDefaultConfig = {
           "isLockScreen":false,
           "type":1,
           "textAlignment":1,
+          "isGif": true,
           "sizes":[
                 {
                     "size":1,
@@ -216,6 +218,7 @@ export const WidgetDefaultConfig = {
           "isLockScreen":false,
           "type":1,
           "textAlignment":1,
+          "isGif": true,
           "sizes":[
                 {
                     "size":1,
@@ -269,6 +272,7 @@ export const WidgetDefaultConfig = {
           "isLockScreen":false,
           "type":1,
           "textAlignment":1,
+          "isGif": true,
           "sizes":[
                 {
                     "size":1,
@@ -323,6 +327,7 @@ export const WidgetDefaultConfig = {
           "version":0,
           "isLockScreen":false,
           "type":1,
+          "isGif": true,
           "sizes":[
                 {
                     "size":1,
@@ -429,6 +434,7 @@ export const WidgetDefaultConfig = {
             "version":0,
             "isLockScreen":false,
             "type":1,
+            "isGif": true,
             "sizes":[
                   {
                       "size":1,
@@ -538,6 +544,7 @@ export const WidgetDefaultConfig = {
           "isLockScreen":false,
           "type":1,
           "textAlignment":3,
+          "isGif": true,
           "sizes":[
                 {
                     "size":1,
@@ -654,6 +661,7 @@ export const WidgetDefaultConfig = {
             "isLockScreen":false,
             "type":1,
             "textAlignment":3,
+            "isGif": true,
             "sizes":[
                   {
                       "size":1,
@@ -772,6 +780,7 @@ export const WidgetDefaultConfig = {
           "isLockScreen":false,
           "type":1,
           "textAlignment":1,
+          "isGif": true,
           "sizes":[
                 {
                     "size":1,
@@ -831,6 +840,7 @@ export const WidgetDefaultConfig = {
           "isLockScreen":false,
           "type":1,
           "textAlignment":1,
+          "isGif": true,
           "sizes":[
                 {
                     "size":1,
@@ -1012,7 +1022,7 @@ export const WidgetDefaultConfig = {
          android: {
             "version":0,
             "isLockScreen":false,
-            "isGif": false,
+            "isGif": true,
             "type":1,
             "sizes":[
              {
@@ -1241,7 +1251,7 @@ export const WidgetDefaultConfig = {
          android: {
             "version":0,
             "isLockScreen":false,
-            "isGif": false,
+            "isGif": true,
             "type":1,
             "sizes":[
              {
@@ -1500,7 +1510,7 @@ export const WidgetDefaultConfig = {
          android: {
             "version":0,
             "isLockScreen":false,
-            "isGif": false,
+            "isGif": true,
             "type":1,
             "sizes":[
              {

@@ -27,6 +27,7 @@ import {
   InputNumber,
   Row,
   Segmented,
+  Select,
   Switch,
   Tag,
   Upload,
@@ -42,7 +43,14 @@ import {
 
 import { createStyles } from 'antd-style';
 import React, { useEffect, useState } from 'react';
-import { useEditorCore } from '../../context';
+import {
+  useEditorBackgroundColor,
+  useEditorBackgroundColorSetter,
+  useEditorBackgroundVariant,
+  useEditorBackgroundVariantSetter,
+  useEditorShowAxis,
+  useEditorShowAxisSetter,
+} from '../../context';
 import FontSelect from '../FontSelect';
 
 const MIXED_VALUE = '__MIXED__';
@@ -101,18 +109,12 @@ const useImageUploadStyles = createStyles(({ css }) => ({
 }));
 
 export const CanvasSettingsForm: React.FC = () => {
-  const core = useEditorCore();
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [showBackgroundDecorations, setShowBackgroundDecorations] =
-    useState(true);
-  const [showAxis, setShowAxis] = useState(true);
-
-  useEffect(() => {
-    if (!core) return;
-    setBackgroundColor(core.getBackgroundColor());
-    setShowBackgroundDecorations(core.getShowBackgroundDecorations());
-    setShowAxis(core.getShowAxis());
-  }, [core]);
+  const backgroundColor = useEditorBackgroundColor();
+  const setBackgroundColor = useEditorBackgroundColorSetter();
+  const backgroundVariant = useEditorBackgroundVariant();
+  const setBackgroundVariant = useEditorBackgroundVariantSetter();
+  const showAxis = useEditorShowAxis();
+  const setShowAxis = useEditorShowAxisSetter();
 
   return (
     <>
@@ -128,7 +130,6 @@ export const CanvasSettingsForm: React.FC = () => {
                 onChange={(value) => {
                   const css = value.toHexString();
                   setBackgroundColor(css);
-                  core?.setBackgroundColor(css);
                 }}
               />
             </div>
@@ -139,13 +140,18 @@ export const CanvasSettingsForm: React.FC = () => {
       <Row style={{ marginBottom: '5px' }}>
         <Col span={24}>
           <Flex justify="space-between" align="center">
-            <InputTitle label="Show Background Dots" />
-            <Switch
+            <InputTitle label="Background Variant" />
+            <Select
               size="small"
-              checked={showBackgroundDecorations}
-              onChange={(checked) => {
-                setShowBackgroundDecorations(checked);
-                core?.setShowBackgroundDecorations(checked);
+              value={backgroundVariant}
+              style={{ width: 120 }}
+              options={[
+                { label: 'Lines', value: 'lines' },
+                { label: 'Dots', value: 'dots' },
+                { label: 'Cross', value: 'cross' },
+              ]}
+              onChange={(value) => {
+                setBackgroundVariant(value as 'lines' | 'dots' | 'cross');
               }}
             />
           </Flex>
@@ -161,7 +167,6 @@ export const CanvasSettingsForm: React.FC = () => {
               checked={showAxis}
               onChange={(checked) => {
                 setShowAxis(checked);
-                core?.setShowAxis(checked);
               }}
             />
           </Flex>
@@ -378,13 +383,19 @@ const AnimationCategory: React.FC<{
   );
 };
 
-export const IsGIFInput: React.FC = () => {
+export const IsGIFInput: React.FC<{
+  value?: boolean;
+  onChange?: (value: boolean) => void;
+}> = ({
+  value,
+  onChange
+}) => {
   return (
     <Row style={{ marginBottom: '5px' }}>
       <Col span={24}>
         <Flex align='center' justify='space-between'>
           <InputTitle label="IsGIF" />
-          <Switch size="small" defaultChecked onChange={() => {}} />
+          <Switch size="small" checked={value} onChange={onChange} />
         </Flex>
       </Col>
     </Row>
@@ -648,7 +659,10 @@ export const BaseSelectedNodePropForm: React.FC<{
       )}
       {hasKey('isGif') && (
         <>
-          <IsGIFInput />
+          <IsGIFInput
+            value={editProps.isGif}
+            onChange={(nextValue) => onChange?.('isGif', nextValue)}
+          />
         </>
       )}
       {hasKey('isLockScreen') && (

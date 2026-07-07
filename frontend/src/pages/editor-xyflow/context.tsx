@@ -82,6 +82,14 @@ type EditorCoreCtxValue = {
   setCropToolOpen: (bool: boolean) => void;
   hideUI: boolean;
   setHideUI: (bool: boolean) => void;
+  showAxis: boolean;
+  setShowAxis: (bool: boolean) => void;
+  backgroundVariant: 'lines' | 'dots' | 'cross';
+  setBackgroundVariant: (variant: 'lines' | 'dots' | 'cross') => void;
+  backgroundColor: string;
+  setBackgroundColor: (color: string) => void;
+  globalLoading: boolean;
+  setGlobalLoading: (bool: boolean) => void;
   cropEditingNodeId: string;
   cropDraftProps: CropProps | null;
   setCropDraftProps: React.Dispatch<React.SetStateAction<CropProps | null>>;
@@ -137,6 +145,14 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   setCropToolOpen: (_bool: boolean) => {},
   hideUI: false,
   setHideUI: (_bool: boolean) => {},
+  showAxis: true,
+  setShowAxis: (_bool: boolean) => {},
+  backgroundVariant: 'dots',
+  setBackgroundVariant: (_variant: 'lines' | 'dots' | 'cross') => {},
+  backgroundColor: '#ffffff',
+  setBackgroundColor: (_color: string) => {},
+  globalLoading: false,
+  setGlobalLoading: (_bool: boolean) => {},
   cropEditingNodeId: '',
   cropDraftProps: null,
   setCropDraftProps: () => {},
@@ -218,6 +234,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [rightPanlOpen, setRightPanlOpen] = useState<boolean>(false);
   const [cropToolOpen, setCropToolOpen] = useState<boolean>(false);
   const [hideUI, setHideUI] = useState<boolean>(false);
+  const [showAxis, setShowAxis] = useState<boolean>(true);
+  const [backgroundVariant, setBackgroundVariant] = useState<'lines' | 'dots' | 'cross'>('dots');
+  const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
+  const [globalLoading, setGlobalLoading] = useState<boolean>(false);
   const [cropEditingNodeId, setCropEditingNodeId] = useState<string>('');
   const [cropDraftProps, setCropDraftProps] = useState<CropProps | null>(null);
 
@@ -588,7 +608,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     const rootNodes = nodes.filter((node) => node.type === 'group' && !node.parentId);
     return rootNodes.map((rootNode) => {
       const platformNodes = nodes.filter(
-        (node) => node.type === 'group' && node.parentId === rootNode.id,
+        (node) => (node.type === 'group' || node.type === 'platform_group') && node.parentId === rootNode.id,
       );
       const pickPlatformNode = (platform: 'ios' | 'android') => {
         const bySuffix = platformNodes.find((node) => String(node.id).endsWith(`_${platform}`));
@@ -707,6 +727,14 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       setCropToolOpen,
       hideUI,
       setHideUI,
+      showAxis,
+      setShowAxis,
+      backgroundVariant,
+      setBackgroundVariant,
+      backgroundColor,
+      setBackgroundColor,
+      globalLoading,
+      setGlobalLoading,
       cropEditingNodeId,
       cropDraftProps,
       setCropDraftProps,
@@ -736,6 +764,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       rightPanlOpen,
       cropToolOpen,
       hideUI,
+      showAxis,
+      backgroundVariant,
+      backgroundColor,
+      globalLoading,
       cropEditingNodeId,
       cropDraftProps,
       generatePreviewImage,
@@ -826,6 +858,16 @@ export const useEditorCropToolOpen = () => useContext(EditorCoreCtx).cropToolOpe
 export const useEditorCropToolOpenSetter = () => useContext(EditorCoreCtx).setCropToolOpen;
 export const useEditorHideUI = () => useContext(EditorCoreCtx).hideUI;
 export const useEditorHideUISetter = () => useContext(EditorCoreCtx).setHideUI;
+export const useEditorShowAxis = () => useContext(EditorCoreCtx).showAxis;
+export const useEditorShowAxisSetter = () => useContext(EditorCoreCtx).setShowAxis;
+export const useEditorBackgroundVariant = () => useContext(EditorCoreCtx).backgroundVariant;
+export const useEditorBackgroundVariantSetter = () =>
+  useContext(EditorCoreCtx).setBackgroundVariant;
+export const useEditorBackgroundColor = () => useContext(EditorCoreCtx).backgroundColor;
+export const useEditorBackgroundColorSetter = () =>
+  useContext(EditorCoreCtx).setBackgroundColor;
+export const useEditorGlobalLoading = () => useContext(EditorCoreCtx).globalLoading;
+export const useEditorGlobalLoadingSetter = () => useContext(EditorCoreCtx).setGlobalLoading;
 export const useEditorCropEditingNodeId = () => useContext(EditorCoreCtx).cropEditingNodeId;
 export const useEditorCropDraftProps = () => useContext(EditorCoreCtx).cropDraftProps;
 export const useEditorCropDraftPropsSetter = () => useContext(EditorCoreCtx).setCropDraftProps;

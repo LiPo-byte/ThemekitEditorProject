@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
-// import { message } from 'antd';
 import CropTool from './components/CropTool';
 import EditorBottomToolBar from './components/EditorBottomToolBar';
-// import ActionPopover from './components/ActionPopover';
 // import EditorCanvas from './components/EditorCanvas';
 import EditorStage from './editor-stage';
 import EditorToolbar from './components/EditorToolbar';
@@ -13,6 +11,7 @@ import RightPanel from './components/RightPanel';
 // import ZoomToolBar from './components/ZoomToolBar';
 import {
   EditorCoreProvider,
+  // useEditorGlobalLoading,
   // useEditorSaveStatus,
   // useEditorAddWidget
 } from './context';
@@ -20,6 +19,7 @@ import { useStyles } from './style';
 
 const EditorPageContent: React.FC = () => {
   const { styles } = useStyles();
+  // const globalLoading = useEditorGlobalLoading();
   return (
     <div className={styles.root}>
       <div className={styles.body}>
@@ -30,7 +30,6 @@ const EditorPageContent: React.FC = () => {
         <EditorBottomToolBar />
         <HeaderControls />
         <CropTool />
-        {/* <ActionPopover /> */}
       </div>
     </div>
   );

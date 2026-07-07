@@ -1,3 +1,36 @@
+.xyflow-stage {
+  position: relative;
+}
+
+.xyflow-stage .xyflow-origin-axis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.xyflow-stage .xyflow-origin-axis__line {
+  position: absolute;
+  background: rgba(76, 111, 255, 0.35);
+}
+
+.xyflow-stage .xyflow-origin-axis__line--horizontal {
+  left: -100000px;
+  top: 0;
+  width: 200000px;
+  height: 1px;
+}
+
+.xyflow-stage .xyflow-origin-axis__line--vertical {
+  top: -100000px;
+  left: 0;
+  width: 1px;
+  height: 200000px;
+}
+
 .xyflow-stage .react-flow__node {
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
   /* border: 2px solid transparent !important; */

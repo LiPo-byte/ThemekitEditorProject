@@ -7,3 +7,4 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /backend/data/
+/frontend/src/pages/editor-xyflow/widget/rule_ymal
