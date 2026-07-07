@@ -338,10 +338,10 @@ export const WidgetDefaultConfig = {
                     "crop_props": defaultCropProps,
                     "padding":16,
                     "time":{
-                        "textAlignment":1,
+                        "textAlignment":3,
                         "font":"AvenirNext-Heavy",
                         "textSize":43,
-                        "textHeight":30,
+                        "textHeight":75,
                         "textColor":"#8C511B",
                         "alpha":1.0
                     },
@@ -371,10 +371,10 @@ export const WidgetDefaultConfig = {
                     "crop_props": defaultCropProps,
                     "padding":16,
                     "time":{
-                        "textAlignment":1,
+                        "textAlignment":3,
                         "font":"AvenirNext-HeavyItalic",
                         "textSize":53,
-                        "textHeight":40,
+                        "textHeight":85,
                         "textColor":"#8C511B",
                         "alpha":1.0
                     },
@@ -404,10 +404,10 @@ export const WidgetDefaultConfig = {
                     "crop_props": defaultCropProps,
                     "padding":16,
                     "time":{
-                        "textAlignment":1,
+                        "textAlignment":3,
                         "font":"AvenirNext-HeavyItalic",
                         "textSize":110,
-                        "textHeight":90,
+                        "textHeight":160,
                         "textColor":"#8C511B",
                         "alpha":1.0
                     },
@@ -445,10 +445,10 @@ export const WidgetDefaultConfig = {
                       "crop_props": defaultCropProps,
                       "padding":16,
                       "time":{
-                          "textAlignment":1,
+                          "textAlignment":3,
                           "font":"AvenirNext-Heavy",
                           "textSize":43,
-                          "textHeight":30,
+                          "textHeight": 75,
                           "textColor":"#8C511B",
                           "alpha":1.0
                       },
@@ -478,10 +478,10 @@ export const WidgetDefaultConfig = {
                       "crop_props": defaultCropProps,
                       "padding":16,
                       "time":{
-                          "textAlignment":1,
+                          "textAlignment":3,
                           "font":"AvenirNext-HeavyItalic",
                           "textSize":53,
-                          "textHeight":40,
+                          "textHeight":85,
                           "textColor":"#8C511B",
                           "alpha":1.0
                       },
@@ -511,10 +511,10 @@ export const WidgetDefaultConfig = {
                       "crop_props": defaultCropProps,
                       "padding":16,
                       "time":{
-                          "textAlignment":1,
+                          "textAlignment":3,
                           "font":"AvenirNext-HeavyItalic",
                           "textSize":110,
-                          "textHeight":90,
+                          "textHeight": 160,
                           "textColor":"#8C511B",
                           "alpha":1.0
                       },
@@ -561,7 +561,7 @@ export const WidgetDefaultConfig = {
                     "time":{
                         "font":"AvenirNext-Heavy",
                         "textSize":43,
-                        "textHeight":30,
+                        "textHeight":75,
                         "textColor":"#8C511B",
                         "alpha":1.0
                     },
@@ -597,7 +597,7 @@ export const WidgetDefaultConfig = {
                     "time":{
                         "font":"AvenirNext-HeavyItalic",
                         "textSize":53,
-                        "textHeight":40,
+                        "textHeight": 85,
                         "textColor":"#8C511B",
                         "alpha":1.0
                     },
@@ -633,7 +633,7 @@ export const WidgetDefaultConfig = {
                     "time":{
                         "font":"AvenirNext-HeavyItalic",
                         "textSize":110,
-                        "textHeight":90,
+                        "textHeight": 160,
                         "textColor":"#8C511B",
                         "alpha":1.0
                     },
@@ -678,7 +678,7 @@ export const WidgetDefaultConfig = {
                       "time":{
                           "font":"AvenirNext-Heavy",
                           "textSize":43,
-                          "textHeight":30,
+                          "textHeight": 75,
                           "textColor":"#8C511B",
                           "alpha":1.0
                       },
@@ -714,7 +714,7 @@ export const WidgetDefaultConfig = {
                       "time":{
                           "font":"AvenirNext-HeavyItalic",
                           "textSize":53,
-                          "textHeight":40,
+                          "textHeight":85,
                           "textColor":"#8C511B",
                           "alpha":1.0
                       },
@@ -750,7 +750,7 @@ export const WidgetDefaultConfig = {
                       "time":{
                           "font":"AvenirNext-HeavyItalic",
                           "textSize":110,
-                          "textHeight":90,
+                          "textHeight": 160,
                           "textColor":"#8C511B",
                           "alpha":1.0
                       },
@@ -811,8 +811,8 @@ export const WidgetDefaultConfig = {
                         "font":"AvenirNext-HeavyItalic",
                         "textSize":46,
                         "textHeight":63,
-                        "textColor":"#252020",
-                        "alpha":0.5,
+                        "textColor":"#000000",
+                        "alpha": 1,
                         "backgroundColor": "#FFFFFF"
                     },
                 },
@@ -826,11 +826,11 @@ export const WidgetDefaultConfig = {
                     "layoutType": 3,
                     "time":{
                         "font":"AvenirNext-HeavyItalic",
-                        "textSize":130,
+                        "textSize":80,
                         "textHeight":183,
-                        "textColor":"#252020",
-                        "alpha":0.5,
-                        "backgroundColor": "#DC143C"
+                        "textColor":"#000000",
+                        "alpha": 1,
+                        "backgroundColor": "#FFFFFF"
                     },
                 }
           ]
@@ -869,10 +869,10 @@ export const WidgetDefaultConfig = {
                     "layoutType": 3,
                     "time":{
                         "font":"AvenirNext-HeavyItalic",
-                        "textSize":28,
-                        "textHeight":24,
+                        "textSize":46,
+                        "textHeight":63,
                         "textColor":"#000000",
-                        "alpha":1.0,
+                        "alpha": 1,
                         "backgroundColor": "#FFFFFF"
                     },
                 },
@@ -886,8 +886,8 @@ export const WidgetDefaultConfig = {
                     "layoutType": 3,
                     "time":{
                         "font":"AvenirNext-HeavyItalic",
-                        "textSize":28,
-                        "textHeight":24,
+                        "textSize": 80,
+                        "textHeight": 183,
                         "textColor":"#000000",
                         "alpha":1.0,
                         "backgroundColor": "#FFFFFF"
@@ -914,7 +914,7 @@ export const WidgetDefaultConfig = {
                        "font":"AvenirNext-DemiBold",
                        "textSize":21,
                        "textHeight":29,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                        "textAlignment": 1
                  },
@@ -952,7 +952,7 @@ export const WidgetDefaultConfig = {
                        "font":"AvenirNext-DemiBold",
                        "textSize":48,
                        "textHeight":66,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                        "textAlignment": 3
                  },
@@ -990,7 +990,7 @@ export const WidgetDefaultConfig = {
                        "font":"AvenirNext-DemiBold",
                        "textSize":60,
                        "textHeight":82,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                        "textAlignment": 2
                  },
@@ -1036,7 +1036,7 @@ export const WidgetDefaultConfig = {
                        "font":"AvenirNext-DemiBold",
                        "textSize":21,
                        "textHeight":29,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                        "textAlignment": 1
                  },
@@ -1052,7 +1052,7 @@ export const WidgetDefaultConfig = {
                        "font":"AvenirNext-DemiBold",
                        "textSize":48,
                        "textHeight":66,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                        "textAlignment": 3
                  },
@@ -1068,7 +1068,7 @@ export const WidgetDefaultConfig = {
                        "font":"AvenirNext-DemiBold",
                        "textSize":60,
                        "textHeight":82,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                        "textAlignment": 2
                  },
@@ -1091,10 +1091,10 @@ export const WidgetDefaultConfig = {
                   "source": "",
                 "crop_props": defaultCropProps,
                  "time":{
-                       "font":"AvenirNext-DemiBold",
-                       "textSize":21,
+                       "font": "AvenirNext-BoldItalic",
+                       "textSize":11,
                        "textHeight":29,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                  },
                  "firstImageAnimation": {
@@ -1145,10 +1145,10 @@ export const WidgetDefaultConfig = {
                  "source": "",
                "crop_props": defaultCropProps,
                  "time":{
-                       "font":"AvenirNext-DemiBold",
+                       "font": "AvenirNext-BoldItalic",
                        "textSize":48,
                        "textHeight":66,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                  },
                  "firstImageAnimation": {
@@ -1199,10 +1199,10 @@ export const WidgetDefaultConfig = {
                  "source": "",
                  "crop_props": defaultCropProps,
                  "time":{
-                       "font":"AvenirNext-DemiBold",
+                       "font": "AvenirNext-BoldItalic",
                        "textSize":60,
                        "textHeight":82,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                  },
                  "firstImageAnimation": {
@@ -1262,10 +1262,10 @@ export const WidgetDefaultConfig = {
                   "source": "",
                 "crop_props": defaultCropProps,
                  "time":{
-                       "font":"AvenirNext-DemiBold",
-                       "textSize":21,
+                       "font": "AvenirNext-BoldItalic",
+                       "textSize":11,
                        "textHeight":29,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                  },
                  "other": {
@@ -1292,10 +1292,10 @@ export const WidgetDefaultConfig = {
                  "source": "",
                "crop_props": defaultCropProps,
                  "time":{
-                       "font":"AvenirNext-DemiBold",
+                       "font": "AvenirNext-BoldItalic",
                        "textSize":48,
                        "textHeight":66,
-                       "textColor":"#ff413d",
+                       "textColor":"#000000",
                        "alpha":1.0,
                  },
                  "other": {

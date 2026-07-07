@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
-  useEditorGetParentNodeData,
+//   useEditorGetParentNodeData,
   // type CropProps,
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
@@ -21,10 +21,11 @@ export default function TimeLayout_1(props: any) {
     fontFamily: textData?.font,
     opacity: textData?.alpha ?? 1,
     color: textData?.textColor ?? '#111827',
-    lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
+    height: textData?.textHeight + 'px',
+    lineHeight: '100%',
     zIndex: 9,
     position: 'relative' as const,
-    whiteSpace: 'nowrap',
+    // whiteSpace: 'nowrap',
     marginTop: (textData?.topSpacing || 0) + 'px',
     marginBottom: (textData?.bottomSpacing || 0) + 'px',
   });
@@ -63,16 +64,16 @@ export default function TimeLayout_1(props: any) {
             <div style={{
                 ...getTextStyle(data.time),
                 ...getTimeStyle(data.time),
-                marginBottom: data.size === 1 ? '4px' : '10px'
+                // marginBottom: data.size === 1 ? '4px' : '10px'
             }}>
-                10
+                10 <br />09
             </div>
-            <div style={{
+            {/* <div style={{
                 ...getTextStyle(data.time),
                 ...getTimeStyle(data.time),
             }}>
                 09
-            </div>
+            </div> */}
         </>
     )
   }, [data])

@@ -449,7 +449,12 @@ export const ImageUpload: React.FC<{
                 <Flex key={v.id} align='center' justify='space-between' style={{ marginBottom: '5px' }}>
                   <Button variant="filled" color="default" style={{ width: '80%' }} >
                     <img className={styles.previewImg} src={v.value} alt="" />
-                    {v.name}
+                    <Typography.Text
+                      style={{ width: 200 }}
+                      ellipsis={{ tooltip: v.name }}
+                    >
+                      {v.name}
+                    </Typography.Text>
                   </Button>
                   <Button type="text" onClick={() => {onDeleteSource(v.id, v.path, v.value)}} icon={<DeleteOutlined />} />
                 </Flex>
@@ -463,7 +468,13 @@ export const ImageUpload: React.FC<{
                   onChange={handleChange(v.id, v.path)}
                 >
                   <Button variant="filled" color="default" style={{ marginBottom: '5px'}}>
-                      <UploadOutlined /> {v.name}
+                      <UploadOutlined />
+                      <Typography.Text
+                        style={{ width: 200 }}
+                        ellipsis={{ tooltip: v.name }}
+                      >
+                        {v.name}
+                      </Typography.Text>
                   </Button>
                 </Upload>
             ))})}

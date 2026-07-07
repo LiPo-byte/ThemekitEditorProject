@@ -57,6 +57,7 @@ export const widgetConfig2Nodes: any = (config: any) => {
       const { layoutType } = item;
       const { width, height } = sizeConfig;
       groupWidth = Math.max(groupWidth, width + gap * 2);
+      // 添加默认的source 和 crop_props
 
       widgetNodes.push({
         id: nanoid(),

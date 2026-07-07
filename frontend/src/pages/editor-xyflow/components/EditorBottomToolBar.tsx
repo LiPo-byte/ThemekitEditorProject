@@ -4,14 +4,17 @@ import {
   useEditorBottomToolBarVisible,
   useEditorCore,
   // useEditorCoreLoading,
+  useEditorExportModalOpenSetter,
   useEditorLeftPanlOpen,
   useEditorLeftPanlOpenSetter,
+  useEditorExportModalOpen,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
 import { Button, Flex } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { IconPackDefaultConfig } from '@/editor-core/defaultConfig'
+import ExportModal from './ExportModal';
 
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
@@ -50,6 +53,22 @@ const useStyles = createStyles(({ token, css }) => ({
     display: flex;
     align-items: center;
     justify-content: center;
+  `,
+  exportBtn: css`
+    transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
+  `,
+  exportBtnOpen: css`
+    background-color: ${token.colorPrimary};
+    border-color: ${token.colorPrimary};
+    color: ${token.colorWhite};
+  `,
+  exportBtnIcon: css`
+    display: inline-flex;
+    transition: transform 220ms ease;
+    transform: rotate(0deg);
+  `,
+  exportBtnIconOpen: css`
+    transform: rotate(90deg);
   `
 }));
 
@@ -59,6 +78,8 @@ const EditorBottomToolBar: React.FC = () => {
   const core = useEditorCore();
   // const coreLoading = useEditorCoreLoading();
   const setLeftPanlOpen = useEditorLeftPanlOpenSetter();
+  const setExportModalOpen = useEditorExportModalOpenSetter();
+  const exportModalOpen = useEditorExportModalOpen();
   const leftPanlOpen = useEditorLeftPanlOpen();
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
@@ -77,9 +98,21 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='text' onClick={() => {}} >Wallpaper</Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Lock Screen</Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Theme</Button>
-                <Button color="default" variant='filled' shape="circle" icon={<PlusOutlined />}></Button>
+                <Button
+                  color={exportModalOpen ? 'primary' : 'default'}
+                  variant='filled'
+                  shape="circle"
+                  className={`${styles.exportBtn} ${exportModalOpen ? styles.exportBtnOpen : ''}`}
+                  icon={
+                    <span className={`${styles.exportBtnIcon} ${exportModalOpen ? styles.exportBtnIconOpen : ''}`}>
+                      {exportModalOpen ? <CloseOutlined /> : <PlusOutlined />}
+                    </span>
+                  }
+                  onClick={() => setExportModalOpen(!exportModalOpen)}
+                />
             </Flex>
         </div>
+        <ExportModal open={exportModalOpen} onClose={() => { setExportModalOpen(false); }} />
     </div>
   );
 };

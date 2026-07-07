@@ -27,6 +27,18 @@ export default function TimeLayout_5(props: any) {
     || Object.prototype.hasOwnProperty.call(data, 'secondImageAnimation');
   const animationConfigs = [firstImageAnimation, secondImageAnimation].filter(Boolean);
 
+  const getOtherBackgroundColor = (otherData?: any) => {
+    const rawColor = String(otherData?.backgroundColor ?? '#000000');
+    const baseColor =
+      rawColor.startsWith('#') && rawColor.length === 9 ? rawColor.slice(0, 7) : rawColor;
+    const alpha = Number(otherData?.alpha);
+    const normalizedAlpha = Number.isFinite(alpha) ? Math.max(0, Math.min(1, alpha)) : 1;
+    const alphaHex = Math.round(normalizedAlpha * 255)
+      .toString(16)
+      .padStart(2, '0')
+      .toUpperCase();
+    return `${baseColor}${alphaHex}`;
+  };
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
     fontFamily: textData?.font,
@@ -198,7 +210,7 @@ export default function TimeLayout_5(props: any) {
               style={{
                 width: 40,
                 height: 18,
-                backgroundColor: data?.other?.backgroundColor || '#000000',
+                backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -215,7 +227,7 @@ export default function TimeLayout_5(props: any) {
               style={{
                 width: 72,
                 height: 18,
-                backgroundColor: data?.other?.backgroundColor || '#000000',
+                backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -241,8 +253,6 @@ export default function TimeLayout_5(props: any) {
               zIndex: 9,
               ...getTextStyle({
                 ...data.time,
-                textSize: 47,
-                textHeight: 64,
               }),
             }}
           >
@@ -263,8 +273,7 @@ export default function TimeLayout_5(props: any) {
             <div style={{
               width: 120,
               height: 1,
-              backgroundColor: data?.other?.backgroundColor || '#000000',
-              opacity: data?.other?.alpha || 1,
+              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
             }} />
             <div
               style={{
@@ -272,6 +281,7 @@ export default function TimeLayout_5(props: any) {
                 ...getTextStyle({
                   ...data.month,
                 }),
+                color: getOtherBackgroundColor(data?.other) || '#000000',
               }}
             >
               {monthText}
@@ -282,7 +292,7 @@ export default function TimeLayout_5(props: any) {
               display: 'flex',
               width: 147,
               height: 17,
-              backgroundColor: data?.other?.backgroundColor,
+              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
               borderRadius: '8.5px',
               justifyContent: 'space-between',
             }}>
@@ -300,7 +310,7 @@ export default function TimeLayout_5(props: any) {
                     17,
                     11,
                     index === 4 ? data?.calendar?.textColor : '#000000',
-                    index === 4 ? data?.other?.backgroundColor : undefined,
+                    index === 4 ? getOtherBackgroundColor(data?.other) : undefined,
                     index === 4 ? 8.5 : 0,
                   )}
                 >
@@ -322,9 +332,6 @@ export default function TimeLayout_5(props: any) {
               zIndex: 9,
               ...getTextStyle({
                 ...data.time,
-                textSize: 66,
-                textHeight: 90,
-                font: 'AvenirNext-Bold',
               }),
             }}
           >
@@ -338,9 +345,6 @@ export default function TimeLayout_5(props: any) {
               zIndex: 9,
               ...getTextStyle({
                 ...data.time,
-                textSize: 66,
-                textHeight: 90,
-                font: 'AvenirNext-Bold',
               }),
             }}
           >
@@ -365,7 +369,7 @@ export default function TimeLayout_5(props: any) {
               top: 196,
               width: 80,
               height: 28,
-              backgroundColor: data?.other?.backgroundColor,
+              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
               zIndex: 9,
               display: 'flex',
               alignItems: 'center',
@@ -386,7 +390,7 @@ export default function TimeLayout_5(props: any) {
               height: 36,
               borderRadius: 18,
               justifyContent: 'space-between',
-              backgroundColor: data?.other?.backgroundColor || '#000000',
+              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
             }}>
               {weekLabels.map((label, index) => (
                 <div key={`w-lg-${label}-${index}`} style={calendarCellStyle(36, 18, '#000000')}>
@@ -402,7 +406,7 @@ export default function TimeLayout_5(props: any) {
                     36,
                     16,
                     index === 4 ? '#fff' : '#111',
-                    index === 4 ? data?.other?.backgroundColor : undefined,
+                    index === 4 ? getOtherBackgroundColor(data?.other) : undefined,
                     index === 4 ? 18 : 0,
                   )}
                 >

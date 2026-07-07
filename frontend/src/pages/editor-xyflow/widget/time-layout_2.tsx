@@ -21,7 +21,9 @@ export default function TimeLayout_1(props: any) {
     fontFamily: textData?.font,
     opacity: textData?.alpha ?? 1,
     color: textData?.textColor ?? '#111827',
-    lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
+    // lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
+    lineHeight: 1,
+    height: textData?.textHeight + 'px',
     zIndex: 9,
     position: 'relative' as const,
     whiteSpace: 'nowrap',
@@ -120,16 +122,17 @@ export default function TimeLayout_1(props: any) {
             <div style={{
                 ...getTextStyle(data.time),
                 ...getTimeStyle(data.time),
-                marginBottom: data.size === 1 ? '4px' : '10px'
+                // marginBottom: data.size === 1 ? '4px' : '10px'
             }}>
-                10
+                10 <br />
+                09
             </div>
-            <div style={{
+            {/* <div style={{
                 ...getTextStyle(data.time),
                 ...getTimeStyle(data.time),
             }}>
                 09
-            </div>
+            </div> */}
         </>
     )
   }, [data])

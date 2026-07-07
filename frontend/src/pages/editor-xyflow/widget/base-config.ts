@@ -18,6 +18,21 @@ export const CONFIG_SIZE_MAP: any = {
     3: WIDGET_SIZE.large,
 };
 
+export const SIZE_LABEL_MAP: Record<number, 'small' | 'medium' | 'large'> = {
+    1: 'small',
+    2: 'medium',
+    3: 'large',
+};
+
+export const DEFAULT_CROP_PROPS = {
+    scaleX: 1,
+    scaleY: 1,
+    rotation: 0,
+    translateX: 0,
+    translateY: 0,
+};
+export const DEFAULT_RADIUS = 28;
+
 export type WidgetSizeLabel = 'small' | 'medium' | 'large';
 export type WidgetPlatform = 'ios' | 'android';
 export type WidgetExportMode = 'static' | 'dynamic';
