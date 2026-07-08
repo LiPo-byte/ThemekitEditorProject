@@ -17,6 +17,15 @@ import TimeLayout_3 from './widget/time-layout_3';
 import TimeLayout_4 from './widget/time-layout_4';
 import TimeLayout_5 from './widget/time-layout_5';
 import TimeLayout_6 from './widget/time-layout_6';
+import pureimageLayout_0 from './widget/pureimage-layout_0';
+import quotationLayout_0 from './widget/quotation-layout_0';
+import calendarLayout_0 from './widget/calendar-layout_0';
+import calendarLayout_1 from './widget/calendar-layout_1';
+import calendarLayout_2 from './widget/calendar-layout_2';
+import countdownLayout_0 from './widget/countdown-layout_0';
+
+
+
 import ActionPopover from './components/ActionPopover';
 import PlatformGroupNode from './components/PlatformGroupNode';
 // import { useMemo, useState } from 'react';
@@ -77,6 +86,12 @@ export default function EditorStage() {
           time_4: TimeLayout_4,
           time_5: TimeLayout_5,
           time_6: TimeLayout_6,
+          pureimage_0: pureimageLayout_0,
+          quotation_0: quotationLayout_0,
+          calendar_0: calendarLayout_0,
+          calendar_1: calendarLayout_1,
+          calendar_2: calendarLayout_2,
+          countdown_0: countdownLayout_0,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}

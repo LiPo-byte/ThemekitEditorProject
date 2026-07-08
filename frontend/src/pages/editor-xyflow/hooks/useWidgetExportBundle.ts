@@ -46,6 +46,7 @@ const downloadBlob = (blob: Blob, filename: string) => {
 };
 
 const sanitizeWidgetsSpec = (value: unknown): unknown => {
+  const delKey = ['source', 'crop_props', 'radius', 'label'];
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeWidgetsSpec(item));
   }
@@ -53,7 +54,7 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
     const source = value as Record<string, unknown>;
     const next: Record<string, unknown> = {};
     Object.keys(source).forEach((key) => {
-      if (key === 'source' || key === 'crop_props') return;
+      if (delKey.includes(key)) return;
       next[key] = sanitizeWidgetsSpec(source[key]);
     });
     return next;

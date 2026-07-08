@@ -31,6 +31,16 @@ export const DEFAULT_CROP_PROPS = {
     translateX: 0,
     translateY: 0,
 };
+export const TYPE_WIDGET_MAP:any = {
+    1: 'time',
+    2: 'calendar',
+    8: 'pureimage',
+    9: 'countdown',
+    6: 'quotation'
+}
+export const SOURCENAME_TYPE_WIDGET_MAP:any = {
+    9: 'countImage',
+}
 export const DEFAULT_RADIUS = 28;
 
 export type WidgetSizeLabel = 'small' | 'medium' | 'large';

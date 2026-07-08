@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
-import { CONFIG_SIZE_MAP } from './base-config';
-import { WIDGET_BORDER_RADIUS } from '@/editor-core/WidgetBaseNode';
+import { CONFIG_SIZE_MAP, TYPE_WIDGET_MAP } from './base-config';
+// import { WIDGET_BORDER_RADIUS } from '@/editor-core/WidgetBaseNode';
 export type ImageSize = {
   width: number;
   height: number;
@@ -29,7 +29,11 @@ export const getImageSize = (src: string): Promise<ImageSize> =>
     image.src = src;
 });
 
-// let x = 0;
+const getWidgetType = (type: number, layoutType?: number) => {
+    let wt = TYPE_WIDGET_MAP[type];
+    let lyt = layoutType || 0;
+    return wt + '_' + lyt;
+}
 export const widgetConfig2Nodes: any = (config: any) => {
   const gap = 50;
   const res:any = [];
@@ -61,7 +65,8 @@ export const widgetConfig2Nodes: any = (config: any) => {
 
       widgetNodes.push({
         id: nanoid(),
-        type: `time_${layoutType || 0}`,
+        type: getWidgetType(platformConfig.type, layoutType),
+        metaable: true,
         data: { ...item },
         cropable: true,
         position: { x: gap, y: startY },

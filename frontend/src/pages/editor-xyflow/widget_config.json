@@ -50,15 +50,19 @@
       {
         "key": "Calendar-0",
         "label": "Layout 0: Basic Calendar",
-        "title": "Date, month, and full calendar views"
+        "title": "Date, month, and full calendar views",
+        "children": [
+          { "key": "Calendar_LayoutType_0_1", "label": "Has Date" },
+          { "key": "Calendar_LayoutType_0", "label": "No data" }
+        ]
       },
       {
-        "key": "Calendar-1",
+        "key": "Calendar_LayoutType_1",
         "label": "Layout 1: Minimal Calendar",
         "title": "Month and calendar grid; highlights today"
       },
       {
-        "key": "Calendar-2",
+        "key": "Calendar_LayoutType_2",
         "label": "Layout 2: Animated Calendar",
         "title": "Line or rotate image animation; size-dependent month/year display"
       }
@@ -107,7 +111,7 @@
     ]
   },
   {
-    "key": "Quotation",
+    "key": "Quotation_LayoutType_0",
     "label": "Quotation",
     "title": "All layouts customizable"
   },
@@ -116,12 +120,12 @@
     "label": "Steps"
   },
   {
-    "key": "PureImage",
+    "key": "PureImage_LayoutType_0",
     "label": "Pure Image",
     "title": "Not customizable"
   },
   {
-    "key": "CountDown",
+    "key": "CountDown_LayoutType_0",
     "label": "Count Down",
     "title": "All layouts customizable"
   },

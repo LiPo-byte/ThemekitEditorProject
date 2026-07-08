@@ -1593,8 +1593,1069 @@ export const WidgetDefaultConfig = {
              }
             ]
          }
+    },
+    Calendar_LayoutType_0: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Calendar-IOS-Small",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":10,
+                            "textColor":"#000000"
+                },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":9,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               },
+               {
+                  "size":2,
+                  "name":"Calendar-IOS-Medium",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":2,
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor":"#000000"
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               },
+               {
+                  "size":3,
+                  "name":"Calendar-IOS-Large",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":30,
+                            "textColor":"#000000",
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":16,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Calendar-Android-Small",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":10,
+                            "textColor":"#000000"
+                },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":9,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               },
+               {
+                  "size":2,
+                  "name":"Calendar-Android-Medium",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":2,
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor":"#000000"
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               },
+               {
+                  "size":3,
+                  "name":"Calendar-Android-Large",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":30,
+                            "textColor":"#000000"
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":16,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               }
+            ]
+         },
+    },
+    Calendar_LayoutType_0_1: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Calendar-IOS-Small",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":10,
+                            "textColor":"#000000"
+                },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":9,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               },
+               {
+                  "size":2,
+                  "name":"Calendar-IOS-Medium",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":2,
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor":"#000000"
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         },
+                         "date":{
+                            "textAlignment":1,
+                            "font":"Helvetica-Bold",
+                            "textSize":57,
+                            "textColor":"#F085AA"
+                         },
+               },
+               {
+                  "size":3,
+                  "name":"Calendar-IOS-Large",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":30,
+                            "textColor":"#000000"
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":16,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Calendar-Android-Small",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":10,
+                            "textColor":"#000000"
+                },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":9,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               },
+               {
+                  "size":2,
+                  "name":"Calendar-Android-Medium",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "date":{
+                    "textAlignment":1,
+                    "font":"Helvetica-Bold",
+                    "textSize":57,
+                    "textColor":"#F085AA"
+                 },
+                  "month":{
+                            "textAlignment":2,
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor":"#000000"
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               },
+               {
+                  "size":3,
+                  "name":"Calendar-Android-Large",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":30,
+                            "textColor":"#000000"
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":16,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
+                         }
+               }
+            ]
+         },
+    },
+    Calendar_LayoutType_1: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Calendar-IOS-Small",
+                  "layoutType": 1,
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":10,
+                            "textColor":"#000000",
+                            "alpha": 0.3,
+                },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":9,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797"
+                         }
+               },
+               {
+                  "size":2,
+                  "name":"Calendar-IOS-Medium",
+                  "layoutType": 1,
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":2,
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor":"#000000",
+                            "alpha": 0.3,
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797"
+                         }
+               },
+               {
+                  "size":3,
+                  "name":"Calendar-IOS-Large",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "layoutType": 1,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":30,
+                            "textColor":"#000000",
+                            "alpha": 0.3,
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":16,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797"
+                         }
+               }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Calendar-Android-Small",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "layoutType": 1,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":10,
+                            "textColor":"#000000",
+                            "alpha": 0.3,
+                },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":9,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797"
+                         }
+               },
+               {
+                  "size":2,
+                  "name":"Calendar-Android-Medium",
+                  "layoutType": 1,
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":2,
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor":"#000000",
+                            "alpha": 0.3,
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":13,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797"
+                         }
+               },
+               {
+                  "size":3,
+                  "name":"Calendar-Android-Large",
+                  "source": '',
+                  "crop_props": defaultCropProps,
+                  "layoutType": 1,
+                  "radius": 28,
+                  "month":{
+                            "textAlignment":3,
+                            "font":"Helvetica",
+                            "textSize":30,
+                            "textColor":"#000000",
+                            "alpha": 0.3,
+                         },
+                  "calendar":{
+                            "font":"Helvetica",
+                            "textSize":16,
+                            "textColor_past":"#6D6C6A",
+                            "textColor_future":"#000000",
+                            "textColor_now":"#000000",
+                            "bgColor_now":"#979797"
+                         }
+               }
+            ]
+         },
+    },
+    Calendar_LayoutType_2: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":2,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 2,
+                 "name":"Calendar-IOS-Small",
+                 "source": '',
+                 "crop_props": defaultCropProps,
+                 "radius": 28,
+                 "month":{
+                     "font": "AvenirNext-DemiBold",
+                     "textSize": 16,
+                     "textHeight": 22,
+                     "textColor": "#000000",
+                     "alpha": 1,
+                 },
+                 "firstImageAnimation": {
+                     "animationCategory": 0,
+                     "animationType": 0,
+                     "padding": 48,
+                     "crossPadding": -1,
+                     "duration": 2,
+                     "distance": 6,
+                     "imageHeight": 76,
+                     "imageWidth": 52,
+                     "source": '',
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 10,
+                     "crossPadding": -1,
+                     "duration": 5,
+                     "distance": 10,
+                     "imageHeight": 144,
+                     "imageWidth": 144,
+                     "source": '',
+                     "crop_props": defaultCropProps,
+                 },
+                 "other": {
+                     "backgroundColor": "#B4B4B4",
+                     "alpha": 1
+                 },
+                 "day":{
+                    "font": "AvenirNext-BoldItalic",
+                    "textSize": 30,
+                    "textHeight": 41
+                 }
+             },
+             {
+                 "size":2,
+                 "layoutType": 2,
+                 "name":"Calendar-IOS-Medium",
+                 "source": '',
+                 "crop_props": defaultCropProps,
+                 "radius": 28,
+                 "firstImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 16,
+                     "crossPadding": 34,
+                     "duration": 5,
+                     "distance": 15,
+                     "imageHeight": 42,
+                     "imageWidth": 39,
+                     "source": '',
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 100,
+                     "crossPadding": 144,
+                     "duration": -5,
+                     "distance": 10,
+                     "imageHeight": 21,
+                     "imageWidth": 21,
+                     "source": '',
+                     "crop_props": defaultCropProps,
+                 },
+                 "other": {
+                     "backgroundColor": "#87CEEB",
+                     "alpha":1
+                 },
+                 "calendar": {
+                     "font":"AvenirNext-BoldItalic",
+                     "textColor_capital_day": "#333333",
+                     "textColor_past": "#333333",
+                     "textColor_future": "#333333",
+                     "bgColor_now": "#333333",
+                     "textSize": 10
+                 }
+             },
+             {
+                 "size":3,
+                 "layoutType": 2,
+                 "name":"Calendar-IOS-Large",
+                 "source": '',
+                 "crop_props": defaultCropProps,
+                 "radius": 28,
+                 "month":{
+                    "font": "AvenirNext-BoldItalic",
+                    "textSize": 72,
+                    "textHeight": 98,
+                    "alpha": 1,
+                    "textColor": '#000000'
+                 },
+                 "firstImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 16,
+                     "crossPadding": 28,
+                     "duration": 5,
+                     "distance": 19,
+                     "imageHeight": 42,
+                     "imageWidth": 39,
+                     "source": '',
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 60,
+                     "crossPadding": 160,
+                     "duration": -6,
+                     "distance": 38,
+                     "imageHeight": 29,
+                     "imageWidth": 28,
+                     "source": '',
+                     "crop_props": defaultCropProps,
+                 },
+                 "other": {
+                     "backgroundColor": "#B4B4B4",
+                     "alpha": 1
+                 },
+                 "year": {
+                     "font": "AvenirNext-BoldItalic",
+                     "textSize": 28,
+                     "textHeight": 38,
+                     "textColor": "#000000",
+                     "alpha": 1,
+                 },
+                 "calendar": {
+                     "font":"AvenirNext-BoldItalic",
+                     "textColor_capital_day": "#333333",
+                     "textColor_past": "#333333",
+                     "textColor_future": "#333333",
+                     "bgColor_now": "#333333",
+                     "textSize": 16
+                 }
+             }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":2,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 2,
+                 "name":"Calendar-Android-Small",
+                 "source": '',
+                 "crop_props": defaultCropProps,
+                 "radius": 28,
+                 "month":{
+                     "font": "AvenirNext-DemiBold",
+                     "textSize": 16,
+                     "textHeight": 22,
+                     "textColor": "#000000",
+                     "alpha": 1,
+                 },
+                 "other": {
+                     "backgroundColor": "#B4B4B4",
+                     "alpha": 1
+                 },
+                 "day":{
+                    "font": "AvenirNext-BoldItalic",
+                    "textSize": 30,
+                    "textHeight": 41
+                 }
+             },
+             {
+                 "size":2,
+                 "layoutType": 2,
+                 "name":"Calendar-AndroidS-Medium",
+                 "source": '',
+                 "crop_props": defaultCropProps,
+                 "radius": 28,
+                 "other": {
+                     "backgroundColor": "#87CEEB",
+                     "alpha":1
+                 },
+                 "calendar": {
+                     "font":"AvenirNext-BoldItalic",
+                     "textColor_capital_day": "#333333",
+                     "textColor_past": "#333333",
+                     "textColor_future": "#333333",
+                     "bgColor_now": "#333333",
+                     "textSize": 10
+                 }
+             },
+             {
+                 "size":3,
+                 "layoutType": 2,
+                 "name":"Calendar-Android-Large",
+                 "source": '',
+                 "crop_props": defaultCropProps,
+                 "radius": 28,
+                 "month":{
+                    "font": "AvenirNext-BoldItalic",
+                    "textSize": 72,
+                    "textHeight": 98,
+                    "alpha": 1,
+                    "textColor": '#000000'
+                 },
+                 "other": {
+                     "backgroundColor": "#B4B4B4",
+                     "alpha": 1
+                 },
+                 "year": {
+                     "font": "AvenirNext-BoldItalic",
+                     "textSize": 28,
+                     "textHeight": 38,
+                     "textColor": "#000000",
+                     "alpha": 1,
+                 },
+                 "calendar": {
+                     "font":"AvenirNext-BoldItalic",
+                     "textColor_capital_day": "#333333",
+                     "textColor_past": "#333333",
+                     "textColor_future": "#333333",
+                     "bgColor_now": "#333333",
+                     "textSize": 16
+                 }
+             }
+            ]
+         } 
+    },
+    PureImage_LayoutType_0: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type": 8,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"PureImage-IOS-Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                },
+                {
+                "size":2,
+                "name":"PureImage-IOS-Medium",
+                radius: 28,
+                "source": "",
+                "crop_props": defaultCropProps,
+                },
+                {
+                "size":3,
+                "name":"PureImage-IOS-Large",
+                radius: 28,
+                "source": "",
+                "crop_props": defaultCropProps,
+                }
+            ]
+        },
+        android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type": 8,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"PureImage-Android-Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                },
+                {
+                "size":2,
+                "name":"PureImage-Android-Medium",
+                radius: 28,
+                "source": "",
+                "crop_props": defaultCropProps,
+                },
+                {
+                "size":3,
+                "name":"PureImage-Android-Large",
+                radius: 28,
+                "source": "",
+                "crop_props": defaultCropProps,
+                }
+            ]
+        }
+    },
+    Quotation_LayoutType_0: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":6,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Quotation_IOS_Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "quote":{
+                            "content":"The\nunexpected\nencounter of a\nhit is a\nsurprise in\nyour efforts .",
+                            "textAlignment":1,
+                            "font":"AvenirNext-HeavyItalic",
+                            "textSize":16,
+                            "textColor":"#000000"
+                  }
+               },
+               {
+                  "size":2,
+                  "name":"Quotation_IOS_Medium",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "quote":{
+                            "content":"The unexpected\nencounter of a hit is a\nsurprise in your\nefforts .",
+                            "textAlignment":1,
+                            "font":"AvenirNext-HeavyItalic",
+                            "textSize":24,
+                            "textColor":"#000000"
+                  }
+               },
+               {
+                  "size":3,
+                  "name":"Quotation_IOS_Large",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "quote":{
+                            "content":"The\nunexpected\nencounter of a\nhit is a surprise\nin your\nefforts .",
+                            "textAlignment":1,
+                            "font":"AvenirNext-HeavyItalic",
+                            "textSize":36,
+                            "textColor":"#000000"
+                  }
+               }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":6,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Quotation_Android_Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "quote":{
+                            "content":"The\nunexpected\nencounter of a\nhit is a\nsurprise in\nyour efforts .",
+                            "textAlignment":1,
+                            "font":"AvenirNext-HeavyItalic",
+                            "textSize":16,
+                            "textColor":"#000000"
+                  }
+               },
+               {
+                  "size":2,
+                  "name":"Quotation_Android_Medium",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "quote":{
+                            "content":"The unexpected\nencounter of a hit is a\nsurprise in your\nefforts .",
+                            "textAlignment":1,
+                            "font":"AvenirNext-HeavyItalic",
+                            "textSize":24,
+                            "textColor":"#000000"
+                  }
+               },
+               {
+                  "size":3,
+                  "name":"Quotation_Android_Large",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "quote":{
+                            "content":"The\nunexpected\nencounter of a\nhit is a surprise\nin your\nefforts .",
+                            "textAlignment":1,
+                            "font":"AvenirNext-HeavyItalic",
+                            "textSize":36,
+                            "textColor":"#000000"
+                  }
+               }
+            ]
+         }
+    },
+    CountDown_LayoutType_0: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":9,
+            "sizes":[
+               {
+                 "size": 1,
+                 "layoutType": 0,
+                 "name": "CountDown-IOS-Small",
+                 "festivalName":"Halloween",
+                 "source": "",
+                 radius: 28,
+                 "crop_props": defaultCropProps,
+                 "remainDays": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":66,
+                     "textHeight":78,
+                     "textColor": "#BD1E2C"
+                 },        
+                 "days": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":14,
+                     "textHeight":17,
+                     "textColor": "#BD1E2C"
+                 },
+                 "title": {
+                     "content":"Halloween",
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":16,
+                     "textHeight":19,
+                     "textColor": "#BD1E2C"
+                 }
+              },
+               {
+                 "size": 2,
+                 "layoutType": 0,
+                 "name": "CountDown-IOS-Medium",
+                 "festivalName":"Halloween",
+                 "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                 "remainDays": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":46,
+                     "textHeight":55,
+                     "textColor": "#BD1E2C"
+                 },
+                 "days": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":14,
+                     "textHeight":17,
+                     "textColor": "#BD1E2C"
+                 },
+                 "title": {
+                     "content":"Halloween",
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":24,
+                     "textHeight":28,
+                     "textColor": "#BD1E2C"
+                 }
+              },
+               {
+                "size": 3,
+                "layoutType": 0,
+                "name": "CountDown-IOS-Large",
+                "festivalName":"Halloween",
+                "source": "",
+                radius: 28,
+                "crop_props": defaultCropProps,
+                "remainDays": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":55,
+                     "textHeight":66,
+                     "textColor": "#BD1E2C"
+                 },
+                 "days": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":12,
+                     "textHeight":15,
+                     "textColor": "#BD1E2C"
+                 },
+                 "title": {
+                     "content":"Halloween",
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":34,
+                     "textHeight":40,
+                     "textColor": "#BD1E2C"
+                 }
+              }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":9,
+            "sizes":[
+               {
+                 "size": 1,
+                 "layoutType": 0,
+                 "name": "CountDown-Android-Small",
+                 "festivalName":"Halloween",
+                 "source": "",
+                 radius: 28,
+                 "crop_props": defaultCropProps,
+                 "remainDays": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":66,
+                     "textHeight":78,
+                     "textColor": "#BD1E2C"
+                 },
+                 "days": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":14,
+                     "textHeight":17,
+                     "textColor": "#BD1E2C"
+                 },
+                 "title": {
+                     "content":"Halloween",
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":16,
+                     "textHeight":19,
+                     "textColor": "#BD1E2C"
+                 }
+              },
+               {
+                 "size": 2,
+                 "layoutType": 0,
+                 "name": "CountDown-Android-Medium",
+                 "festivalName":"Halloween",
+                 "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                 "remainDays": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":46,
+                     "textHeight":55,
+                     "textColor": "#BD1E2C"
+                 },
+                 "days": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":14,
+                     "textHeight":17,
+                     "textColor": "#BD1E2C"
+                 },
+                 "title": {
+                     "content":"Halloween",
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":24,
+                     "textHeight":28,
+                     "textColor": "#BD1E2C"
+                 }
+              },
+               {
+                "size": 3,
+                "layoutType": 0,
+                "name": "CountDown-Android-Large",
+                "festivalName":"Halloween",
+                "source": "",
+                radius: 28,
+                "crop_props": defaultCropProps,
+                "remainDays": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":55,
+                     "textHeight":66,
+                     "textColor": "#BD1E2C"
+                 },
+                 "days": {
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":12,
+                     "textHeight":15,
+                     "textColor": "#BD1E2C"
+                 },
+                 "title": {
+                     "content":"Halloween",
+                     "font":"HelveticaNeue-Bold",
+                     "textSize":34,
+                     "textHeight":40,
+                     "textColor": "#BD1E2C"
+                 }
+              }
+            ]
+         }
     }
-
 }
 export const IconPackDefaultConfig = {
     apps: {

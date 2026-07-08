@@ -82,8 +82,8 @@ type EditorCoreCtxValue = {
   setCropToolOpen: (bool: boolean) => void;
   hideUI: boolean;
   setHideUI: (bool: boolean) => void;
-  exportModalOpen: boolean;
-  setExportModalOpen: (bool: boolean) => void;
+  importModalOpen: boolean;
+  setImportModalOpen: (bool: boolean) => void;
   showAxis: boolean;
   setShowAxis: (bool: boolean) => void;
   backgroundVariant: 'lines' | 'dots' | 'cross';
@@ -147,8 +147,8 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   setCropToolOpen: (_bool: boolean) => {},
   hideUI: false,
   setHideUI: (_bool: boolean) => {},
-  exportModalOpen: false,
-  setExportModalOpen: (_bool: boolean) => {},
+  importModalOpen: false,
+  setImportModalOpen: (_bool: boolean) => {},
   showAxis: true,
   setShowAxis: (_bool: boolean) => {},
   backgroundVariant: 'dots',
@@ -238,7 +238,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [rightPanlOpen, setRightPanlOpen] = useState<boolean>(false);
   const [cropToolOpen, setCropToolOpen] = useState<boolean>(false);
   const [hideUI, setHideUI] = useState<boolean>(false);
-  const [exportModalOpen, setExportModalOpen] = useState<boolean>(false);
+  const [importModalOpen, setImportModalOpen] = useState<boolean>(false);
   const [showAxis, setShowAxis] = useState<boolean>(true);
   const [backgroundVariant, setBackgroundVariant] = useState<'lines' | 'dots' | 'cross'>('dots');
   const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
@@ -613,7 +613,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     const rootNodes = nodes.filter((node) => node.type === 'group' && !node.parentId);
     return rootNodes.map((rootNode) => {
       const platformNodes = nodes.filter(
-        (node) => (node.type === 'group' || node.type === 'platform_group') && node.parentId === rootNode.id,
+        (node) => (node.type === 'platform_group') && node.parentId === rootNode.id,
       );
       const pickPlatformNode = (platform: 'ios' | 'android') => {
         const bySuffix = platformNodes.find((node) => String(node.id).endsWith(`_${platform}`));
@@ -627,7 +627,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         if (!platformNode) return null;
         const platformData = ((platformNode.data as Record<string, any>) ?? {}) as Record<string, any>;
         const sizeNodes = nodes
-          .filter((node) => node.parentId === platformNode.id && String(node.type).startsWith('time_'))
+          .filter((node: any) => node.parentId === platformNode.id && node.metaable)
           .map((node) => ({ ...((node.data as Record<string, any>) ?? {}) }))
           .sort((a: any, b: any) => Number(a.size ?? 0) - Number(b.size ?? 0));
         return {
@@ -732,8 +732,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       setCropToolOpen,
       hideUI,
       setHideUI,
-      exportModalOpen,
-      setExportModalOpen,
+      importModalOpen,
+      setImportModalOpen,
       showAxis,
       setShowAxis,
       backgroundVariant,
@@ -771,7 +771,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       rightPanlOpen,
       cropToolOpen,
       hideUI,
-      exportModalOpen,
+      importModalOpen,
       showAxis,
       backgroundVariant,
       backgroundColor,
@@ -866,9 +866,9 @@ export const useEditorCropToolOpen = () => useContext(EditorCoreCtx).cropToolOpe
 export const useEditorCropToolOpenSetter = () => useContext(EditorCoreCtx).setCropToolOpen;
 export const useEditorHideUI = () => useContext(EditorCoreCtx).hideUI;
 export const useEditorHideUISetter = () => useContext(EditorCoreCtx).setHideUI;
-export const useEditorExportModalOpen = () => useContext(EditorCoreCtx).exportModalOpen;
-export const useEditorExportModalOpenSetter = () =>
-  useContext(EditorCoreCtx).setExportModalOpen;
+export const useEditorImportModalOpen = () => useContext(EditorCoreCtx).importModalOpen;
+export const useEditorImportModalOpenSetter = () =>
+  useContext(EditorCoreCtx).setImportModalOpen;
 export const useEditorShowAxis = () => useContext(EditorCoreCtx).showAxis;
 export const useEditorShowAxisSetter = () => useContext(EditorCoreCtx).setShowAxis;
 export const useEditorBackgroundVariant = () => useContext(EditorCoreCtx).backgroundVariant;

@@ -73,6 +73,7 @@ const LeftPanel: React.FC<any> = () => {
   const playEnterAnimation = useEnterAnimation(true || open, { durationMs: 280 });
   const handleAddWidget = (param: { key: keyof typeof WidgetDefaultConfig }) => {
     const { key } = param;
+    console.log(key);
     if (WidgetDefaultConfig[key]) {
       addWidget(WidgetDefaultConfig[key]);
     }

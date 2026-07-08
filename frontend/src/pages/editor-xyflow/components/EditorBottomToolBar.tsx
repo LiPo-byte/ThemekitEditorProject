@@ -4,17 +4,17 @@ import {
   useEditorBottomToolBarVisible,
   useEditorCore,
   // useEditorCoreLoading,
-  useEditorExportModalOpenSetter,
+  useEditorImportModalOpenSetter,
   useEditorLeftPanlOpen,
   useEditorLeftPanlOpenSetter,
-  useEditorExportModalOpen,
+  useEditorImportModalOpen,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
 import { Button, Flex } from 'antd';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { IconPackDefaultConfig } from '@/editor-core/defaultConfig'
-import ExportModal from './ExportModal';
+import ImportModal from './ImportModal';
 
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
@@ -54,20 +54,20 @@ const useStyles = createStyles(({ token, css }) => ({
     align-items: center;
     justify-content: center;
   `,
-  exportBtn: css`
+  importBtn: css`
     transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
   `,
-  exportBtnOpen: css`
+  importBtnOpen: css`
     background-color: ${token.colorPrimary};
     border-color: ${token.colorPrimary};
     color: ${token.colorWhite};
   `,
-  exportBtnIcon: css`
+  importBtnIcon: css`
     display: inline-flex;
     transition: transform 220ms ease;
     transform: rotate(0deg);
   `,
-  exportBtnIconOpen: css`
+  importBtnIconOpen: css`
     transform: rotate(90deg);
   `
 }));
@@ -78,8 +78,8 @@ const EditorBottomToolBar: React.FC = () => {
   const core = useEditorCore();
   // const coreLoading = useEditorCoreLoading();
   const setLeftPanlOpen = useEditorLeftPanlOpenSetter();
-  const setExportModalOpen = useEditorExportModalOpenSetter();
-  const exportModalOpen = useEditorExportModalOpen();
+  const setImportModalOpen = useEditorImportModalOpenSetter();
+  const importModalOpen = useEditorImportModalOpen();
   const leftPanlOpen = useEditorLeftPanlOpen();
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
@@ -99,20 +99,20 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Lock Screen</Button>
                 <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Theme</Button>
                 <Button
-                  color={exportModalOpen ? 'primary' : 'default'}
+                  color={importModalOpen ? 'primary' : 'default'}
                   variant='filled'
                   shape="circle"
-                  className={`${styles.exportBtn} ${exportModalOpen ? styles.exportBtnOpen : ''}`}
+                  className={`${styles.importBtn} ${importModalOpen ? styles.importBtnOpen : ''}`}
                   icon={
-                    <span className={`${styles.exportBtnIcon} ${exportModalOpen ? styles.exportBtnIconOpen : ''}`}>
-                      {exportModalOpen ? <CloseOutlined /> : <PlusOutlined />}
+                    <span className={`${styles.importBtnIcon} ${importModalOpen ? styles.importBtnIconOpen : ''}`}>
+                      {importModalOpen ? <CloseOutlined /> : <PlusOutlined />}
                     </span>
                   }
-                  onClick={() => setExportModalOpen(!exportModalOpen)}
+                  onClick={() => setImportModalOpen(!importModalOpen)}
                 />
             </Flex>
         </div>
-        <ExportModal open={exportModalOpen} onClose={() => { setExportModalOpen(false); }} />
+        <ImportModal open={importModalOpen} onClose={() => { setImportModalOpen(false); }} />
     </div>
   );
 };

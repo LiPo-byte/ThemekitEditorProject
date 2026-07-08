@@ -238,16 +238,17 @@ const FontFamilyInput: React.FC<{
 };
 
 const FontColorInput: React.FC<{
+  title?: string
   value?: string;
   onChange?: (value: string) => void;
-}> = ({ value, onChange }) => {
+}> = ({ value, onChange, title }) => {
   const colorValue = value === MIXED_VALUE ? undefined : value;
   return (
     <>
       <Row>
         <Col span={24}>
           <Flex align='center' justify='space-between'>
-            <InputTitle label="TextColor" />
+            <InputTitle label={title || "TextColor"} />
             <ColorPicker
               value={colorValue}
               size="small"
@@ -643,6 +644,15 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('festivalName') && (
+        <>
+          <PropInput
+            LabelName="FestivalName"
+            value={editProps.festivalName}
+            onChange={(nextValue) => onChange?.('festivalName', nextValue)}
+          />
+        </>
+      )}
       {hasKey('radius') && (
         <>
           <RadiusSlider value={editProps.radius} onChange={(nextValue) => onChange?.('radius', nextValue)} />
@@ -753,11 +763,65 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('bgColor_now') && (
+        <>
+          <FontColorInput
+            title="BgColorNow"
+            value={editProps.bgColor_now}
+            onChange={(nextValue) => onChange?.('bgColor_now', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('textColor_future') && (
+        <>
+          <FontColorInput
+            title="TextColorFuture"
+            value={editProps.textColor_future}
+            onChange={(nextValue) => onChange?.('textColor_future', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('textColor_now') && (
+        <>
+          <FontColorInput
+            title="TextColorNow"
+            value={editProps.textColor_now}
+            onChange={(nextValue) => onChange?.('textColor_now', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('textColor_past') && (
+        <>
+          <FontColorInput
+            title="TextColorPast"
+            value={editProps.textColor_past}
+            onChange={(nextValue) => onChange?.('textColor_past', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('textColor_capital_day') && (
+        <>
+          <FontColorInput
+            title="textColorCapitalDay"
+            value={editProps.textColor_capital_day}
+            onChange={(nextValue) => onChange?.('textColor_capital_day', nextValue)}
+          />
+        </>
+      )}
       {hasKey('textColor') && (
         <>
           <FontColorInput
             value={editProps.textColor}
             onChange={(nextValue) => onChange?.('textColor', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('content') && (
+        <>
+          <PropInput
+            LabelName="Content"
+            value={editProps.content}
+            onChange={(nextValue) => onChange?.('content', nextValue)}
           />
         </>
       )}
@@ -907,6 +971,41 @@ export const SelectedNodePropForm: React.FC<{
           <BaseSelectedNodePropForm editProps={editProps.secondImageAnimation} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'secondImageAnimation');
           }} title="SecondImageAnimation"/>
+        </>
+      )}
+      {hasKey('quote') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.quote} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'quote');
+          }} title="Quote"/>
+        </>
+      )}
+      {hasKey('year') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.year} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'year');
+          }} title="Year"/>
+        </>
+      )}
+      {hasKey('days') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.days} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'days');
+          }} title="Days"/>
+        </>
+      )}
+      {hasKey('remainDays') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.remainDays} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'remainDays');
+          }} title="RemainDays"/>
+        </>
+      )}
+      {hasKey('title') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.title} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'title');
+          }} title="Title"/>
         </>
       )}
     </>
