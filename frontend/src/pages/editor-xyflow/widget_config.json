@@ -70,7 +70,7 @@
   },
   {
     "key": "Clock",
-    "label": "Clock",
+    "label": "Clock 待定",
     "children": [
       {
         "key": "Clock-0",
@@ -86,12 +86,12 @@
   },
   {
     "key": "DigitalClock",
-    "label": "Digital Clock",
+    "label": "Digital Clock 待定",
     "title": "All layouts customizable"
   },
   {
     "key": "Battery",
-    "label": "Battery",
+    "label": "Battery 待定",
     "children": [
       {
         "key": "Battery-0",
@@ -116,10 +116,6 @@
     "title": "All layouts customizable"
   },
   {
-    "key": "Steps",
-    "label": "Steps"
-  },
-  {
     "key": "PureImage_LayoutType_0",
     "label": "Pure Image",
     "title": "Not customizable"
@@ -131,37 +127,37 @@
   },
   {
     "key": "Weather",
-    "label": "Weather",
+    "label": "Weather 待定",
     "title": "All layouts customizable"
   },
   {
     "key": "Gif",
-    "label": "Gif / Dynamic",
+    "label": "Gif / Dynamic 待定",
     "title": "Not customizable"
   },
   {
     "key": "Launcher",
-    "label": "Launcher",
+    "label": "Launcher 待定",
     "title": "Not customizable"
   },
   {
     "key": "TimeMixBattery",
-    "label": "Time Mix Battery",
+    "label": "Time Mix Battery 待定",
     "title": "All layouts customizable"
   },
   {
     "key": "TimeMixCalendarMixBattery",
-    "label": "Time Mix Calendar Mix Battery",
+    "label": "Time Mix Calendar Mix Battery 待定",
     "title": "All layouts customizable"
   },
   {
     "key": "Music",
-    "label": "Music",
+    "label": "Music 待定",
     "title": "Not customizable"
   },
   {
     "key": "ClockMixBattery",
-    "label": "Clock Mix Battery",
+    "label": "Clock Mix Battery 待定",
     "title": "All layouts customizable"
   }
 ]

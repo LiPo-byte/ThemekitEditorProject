@@ -160,6 +160,9 @@ export default function CalendarLayout_0(props: any) {
         position: 'relative',
       }}
     >
+      {hasAnimationFields
+        ? animationConfigs.map((item: any, index: number) => renderAnimationLayer(item, index))
+        : null}
       <CropEditableImage
         nodeId={props.id}
         source={data.source}

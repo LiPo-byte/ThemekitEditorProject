@@ -53,6 +53,7 @@ export default function QuotationLayout_0(props: any) {
         fontFamily: data.quote.font,
         fontSize: data.quote.textSize,
         color: data.quote.textColor,
+        lineHeight: 1,
         textAlign: (data.quote.textAlignment === 1 ? 'left' : (data.quote.textAlignment === 2) ? 'center' : 'right'),
       }}>
         { data.quote.content }

@@ -16,7 +16,7 @@ import { history, useLocation, useParams } from '@umijs/max';
 import { widgetConfig2Nodes } from './widget/util';
 import { nanoid } from 'nanoid';
 import { getProjectDetail, postApiV1Project, putApiV1ProjectElementsBatch } from './service';
-import { toPng } from 'html-to-image';
+import { toJpeg } from 'html-to-image';
 
 export type CropProps = {
   scaleX: number;
@@ -245,6 +245,11 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [globalLoading, setGlobalLoading] = useState<boolean>(false);
   const [cropEditingNodeId, setCropEditingNodeId] = useState<string>('');
   const [cropDraftProps, setCropDraftProps] = useState<CropProps | null>(null);
+  const previewSaveTimerRef = useRef<number | null>(null);
+  const previewIdleHandleRef = useRef<number | null>(null);
+  const previewSavingRef = useRef(false);
+  const previewSaveTaskIdRef = useRef(0);
+  const PREVIEW_CAPTURE_DELAY_MS = 1500;
 
   useEffect(() => {
     if (params.projectId) return;
@@ -598,9 +603,11 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     const viewportEl = document.querySelector('.xyflow-stage .react-flow__viewport') as HTMLElement | null;
     if (!viewportEl) return null;
     try {
-      return await toPng(viewportEl, {
-        cacheBust: true,
-        pixelRatio: 2,
+      return await toJpeg(viewportEl, {
+        pixelRatio: 1,
+        canvasWidth: 240,
+        canvasHeight: 240,
+        quality: 0.72,
         backgroundColor: '#ffffff',
       });
     } catch (error) {
@@ -665,13 +672,15 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       console.warn('[EditorCoreProvider] generate payload detail fetch failed:', error);
     }
 
-    const previewImage = await generatePreviewImage();
+    // console.time('生成预览图');
+    // const previewImage = await generatePreviewImage();
+    // console.timeEnd('生成预览图');
     return {
       project_id: projectId,
       name: projectName,
       status: projectDetail?.status ?? 'draft',
       current_version: projectDetail?.current_version ?? 0,
-      preview_image: previewImage ?? projectDetail?.preview_image ?? null,
+      // preview_image: previewImage ?? projectDetail?.preview_image ?? null,
       created_at: projectDetail?.created_at ?? null,
       updated_at: new Date().toISOString(),
       elements: buildElementsPayloadFromNodes(),
@@ -680,13 +689,69 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const saveProjectPayload = async () => {
     if (!projectId) return null;
-    const payload = await generateProjectPayload();
-    if (!payload) return null;
+    const payload = {
+      project_id: projectId,
+      updated_at: new Date().toISOString(),
+      elements: buildElementsPayloadFromNodes(),
+    };
     try {
       const response = await putApiV1ProjectElementsBatch(projectId, {
         elements: payload.elements ?? [],
-        preview_image: payload.preview_image ?? null,
       });
+      previewSaveTaskIdRef.current += 1;
+      const currentTaskId = previewSaveTaskIdRef.current;
+      if (previewSaveTimerRef.current !== null) {
+        window.clearTimeout(previewSaveTimerRef.current);
+      }
+      if (
+        previewIdleHandleRef.current !== null
+        && typeof window !== 'undefined'
+        && 'cancelIdleCallback' in window
+      ) {
+        (window as any).cancelIdleCallback(previewIdleHandleRef.current);
+        previewIdleHandleRef.current = null;
+      }
+      previewSaveTimerRef.current = window.setTimeout(() => {
+        previewSaveTimerRef.current = null;
+        const doSavePreview = async () => {
+          if (currentTaskId !== previewSaveTaskIdRef.current) return;
+          if (previewSavingRef.current) return;
+          previewSavingRef.current = true;
+          try {
+            const previewImage = await generatePreviewImage();
+            if (currentTaskId !== previewSaveTaskIdRef.current) return;
+            if (!previewImage) return;
+            await putApiV1ProjectElementsBatch(projectId, {
+              preview_image: previewImage,
+            });
+          } catch (error) {
+            console.warn('[EditorCoreProvider] async save preview image failed:', error);
+          } finally {
+            previewSavingRef.current = false;
+          }
+        };
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+          const runWhenIdle = () => {
+            previewIdleHandleRef.current = (window as any).requestIdleCallback(
+              (deadline: IdleDeadline) => {
+                previewIdleHandleRef.current = null;
+                if (currentTaskId !== previewSaveTaskIdRef.current) return;
+                const isInputPending =
+                  (navigator as any)?.scheduling?.isInputPending?.() ?? false;
+                if (isInputPending || deadline.timeRemaining() < 8) {
+                  runWhenIdle();
+                  return;
+                }
+                void doSavePreview();
+              },
+              { timeout: 10000 },
+            );
+          };
+          runWhenIdle();
+          return;
+        }
+        void doSavePreview();
+      }, PREVIEW_CAPTURE_DELAY_MS);
       return { payload, response };
     } catch (error) {
       console.warn('[EditorCoreProvider] save project payload failed:', error);
@@ -699,6 +764,24 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     setLeftPanlOpen(false);
     setRightPanlOpen(false);
   }, [hideUI]);
+
+  useEffect(
+    () => () => {
+      if (previewSaveTimerRef.current !== null) {
+        window.clearTimeout(previewSaveTimerRef.current);
+        previewSaveTimerRef.current = null;
+      }
+      if (
+        previewIdleHandleRef.current !== null
+        && typeof window !== 'undefined'
+        && 'cancelIdleCallback' in window
+      ) {
+        (window as any).cancelIdleCallback(previewIdleHandleRef.current);
+        previewIdleHandleRef.current = null;
+      }
+    },
+    [],
+  );
 
   const value = useMemo<EditorCoreCtxValue>(
     () => ({
