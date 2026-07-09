@@ -137,8 +137,14 @@
   },
   {
     "key": "Launcher",
-    "label": "Launcher 待定",
-    "title": "Not customizable"
+    "label": "Launcher",
+    "title": "Not customizable",
+    "children": [
+      { "key": "Launcher_LayoutType_0", "label": "Launcher LayoutType 0" },
+      { "key": "Launcher_LayoutType_1", "label": "Launcher LayoutType 1" },
+      { "key": "Launcher_LayoutType_5", "label": "Launcher LayoutType 5" },
+      { "key": "Launcher_LayoutType_6", "label": "Launcher LayoutType 6" }
+    ]
   },
   {
     "key": "TimeMixBattery",

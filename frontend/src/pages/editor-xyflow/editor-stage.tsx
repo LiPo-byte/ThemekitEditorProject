@@ -23,6 +23,10 @@ import calendarLayout_0 from './widget/calendar-layout_0';
 import calendarLayout_1 from './widget/calendar-layout_1';
 import calendarLayout_2 from './widget/calendar-layout_2';
 import countdownLayout_0 from './widget/countdown-layout_0';
+import launcherLayout_0 from './widget/launcher-layout_0';
+import launcherLayout_1 from './widget/launcher-layout_1';
+import launcherLayout_5 from './widget/launcher-layout_5';
+import launcherLayout_6 from './widget/launcher-layout_6';
 
 
 
@@ -92,6 +96,10 @@ export default function EditorStage() {
           calendar_1: calendarLayout_1,
           calendar_2: calendarLayout_2,
           countdown_0: countdownLayout_0,
+          launcher_0: launcherLayout_0,
+          launcher_1: launcherLayout_1,
+          launcher_5: launcherLayout_5,
+          launcher_6: launcherLayout_6,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}
@@ -110,6 +118,7 @@ export default function EditorStage() {
         zoomOnScroll={!cropToolOpen}
         zoomOnPinch={!cropToolOpen}
         zoomOnDoubleClick={!cropToolOpen}
+        selectionKeyCode={null}
         fitView
         maxZoom={1.5}
         minZoom={0.1}

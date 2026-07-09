@@ -1,3 +1,5 @@
+import { DEFAULT_CROP_PROPS } from "@/pages/editor-xyflow/widget/base-config";
+
 export const defaultCropProps = {
     scaleX: 1,
     scaleY: 1,
@@ -2655,6 +2657,187 @@ export const WidgetDefaultConfig = {
               }
             ]
          }
+    },
+    Launcher_LayoutType_0: {
+        common: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":14,
+            "sizes":[
+               {
+                  "size":1,
+                  "layoutType":0,
+                  "name":"Love_Bubble_Launcher_Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "title": {
+                        "font":"HelveticaNeue",
+                        "textSize":24,
+                         "textColor":"#000000",
+                         content: 'App Name'
+                        },
+                  "appLinks": [""],
+                  "appLinksSource": Array.from({ length: 1 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               },
+               {
+                  "size":2,
+                  "layoutType":0,
+                  "name":"Love_Bubble_Launcher_Medium",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","","","","","","","","","",""],
+                  "appLinksSource": Array.from({ length: 13 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               },
+               {
+                  "size":3,
+                  "layoutType":0,
+                  "name":"Love_Bubble_Launcher_Large",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","","","","","","","","","","","","","","","",""],
+                  "appLinksSource": Array.from({ length: 19 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               }
+            ]
+        }
+    },
+    Launcher_LayoutType_1: {
+        common: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":14,
+            "sizes":[
+               {
+                  "size":1,
+                  "layoutType":1,
+                  "name":"Pastel_Wall_Launcher_Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "title": {
+                        "font":"HelveticaNeue",
+                        "textSize":24,
+                         "textColor":"#FFFFFF"
+                        },
+                  "appLinks":[""],
+                  "appLinksSource": Array.from({ length: 1 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               },
+               {
+                  "size":2,
+                  "layoutType":1,
+                  "name":"Pastel_Wall_Launcher_Medium",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","","",""],
+                  "appLinksSource": Array.from({ length: 6 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               },
+               {
+                  "size":3,
+                  "layoutType":1,
+                  "name":"Pastel_Wall_Launcher_Large",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","","","","","",""],
+                  "appLinksSource": Array.from({ length: 9 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               }
+            ]
+        }
+    },
+    Launcher_LayoutType_5: {
+        common: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":14,
+            "sizes":[
+               {
+                  "size":1,
+                  "layoutType":5,
+                  "name":"Beige_Life_Small_1",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "title": {
+                        "font":"HelveticaNeue",
+                        "textSize":24,
+                         "textColor":"#FFFFFF"
+                        },
+                  "appLinks":[""],
+                  "appLinksSource": Array.from({ length: 1 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               },
+               {
+                  "size":2,
+                  "layoutType":5,
+                  "name":"Beige_Life_Medium_1",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","",""],
+                  "appLinksSource": Array.from({ length: 4 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               },
+               {
+                  "size":3,
+                  "layoutType":5,
+                  "name":"Beige_Life_Large_1",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","",""],
+                  "appLinksSource": Array.from({ length: 3 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               }
+            ]
+        }
+    },
+    Launcher_LayoutType_6: {
+        common: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":14,
+            "sizes":[
+               {
+                  "size":1,
+                  "layoutType":6,
+                  "name":"Red_Neon_Sports_Car_Launcher_Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "title": {
+                        "font":"HelveticaNeue",
+                        "textSize":24,
+                         "textColor":"#FFFFFF"
+                        },
+                  "appLinks":[""],
+                  "appLinksSource": Array.from({ length: 1 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               },
+               {
+                  "size":2,
+                  "layoutType":6,
+                  "name":"Red_Neon_Sports_Car_Launcher_Medium",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["",""],
+                  "appLinksSource": Array.from({ length: 2 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               },
+               {
+                  "size":3,
+                  "layoutType":6,
+                  "name":"Red_Neon_Sports_Car_Launcher_Large",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","",""],
+                  "appLinksSource": Array.from({ length: 5 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               }
+            ]
+        }
     }
 }
 export const IconPackDefaultConfig = {

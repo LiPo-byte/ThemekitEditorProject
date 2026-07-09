@@ -198,7 +198,7 @@ const EditorToolbar: React.FC = () => {
 
   return (
     <div className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}>
-          <Dropdown
+          {/* <Dropdown
               styles={{
                 root: { width: '200px' },
                 item: { width: '200px' }
@@ -211,12 +211,13 @@ const EditorToolbar: React.FC = () => {
                 <Button
                     variant={dropdownOpen ? "filled" : "text"}
                     color='default'
+                    disabled
                 >
                   <UnorderedListOutlined />
                   <DownOutlined style={{fontSize: 8}} />
                 </Button>
               </Tooltip>
-          </Dropdown>
+          </Dropdown> */}
           <Tooltip title="Save">
               <Button type='text' onClick={async () => {
                   await saveProjectPayload();

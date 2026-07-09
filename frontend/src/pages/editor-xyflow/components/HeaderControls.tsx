@@ -63,6 +63,7 @@ const HeaderControls: React.FC = () => {
         </Tooltip>
         <Segmented
             value={initialState?.settings?.navTheme || 'light'}
+            disabled
             onChange={(v: any) => {
                 setInitialState((s) => ({
                     ...s,

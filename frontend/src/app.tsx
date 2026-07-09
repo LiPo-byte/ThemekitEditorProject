@@ -97,7 +97,7 @@ export const layout: RunTimeLayoutConfig = ({
         variant='filled'
         color="default"
         icon={<PlusOutlined />}
-        onClick={() => history.push('/editor')}
+        onClick={() => history.push('/editor-xyflow')}
       >
         Design
       </Button>
