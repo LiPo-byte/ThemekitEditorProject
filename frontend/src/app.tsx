@@ -183,7 +183,7 @@ export const layout: RunTimeLayoutConfig = ({
       return (
         <>
           {children}
-          <SettingDrawer
+          {/* <SettingDrawer
             disableUrlParams
             enableDarkTheme
             collapse={initialState?.settingDrawerOpen}
@@ -200,7 +200,7 @@ export const layout: RunTimeLayoutConfig = ({
                 settings,
               }));
             }}
-          />
+          /> */}
         </>
       );
     },
@@ -214,7 +214,8 @@ export const layout: RunTimeLayoutConfig = ({
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request: RequestConfig = {
-  baseURL: isDev ? '' : 'http://localhost:8000',
+  // Local-only workflow: dev mode directly calls backend on localhost:8000.
+  baseURL: isDev ? 'http://localhost:8000' : '',
   ...errorConfig,
 };
 

@@ -178,7 +178,7 @@ def test_save_project_elements_batch(
     saved_project = db.get(Project, project_uuid)
     assert saved_project is not None
     expected_preview_path = f"data/project/{project_id}/preview.webp"
-    assert saved_project.preview_image == f"http://testserver/{expected_preview_path}"
+    assert saved_project.preview_image == f"/{expected_preview_path}"
 
     backend_root = Path(__file__).resolve().parents[3]
     preview_file = backend_root / expected_preview_path
@@ -212,7 +212,7 @@ def test_save_project_preview_only(
     saved_project = db.get(Project, project_uuid)
     assert saved_project is not None
     expected_preview_path = f"data/project/{project_id}/preview.webp"
-    assert saved_project.preview_image == f"http://testserver/{expected_preview_path}"
+    assert saved_project.preview_image == f"/{expected_preview_path}"
 
     saved_element = db.exec(
         select(ProjectElement).where(ProjectElement.project_id == project_uuid)
@@ -262,7 +262,7 @@ def test_get_project_detail(
     assert detail["project_id"] == project_id
     assert detail["name"] == "Detail Test Project"
     assert detail["status"] == "draft"
-    assert detail["preview_image"] == f"http://testserver/data/project/{project_id}/preview.webp"
+    assert detail["preview_image"] == f"/data/project/{project_id}/preview.webp"
     assert len(detail["elements"]) == 1
     assert detail["elements"][0]["element_key"] == "widget-time-1"
     assert detail["elements"][0]["schema_version"] == 2
@@ -427,7 +427,7 @@ def test_upload_project_image(
     assert upload_response.status_code == 200
     content = upload_response.json()
     assert content["path"].startswith(f"data/project/{project_id}/assets/")
-    assert content["url"].startswith("http://testserver/data/project/")
+    assert content["url"].startswith("/data/project/")
     assert content["content_type"] == "image/png"
     assert content["size"] > 0
 

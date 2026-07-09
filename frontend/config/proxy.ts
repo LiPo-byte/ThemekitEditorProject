@@ -21,6 +21,10 @@ export default {
       // 依赖 origin 的功能可能需要这个，比如 cookie
       changeOrigin: true,
     },
+    '/data/': {
+      target: 'http://localhost:8000',
+      changeOrigin: true,
+    },
   },
   /**
    * @name 详细的代理配置

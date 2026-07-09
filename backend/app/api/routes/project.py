@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from sqlmodel import col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -162,7 +162,6 @@ def get_project_list(
 @router.put("/{project_id}/elements/batch", response_model=ProjectSaveResponse)
 def save_project_elements(
     *,
-    request: Request,
     session: SessionDep,
     current_user: CurrentUser,
     project_id: uuid.UUID,
@@ -238,8 +237,7 @@ def save_project_elements(
     if save_in.preview_image is not None:
         if save_in.preview_image.strip():
             preview_path = _save_preview_image(project.id, save_in.preview_image)
-            base_url = str(request.base_url).rstrip("/")
-            project.preview_image = f"{base_url}/{preview_path}"
+            project.preview_image = f"/{preview_path}"
         else:
             project.preview_image = None
     project.updated_at = now_utc
@@ -359,7 +357,6 @@ def delete_project(
 @router.post("/{project_id}/upload-image", response_model=ProjectUploadImageResponse)
 async def upload_project_image(
     *,
-    request: Request,
     session: SessionDep,
     current_user: CurrentUser,
     project_id: uuid.UUID,
@@ -387,9 +384,8 @@ async def upload_project_image(
     target_file = _BACKEND_ROOT / relative_path
     target_file.write_bytes(content)
 
-    base_url = str(request.base_url).rstrip("/")
     return ProjectUploadImageResponse(
-        url=f"{base_url}/{relative_path}",
+        url=f"/{relative_path}",
         path=relative_path,
         content_type=file.content_type,
         size=len(content),
@@ -399,7 +395,6 @@ async def upload_project_image(
 @router.get("/{project_id}/assets", response_model=ProjectAssetsResponse)
 def get_project_assets(
     *,
-    request: Request,
     session: SessionDep,
     current_user: CurrentUser,
     project_id: uuid.UUID,
@@ -414,7 +409,6 @@ def get_project_assets(
     if not assets_dir.exists():
         return ProjectAssetsResponse(project_id=project_id, assets=[])
 
-    base_url = str(request.base_url).rstrip("/")
     assets: list[ProjectAssetItem] = []
     for file_path in sorted(assets_dir.glob("*")):
         if not file_path.is_file():
@@ -423,7 +417,7 @@ def get_project_assets(
         content_type, _ = mimetypes.guess_type(str(file_path))
         assets.append(
             ProjectAssetItem(
-                url=f"{base_url}/{relative_path}",
+                url=f"/{relative_path}",
                 path=relative_path,
                 content_type=content_type,
                 size=file_path.stat().st_size,
