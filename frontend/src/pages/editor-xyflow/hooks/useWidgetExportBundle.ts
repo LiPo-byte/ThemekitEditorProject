@@ -9,6 +9,8 @@ import {
 } from '../util/generateElementPreview';
 import {
   CONFIG_SIZE_MAP,
+  SOURCENAME_TYPE_WIDGET_MAP,
+  TYPE_WIDGET_MAP,
   WIDGET_EXPORT_FILE_RULES,
   type WidgetExportMode,
   type WidgetPlatform,
@@ -46,7 +48,7 @@ const downloadBlob = (blob: Blob, filename: string) => {
 };
 
 const sanitizeWidgetsSpec = (value: unknown): unknown => {
-  const delKey = ['source', 'crop_props', 'radius', 'label'];
+  const delKey = ['source', 'crop_props', 'radius', 'label', 'appLinksSource'];
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeWidgetsSpec(item));
   }
@@ -218,6 +220,7 @@ export const useWidgetExportBundle = (nodeId?: string) => {
         ...selectedNodeData,
         sizes: childConfigs,
       });
+      const type:any = selectedNodeData ? selectedNodeData.type : 1;
       zip.file('widgets_spec.json', JSON.stringify(widgetsSpec, null, 2));
       pushLine('success', '生成 widgets_spec.json');
 
@@ -269,16 +272,19 @@ export const useWidgetExportBundle = (nodeId?: string) => {
           outputScale: 1,
           resizeMode: 'stretch',
         });
-        zip.file(`widgets_${sizeLabel}_time.jpg`, jpegBlob);
+        //   const ext = isGif ? 'gif' : 'jpg';
+        // const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}.${ext}`;
+        const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}`;
+        zip.file(`${expectedFilename}.jpg`, jpegBlob);
         pushLine(
           'success',
-          `生成 widgets_${sizeLabel}_time.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
+          `生成 ${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
         );
         if (gifBlob) {
-          zip.file(`widgets_${sizeLabel}_time.gif`, gifBlob);
+          zip.file(`${expectedFilename}.gif`, gifBlob);
           pushLine(
             'success',
-            `生成 widgets_${sizeLabel}_time.gif ${formatSizeText(timegifWidth, timegifHeight)}`,
+            `生成 ${expectedFilename}.gif ${formatSizeText(timegifWidth, timegifHeight)}`,
           );
         }
 
@@ -313,6 +319,27 @@ export const useWidgetExportBundle = (nodeId?: string) => {
             secondAnimationBlob,
           );
           pushLine('success', `生成 widgets_${sizeLabel}_animation_second.png`);
+        }
+
+        if (Array.isArray(data?.appLinks)) {
+          const appLinksSource = Array.isArray(data?.appLinksSource)
+            ? data.appLinksSource
+            : [];
+          for (let appLinkIndex = 0; appLinkIndex < data.appLinks.length; appLinkIndex += 1) {
+            const linkSource = appLinksSource[appLinkIndex]?.source;
+            const filename = `link${sizeLabel}_${appLinkIndex + 1}.png`;
+            if (!linkSource || typeof linkSource !== 'string') {
+              pushLine('warning', `跳过 ${filename}（未找到 appLinksSource）`);
+              continue;
+            }
+            try {
+              const linkBlob = await toPngBlobFromUrl(linkSource);
+              zip.file(filename, linkBlob);
+              pushLine('success', `生成 ${filename}`);
+            } catch {
+              pushLine('warning', `跳过 ${filename}（资源下载失败）`);
+            }
+          }
         }
       }
 

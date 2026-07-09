@@ -43,6 +43,7 @@ import {
 
 import { createStyles } from 'antd-style';
 import React, { useEffect, useState } from 'react';
+import { APP_LINK_OPTIONS } from '../../widget/base-config';
 import {
   useEditorBackgroundColor,
   useEditorBackgroundColorSetter,
@@ -406,7 +407,10 @@ export const IsGIFInput: React.FC<{
 export const ImageUpload: React.FC<{
   value: any;
   onChange: (payload: { id: any; value: any; path?: string; deletePath?: any }) => void;
-}> = ({ value, onChange }) => {
+  title: any;
+  width?: number;
+  marginBottom?: number;
+}> = ({ value, onChange, title, width, marginBottom }) => {
   const { styles } = useImageUploadStyles();
   const handleChange =
     (id: any, path?: string): UploadProps['onChange'] =>
@@ -439,19 +443,21 @@ export const ImageUpload: React.FC<{
   return (
     <>
       <Row className={styles.formRow}>
-        <Col span={24}>
-            <InputTitle label="Source" />
-        </Col>
+        {title !== null ? (
+          <Col span={24}>
+              <InputTitle label="Source" />
+          </Col>
+        ) : null}
       </Row>
       <Row>
         <Col span={24}>
           {value.map((v: any) => {
             return (v.value ? (
-                <Flex key={v.id} align='center' justify='space-between' style={{ marginBottom: '5px' }}>
+                <Flex key={v.id} align='center' justify='space-between' style={{ marginBottom: marginBottom || '5px' }}>
                   <Button variant="filled" color="default" style={{ width: '80%' }} >
                     <img className={styles.previewImg} src={v.value} alt="" />
                     <Typography.Text
-                      style={{ width: 200 }}
+                      style={{ width: width || 200 }}
                       ellipsis={{ tooltip: v.name }}
                     >
                       {v.name}
@@ -468,10 +474,10 @@ export const ImageUpload: React.FC<{
                   beforeUpload={() => false}
                   onChange={handleChange(v.id, v.path)}
                 >
-                  <Button variant="filled" color="default" style={{ marginBottom: '5px'}}>
+                  <Button variant="filled" color="default" style={{ marginBottom: marginBottom || '5px'}}>
                       <UploadOutlined />
                       <Typography.Text
-                        style={{ width: 200 }}
+                        style={{ width: width || 200 }}
                         ellipsis={{ tooltip: v.name }}
                       >
                         {v.name}
@@ -728,6 +734,64 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('appLinks') && (
+        <>
+          { editProps.appLinks === '__MIXED__' ? null : (
+            <Row>
+              <Col>
+                  <InputTitle label="AppLinks" />
+              </Col>
+              {editProps.appLinks.map((link: string | number, index: number) => {
+                const appLinkSource = Array.isArray(editProps.appLinksSource)
+                  ? editProps.appLinksSource[index]
+                  : undefined;
+                return (
+                  <Col key={index} span={24}>
+                    <Flex align='center'>
+                        <Select
+                          value={link}
+                          style={{ width: 100, marginRight: 5 }}
+                          onChange={(val) => {
+                            const temp = [...editProps.appLinks];
+                            temp[index] = val;
+                            onChange?.('appLinks', temp);
+                          }}
+                          options={[{ value: '', label: 'UnSelect' }, ...APP_LINK_OPTIONS]}
+                        />
+                        <ImageUpload
+                            value={[{
+                              value: appLinkSource?.source ?? '',
+                              name: '序列-' + (index + 1),
+                              id: index,
+                            }]}
+                            onChange={(payload: any) => {
+                              const { value } = payload;
+                              const sourceList = Array.isArray(editProps.appLinksSource)
+                                ? editProps.appLinksSource
+                                : [];
+                              const temp = [...sourceList.map((ele: any) => ({ ...ele }))];
+                              if (!temp[index] || typeof temp[index] !== 'object') {
+                                temp[index] = {};
+                              }
+                              temp[index] = {
+                                ...temp[index],
+                                source: value,
+                              };
+                              onChange?.('appLinksSource', temp);
+                            }}
+                            title={null}
+                            width={50}
+                            marginBottom={0}
+                          />
+                    </Flex>
+                  </Col>
+                )
+              })}
+            </Row>
+          ) }
+          
+        </>
+      )}
       {hasKey('alpha') && (
         <>
           <AlphaSlider value={editProps.alpha} onChange={(nextValue) => onChange?.('alpha', nextValue)} />
@@ -894,6 +958,7 @@ export const BaseSelectedNodePropForm: React.FC<{
           <ImageUpload
             value={editProps.source}
             onChange={(nextValue) => onChange?.('source', nextValue)}
+            title="Source"
           />
         </>
       )}

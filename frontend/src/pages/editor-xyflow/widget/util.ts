@@ -37,7 +37,7 @@ const getWidgetType = (type: number, layoutType?: number) => {
 export const widgetConfig2Nodes: any = (config: any) => {
   const gap = 50;
   const res:any = [];
-  const { ios, android } = config;
+  const { ios, android, common } = config;
   const rootGroupId = nanoid();
   const platformNodes: any[] = [];
 
@@ -47,7 +47,7 @@ export const widgetConfig2Nodes: any = (config: any) => {
     }
 
     const groupId = nanoid() + '_' + system;
-    const platformLabel = system === 'ios' ? 'iOS' : 'Android';
+    // const platformLabel = system === 'ios' ? 'IOS' : 'Android';
     let groupWidth = gap;
     let groupHeight = gap;
     let startY = gap;
@@ -92,7 +92,7 @@ export const widgetConfig2Nodes: any = (config: any) => {
       position: { x: groupX, y: gap },
       data: {
         ...platformConfig,
-        label: platformLabel,
+        label: system,
       },
       packable: true,
       parentId: rootGroupId,
@@ -119,19 +119,31 @@ export const widgetConfig2Nodes: any = (config: any) => {
     };
   };
 
-  const iosMeta = pushPlatformNodes(ios, gap, 'ios');
-  const androidMeta = pushPlatformNodes(
-    android,
-    iosMeta ? gap + iosMeta.width + gap : gap,
-    'android',
-  );
+  let rootWidth = 0;
+  let rootHeight = 0;
+  if (ios || android) {
+    const iosMeta = ios ? pushPlatformNodes(ios, gap, 'ios') : null;
+    const androidMeta = android
+      ? pushPlatformNodes(
+          android,
+          iosMeta ? gap + iosMeta.width + gap : gap,
+          'android',
+        )
+      : null;
+    rootWidth = iosMeta && androidMeta
+      ? gap + iosMeta.width + gap + androidMeta.width + gap
+      : gap + (iosMeta?.width || androidMeta?.width || 0) + gap;
+    rootHeight = gap
+      + Math.max(iosMeta?.height || 0, androidMeta?.height || 0)
+      + gap;
+  }
 
-  const rootWidth = iosMeta && androidMeta
-    ? gap + iosMeta.width + gap + androidMeta.width + gap
-    : gap + (iosMeta?.width || androidMeta?.width || 0) + gap;
-  const rootHeight = gap
-    + Math.max(iosMeta?.height || 0, androidMeta?.height || 0)
-    + gap;
+  if (common) {
+    const commonMeta = pushPlatformNodes(common, gap, 'common');
+    rootWidth = commonMeta && commonMeta.width + 2 * gap || 2 * gap;
+    rootHeight = commonMeta && commonMeta.height + 2 * gap || 2 * gap;
+  }
+
 
   const rootNode = {
     id: rootGroupId,

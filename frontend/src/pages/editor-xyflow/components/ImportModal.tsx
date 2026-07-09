@@ -1,7 +1,7 @@
 import React from 'react';
 import { InboxOutlined } from '@ant-design/icons';
 import { useEditorAddWidget, useEditorProjectId } from '../context';
-import { message, Upload, Typography } from 'antd';
+import { message, Segmented, Upload, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import { CONFIG_SIZE_MAP, DEFAULT_CROP_PROPS, DEFAULT_RADIUS, SIZE_LABEL_MAP, SOURCENAME_TYPE_WIDGET_MAP, TYPE_WIDGET_MAP } from '../widget/base-config';
 import JSZip from 'jszip';
@@ -14,7 +14,6 @@ const useStyles = createStyles(({ token, css }) => ({
     bottom: 52px;
     transform: translateX(-50%);
     width: 300px;
-    height: 200px;
     border-radius: 12px;
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
@@ -42,6 +41,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
 };
+type ImportSystem = 'ios' | 'android' | 'common';
 
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -71,6 +71,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const { styles } = useStyles();
   const addWidget = useEditorAddWidget();
   const projectId = useEditorProjectId();
+  const [importSystem, setImportSystem] = React.useState<ImportSystem>('common');
   const uploadMediaFromZip = async (filename: string, zip: JSZip) => {
     if (!projectId) {
       throw new Error('项目未初始化，无法上传资源');
@@ -184,12 +185,35 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
             ...DEFAULT_CROP_PROPS,
           };
         }
+        // 处理appLinks
+        if (item.appLinks && Array.isArray(item.appLinks)) {
+          const existingAppLinksSource = Array.isArray(item.appLinksSource)
+            ? item.appLinksSource
+            : [];
+          const appLinksSource = await Promise.all(
+            item.appLinks.map(async (_links: any, index: number) => {
+              const filename = `link${sizeLabel}_${index + 1}.png`;
+              const uploadResult = await uploadMediaFromZip(filename, zip);
+              if (!uploadResult) {
+                message.warning(`压缩包缺少 ${filename}`);
+                return {
+                  ...(existingAppLinksSource[index] ?? {}),
+                  source: existingAppLinksSource[index]?.source ?? '',
+                };
+              }
+              return {
+                ...(existingAppLinksSource[index] ?? {}),
+                source: uploadResult.url,
+              };
+            }),
+          );
+          item.appLinksSource = appLinksSource;
+        }
       }
 
-      addWidget({
-        ios: spec,
-        android: spec,
-      });
+      const importConfig: Record<string, any> = {};
+      importConfig[importSystem] = spec;
+      addWidget(importConfig);
       onClose();
       message.success('导入成功');
     } catch (error) {
@@ -205,6 +229,16 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         <Typography.Title level={5} className={styles.title}>
           Import
         </Typography.Title>
+        <Segmented<ImportSystem>
+          block
+          value={importSystem}
+          onChange={(value) => setImportSystem(value)}
+          options={[
+            { label: 'Common', value: 'common' },
+            { label: 'iOS', value: 'ios' },
+            { label: 'Android', value: 'android' },
+          ]}
+        />
         <Upload.Dragger fileList={[]} accept=".zip,application/zip" maxCount={1} beforeUpload={readWidgetsSpecFromZip}>
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
