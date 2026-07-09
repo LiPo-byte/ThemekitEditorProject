@@ -622,13 +622,23 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       const platformNodes = nodes.filter(
         (node) => (node.type === 'platform_group') && node.parentId === rootNode.id,
       );
-      const pickPlatformNode = (platform: 'ios' | 'android') => {
+      const pickPlatformNode = (platform: 'ios' | 'android' | 'common') => {
         const bySuffix = platformNodes.find((node) => String(node.id).endsWith(`_${platform}`));
         if (bySuffix) return bySuffix;
+        const bySystem = platformNodes.find((node) => {
+          const system = String((node.data as Record<string, any>)?.system ?? '').toLowerCase();
+          return system === platform;
+        });
+        if (bySystem) return bySystem;
         const sorted = [...platformNodes].sort(
           (a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0),
         );
-        return platform === 'ios' ? sorted[0] : sorted[1];
+        if (sorted.length >= 2) {
+          if (platform === 'ios') return sorted[0];
+          if (platform === 'android') return sorted[1];
+          return undefined;
+        }
+        return undefined;
       };
       const buildPlatformConfig = (platformNode: FlowNode | undefined) => {
         if (!platformNode) return null;
@@ -645,6 +655,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
       const iosConfig = buildPlatformConfig(pickPlatformNode('ios'));
       const androidConfig = buildPlatformConfig(pickPlatformNode('android'));
+      const commonConfig = buildPlatformConfig(pickPlatformNode('common'));
+      const config_json = {
+        ios: iosConfig?.sizes.length ? iosConfig : undefined,
+        android: androidConfig?.sizes.length ? androidConfig : undefined,
+        common: commonConfig?.sizes.length ? commonConfig : undefined,
+      };
 
       return {
         element_key: rootNode.id,
@@ -655,10 +671,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         visible: true,
         locked: false,
         schema_version: 1,
-        config_json: {
-          ios: iosConfig,
-          android: androidConfig,
-        },
+        config_json,
       };
     });
   };

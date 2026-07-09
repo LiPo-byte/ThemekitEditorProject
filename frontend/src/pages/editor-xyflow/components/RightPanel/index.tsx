@@ -209,13 +209,29 @@ const RightPanel: React.FC = () => {
       }),
     );
   }
-  const handleSelectedNodePropChange = (key: string, val: any, keyClass?: string) => {
+  const handleSelectedNodePropChange = async (key: string, val: any, keyClass?: string) => {
     if (!projectId) return;
     let v = val;
     // 资源需要单独处理
     if (key === 'source') {
       handleSourceChange(v);
       return;
+    }
+    // appLinksSource 需要单独处理
+    if (key === "appLinksSource" && Array.isArray(val)) {
+      for (let index = 0; index < v.length; index++) {
+        const linkSource = v[index];
+        if (!linkSource || typeof linkSource !== 'object') {
+          continue;
+        }
+        if (linkSource.source === null)  {
+          linkSource.source = '';
+        }
+        if (typeof linkSource.source !== 'string') {
+          const { url } = await uploadProjectImage(projectId, linkSource.source);
+          linkSource.source = url;
+        }
+      }
     }
     const changesNode: Record<string, any> = {};
     if (keyClass) {
