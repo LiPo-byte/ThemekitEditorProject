@@ -56,11 +56,11 @@ const HeaderControls: React.FC = () => {
 
   return (
     <div className={`${styles.headerControls} ${playEnterAnimation ? styles.barEnter : ''}`}>
-        <Tooltip placement="rightTop" title="Preview Devices">
+        {/* <Tooltip placement="rightTop" title="Preview Devices">
             <Button type="text" onClick={() => {}}>
                 <PlayCircleOutlined style={{fontSize: '12px'}} />
             </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Segmented
             value={initialState?.settings?.navTheme || 'light'}
             disabled
