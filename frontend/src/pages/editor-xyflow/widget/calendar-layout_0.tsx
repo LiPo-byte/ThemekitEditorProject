@@ -34,6 +34,8 @@ export default function CalendarLayout_0(props: any) {
       alignItems: 'center',
       justifyContent: 'center',
       height: '100%',
+      position: 'relative',
+      zIndex: 2,
     }}
   >
     <div style={{
@@ -119,7 +121,9 @@ export default function CalendarLayout_0(props: any) {
       { date && size === 2 ? (
         <div style={{
           display: 'flex',
-          height: '100%'
+          height: '100%',
+          position: 'relative',
+          zIndex: 2,
         }}>
           <div style={{
             width: '50%',

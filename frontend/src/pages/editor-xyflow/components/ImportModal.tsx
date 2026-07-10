@@ -185,17 +185,26 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
             ...DEFAULT_CROP_PROPS,
           };
         }
-        // 处理appLinks
-        if (item.appLinks && Array.isArray(item.appLinks)) {
+        // 处理appLinks 只有layoutType 小于6的时候才处理这个
+        if (item.appLinks && Array.isArray(item.appLinks) && item.layoutType < 6) {
           const existingAppLinksSource = Array.isArray(item.appLinksSource)
             ? item.appLinksSource
             : [];
           const appLinksSource = await Promise.all(
             item.appLinks.map(async (_links: any, index: number) => {
-              const filename = `link${sizeLabel}_${index + 1}.png`;
-              const uploadResult = await uploadMediaFromZip(filename, zip);
+              const filenameBase = `link${sizeLabel}_${index + 1}`;
+              const candidateFilenames = [
+                `${filenameBase}.png`,
+                `${filenameBase}.jpg`,
+                `${filenameBase}.jpeg`,
+              ];
+              let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+              for (const filename of candidateFilenames) {
+                uploadResult = await uploadMediaFromZip(filename, zip);
+                if (uploadResult) break;
+              }
               if (!uploadResult) {
-                message.warning(`压缩包缺少 ${filename}`);
+                message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
                 return {
                   ...(existingAppLinksSource[index] ?? {}),
                   source: existingAppLinksSource[index]?.source ?? '',

@@ -143,7 +143,10 @@
       { "key": "Launcher_LayoutType_0", "label": "Launcher LayoutType 0" },
       { "key": "Launcher_LayoutType_1", "label": "Launcher LayoutType 1" },
       { "key": "Launcher_LayoutType_5", "label": "Launcher LayoutType 5" },
-      { "key": "Launcher_LayoutType_6", "label": "Launcher LayoutType 6" }
+      { "key": "Launcher_LayoutType_6", "label": "Launcher LayoutType 6" },
+      { "key": "Launcher_LayoutType_7", "label": "Launcher LayoutType 7" },
+      { "key": "Launcher_LayoutType_8", "label": "Launcher LayoutType 8" },
+      { "key": "Launcher_LayoutType_9", "label": "Launcher LayoutType 9" }
     ]
   },
   {

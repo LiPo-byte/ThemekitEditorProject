@@ -750,7 +750,7 @@ export const BaseSelectedNodePropForm: React.FC<{
                     <Flex align='center'>
                         <Select
                           value={link}
-                          style={{ width: 100, marginRight: 5 }}
+                          style={{ width: 100, marginRight: 5, marginBottom: 5 }}
                           onChange={(val) => {
                             const temp = [...editProps.appLinks];
                             temp[index] = val;
@@ -758,31 +758,33 @@ export const BaseSelectedNodePropForm: React.FC<{
                           }}
                           options={[{ value: '', label: 'UnSelect' }, ...APP_LINK_OPTIONS]}
                         />
-                        <ImageUpload
-                            value={[{
-                              value: appLinkSource?.source ?? '',
-                              name: '序列-' + (index + 1),
-                              id: index,
-                            }]}
-                            onChange={(payload: any) => {
-                              const { value } = payload;
-                              const sourceList = Array.isArray(editProps.appLinksSource)
-                                ? editProps.appLinksSource
-                                : [];
-                              const temp = [...sourceList.map((ele: any) => ({ ...ele }))];
-                              if (!temp[index] || typeof temp[index] !== 'object') {
-                                temp[index] = {};
-                              }
-                              temp[index] = {
-                                ...temp[index],
-                                source: value,
-                              };
-                              onChange?.('appLinksSource', temp);
-                            }}
-                            title={null}
-                            width={50}
-                            marginBottom={0}
-                          />
+                        {appLinkSource && (
+                          <ImageUpload
+                              value={[{
+                                value: appLinkSource?.source ?? '',
+                                name: '序列-' + (index + 1),
+                                id: index,
+                              }]}
+                              onChange={(payload: any) => {
+                                const { value } = payload;
+                                const sourceList = Array.isArray(editProps.appLinksSource)
+                                  ? editProps.appLinksSource
+                                  : [];
+                                const temp = [...sourceList.map((ele: any) => ({ ...ele }))];
+                                if (!temp[index] || typeof temp[index] !== 'object') {
+                                  temp[index] = {};
+                                }
+                                temp[index] = {
+                                  ...temp[index],
+                                  source: value,
+                                };
+                                onChange?.('appLinksSource', temp);
+                              }}
+                              title={null}
+                              width={50}
+                              marginBottom={0}
+                            />
+                        )}
                     </Flex>
                   </Col>
                 )

@@ -321,7 +321,7 @@ export const useWidgetExportBundle = (nodeId?: string) => {
           pushLine('success', `生成 widgets_${sizeLabel}_animation_second.png`);
         }
 
-        if (Array.isArray(data?.appLinks)) {
+        if (Array.isArray(data?.appLinks) && data?.appLinksSource) {
           const appLinksSource = Array.isArray(data?.appLinksSource)
             ? data.appLinksSource
             : [];

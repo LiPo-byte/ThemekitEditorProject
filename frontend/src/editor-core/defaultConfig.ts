@@ -2721,7 +2721,8 @@ export const WidgetDefaultConfig = {
                   "title": {
                         "font":"HelveticaNeue",
                         "textSize":24,
-                         "textColor":"#FFFFFF"
+                         "textColor":"#FFFFFF",
+                         "content": 'App Name',
                         },
                   "appLinks":[""],
                   "appLinksSource": Array.from({ length: 1 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
@@ -2768,8 +2769,8 @@ export const WidgetDefaultConfig = {
                         "textSize":24,
                          "textColor":"#FFFFFF"
                         },
-                  "appLinks":[""],
-                  "appLinksSource": Array.from({ length: 1 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+                  "appLinks":["", ""],
+                  "appLinksSource": Array.from({ length: 2 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
                },
                {
                   "size":2,
@@ -2808,13 +2809,7 @@ export const WidgetDefaultConfig = {
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
-                  "title": {
-                        "font":"HelveticaNeue",
-                        "textSize":24,
-                         "textColor":"#FFFFFF"
-                        },
-                  "appLinks":[""],
-                  "appLinksSource": Array.from({ length: 1 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+                  "appLinks":["", ""],
                },
                {
                   "size":2,
@@ -2824,7 +2819,6 @@ export const WidgetDefaultConfig = {
                   radius: 28,
                   "crop_props": defaultCropProps,
                   "appLinks":["",""],
-                  "appLinksSource": Array.from({ length: 2 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
                },
                {
                   "size":3,
@@ -2834,7 +2828,117 @@ export const WidgetDefaultConfig = {
                   radius: 28,
                   "crop_props": defaultCropProps,
                   "appLinks":["","","","",""],
-                  "appLinksSource": Array.from({ length: 5 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+               }
+            ]
+        }
+    },
+    Launcher_LayoutType_7: {
+        common: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":14,
+            "sizes":[
+               {
+                  "size":1,
+                  "layoutType":7,
+                  "name":"ENHYPEN_NIKI_C_Launcher_Small_3",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":[""],
+               },
+               {
+                  "size":2,
+                  "layoutType":7,
+                  "name":"ENHYPEN_NIKI_C_Launcher_Medium_3",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","",""],
+               },
+               {
+                  "size":3,
+                  "layoutType":7,
+                  "name":"ENHYPEN_NIKI_C_Launcher_Large_3",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","",""],
+               }
+            ]
+        }
+    },
+    Launcher_LayoutType_8: {
+        common: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":14,
+            "sizes":[
+               {
+                  "size":1,
+                  "layoutType":8,
+                  "name":"Color_Sky_Small_2",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":[""],
+               },
+               {
+                  "size":2,
+                  "layoutType":8,
+                  "name":"Color_Sky_Medium_2",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","",""],
+               },
+               {
+                  "size":3,
+                  "layoutType":8,
+                  "name":"Color_Sky_Large_2",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","","",""],
+               }
+            ]
+        }
+    },
+    Launcher_LayoutType_9: {
+        common: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":14,
+            "sizes":[
+               {
+                  "size":1,
+                  "layoutType":9,
+                  "name":"Test_C_Launcher_Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":[""],
+               },
+               {
+                  "size":2,
+                  "layoutType":9,
+                  "name":"Test_C_Launcher_Medium",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","","","","",""],
+               },
+               {
+                  "size":3,
+                  "layoutType":9,
+                  "name":"Test_C_Launcher_Large",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                  "appLinks":["","","","","","","","","",""],
                }
             ]
         }

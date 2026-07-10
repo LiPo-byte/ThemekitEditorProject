@@ -27,6 +27,9 @@ import launcherLayout_0 from './widget/launcher-layout_0';
 import launcherLayout_1 from './widget/launcher-layout_1';
 import launcherLayout_5 from './widget/launcher-layout_5';
 import launcherLayout_6 from './widget/launcher-layout_6';
+import launcherLayout_7 from './widget/launcher-layout_7';
+import launcherLayout_8 from './widget/launcher-layout_8';
+import launcherLayout_9 from './widget/launcher-layout_9';
 
 
 
@@ -100,6 +103,9 @@ export default function EditorStage() {
           launcher_1: launcherLayout_1,
           launcher_5: launcherLayout_5,
           launcher_6: launcherLayout_6,
+          launcher_7: launcherLayout_7,
+          launcher_8: launcherLayout_8,
+          launcher_9: launcherLayout_9,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}
