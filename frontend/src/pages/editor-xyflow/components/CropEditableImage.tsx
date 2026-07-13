@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useEditorCropDraftProps,
   useEditorCropDraftPropsSetter,
@@ -45,6 +45,7 @@ const CropEditableImage: React.FC<CropEditableImageProps> = ({
   radius,
   cropProps,
 }) => {
+  const imageRef = useRef<HTMLImageElement | null>(null);
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const cropDraftProps = useEditorCropDraftProps();
@@ -115,6 +116,8 @@ const CropEditableImage: React.FC<CropEditableImageProps> = ({
   return (
     <>
       <img
+        ref={imageRef}
+        data-crop-node-id={nodeId}
         src={source}
         alt=""
         style={{

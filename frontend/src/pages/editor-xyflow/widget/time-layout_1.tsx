@@ -6,6 +6,7 @@ import {
   // type CropProps,
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
+import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
 
@@ -18,7 +19,7 @@ export default function TimeLayout_1(props: any) {
   if (!data) return null;
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
-    fontFamily: textData?.font,
+    fontFamily: resolveWidgetFontFamily(props.parentId, textData?.font),
     opacity: textData?.alpha ?? 1,
     color: textData?.textColor ?? '#111827',
     height: textData?.textHeight + 'px',

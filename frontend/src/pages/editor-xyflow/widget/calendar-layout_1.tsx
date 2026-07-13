@@ -4,6 +4,7 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
+import { resolveWidgetFontFamily } from './util';
 
 const WEEK_LABELS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTH_NAME = 'October';
@@ -52,7 +53,9 @@ export default function CalendarLayout_0(props: any) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '100%'
+          height: '100%',
+          position: 'relative',
+          zIndex: 2,
         }}
       >
         <div style={{
@@ -63,7 +66,7 @@ export default function CalendarLayout_0(props: any) {
           left: paddingSize[size],
           right: paddingSize[size],
           textAlign: (data.month.textAlignment === 1 ? 'left' : (data.month.textAlignment === 2) ? 'center' : 'right'),
-          fontFamily: data.month.font,
+          fontFamily: resolveWidgetFontFamily(props.parentId, data.month.font),
           opacity: data.month.alpha,
         }} >{MONTH_NAME}</div>
         <div
@@ -84,7 +87,7 @@ export default function CalendarLayout_0(props: any) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: data.calendar.textSize,
-                fontFamily: data.calendar.font,
+                fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
               }}>{i}</div>
             })}
         </div>
@@ -108,7 +111,7 @@ export default function CalendarLayout_0(props: any) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: data.calendar.textSize,
-                  fontFamily: data.calendar.font,
+                  fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
                   backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
                   borderRadius: i === 17 ? '100%' : '0',
                   color: color,

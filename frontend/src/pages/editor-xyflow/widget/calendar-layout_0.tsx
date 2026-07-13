@@ -4,6 +4,7 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
+import { resolveWidgetFontFamily } from './util';
 
 const WEEK_LABELS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTH_NAME = 'October';
@@ -43,7 +44,7 @@ export default function CalendarLayout_0(props: any) {
       fontSize: data?.month?.textSize,
       color: data?.month?.textColor,
       textAlign: (data?.month?.textAlignment === 1 ? 'left' : (data?.month?.textAlignment === 2) ? 'center' : 'right'),
-      fontFamily: data?.month?.font,
+      fontFamily: resolveWidgetFontFamily(props.parentId, data?.month?.font),
     }} >{MONTH_NAME}</div>
     <div
       style={{
@@ -62,7 +63,7 @@ export default function CalendarLayout_0(props: any) {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: data.calendar.textSize,
-            fontFamily: data.calendar.font,
+            fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
           }}>{i}</div>
         }) : null}
     </div>
@@ -86,7 +87,7 @@ export default function CalendarLayout_0(props: any) {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: data.calendar.textSize,
-              fontFamily: data.calendar.font,
+              fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
               backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
               borderRadius: i === 17 ? '100%' : '0',
               color: color,
@@ -134,7 +135,7 @@ export default function CalendarLayout_0(props: any) {
             justifyContent: 'center',
             fontSize: data?.date?.textSize,
             color: data?.date?.textColor,
-            fontFamily: data?.date?.font,
+            fontFamily: resolveWidgetFontFamily(props.parentId, data?.date?.font),
             lineHeight: 1,
           }}>
             <div style={{ width: '100%', textAlign: (data?.date?.textAlignment === 1 ? 'left' : (data?.date?.textAlignment === 2) ? 'center' : 'right')}} >Thu</div>

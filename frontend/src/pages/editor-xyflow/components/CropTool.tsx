@@ -2,6 +2,7 @@ import { Button, Flex, Slider, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import React from 'react';
 import {
+  useEditorCropEditingNodeId,
   useEditorCropDraftProps,
   useEditorCropDraftPropsSetter,
   useEditorCropToolOpen,
@@ -53,9 +54,97 @@ const DEFAULT_CROP_PROPS = {
   translateY: 0,
 };
 
+const getEditingImageMetrics = (cropEditingNodeId: string) => {
+  const imageEl = document.querySelector(
+    `[data-crop-node-id="${cropEditingNodeId}"]`,
+  ) as HTMLImageElement | null;
+  const containerEl = imageEl?.parentElement;
+  if (!imageEl || !containerEl) return null;
+  const containerWidth = containerEl.clientWidth;
+  const containerHeight = containerEl.clientHeight;
+  const imageWidth = imageEl.naturalWidth || imageEl.clientWidth;
+  const imageHeight = imageEl.naturalHeight || imageEl.clientHeight;
+  if (!containerWidth || !containerHeight || !imageWidth || !imageHeight) return null;
+  return {
+    containerWidth,
+    containerHeight,
+    imageWidth,
+    imageHeight,
+  };
+};
+
+const computeTransformedCenter = ({
+  imageWidth,
+  imageHeight,
+  scaleX,
+  scaleY,
+  rotation,
+}: {
+  imageWidth: number;
+  imageHeight: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+}) => {
+  const rad = (rotation * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const transformPoint = (x: number, y: number) => {
+    const scaledX = x * scaleX;
+    const scaledY = y * scaleY;
+    return {
+      x: scaledX * cos - scaledY * sin,
+      y: scaledX * sin + scaledY * cos,
+    };
+  };
+  const points = [
+    transformPoint(0, 0),
+    transformPoint(imageWidth, 0),
+    transformPoint(0, imageHeight),
+    transformPoint(imageWidth, imageHeight),
+  ];
+  const xList = points.map((point) => point.x);
+  const yList = points.map((point) => point.y);
+  return {
+    x: (Math.min(...xList) + Math.max(...xList)) / 2,
+    y: (Math.min(...yList) + Math.max(...yList)) / 2,
+  };
+};
+
+const computeCenterTranslate = ({
+  containerWidth,
+  containerHeight,
+  imageWidth,
+  imageHeight,
+  scaleX,
+  scaleY,
+  rotation,
+}: {
+  containerWidth: number;
+  containerHeight: number;
+  imageWidth: number;
+  imageHeight: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+}) => {
+  const transformedCenter = computeTransformedCenter({
+    imageWidth,
+    imageHeight,
+    scaleX,
+    scaleY,
+    rotation,
+  });
+  return {
+    translateX: containerWidth / 2 - transformedCenter.x,
+    translateY: containerHeight / 2 - transformedCenter.y,
+  };
+};
+
 const CropTool: React.FC = () => {
   const { styles } = useStyles();
   const open = useEditorCropToolOpen();
+  const cropEditingNodeId = useEditorCropEditingNodeId();
   const closeCropEditor = useEditorCloseCropEditor();
   const confirmCropEditor = useEditorConfirmCropEditor();
   const cropDraftProps = useEditorCropDraftProps();
@@ -118,7 +207,35 @@ const CropTool: React.FC = () => {
         <Button
           onClick={() => {
             const current = activeCropProps.scaleX === 0 ? 1 : activeCropProps.scaleX;
-            patchCropDraft({ scaleX: -current });
+            const nextScaleX = -current;
+            if (!cropEditingNodeId) {
+              patchCropDraft({ scaleX: nextScaleX });
+              return;
+            }
+            const metrics = getEditingImageMetrics(cropEditingNodeId);
+            if (!metrics) {
+              patchCropDraft({ scaleX: nextScaleX });
+              return;
+            }
+            const beforeCenter = computeTransformedCenter({
+              imageWidth: metrics.imageWidth,
+              imageHeight: metrics.imageHeight,
+              scaleX: activeCropProps.scaleX,
+              scaleY: activeCropProps.scaleY,
+              rotation: activeCropProps.rotation,
+            });
+            const afterCenter = computeTransformedCenter({
+              imageWidth: metrics.imageWidth,
+              imageHeight: metrics.imageHeight,
+              scaleX: nextScaleX,
+              scaleY: activeCropProps.scaleY,
+              rotation: activeCropProps.rotation,
+            });
+            patchCropDraft({
+              scaleX: nextScaleX,
+              translateX: activeCropProps.translateX + beforeCenter.x - afterCenter.x,
+              translateY: activeCropProps.translateY + beforeCenter.y - afterCenter.y,
+            });
           }}
         >
           Flip LR
@@ -126,10 +243,60 @@ const CropTool: React.FC = () => {
         <Button
           onClick={() => {
             const current = activeCropProps.scaleY === 0 ? 1 : activeCropProps.scaleY;
-            patchCropDraft({ scaleY: -current });
+            const nextScaleY = -current;
+            if (!cropEditingNodeId) {
+              patchCropDraft({ scaleY: nextScaleY });
+              return;
+            }
+            const metrics = getEditingImageMetrics(cropEditingNodeId);
+            if (!metrics) {
+              patchCropDraft({ scaleY: nextScaleY });
+              return;
+            }
+            const beforeCenter = computeTransformedCenter({
+              imageWidth: metrics.imageWidth,
+              imageHeight: metrics.imageHeight,
+              scaleX: activeCropProps.scaleX,
+              scaleY: activeCropProps.scaleY,
+              rotation: activeCropProps.rotation,
+            });
+            const afterCenter = computeTransformedCenter({
+              imageWidth: metrics.imageWidth,
+              imageHeight: metrics.imageHeight,
+              scaleX: activeCropProps.scaleX,
+              scaleY: nextScaleY,
+              rotation: activeCropProps.rotation,
+            });
+            patchCropDraft({
+              scaleY: nextScaleY,
+              translateX: activeCropProps.translateX + beforeCenter.x - afterCenter.x,
+              translateY: activeCropProps.translateY + beforeCenter.y - afterCenter.y,
+            });
           }}
         >
           Flip UD
+        </Button>
+        <Button
+          onClick={() => {
+            if (!cropEditingNodeId) return;
+            const metrics = getEditingImageMetrics(cropEditingNodeId);
+            if (!metrics) return;
+            const centeredTranslate = computeCenterTranslate({
+              containerWidth: metrics.containerWidth,
+              containerHeight: metrics.containerHeight,
+              imageWidth: metrics.imageWidth,
+              imageHeight: metrics.imageHeight,
+              scaleX: activeCropProps.scaleX,
+              scaleY: activeCropProps.scaleY,
+              rotation: activeCropProps.rotation,
+            });
+            patchCropDraft({
+              translateX: centeredTranslate.translateX,
+              translateY: centeredTranslate.translateY,
+            });
+          }}
+        >
+          Center
         </Button>
         <Button
           onClick={() => {

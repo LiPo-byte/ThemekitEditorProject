@@ -10,6 +10,7 @@ import React, {
 import type { Node as FlowNode } from '@xyflow/react';
 import type { EditorCore } from '@/editor-core';
 import { history, useLocation, useParams } from '@umijs/max';
+import fontManifest from './components/font-manifest.json';
 // import { nanoid } from 'nanoid';
 // import { WidgetDefaultConfig } from '@/editor-core/defaultConfig';
 // import { CONFIG_SIZE_MAP } from './widget/base-config'
@@ -17,6 +18,26 @@ import { widgetConfig2Nodes } from './widget/util';
 import { nanoid } from 'nanoid';
 import { getProjectDetail, postApiV1Project, putApiV1ProjectElementsBatch } from './service';
 import { toJpeg } from 'html-to-image';
+
+const FONT_FACE_STYLE_ID = 'editor-xyflow-font-face-manifest';
+const FONT_LOAD_TIMEOUT_MS = 4000;
+
+const getFontFaceFormat = (fileName: string) => {
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  if (ext === 'otf') return 'opentype';
+  if (ext === 'woff') return 'woff';
+  if (ext === 'woff2') return 'woff2';
+  return 'truetype';
+};
+
+type FontManifestItem = {
+  file?: string;
+  postscriptName?: string;
+};
+
+const MANIFEST_FONTS = (fontManifest as FontManifestItem[]).filter(
+  (item) => item.file && item.postscriptName,
+);
 
 export type CropProps = {
   scaleX: number;
@@ -55,6 +76,7 @@ type EditorCoreCtxValue = {
   projectId: string | null;
   projectName: string;
   setProjectName: (name: string) => void;
+  fontsReady: boolean;
   nodes: FlowNode[];
   setNodes: React.Dispatch<React.SetStateAction<FlowNode[]>>;
   changeNodeProp: (updater: (prev: FlowNode[]) => FlowNode[]) => void;
@@ -115,6 +137,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   projectId: null,
   projectName: '',
   setProjectName: () => {},
+  fontsReady: false,
   nodes: [],
   setNodes: noopSetNodes,
   changeNodeProp: noopChangeNodeProp,
@@ -220,6 +243,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const projectId = params.projectId ?? null;
   const creatingProjectRef = useRef(false);
   const [projectName, setProjectName] = useState<string>('Untitled Project');
+  const [fontsReady, setFontsReady] = useState(false);
   const [nodes, setNodes] = useState<FlowNode[]>([]);
 
   const [selectedNodesMap, setSelectedNodesMapState] = useState<Map<string, FlowNode>>(
@@ -250,6 +274,45 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const previewSavingRef = useRef(false);
   const previewSaveTaskIdRef = useRef(0);
   const PREVIEW_CAPTURE_DELAY_MS = 1500;
+
+  useEffect(() => {
+    let mounted = true;
+    const prepareFonts = async () => {
+      if (typeof document === 'undefined') return;
+      if (!document.getElementById(FONT_FACE_STYLE_ID)) {
+        const css = MANIFEST_FONTS.map((item) => {
+          const fontFamily = item.postscriptName?.replace(/'/g, "\\'");
+          const fileName = String(item.file);
+          const fontUrl = `/fonts/${encodeURIComponent(fileName)}`;
+          const format = getFontFaceFormat(fileName);
+          return `@font-face{font-family:'${fontFamily}';src:url('${fontUrl}') format('${format}');font-style:normal;font-weight:100 900;font-display:swap;}`;
+        }).join('');
+        const styleEl = document.createElement('style');
+        styleEl.id = FONT_FACE_STYLE_ID;
+        styleEl.textContent = css;
+        document.head.appendChild(styleEl);
+      }
+      const fontsApi = document.fonts;
+      if (!fontsApi?.load) return;
+      const loadTasks = Array.from(
+        new Set(MANIFEST_FONTS.map((item) => String(item.postscriptName))),
+      ).map((fontName) => fontsApi.load(`12px "${fontName.replace(/"/g, '\\"')}"`));
+      await Promise.race([
+        Promise.all(loadTasks),
+        new Promise((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
+      ]);
+    };
+
+    prepareFonts()
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setFontsReady(true);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (params.projectId) return;
@@ -801,6 +864,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       projectId,
       projectName,
       setProjectName,
+      fontsReady,
       nodes,
       setNodes,
       changeNodeProp: commitNodes,
@@ -852,6 +916,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       nodes,
       projectId,
       projectName,
+      fontsReady,
       selectedNodesMap,
       actionPropNode,
       selectedBranchNodes,
@@ -943,7 +1008,7 @@ export const useEditorProjectNameSetter = () => useContext(EditorCoreCtx).setPro
 export const useEditorSaveStatus = () => 'idle' as ProjectAutoSaveStatus;
 export const useEditorLastSavedAt = () => null as string | null;
 export const useEditorSaveAllNow = () => noop;
-export const useEditorFontsReady = () => true;
+export const useEditorFontsReady = () => useContext(EditorCoreCtx).fontsReady;
 export const useEditorCoreLoading = () => false;
 export const useEditorCoreSetter = () => noopCoreSetter;
 export const useEditorUIVisibility = () => DEFAULT_EDITOR_UI_VISIBILITY;

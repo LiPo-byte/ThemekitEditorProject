@@ -6,6 +6,14 @@ export type ImageSize = {
   height: number;
 };
 
+export const isAndroidWidgetNode = (parentId?: unknown): boolean =>
+  typeof parentId === 'string' && parentId.endsWith('android');
+
+export const resolveWidgetFontFamily = (
+  parentId: unknown,
+  fontFamily?: string,
+): string | undefined => (isAndroidWidgetNode(parentId) ? 'Roboto-Regular' : fontFamily);
+
 /**
  * 通过图片地址获取原始尺寸（naturalWidth / naturalHeight）。
  */

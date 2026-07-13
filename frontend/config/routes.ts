@@ -11,19 +11,6 @@ export default [
     ],
   },
   {
-    name: 'editor',
-    layout: false,
-    icon: 'edit',
-    path: '/editor',
-    component: './editor',
-  },
-  {
-    name: 'editor-detail',
-    layout: false,
-    path: '/editor/:projectId',
-    component: './editor',
-  },
-  {
     name: 'editor-xyflow',
     layout: false,
     icon: 'edit',

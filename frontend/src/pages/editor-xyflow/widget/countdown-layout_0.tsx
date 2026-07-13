@@ -4,10 +4,11 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
+import { resolveWidgetFontFamily } from './util';
 
-const getTextStyle = (textData?: any) => ({
+const getTextStyle = (parentId?: string, textData?: any) => ({
   fontSize: textData?.textSize ?? 14,
-  fontFamily: textData?.font,
+  fontFamily: resolveWidgetFontFamily(parentId, textData?.font),
   opacity: textData?.alpha ?? 1,
   color: textData?.textColor ?? '#111827',
   lineHeight: 1,
@@ -31,11 +32,11 @@ export default function CountdownLayout_0(props: any) {
   const festivalName = data?.festivalName ?? '';
 
   // const numberStyle = getTextStyle(data?.remainDays ?? data?.day);
-  const dayStyle = getTextStyle(data?.remainDays);
+  const dayStyle = getTextStyle(props.parentId, data?.remainDays);
   // const hourStyle = getTextStyle(data?.remainDays);
   // const minuteStyle = getTextStyle(data?.remainDays);
-  const daysStyle = getTextStyle(data?.days);
-  const titleStyle = getTextStyle(data?.title);
+  const daysStyle = getTextStyle(props.parentId, data?.days);
+  const titleStyle = getTextStyle(props.parentId, data?.title);
 
   const renderBlock = (value: string, label: string, valueStyle: Record<string, any>, daysStyle: Record<string, any>) => (
     <div

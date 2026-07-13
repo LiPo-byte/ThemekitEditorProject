@@ -5,6 +5,7 @@ import {
   // useEditorGetParentNodeData,
   // type CropProps,
 } from '../context';
+import { resolveWidgetFontFamily } from './util';
 
 import './style.css';
 
@@ -50,7 +51,7 @@ export default function QuotationLayout_0(props: any) {
       <div style={{
         position: 'relative',
         zIndex: 2,
-        fontFamily: data.quote.font,
+        fontFamily: resolveWidgetFontFamily(props.parentId, data.quote.font),
         fontSize: data.quote.textSize,
         color: data.quote.textColor,
         lineHeight: 1,

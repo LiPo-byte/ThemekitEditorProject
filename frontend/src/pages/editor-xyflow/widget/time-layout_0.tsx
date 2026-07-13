@@ -6,6 +6,7 @@ import {
   // type CropProps,
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
+import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
 // interface TimeLayoutData {
@@ -60,7 +61,7 @@ export default function TimeLayout_1(props: any) {
   // const getTextStyle = (textData?: TimeLayoutData['time'] | TimeLayoutData['day']) => ({
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
-    fontFamily: textData?.font,
+    fontFamily: resolveWidgetFontFamily(props.parentId, textData?.font),
     opacity: textData?.alpha ?? 1,
     color: textData?.textColor ?? '#111827',
     lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
@@ -95,7 +96,7 @@ export default function TimeLayout_1(props: any) {
       />
       { data.time && (
         <span style={getTextStyle(data.time)}>
-          { !data.day && !data.date ? '10:29 AM' : '10:29'}
+          { !data.day && !data.date ? '10:09 AM' : '10:09'}
         </span>
       )}
       {data.day && (

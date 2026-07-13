@@ -4,6 +4,7 @@ import {
   useEditorCropToolOpen,
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
+import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
 const CARD_SIZE_MAP: Record<number, { w: number; h: number }> = {
@@ -42,7 +43,7 @@ export default function TimeLayout_3(props: any) {
   if (!data) return null;
   const timeTextStyle = {
     fontSize: data?.time?.textSize ?? 42,
-    fontFamily: data?.time?.font,
+    fontFamily: resolveWidgetFontFamily(props.parentId, data?.time?.font),
     color: data?.time?.textColor ?? '#101828',
     lineHeight: data?.time?.textHeight ? `${data.time.textHeight}px` : '1',
     opacity: data?.time?.alpha ?? 1,

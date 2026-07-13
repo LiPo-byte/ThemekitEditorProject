@@ -1,6 +1,7 @@
 import { useMemo, type CSSProperties } from 'react';
 import { useEditorCropEditingNodeId, useEditorCropToolOpen } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
+import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
 export default function TimeLayout_6(props: any) {
@@ -23,7 +24,7 @@ export default function TimeLayout_6(props: any) {
 
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
-    fontFamily: textData?.font,
+    fontFamily: resolveWidgetFontFamily(props.parentId, textData?.font),
     opacity: textData?.alpha ?? 1,
     color: textData?.textColor ?? '#111827',
     lineHeight: textData?.textHeight ? `${textData.textHeight}px` : '1',

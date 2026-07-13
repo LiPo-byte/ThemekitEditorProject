@@ -17,6 +17,14 @@ export const WIDGET_SIZE: any = {
         height: 345,
     },
 }; */
+@font-face {
+    font-family: 'Roboto-Regular';
+    src: local('Roboto Regular'), local('Roboto-Regular'), url('/fonts/Roboto-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
 .size_1 {
     width: 155px;
     height: 155px;

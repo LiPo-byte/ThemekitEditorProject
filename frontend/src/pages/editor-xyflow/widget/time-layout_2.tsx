@@ -6,6 +6,7 @@ import {
   // type CropProps,
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
+import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
 
@@ -18,7 +19,7 @@ export default function TimeLayout_1(props: any) {
   if (!data) return null;
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
-    fontFamily: textData?.font,
+    fontFamily: resolveWidgetFontFamily(props.parentId, textData?.font),
     opacity: textData?.alpha ?? 1,
     color: textData?.textColor ?? '#111827',
     // lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
@@ -53,19 +54,18 @@ export default function TimeLayout_1(props: any) {
       body: {
         width: '30px',
         height: '12px',
-        border: `1.5px solid ${batteryColor}`,
         borderRadius: '3px',
-        padding: '1px',
+        backgroundColor: batteryColor,
         position: 'relative' as const,
         boxSizing: 'border-box' as const,
-        overflow: 'hidden' as const,
+        overflow: 'visible' as const,
       },
       fill: {
         width: `${batteryPercent}%`,
         height: '100%',
-        borderRadius: '1px',
+        borderRadius: '3px',
         backgroundColor: batteryFillColor,
-        opacity: 0.9,
+        opacity: 1,
       },
       text: {
         position: 'absolute' as const,
@@ -82,10 +82,13 @@ export default function TimeLayout_1(props: any) {
         pointerEvents: 'none' as const,
       },
       cap: {
-        width: '2px',
-        height: '5px',
-        marginLeft: '2px',
-        borderRadius: '1px',
+        position: 'absolute' as const,
+        right: '-1px',
+        top: '50%',
+        transform: 'translate(30%, -50%)',
+        width: '3px',
+        height: '6px',
+        borderRadius: '2px',
         backgroundColor: batteryColor,
       },
       percentText: `${batteryPercent}`,
@@ -149,8 +152,8 @@ export default function TimeLayout_1(props: any) {
         <div style={batteryStyle.body}>
           <div style={batteryStyle.fill} />
           <span style={batteryStyle.text}>{batteryStyle.percentText}</span>
+          <div style={batteryStyle.cap} />
         </div>
-        <div style={batteryStyle.cap} />
       </div>
       { data.time && timeElement}
       {data.day && (

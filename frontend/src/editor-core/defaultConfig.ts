@@ -18,7 +18,7 @@ export const WidgetDefaultConfig = {
           "sizes":[
                 {
                     "size":1,
-                    "name": "Time-IOS-Small",
+                    "name": "Time_IOS_Small",
                     "radius": 28,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -49,7 +49,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":2,
-                    "name": "Time-IOS-Medium",
+                    "name": "Time_IOS_Medium",
                     "padding":16,
                     "radius": 28,
                     "source": "",
@@ -80,7 +80,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":3,
-                    "name": "Time-IOS-Large",
+                    "name": "Time_IOS_Large",
                     "padding":16,
                     "radius": 28,
                     "source": "",
@@ -120,7 +120,7 @@ export const WidgetDefaultConfig = {
           "sizes":[
                 {
                     "size":1,
-                    "name": "Time-Android-Small",
+                    "name": "Time_Android_Small",
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
@@ -151,7 +151,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":2,
-                    "name": "Time-Android-Medium",
+                    "name": "Time_Android_Medium",
                     "padding":16,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -182,7 +182,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":3,
-                    "name": "Time-Android-Large",
+                    "name": "Time_Android_Large",
                     "padding":16,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -224,7 +224,7 @@ export const WidgetDefaultConfig = {
           "sizes":[
                 {
                     "size":1,
-                    "name": "Time-IOS-Small",
+                    "name": "Time_IOS_Small",
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
@@ -239,7 +239,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":2,
-                    "name": "Time-IOS-Medium",
+                    "name": "Time_IOS_Medium",
                     "padding":16,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -254,7 +254,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":3,
-                    "name": "Time-IOS-Large",
+                    "name": "Time_IOS_Large",
                     "padding":16,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -278,7 +278,7 @@ export const WidgetDefaultConfig = {
           "sizes":[
                 {
                     "size":1,
-                    "name": "Time-Android-Small",
+                    "name": "Time_Android_Small",
                     "padding":16,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -293,7 +293,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":2,
-                    "name": "Time-Android-Medium",
+                    "name": "Time_Android_Medium",
                     "padding":16,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -308,7 +308,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":3,
-                    "name": "Time-Android-Large",
+                    "name": "Time_Android_Large",
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
@@ -334,7 +334,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size":1,
                     "layoutType": 1,
-                    "name": "Time-IOS-Small",
+                    "name": "Time_IOS_Small",
                     "radius": 28,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -367,7 +367,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size":2,
                     "layoutType": 1,
-                    "name": "Time-IOS-Medium",
+                    "name": "Time_IOS_Medium",
                     "radius": 28,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -400,7 +400,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size":3,
                     "layoutType": 1,
-                    "name": "Time-IOS-Large",
+                    "name": "Time_IOS_Large",
                     "radius": 28,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -441,7 +441,7 @@ export const WidgetDefaultConfig = {
                   {
                       "size":1,
                       "layoutType": 1,
-                      "name": "Time-Android-Small",
+                      "name": "Time_Android_Small",
                       "radius": 28,
                       "source": "",
                       "crop_props": defaultCropProps,
@@ -474,7 +474,7 @@ export const WidgetDefaultConfig = {
                   {
                       "size":2,
                       "layoutType": 1,
-                      "name": "Time-Android-Medium",
+                      "name": "Time_Android_Medium",
                       "radius": 28,
                       "source": "",
                       "crop_props": defaultCropProps,
@@ -507,7 +507,7 @@ export const WidgetDefaultConfig = {
                   {
                       "size":3,
                       "layoutType": 1,
-                      "name": "Time-Android-Large",
+                      "name": "Time_Android_Large",
                       "radius": 28,
                       "source": "",
                       "crop_props": defaultCropProps,
@@ -551,7 +551,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size":1,
                     "layoutType": 2,
-                    "name": "Time-IOS-Small",
+                    "name": "Time_IOS_Small",
                     "radius": 28,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -587,7 +587,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size":2,
                     "layoutType": 2,
-                    "name": "Time-IOS-Medium",
+                    "name": "Time_IOS_Medium",
                     "radius": 28,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -623,7 +623,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size":3,
                     "layoutType": 2,
-                    "name": "Time-IOS-Large",
+                    "name": "Time_IOS_Large",
                     "radius": 28,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -668,7 +668,7 @@ export const WidgetDefaultConfig = {
                   {
                       "size":1,
                       "layoutType": 2,
-                      "name": "Time-Android-Small",
+                      "name": "Time_Android_Small",
                       "radius": 28,
                       "source": "",
                       "crop_props": defaultCropProps,
@@ -704,7 +704,7 @@ export const WidgetDefaultConfig = {
                   {
                       "size":2,
                       "layoutType": 2,
-                      "name": "Time-Android-Medium",
+                      "name": "Time_Android_Medium",
                       "radius": 28,
                       "source": "",
                       "crop_props": defaultCropProps,
@@ -740,7 +740,7 @@ export const WidgetDefaultConfig = {
                   {
                       "size":3,
                       "layoutType": 2,
-                      "name": "Time-Android-Large",
+                      "name": "Time_Android_Large",
                       "radius": 28,
                       "source": "",
                       "crop_props": defaultCropProps,
@@ -786,7 +786,7 @@ export const WidgetDefaultConfig = {
           "sizes":[
                 {
                     "size":1,
-                    "name": "Time-IOS-Small",
+                    "name": "Time_IOS_Small",
                     "radius": 28,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -803,7 +803,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":2,
-                    "name": "Time-IOS-Medium",
+                    "name": "Time_IOS_Medium",
                     "padding":16,
                     "radius": 28,
                     "layoutType": 3,
@@ -820,7 +820,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":3,
-                    "name": "Time-IOS-Large",
+                    "name": "Time_IOS_Large",
                     "padding":16,
                     "radius": 28,
                     "source": "",
@@ -846,7 +846,7 @@ export const WidgetDefaultConfig = {
           "sizes":[
                 {
                     "size":1,
-                    "name": "Time-Android-Small",
+                    "name": "Time_Android_Small",
                     "source": "",
                     "crop_props": defaultCropProps,
                     "radius": 28,
@@ -863,7 +863,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":2,
-                    "name": "Time-Android-Medium",
+                    "name": "Time_Android_Medium",
                     "padding":16,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -880,7 +880,7 @@ export const WidgetDefaultConfig = {
                 },
                 {
                     "size":3,
-                    "name": "Time-Android-Large",
+                    "name": "Time_Android_Large",
                     "padding":16,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -908,7 +908,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 4,
-                 "name":"Time-IOS-Small",
+                 "name":"Time_IOS_Small",
                  "radius": 28,
                   "source": "",
                 "crop_props": defaultCropProps,
@@ -946,7 +946,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 4,
-                 "name":"Time-IOS-Medium",
+                 "name":"Time_IOS_Medium",
                  "radius": 28,
                  "source": "",
                "crop_props": defaultCropProps,
@@ -984,7 +984,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 4,
-                 "name":"Time-IOS-Large",
+                 "name":"Time_IOS_Large",
                  "radius": 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -1030,7 +1030,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 4,
-                 "name":"Time-Android-Small",
+                 "name":"Time_Android_Small",
                  "radius": 28,
                   "source": "",
                 "crop_props": defaultCropProps,
@@ -1046,7 +1046,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 4,
-                 "name":"Time-Android-Medium",
+                 "name":"Time_Android_Medium",
                  "radius": 28,
                  "source": "",
                "crop_props": defaultCropProps,
@@ -1062,7 +1062,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 4,
-                 "name":"Time-Android-Large",
+                 "name":"Time_Android_Large",
                  "radius": 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -1088,7 +1088,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 5,
-                 "name":"Time-IOS-Small",
+                 "name":"Time_IOS_Small",
                  "radius": 28,
                   "source": "",
                 "crop_props": defaultCropProps,
@@ -1142,7 +1142,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 5,
-                 "name":"Time-IOS-Medium",
+                 "name":"Time_IOS_Medium",
                  "radius": 28,
                  "source": "",
                "crop_props": defaultCropProps,
@@ -1196,7 +1196,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 5,
-                 "name":"Time-IOS-Large",
+                 "name":"Time_IOS_Large",
                  "radius": 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -1259,7 +1259,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 5,
-                 "name":"Time-Android-Small",
+                 "name":"Time_Android_Small",
                  "radius": 28,
                   "source": "",
                 "crop_props": defaultCropProps,
@@ -1289,7 +1289,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 5,
-                 "name":"Time-Android-Medium",
+                 "name":"Time_Android_Medium",
                  "radius": 28,
                  "source": "",
                "crop_props": defaultCropProps,
@@ -1319,7 +1319,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 5,
-                 "name":"Time-Android-Large",
+                 "name":"Time_Android_Large",
                  "radius": 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -1359,7 +1359,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 6,
-                 "name":"Time-IOS-Small",
+                 "name":"Time_IOS_Small",
                  "radius": 28,
                   "source": "",
                 "crop_props": defaultCropProps,
@@ -1409,7 +1409,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 6,
-                 "name":"Time-IOS-Medium",
+                 "name":"Time_IOS_Medium",
                  "radius": 28,
                  "source": "",
                "crop_props": defaultCropProps,
@@ -1459,7 +1459,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 6,
-                 "name":"Time-IOS-Large",
+                 "name":"Time_IOS_Large",
                  "radius": 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -1518,7 +1518,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 6,
-                 "name":"Time-Android-Small",
+                 "name":"Time_Android_Small",
                  "radius": 28,
                   "source": "",
                 "crop_props": defaultCropProps,
@@ -1544,7 +1544,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 6,
-                 "name":"Time-Android-Medium",
+                 "name":"Time_Android_Medium",
                  "radius": 28,
                  "source": "",
                "crop_props": defaultCropProps,
@@ -1570,7 +1570,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 6,
-                 "name":"Time-Android-Large",
+                 "name":"Time_Android_Large",
                  "radius": 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -1605,7 +1605,7 @@ export const WidgetDefaultConfig = {
             "sizes":[
                {
                   "size":1,
-                  "name":"Calendar-IOS-Small",
+                  "name":"Calendar_IOS_Small",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1627,7 +1627,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":2,
-                  "name":"Calendar-IOS-Medium",
+                  "name":"Calendar_IOS_Medium",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1649,7 +1649,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":3,
-                  "name":"Calendar-IOS-Large",
+                  "name":"Calendar_IOS_Large",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1679,7 +1679,7 @@ export const WidgetDefaultConfig = {
             "sizes":[
                {
                   "size":1,
-                  "name":"Calendar-Android-Small",
+                  "name":"Calendar_Android_Small",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1701,7 +1701,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":2,
-                  "name":"Calendar-Android-Medium",
+                  "name":"Calendar_Android_Medium",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1723,7 +1723,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":3,
-                  "name":"Calendar-Android-Large",
+                  "name":"Calendar_Android_Large",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1755,7 +1755,7 @@ export const WidgetDefaultConfig = {
             "sizes":[
                {
                   "size":1,
-                  "name":"Calendar-IOS-Small",
+                  "name":"Calendar_IOS_Small",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1777,7 +1777,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":2,
-                  "name":"Calendar-IOS-Medium",
+                  "name":"Calendar_IOS_Medium",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1805,7 +1805,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":3,
-                  "name":"Calendar-IOS-Large",
+                  "name":"Calendar_IOS_Large",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1835,7 +1835,7 @@ export const WidgetDefaultConfig = {
             "sizes":[
                {
                   "size":1,
-                  "name":"Calendar-Android-Small",
+                  "name":"Calendar_Android_Small",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1857,7 +1857,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":2,
-                  "name":"Calendar-Android-Medium",
+                  "name":"Calendar_Android_Medium",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1885,7 +1885,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":3,
-                  "name":"Calendar-Android-Large",
+                  "name":"Calendar_Android_Large",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1917,7 +1917,7 @@ export const WidgetDefaultConfig = {
             "sizes":[
                {
                   "size":1,
-                  "name":"Calendar-IOS-Small",
+                  "name":"Calendar_IOS_Small",
                   "layoutType": 1,
                   "source": '',
                   "crop_props": defaultCropProps,
@@ -1940,7 +1940,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":2,
-                  "name":"Calendar-IOS-Medium",
+                  "name":"Calendar_IOS_Medium",
                   "layoutType": 1,
                   "source": '',
                   "crop_props": defaultCropProps,
@@ -1963,7 +1963,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":3,
-                  "name":"Calendar-IOS-Large",
+                  "name":"Calendar_IOS_Large",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "radius": 28,
@@ -1994,7 +1994,7 @@ export const WidgetDefaultConfig = {
             "sizes":[
                {
                   "size":1,
-                  "name":"Calendar-Android-Small",
+                  "name":"Calendar_Android_Small",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "layoutType": 1,
@@ -2017,7 +2017,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":2,
-                  "name":"Calendar-Android-Medium",
+                  "name":"Calendar_Android_Medium",
                   "layoutType": 1,
                   "source": '',
                   "crop_props": defaultCropProps,
@@ -2040,7 +2040,7 @@ export const WidgetDefaultConfig = {
                },
                {
                   "size":3,
-                  "name":"Calendar-Android-Large",
+                  "name":"Calendar_Android_Large",
                   "source": '',
                   "crop_props": defaultCropProps,
                   "layoutType": 1,
@@ -2074,7 +2074,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 2,
-                 "name":"Calendar-IOS-Small",
+                 "name":"Calendar_IOS_Small",
                  "source": '',
                  "crop_props": defaultCropProps,
                  "radius": 28,
@@ -2122,7 +2122,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 2,
-                 "name":"Calendar-IOS-Medium",
+                 "name":"Calendar_IOS_Medium",
                  "source": '',
                  "crop_props": defaultCropProps,
                  "radius": 28,
@@ -2166,7 +2166,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 2,
-                 "name":"Calendar-IOS-Large",
+                 "name":"Calendar_IOS_Large",
                  "source": '',
                  "crop_props": defaultCropProps,
                  "radius": 28,
@@ -2232,7 +2232,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 2,
-                 "name":"Calendar-Android-Small",
+                 "name":"Calendar_Android_Small",
                  "source": '',
                  "crop_props": defaultCropProps,
                  "radius": 28,
@@ -2256,7 +2256,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 2,
-                 "name":"Calendar-AndroidS-Medium",
+                 "name":"Calendar_AndroidS_Medium",
                  "source": '',
                  "crop_props": defaultCropProps,
                  "radius": 28,
@@ -2276,7 +2276,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 2,
-                 "name":"Calendar-Android-Large",
+                 "name":"Calendar_Android_Large",
                  "source": '',
                  "crop_props": defaultCropProps,
                  "radius": 28,
@@ -2319,21 +2319,21 @@ export const WidgetDefaultConfig = {
             "sizes":[
                {
                   "size":1,
-                  "name":"PureImage-IOS-Small",
+                  "name":"PureImage_IOS_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
                 },
                 {
                 "size":2,
-                "name":"PureImage-IOS-Medium",
+                "name":"PureImage_IOS_Medium",
                 radius: 28,
                 "source": "",
                 "crop_props": defaultCropProps,
                 },
                 {
                 "size":3,
-                "name":"PureImage-IOS-Large",
+                "name":"PureImage_IOS_Large",
                 radius: 28,
                 "source": "",
                 "crop_props": defaultCropProps,
@@ -2348,21 +2348,21 @@ export const WidgetDefaultConfig = {
             "sizes":[
                {
                   "size":1,
-                  "name":"PureImage-Android-Small",
+                  "name":"PureImage_Android_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
                 },
                 {
                 "size":2,
-                "name":"PureImage-Android-Medium",
+                "name":"PureImage_Android_Medium",
                 radius: 28,
                 "source": "",
                 "crop_props": defaultCropProps,
                 },
                 {
                 "size":3,
-                "name":"PureImage-Android-Large",
+                "name":"PureImage_Android_Large",
                 radius: 28,
                 "source": "",
                 "crop_props": defaultCropProps,
@@ -2482,7 +2482,7 @@ export const WidgetDefaultConfig = {
                {
                  "size": 1,
                  "layoutType": 0,
-                 "name": "CountDown-IOS-Small",
+                 "name": "CountDown_IOS_Small",
                  "festivalName":"Halloween",
                  "source": "",
                  radius: 28,
@@ -2510,7 +2510,7 @@ export const WidgetDefaultConfig = {
                {
                  "size": 2,
                  "layoutType": 0,
-                 "name": "CountDown-IOS-Medium",
+                 "name": "CountDown_IOS_Medium",
                  "festivalName":"Halloween",
                  "source": "",
                     radius: 28,
@@ -2538,7 +2538,7 @@ export const WidgetDefaultConfig = {
                {
                 "size": 3,
                 "layoutType": 0,
-                "name": "CountDown-IOS-Large",
+                "name": "CountDown_IOS_Large",
                 "festivalName":"Halloween",
                 "source": "",
                 radius: 28,
@@ -2574,7 +2574,7 @@ export const WidgetDefaultConfig = {
                {
                  "size": 1,
                  "layoutType": 0,
-                 "name": "CountDown-Android-Small",
+                 "name": "CountDown_Android_Small",
                  "festivalName":"Halloween",
                  "source": "",
                  radius: 28,
@@ -2602,7 +2602,7 @@ export const WidgetDefaultConfig = {
                {
                  "size": 2,
                  "layoutType": 0,
-                 "name": "CountDown-Android-Medium",
+                 "name": "CountDown_Android_Medium",
                  "festivalName":"Halloween",
                  "source": "",
                     radius: 28,
@@ -2630,7 +2630,7 @@ export const WidgetDefaultConfig = {
                {
                 "size": 3,
                 "layoutType": 0,
-                "name": "CountDown-Android-Large",
+                "name": "CountDown_Android_Large",
                 "festivalName":"Halloween",
                 "source": "",
                 radius: 28,

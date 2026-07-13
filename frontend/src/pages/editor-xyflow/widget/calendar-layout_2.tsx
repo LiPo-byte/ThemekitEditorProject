@@ -5,6 +5,7 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
+import { resolveWidgetFontFamily } from './util';
 
 const WEEK_LABELS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTH_NAME = 'October';
@@ -175,7 +176,7 @@ export default function CalendarLayout_0(props: any) {
               position: 'absolute',
               top: 28,
               right: 19,
-              fontFamily: data?.month?.font,
+              fontFamily: resolveWidgetFontFamily(props.parentId, data?.month?.font),
               fontSize: data?.month?.textSize,
               opacity: data?.month?.alpha,
               height: data?.month?.textHeight,
@@ -190,7 +191,7 @@ export default function CalendarLayout_0(props: any) {
               position: 'absolute',
               top: 88,
               right: 58,
-              fontFamily: data?.year?.font,
+              fontFamily: resolveWidgetFontFamily(props.parentId, data?.year?.font),
               fontSize: data?.year?.textSize,
               opacity: data?.year?.alpha,
               height: data?.year?.textHeight,
@@ -198,7 +199,7 @@ export default function CalendarLayout_0(props: any) {
               zIndex: 2,
             }}
           >
-            2024
+            2026
           </div>
         </>
       : null }
@@ -217,7 +218,7 @@ export default function CalendarLayout_0(props: any) {
         >
           <span
             style={{
-              fontFamily: data?.month?.font,
+              fontFamily: resolveWidgetFontFamily(props.parentId, data?.month?.font),
               fontSize: data?.month?.textSize,
               opacity: data?.month?.alpha ?? 1,
               height: data?.month?.textHeight,
@@ -230,7 +231,7 @@ export default function CalendarLayout_0(props: any) {
           </span>
           <span
             style={{
-              fontFamily: data?.day?.font,
+              fontFamily: resolveWidgetFontFamily(props.parentId, data?.day?.font),
               fontSize: data?.day?.textSize,
               opacity: data?.day?.alpha ?? 1,
               height: data?.day?.textHeight,
@@ -251,7 +252,7 @@ export default function CalendarLayout_0(props: any) {
           left: 0,
           right: 0,
           bottom: 15,
-          fontFamily: data?.month?.font,
+          fontFamily: resolveWidgetFontFamily(props.parentId, data?.month?.font),
           fontSize: data?.month?.textSize,
           opacity: data?.month?.alpha ?? 1,
           height: data?.month?.textHeight,
@@ -290,7 +291,7 @@ export default function CalendarLayout_0(props: any) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: data.calendar.textSize,
-                    fontFamily: data.calendar.font,
+                    fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
                   }}>{i}</div>
                 })}
             </div>
@@ -315,7 +316,7 @@ export default function CalendarLayout_0(props: any) {
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: data.calendar.textSize,
-                      fontFamily: data.calendar.font,
+                      fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
                       backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
                       borderRadius: i === 17 ? '100%' : '0',
                       color: color,
@@ -357,7 +358,7 @@ export default function CalendarLayout_0(props: any) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: data.calendar.textSize,
-                    fontFamily: data.calendar.font,
+                    fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
                   }}>{i}</div>
                 })}
             </div>
@@ -382,7 +383,7 @@ export default function CalendarLayout_0(props: any) {
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: data.calendar.textSize,
-                      fontFamily: data.calendar.font,
+                      fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
                       backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
                       borderRadius: i === 17 ? '100%' : '0',
                       color: color,

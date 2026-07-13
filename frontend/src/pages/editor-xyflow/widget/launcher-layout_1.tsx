@@ -4,13 +4,14 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
+import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
 
 
-const getTextStyle = (textData?: any) => ({
+const getTextStyle = (parentId?: string, textData?: any) => ({
   fontSize: textData?.textSize ?? 14,
-  fontFamily: textData?.font,
+  fontFamily: resolveWidgetFontFamily(parentId, textData?.font),
   opacity: textData?.alpha ?? 1,
   color: textData?.textColor ?? '#111827',
   lineHeight: 1,
@@ -147,7 +148,7 @@ export default function LauncherLayout_1(props: any) {
       {title && title.content ? (
         <div style={{
           zIndex: 2,
-          ...getTextStyle(data?.title),
+          ...getTextStyle(props.parentId, data?.title),
           position: 'absolute',
           transform: 'translate(-23px, 0%)',
           left: '40%',
