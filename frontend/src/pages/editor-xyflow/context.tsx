@@ -120,7 +120,7 @@ type EditorCoreCtxValue = {
   openCropEditor: (nodeId: string) => void;
   closeCropEditor: () => void;
   confirmCropEditor: () => void;
-  generatePreviewImage: () => Promise<string | null>;
+  generatePreviewImage: (rootId?: string) => Promise<string | null>;
   generateProjectPayload: () => Promise<Record<string, any> | null>;
   saveProjectPayload: () => Promise<Record<string, any> | null>;
 };
@@ -661,17 +661,74 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     closeCropEditor();
   };
 
-  const generatePreviewImage = async () => {
+  const generatePreviewImage = async (rootId?: string) => {
     if (typeof document === 'undefined') return null;
-    const viewportEl = document.querySelector('.xyflow-stage .react-flow__viewport') as HTMLElement | null;
+
+    // 截指定 root widget 的整片区域（含它所有 platform + size 子节点）。
+    // 未传 rootId 时 fallback 到画布上第一个 root。
+    // 做法：把 viewport 当作截图源，通过覆写它的 transform 让内容按 1x 世界坐标
+    // 渲染，同时把 canvas 尺寸限制为 root 的 bbox，从而把画面裁到 root 那块。
+    const targetRoot = rootId
+      ? nodes.find(
+          (node) =>
+            String(node.id) === String(rootId) &&
+            node.type === 'group' &&
+            !node.parentId,
+        )
+      : nodes.find((node) => node.type === 'group' && !node.parentId);
+    if (!targetRoot) return null;
+
+    const resolvedRootId = String(targetRoot.id ?? '');
+    if (!resolvedRootId) return null;
+    const safeId =
+      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+        ? CSS.escape(resolvedRootId)
+        : resolvedRootId;
+    const rootEl = document.querySelector(
+      `.xyflow-stage .react-flow__node[data-id="${safeId}"]`,
+    ) as HTMLElement | null;
+    if (!rootEl) return null;
+
+    const viewportEl = document.querySelector(
+      '.xyflow-stage .react-flow__viewport',
+    ) as HTMLElement | null;
     if (!viewportEl) return null;
+
+    // 世界坐标下的位置来自 node.position；宽高优先取 node.style/measured，
+    // 兜底用 rootEl.offsetWidth/Height（也是世界坐标，不含 viewport scale）
+    const rootPos = (targetRoot.position ?? {}) as { x?: number; y?: number };
+    const rootStyle = (targetRoot.style ?? {}) as {
+      width?: number | string;
+      height?: number | string;
+    };
+    const rootMeasured = ((targetRoot as any).measured ?? {}) as {
+      width?: number;
+      height?: number;
+    };
+    const rootX = Number(rootPos.x ?? 0);
+    const rootY = Number(rootPos.y ?? 0);
+    const rootW =
+      Number(rootStyle.width) ||
+      Number(rootMeasured.width) ||
+      rootEl.offsetWidth;
+    const rootH =
+      Number(rootStyle.height) ||
+      Number(rootMeasured.height) ||
+      rootEl.offsetHeight;
+    if (!rootW || !rootH) return null;
+
     try {
       return await toJpeg(viewportEl, {
-        pixelRatio: 1,
-        canvasWidth: 240,
-        canvasHeight: 240,
-        quality: 0.72,
+        pixelRatio: 3,
+        quality: 0.92,
         backgroundColor: '#ffffff',
+        cacheBust: true,
+        width: rootW,
+        height: rootH,
+        style: {
+          transform: `translate(${-rootX}px, ${-rootY}px)`,
+          transformOrigin: '0 0',
+        },
       });
     } catch (error) {
       console.warn('[EditorCoreProvider] generate preview image failed:', error);
