@@ -30,6 +30,9 @@ type ExportBundleOptions = {
   onError?: (text: string) => void;
 };
 
+const EXPORT_JPEG_QUALITY = 1;
+const EXPORT_PREVIEW_SCALE = 3;
+
 const SIZE_LABEL_MAP: Record<number, SizeLabel> = {
   1: 'small',
   2: 'medium',
@@ -269,6 +272,7 @@ export const useWidgetExportBundle = (nodeId?: string) => {
           gifOutputHeight: timegifHeight,
           jpegOutputWidth: timejpgWidth,
           jpegOutputHeight: timejpgHeight,
+          jpegQuality: EXPORT_JPEG_QUALITY,
           outputScale: 1,
           resizeMode: 'stretch',
         });
@@ -291,7 +295,8 @@ export const useWidgetExportBundle = (nodeId?: string) => {
         const previewBlob = await generateElementPreview(targetElement, {
           isGif: isDynamic,
           sourceUrl: source,
-          scale: 1,
+          scale: EXPORT_PREVIEW_SCALE,
+          jpegQuality: EXPORT_JPEG_QUALITY,
           outputWidth: previewWidth,
           outputHeight: previewHeight,
         });

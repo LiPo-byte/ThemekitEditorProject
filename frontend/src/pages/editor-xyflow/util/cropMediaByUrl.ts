@@ -372,11 +372,23 @@ export const cropMediaByUrl = async (
     (Number.isFinite(options.outputWidth) && Number(options.outputWidth) > 0
       ? Number(options.outputWidth)
       : null) ??
+    (Number.isFinite(options.jpegOutputWidth) && Number(options.jpegOutputWidth) > 0
+      ? Number(options.jpegOutputWidth)
+      : null) ??
+    (Number.isFinite(options.gifOutputWidth) && Number(options.gifOutputWidth) > 0
+      ? Number(options.gifOutputWidth)
+      : null) ??
     targetElementLayoutSize.width ??
     (targetElementSize.width > 0 ? targetElementSize.width : null);
   const preferredOutputHeightBase =
     (Number.isFinite(options.outputHeight) && Number(options.outputHeight) > 0
       ? Number(options.outputHeight)
+      : null) ??
+    (Number.isFinite(options.jpegOutputHeight) && Number(options.jpegOutputHeight) > 0
+      ? Number(options.jpegOutputHeight)
+      : null) ??
+    (Number.isFinite(options.gifOutputHeight) && Number(options.gifOutputHeight) > 0
+      ? Number(options.gifOutputHeight)
       : null) ??
     targetElementLayoutSize.height ??
     (targetElementSize.height > 0 ? targetElementSize.height : null);
