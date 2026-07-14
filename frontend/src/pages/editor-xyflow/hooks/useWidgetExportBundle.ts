@@ -274,6 +274,7 @@ export const useWidgetExportBundle = (nodeId?: string) => {
           jpegOutputHeight: timejpgHeight,
           jpegQuality: EXPORT_JPEG_QUALITY,
           outputScale: 1,
+          renderScale: 2,
           resizeMode: 'stretch',
         });
         //   const ext = isGif ? 'gif' : 'jpg';

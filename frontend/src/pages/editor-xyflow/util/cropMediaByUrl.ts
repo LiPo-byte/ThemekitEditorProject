@@ -20,6 +20,7 @@ export type CropMediaByUrlOptions = {
   jpegOutputHeight?: number;
   targetElement?: HTMLElement | null;
   outputScale?: number;
+  renderScale?: number;
   resizeMode?: 'crop' | 'stretch';
   jpegQuality?: number;
   gifMinDelayMs?: number;
@@ -81,6 +82,7 @@ const renderFrameWithTransform = (params: {
   height: number;
   transform: Required<CropTransform>;
   outputScale: number;
+  renderScale: number;
   resizeMode: 'crop' | 'stretch';
   backgroundColor?: string | null;
 }) => {
@@ -90,18 +92,22 @@ const renderFrameWithTransform = (params: {
     height,
     transform,
     outputScale,
+    renderScale,
     resizeMode,
     backgroundColor,
   } = params;
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(width * outputScale));
-  canvas.height = Math.max(1, Math.round(height * outputScale));
+  const combinedScale = outputScale * renderScale;
+  canvas.width = Math.max(1, Math.round(width * combinedScale));
+  canvas.height = Math.max(1, Math.round(height * combinedScale));
   const ctx = canvas.getContext('2d');
   if (!ctx) {
     throw new Error('Cannot create canvas 2d context.');
   }
 
-  ctx.scale(outputScale, outputScale);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.scale(combinedScale, combinedScale);
   if (backgroundColor) {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, width, height);
@@ -143,6 +149,8 @@ const resizeCanvasTo = (
   if (!ctx) {
     throw new Error('Cannot create resize canvas context.');
   }
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(sourceCanvas, 0, 0, canvas.width, canvas.height);
   return canvas;
 };
@@ -346,6 +354,10 @@ export const cropMediaByUrl = async (
     Number.isFinite(options.outputScale) && (options.outputScale ?? 0) > 0
       ? (options.outputScale as number)
       : 1;
+  const renderScale =
+    Number.isFinite(options.renderScale) && (options.renderScale ?? 0) > 0
+      ? (options.renderScale as number)
+      : 1;
   const resizeMode = options.resizeMode ?? 'crop';
   const gifMinDelayMs = Math.max(1, Math.round(options.gifMinDelayMs ?? 20));
   const targetElement = options.targetElement;
@@ -454,6 +466,7 @@ export const cropMediaByUrl = async (
           height: renderHeight,
           transform,
           outputScale,
+          renderScale,
           resizeMode,
           backgroundColor: options.gifBackgroundColor ?? null,
         }),
@@ -473,6 +486,7 @@ export const cropMediaByUrl = async (
           height: renderHeight,
           transform,
           outputScale,
+          renderScale,
           resizeMode,
           backgroundColor: options.gifBackgroundColor ?? null,
         }),
@@ -515,6 +529,7 @@ export const cropMediaByUrl = async (
     height: renderHeight,
     transform,
     outputScale,
+    renderScale,
     resizeMode,
     backgroundColor: '#ffffff',
   });
