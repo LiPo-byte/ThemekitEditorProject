@@ -38,6 +38,7 @@ export const TYPE_WIDGET_MAP:any = {
     9: 'countdown',
     6: 'quotation',
     14: 'launcher',
+    13: 'dynamic',
 }
 
 export const SOURCENAME_TYPE_WIDGET_MAP:any = {

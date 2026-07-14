@@ -30,7 +30,7 @@ import launcherLayout_6 from './widget/launcher-layout_6';
 import launcherLayout_7 from './widget/launcher-layout_7';
 import launcherLayout_8 from './widget/launcher-layout_8';
 import launcherLayout_9 from './widget/launcher-layout_9';
-
+import dynamicLayout_0 from './widget/dynamic-layout_0';
 
 
 import ActionPopover from './components/ActionPopover';
@@ -106,6 +106,7 @@ export default function EditorStage() {
           launcher_7: launcherLayout_7,
           launcher_8: launcherLayout_8,
           launcher_9: launcherLayout_9,
+          dynamic_0: dynamicLayout_0,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}

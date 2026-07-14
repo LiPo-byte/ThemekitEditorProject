@@ -2668,7 +2668,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":1,
                   "layoutType":0,
-                  "name":"Love_Bubble_Launcher_Small",
+                  "name":"Launcher_Common_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2684,7 +2684,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":2,
                   "layoutType":0,
-                  "name":"Love_Bubble_Launcher_Medium",
+                  "name":"Launcher_Common_Medium",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2694,7 +2694,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":3,
                   "layoutType":0,
-                  "name":"Love_Bubble_Launcher_Large",
+                  "name":"Launcher_Common_Large",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2714,7 +2714,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":1,
                   "layoutType":1,
-                  "name":"Pastel_Wall_Launcher_Small",
+                  "name":"Launcher_Common_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2730,7 +2730,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":2,
                   "layoutType":1,
-                  "name":"Pastel_Wall_Launcher_Medium",
+                  "name":"Launcher_Common_Medium",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2740,7 +2740,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":3,
                   "layoutType":1,
-                  "name":"Pastel_Wall_Launcher_Large",
+                  "name":"Launcher_Common_Large",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2760,7 +2760,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":1,
                   "layoutType":5,
-                  "name":"Beige_Life_Small_1",
+                  "name":"Launcher_Common_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2775,7 +2775,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":2,
                   "layoutType":5,
-                  "name":"Beige_Life_Medium_1",
+                  "name":"Launcher_Common_Medium",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2785,7 +2785,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":3,
                   "layoutType":5,
-                  "name":"Beige_Life_Large_1",
+                  "name":"Launcher_Common_Large",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2805,7 +2805,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":1,
                   "layoutType":6,
-                  "name":"Red_Neon_Sports_Car_Launcher_Small",
+                  "name":"Launcher_Common_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2814,7 +2814,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":2,
                   "layoutType":6,
-                  "name":"Red_Neon_Sports_Car_Launcher_Medium",
+                  "name":"Launcher_Common_Medium",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2823,7 +2823,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":3,
                   "layoutType":6,
-                  "name":"Red_Neon_Sports_Car_Launcher_Large",
+                  "name":"Launcher_Common_Large",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2842,7 +2842,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":1,
                   "layoutType":7,
-                  "name":"ENHYPEN_NIKI_C_Launcher_Small_3",
+                  "name":"Launcher_Common_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2851,7 +2851,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":2,
                   "layoutType":7,
-                  "name":"ENHYPEN_NIKI_C_Launcher_Medium_3",
+                  "name":"Launcher_Common_Medium",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2860,7 +2860,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":3,
                   "layoutType":7,
-                  "name":"ENHYPEN_NIKI_C_Launcher_Large_3",
+                  "name":"Launcher_Common_Large",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2879,7 +2879,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":1,
                   "layoutType":8,
-                  "name":"Color_Sky_Small_2",
+                  "name":"Launcher_Common_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2888,7 +2888,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":2,
                   "layoutType":8,
-                  "name":"Color_Sky_Medium_2",
+                  "name":"Launcher_Common_Medium",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2897,7 +2897,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":3,
                   "layoutType":8,
-                  "name":"Color_Sky_Large_2",
+                  "name":"Launcher_Common_Large",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2916,7 +2916,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":1,
                   "layoutType":9,
-                  "name":"Test_C_Launcher_Small",
+                  "name":"Launcher_Common_Small",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2925,7 +2925,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":2,
                   "layoutType":9,
-                  "name":"Test_C_Launcher_Medium",
+                  "name":"Launcher_Common_Medium",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2934,7 +2934,7 @@ export const WidgetDefaultConfig = {
                {
                   "size":3,
                   "layoutType":9,
-                  "name":"Test_C_Launcher_Large",
+                  "name":"Launcher_Common_Large",
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
@@ -2942,6 +2942,37 @@ export const WidgetDefaultConfig = {
                }
             ]
         }
+    },
+    Dynamic_LayoutType_0: {
+        common: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": true,
+            "type":13,
+            "sizes":[
+                   {
+                      "size":1,
+                      "name":"Summer_Duck_Dynamic_Small",
+                      "source": "",
+                      radius: 28,
+                      "crop_props": defaultCropProps,
+                       },
+                        {
+                      "size":2,
+                      "name":"Summer_Duck_Dynamic_Medium",
+                      "source": "",
+                      radius: 28,
+                      "crop_props": defaultCropProps,
+                       },
+                        {
+                      "size":3,
+                      "name":"Summer_Duck_Dynamic_Large",
+                      "source": "",
+                      radius: 28,
+                      "crop_props": defaultCropProps,
+                       }
+            ]
+         }
     }
 }
 export const IconPackDefaultConfig = {
