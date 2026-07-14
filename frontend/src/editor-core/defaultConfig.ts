@@ -2952,21 +2952,21 @@ export const WidgetDefaultConfig = {
             "sizes":[
                    {
                       "size":1,
-                      "name":"Summer_Duck_Dynamic_Small",
+                      "name":"Dynamic_Common_Small",
                       "source": "",
                       radius: 28,
                       "crop_props": defaultCropProps,
                        },
                         {
                       "size":2,
-                      "name":"Summer_Duck_Dynamic_Medium",
+                      "name":"Dynamic_Common_Medium",
                       "source": "",
                       radius: 28,
                       "crop_props": defaultCropProps,
                        },
                         {
                       "size":3,
-                      "name":"Summer_Duck_Dynamic_Large",
+                      "name":"Dynamic_Common_Large",
                       "source": "",
                       radius: 28,
                       "crop_props": defaultCropProps,
