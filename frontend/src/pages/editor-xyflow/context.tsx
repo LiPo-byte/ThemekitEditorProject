@@ -198,6 +198,52 @@ const cloneNodes = (items: FlowNode[]): FlowNode[] => {
   return JSON.parse(JSON.stringify(items)) as FlowNode[];
 };
 
+// 比较前后两次 nodes，找出发生变更（增/删/改）的节点所属的 root group id。
+// 用于记录「最近改动过的 root」，给 generatePreviewImage 默认截图用。
+const detectChangedRootId = (
+  prev: FlowNode[],
+  next: FlowNode[],
+): string | null => {
+  const prevById = new Map(prev.map((node) => [node.id, node] as const));
+  const nextById = new Map(next.map((node) => [node.id, node] as const));
+  const nextIdSet = new Set(next.map((node) => node.id));
+
+  const changedIds: string[] = [];
+  // 改/增：引用变了即视为改动（commitNodes 上游 updater 对未改节点会保留原引用）
+  for (const node of next) {
+    if (prevById.get(node.id) !== node) changedIds.push(node.id);
+  }
+  // 删
+  for (const node of prev) {
+    if (!nextIdSet.has(node.id)) changedIds.push(node.id);
+  }
+  if (!changedIds.length) return null;
+
+  const parentOf = (id: string): string | undefined =>
+    nextById.get(id)?.parentId ?? prevById.get(id)?.parentId;
+
+  for (const id of changedIds) {
+    const visited = new Set<string>();
+    let cur = id;
+    let rootId: string | null = null;
+    while (cur && !visited.has(cur)) {
+      visited.add(cur);
+      const parentId = parentOf(cur);
+      if (!parentId) {
+        rootId = cur;
+        break;
+      }
+      cur = parentId;
+    }
+    if (!rootId) continue;
+    const rootNode = nextById.get(rootId) ?? prevById.get(rootId);
+    if (rootNode?.type === 'group' && !rootNode.parentId) {
+      return String(rootId);
+    }
+  }
+  return null;
+};
+
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
   if (!Array.isArray(elements)) return [];
   const allNodes: FlowNode[] = [];
@@ -274,6 +320,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const previewSavingRef = useRef(false);
   const previewSaveTaskIdRef = useRef(0);
   const PREVIEW_CAPTURE_DELAY_MS = 1500;
+  const lastChangedRootIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -421,6 +468,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const commitNodes = (updater: (prev: FlowNode[]) => FlowNode[]) => {
     setNodes((prev) => {
       const next = updater(prev);
+      const changedRootId = detectChangedRootId(prev, next);
+      if (changedRootId) {
+        lastChangedRootIdRef.current = changedRootId;
+      }
       setPast((prevPast) => [...prevPast, cloneNodes(prev)]);
       setFuture([]);
       return cloneNodes(next);
@@ -665,9 +716,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     if (typeof document === 'undefined') return null;
 
     // 截指定 root widget 的整片区域（含它所有 platform + size 子节点）。
-    // 未传 rootId 时 fallback 到画布上第一个 root。
+    // 未传 rootId 时优先截「最近改动过的 root」，再 fallback 到画布上第一个 root。
     // 做法：把 viewport 当作截图源，通过覆写它的 transform 让内容按 1x 世界坐标
     // 渲染，同时把 canvas 尺寸限制为 root 的 bbox，从而把画面裁到 root 那块。
+    const lastChangedRootId = lastChangedRootIdRef.current;
     const targetRoot = rootId
       ? nodes.find(
           (node) =>
@@ -675,7 +727,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
             node.type === 'group' &&
             !node.parentId,
         )
-      : nodes.find((node) => node.type === 'group' && !node.parentId);
+      : nodes.find(
+          (node) =>
+            String(node.id) === String(lastChangedRootId) &&
+            node.type === 'group' &&
+            !node.parentId,
+        ) ?? nodes.find((node) => node.type === 'group' && !node.parentId);
     if (!targetRoot) return null;
 
     const resolvedRootId = String(targetRoot.id ?? '');
