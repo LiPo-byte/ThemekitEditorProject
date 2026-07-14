@@ -91,10 +91,10 @@
   },
   {
     "key": "Battery",
-    "label": "Battery 待定",
+    "label": "Battery",
     "children": [
       {
-        "key": "Battery-0",
+        "key": "Battery_LayoutType_0",
         "label": "Layout 0",
         "title": "Not customizable"
       },

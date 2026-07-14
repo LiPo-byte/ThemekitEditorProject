@@ -2472,6 +2472,229 @@ export const WidgetDefaultConfig = {
             ]
          }
     },
+    Battery_LayoutType_0: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":5,
+            radius: 28,
+            "sizes":[
+               {
+                 "size":1,
+                 "layoutType":0,
+                "name":"Battery_IOS_Small",
+                 "textAlignment":1,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":20,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                 },
+                "battery_20": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_40": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_60": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_80": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_100": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                }
+               },
+               {
+                 "size":2,
+                 "layoutType":0,
+                "name":"Battery_IOS_Medium",
+                 "textAlignment":3,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":40,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+                "battery_20": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_40": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_60": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_80": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_100": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                }
+               },
+               {
+                 "size":3,
+                 "layoutType":0,
+                "name":"Battery_IOS_Large",
+                 "textAlignment":3,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":20,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+                "battery_20": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_40": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_60": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_80": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_100": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                }
+               }
+            ]
+        },
+        android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":5,
+            "sizes":[
+               {
+                 "size":1,
+                 "layoutType":0,
+                "name":"Battery_Android_Small",
+                 "textAlignment":1,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":20,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+                "battery_20": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_40": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_60": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_80": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_100": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                }
+               },
+               {
+                 "size":2,
+                 "layoutType":0,
+                "name":"Battery_Android_Medium",
+                 "textAlignment":3,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":40,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+                "battery_20": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_40": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_60": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_80": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_100": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                }
+               },
+               {
+                 "size":3,
+                 "layoutType":0,
+                "name":"Battery_Android_Large",
+                 "textAlignment":3,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":20,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+                "battery_20": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_40": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_60": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_80": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                },
+                "battery_100": {
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                }
+               }
+            ]
+        }
+    },
     CountDown_LayoutType_0: {
         ios: {
             "version":0,

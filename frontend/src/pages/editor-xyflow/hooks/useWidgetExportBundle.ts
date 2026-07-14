@@ -51,7 +51,18 @@ const downloadBlob = (blob: Blob, filename: string) => {
 };
 
 const sanitizeWidgetsSpec = (value: unknown): unknown => {
-  const delKey = ['source', 'crop_props', 'radius', 'label', 'appLinksSource'];
+  const delKey = [
+    'source',
+    'crop_props',
+    'radius',
+    'label',
+    'appLinksSource',
+    'battery_20',
+    'battery_40',
+    'battery_60',
+    'battery_80',
+    'battery_100',
+  ];
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeWidgetsSpec(item));
   }
@@ -94,22 +105,29 @@ const loadImageByBlobUrl = (blobUrl: string) =>
     img.src = blobUrl;
   });
 
-const toPngBlobFromUrl = async (sourceUrl: string) => {
+const toPngBlobFromUrl = async (
+  sourceUrl: string,
+  options?: { width?: number; height?: number; mimeType?: string; quality?: number },
+) => {
   const response = await fetch(sourceUrl);
   if (!response.ok) {
     throw new Error(`Failed to fetch animation source: ${response.status}`);
   }
   const blob = await response.blob();
+  const targetWidth = toPositiveNumber(options?.width);
+  const targetHeight = toPositiveNumber(options?.height);
+  const mimeType = options?.mimeType ?? 'image/png';
+  const quality = options?.quality;
 
   if ('createImageBitmap' in window) {
     try {
       const bitmap = await createImageBitmap(blob);
       const canvas = document.createElement('canvas');
-      canvas.width = bitmap.width;
-      canvas.height = bitmap.height;
+      canvas.width = targetWidth ?? bitmap.width;
+      canvas.height = targetHeight ?? bitmap.height;
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Cannot create canvas context.');
-      ctx.drawImage(bitmap, 0, 0);
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
       bitmap.close();
       const pngBlob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((nextBlob) => {
@@ -118,7 +136,7 @@ const toPngBlobFromUrl = async (sourceUrl: string) => {
             return;
           }
           resolve(nextBlob);
-        }, 'image/png');
+        }, mimeType, quality);
       });
       return pngBlob;
     } catch {
@@ -130,11 +148,13 @@ const toPngBlobFromUrl = async (sourceUrl: string) => {
   try {
     const image = await loadImageByBlobUrl(objectUrl);
     const canvas = document.createElement('canvas');
-    canvas.width = image.naturalWidth || image.width || 1;
-    canvas.height = image.naturalHeight || image.height || 1;
+    const sourceWidth = image.naturalWidth || image.width || 1;
+    const sourceHeight = image.naturalHeight || image.height || 1;
+    canvas.width = targetWidth ?? sourceWidth;
+    canvas.height = targetHeight ?? sourceHeight;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Cannot create canvas context.');
-    ctx.drawImage(image, 0, 0);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
     return await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob((nextBlob) => {
         if (!nextBlob) {
@@ -142,7 +162,7 @@ const toPngBlobFromUrl = async (sourceUrl: string) => {
           return;
         }
         resolve(nextBlob);
-      }, 'image/png');
+      }, mimeType, quality);
     });
   } finally {
     URL.revokeObjectURL(objectUrl);
@@ -235,12 +255,19 @@ export const useWidgetExportBundle = (nodeId?: string) => {
 
         const data = (childNode?.data ?? {}) as any;
         const source = data?.source;
-        if (!source) continue;
+        // if (!source) continue;
+        const batteryEntries = [
+          { key: 'battery_20', source: data?.battery_20?.source },
+          { key: 'battery_40', source: data?.battery_40?.source },
+          { key: 'battery_60', source: data?.battery_60?.source },
+          { key: 'battery_80', source: data?.battery_80?.source },
+          { key: 'battery_100', source: data?.battery_100?.source },
+        ].filter((item) => typeof item.source === 'string' && item.source);
+        const batterySources = batteryEntries.map((item) => item.source as string);
         const isDynamic =
           Boolean(data?.firstImageAnimation) ||
           Boolean(data?.secondImageAnimation) ||
-          isGifSource(source);
-        // const exportMode: WidgetExportMode = isDynamic ? 'dynamic' : 'static';
+          isGifSource(source)
 
         const sizeNumber = Number(data?.size ?? 0);
         const sizeLabel =
@@ -265,6 +292,7 @@ export const useWidgetExportBundle = (nodeId?: string) => {
         const normalizedCropProps = normalizeCropProps(data?.crop_props ?? {});
         pushLine('info', `开始处理 widgets_${sizeLabel}...`);
 
+
         const { jpegBlob, gifBlob } = await cropMediaByUrl(source, {
           transform: normalizedCropProps,
           targetElement,
@@ -277,35 +305,71 @@ export const useWidgetExportBundle = (nodeId?: string) => {
           renderScale: 2,
           resizeMode: 'stretch',
         });
-        //   const ext = isGif ? 'gif' : 'jpg';
-        // const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}.${ext}`;
-        const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}`;
-        zip.file(`${expectedFilename}.jpg`, jpegBlob);
-        pushLine(
-          'success',
-          `生成 ${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
-        );
-        if (gifBlob) {
-          zip.file(`${expectedFilename}.gif`, gifBlob);
+        if (!jpegBlob) {
+          pushLine('warning', `跳过 ${sizeLabel} 主图（未找到 source）`);
+        } else {
+          //   const ext = isGif ? 'gif' : 'jpg';
+          // const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}.${ext}`;
+          const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}`;
+          zip.file(`${expectedFilename}.jpg`, jpegBlob);
           pushLine(
             'success',
-            `生成 ${expectedFilename}.gif ${formatSizeText(timegifWidth, timegifHeight)}`,
+            `生成 ${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
+          );
+          if (gifBlob) {
+            zip.file(`${expectedFilename}.gif`, gifBlob);
+            pushLine(
+              'success',
+              `生成 ${expectedFilename}.gif ${formatSizeText(timegifWidth, timegifHeight)}`,
+            );
+          }
+        }
+
+        if (source) {
+          // pushLine('warning', `跳过 widgets_${sizeLabel}_preview（未找到 source）`);
+          const previewBlob = await generateElementPreview(targetElement, {
+            isGif: isDynamic,
+            sourceUrl: source,
+            scale: EXPORT_PREVIEW_SCALE,
+            jpegQuality: EXPORT_JPEG_QUALITY,
+            outputWidth: previewWidth,
+            outputHeight: previewHeight,
+          });
+          zip.file(`widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'}`, previewBlob);
+          pushLine(
+            'success',
+            `生成 widgets_${sizeLabel}_preview.gif ${formatSizeText(previewWidth, previewHeight)}`,
           );
         }
 
-        const previewBlob = await generateElementPreview(targetElement, {
-          isGif: isDynamic,
-          sourceUrl: source,
-          scale: EXPORT_PREVIEW_SCALE,
-          jpegQuality: EXPORT_JPEG_QUALITY,
-          outputWidth: previewWidth,
-          outputHeight: previewHeight,
-        });
-        zip.file(`widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'}`, previewBlob);
-        pushLine(
-          'success',
-          `生成 widgets_${sizeLabel}_preview.gif ${formatSizeText(previewWidth, previewHeight)}`,
-        );
+        if (batterySources.length) {
+          const previewBlob = await generateElementPreview(targetElement, {
+            isGif: true,
+            fps: 1,
+            durationMs: batterySources.length * 1000,
+            scale: EXPORT_PREVIEW_SCALE,
+            outputWidth: previewWidth,
+            outputHeight: previewHeight,
+          });
+          zip.file(`widgets_${sizeLabel}_preview.gif`, previewBlob);
+          pushLine(
+            'success',
+            `生成 widgets_${sizeLabel}_preview.gif ${formatSizeText(previewWidth, previewHeight)}`,
+          );
+          const promislist = batteryEntries.map((bs: any) => {
+            return toPngBlobFromUrl(bs.source, { width: timejpgWidth, height: timejpgHeight, mimeType: 'image/jpeg' }).then(jpegBlob => {
+              if (!jpegBlob) return;
+              const expectedFilename = `widgets_${sizeLabel}_${bs.key}`;
+              zip.file(`${expectedFilename}.jpg`, jpegBlob);
+              pushLine(
+                'success',
+                `生成 ${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
+              );
+            })
+          })
+          await Promise.all(promislist);
+        }
+
 
         const firstAnimationSource = data?.firstImageAnimation?.source;
         if (firstAnimationSource) {
@@ -316,6 +380,7 @@ export const useWidgetExportBundle = (nodeId?: string) => {
           );
           pushLine('success', `生成 widgets_${sizeLabel}_animation_first.png`);
         }
+
 
         const secondAnimationSource = data?.secondImageAnimation?.source;
         if (secondAnimationSource) {

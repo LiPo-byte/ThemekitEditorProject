@@ -34,6 +34,7 @@ export const DEFAULT_CROP_PROPS = {
 export const TYPE_WIDGET_MAP:any = {
     1: 'time',
     2: 'calendar',
+    5: 'battery',
     8: 'pureimage',
     9: 'countdown',
     6: 'quotation',

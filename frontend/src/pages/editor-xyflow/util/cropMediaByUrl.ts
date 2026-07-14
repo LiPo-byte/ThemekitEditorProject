@@ -28,13 +28,13 @@ export type CropMediaByUrlOptions = {
 };
 
 export type CropMediaByUrlResult = {
-  blob: Blob;
+  blob: Blob | null;
   mimeType: 'image/gif' | 'image/jpeg';
   isGif: boolean;
   width: number;
   height: number;
   gifBlob: Blob | null;
-  jpegBlob: Blob;
+  jpegBlob: Blob | null;
 };
 
 const DEFAULT_TRANSFORM: Required<CropTransform> = {
@@ -342,10 +342,7 @@ export const cropMediaByUrl = async (
   sourceUrl: string,
   options: CropMediaByUrlOptions = {},
 ): Promise<CropMediaByUrlResult> => {
-  if (!sourceUrl || typeof sourceUrl !== 'string') {
-    throw new Error('sourceUrl is required.');
-  }
-
+  const isMissingSource = !sourceUrl || typeof sourceUrl !== 'string';
   const transform: Required<CropTransform> = {
     ...DEFAULT_TRANSFORM,
     ...(options.transform || {}),
@@ -438,6 +435,18 @@ export const cropMediaByUrl = async (
         1,
     ),
   );
+
+  if (isMissingSource) {
+    return {
+      blob: null,
+      mimeType: 'image/jpeg',
+      isGif: false,
+      width: 0,
+      height: 0,
+      gifBlob: null,
+      jpegBlob: null,
+    };
+  }
 
   if (isGifSource(sourceUrl)) {
     const decoded = await decodeGifFrames(sourceUrl, gifMinDelayMs);

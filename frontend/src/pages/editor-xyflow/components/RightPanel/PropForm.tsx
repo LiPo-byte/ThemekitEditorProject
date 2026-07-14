@@ -1040,6 +1040,41 @@ export const SelectedNodePropForm: React.FC<{
           }} title="SecondImageAnimation"/>
         </>
       )}
+      {hasKey('battery_20') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.battery_20} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'battery_20');
+          }} title="Battery_20"/>
+        </>
+      )}
+      {hasKey('battery_40') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.battery_40} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'battery_40');
+          }} title="Battery_40"/>
+        </>
+      )}
+      {hasKey('battery_60') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.battery_60} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'battery_60');
+          }} title="Battery_60"/>
+        </>
+      )}
+      {hasKey('battery_80') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.battery_80} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'battery_80');
+          }} title="Battery_80"/>
+        </>
+      )}
+      {hasKey('battery_100') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.battery_100} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'battery_100');
+          }} title="Battery_100"/>
+        </>
+      )}
       {hasKey('quote') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.quote} onChange={(key: string, value: any) => {
