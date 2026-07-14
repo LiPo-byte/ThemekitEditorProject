@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -34,9 +34,7 @@ import dynamicLayout_0 from './widget/dynamic-layout_0';
 import batteryLayout_0 from './widget/battery-layout_0';
 import batteryLayout_1 from './widget/battery-layout_1';
 import batteryLayout_2 from './widget/battery-layout_2';
-
-
-
+import DigitalLayout_0 from './widget/digital-layout_0';
 
 import ActionPopover from './components/ActionPopover';
 import PlatformGroupNode from './components/PlatformGroupNode';
@@ -66,6 +64,7 @@ export default function EditorStage() {
   const backgroundVariant = useEditorBackgroundVariant();
   const backgroundColor = useEditorBackgroundColor();
   const deleteKeyPressed = useKeyPress(['Delete', 'Backspace']);
+  const deleteKeyPressedRef = useRef(false);
 
   const backgroundVariantMap: Record<'lines' | 'dots' | 'cross', BackgroundVariant> = {
     lines: BackgroundVariant.Lines,
@@ -74,8 +73,11 @@ export default function EditorStage() {
   };
 
   useEffect(() => {
+    const isRisingEdge = deleteKeyPressed && !deleteKeyPressedRef.current;
+    deleteKeyPressedRef.current = deleteKeyPressed;
+    if (!isRisingEdge) return;
     if (cropToolOpen) return;
-    if (!deleteKeyPressed || !canDeleteSelected) return;
+    if (!canDeleteSelected) return;
     const activeTagName = document.activeElement?.tagName?.toLowerCase();
     if (activeTagName === 'input' || activeTagName === 'textarea') return;
     deleteSelectedNodes();
@@ -115,6 +117,7 @@ export default function EditorStage() {
           battery_0: batteryLayout_0,
           battery_1: batteryLayout_1,
           battery_2: batteryLayout_2,
+          digital_0: DigitalLayout_0,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}

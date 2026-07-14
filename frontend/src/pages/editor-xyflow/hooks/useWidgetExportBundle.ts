@@ -63,14 +63,18 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
     'battery_80',
     'battery_100',
   ];
+  const showKey = ['weekday', 'AmAndPm']
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeWidgetsSpec(item));
   }
   if (value && typeof value === 'object') {
-    const source = value as Record<string, unknown>;
+    const source = value as Record<string, any>;
     const next: Record<string, unknown> = {};
     Object.keys(source).forEach((key) => {
       if (delKey.includes(key)) return;
+      if (showKey.includes(key) && typeof source[key] === 'object' && !source[key].show) {
+        return;
+      };
       next[key] = sanitizeWidgetsSpec(source[key]);
     });
     return next;

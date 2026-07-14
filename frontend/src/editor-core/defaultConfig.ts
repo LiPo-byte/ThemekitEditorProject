@@ -3594,24 +3594,240 @@ export const WidgetDefaultConfig = {
                       "source": "",
                       radius: 28,
                       "crop_props": defaultCropProps,
-                       },
-                        {
+                    },
+                    {
                       "size":2,
                       "name":"Dynamic_Common_Medium",
                       "source": "",
                       radius: 28,
                       "crop_props": defaultCropProps,
-                       },
-                        {
+                    },
+                    {
                       "size":3,
                       "name":"Dynamic_Common_Large",
                       "source": "",
                       radius: 28,
                       "crop_props": defaultCropProps,
-                       }
+                    }
             ]
          }
-    }
+    },
+    Digital_LayoutType_0: {
+        "ios": {
+          "version": 0,
+          "isLockScreen": false,
+          "isGif": false,
+          "type": 4,
+          "sizes": [
+            {
+              "size": 1,
+              "name": "Pixel_Style_Cute_Cat_A_Small",
+              "source": "",
+              radius: 28,
+              "crop_props": defaultCropProps,
+              "date": {
+                "textAlignment": 2,
+                "font": "AvenirNext-Medium",
+                "textSize": 8,
+                "textColor": "#000000"
+              },
+              "time": {
+                "textAlignment": 2,
+                "font": "HFDigits",
+                "textSize": 40,
+                "textColor": "#000000"
+              },
+              "weekday": {
+                "show": true,
+                "font": "AvenirNext-Medium",
+                "textSize": 8,
+                "selectedBgColor": "#000000",
+                "selectedTextColor": "#FFFFFF",
+                "unSelectedTextColor": "#000000"
+              },
+              "AmAndPm": {
+                "show": true,
+                "font": "AvenirNext-Medium",
+                "textSize": 10,
+                "textColor": "#000000"
+              }
+            },
+            {
+              "size": 2,
+              "name": "Pixel_Style_Cute_Cat_A_Medium",
+              "source": "",
+              radius: 28,
+              "crop_props": defaultCropProps,
+              "date": {
+                "textAlignment": 1,
+                "font": "AvenirNext-Medium",
+                "textSize": 10,
+                "textColor": "#000000"
+              },
+              "time": {
+                "textAlignment": 2,
+                "font": "HFDigits",
+                "textSize": 80,
+                "textColor": "#000000"
+              },
+              "weekday": {
+                "show": true,
+                "font": "AvenirNext-Medium",
+                "textSize": 10,
+                "selectedBgColor": "#000000",
+                "selectedTextColor": "#FFFFFF",
+                "unSelectedTextColor": "#000000"
+              },
+              "AmAndPm": {
+                "show": true,
+                "font": "AvenirNext-Medium",
+                "textSize": 10,
+                "textColor": "#000000"
+              }
+            },
+            {
+              "size": 3,
+              "name": "Pixel_Style_Cute_Cat_A_Large",
+              "source": "",
+              radius: 28,
+              "crop_props": defaultCropProps,
+              "date": {
+                "textAlignment": 2,
+                "font": "AvenirNext-Medium",
+                "textSize": 14,
+                "textColor": "#000000"
+              },
+              "time": {
+                "textAlignment": 2,
+                "font": "HFDigits",
+                "textSize": 90,
+                "textColor": "#000000"
+              },
+              "weekday": {
+                "show": true,
+                "font": "AvenirNext-Medium",
+                "textSize": 14,
+                "selectedBgColor": "#000000",
+                "selectedTextColor": "#FFFFFF",
+                "unSelectedTextColor": "#000000"
+              },
+              "AmAndPm": {
+                "show": true,
+                "font": "AvenirNext-Medium",
+                "textSize": 14,
+                "textColor": "#000000"
+              }
+            }
+          ]
+        },
+        "android": {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 4,
+            "sizes": [
+              {
+                "size": 1,
+                "name": "Pixel_Style_Cute_Cat_A_Small",
+                "source": "",
+                radius: 28,
+                "crop_props": defaultCropProps,
+                "date": {
+                  "textAlignment": 2,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 8,
+                  "textColor": "#000000"
+                },
+                "time": {
+                  "textAlignment": 2,
+                  "font": "HFDigits",
+                  "textSize": 40,
+                  "textColor": "#000000"
+                },
+                "weekday": {
+                  "show": true,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 8,
+                  "selectedBgColor": "#000000",
+                  "selectedTextColor": "#FFFFFF",
+                  "unSelectedTextColor": "#000000"
+                },
+                "AmAndPm": {
+                  "show": true,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 10,
+                  "textColor": "#000000"
+                }
+              },
+              {
+                "size": 2,
+                "name": "Pixel_Style_Cute_Cat_A_Medium",
+                "source": "",
+                radius: 28,
+                "crop_props": defaultCropProps,
+                "date": {
+                  "textAlignment": 1,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 10,
+                  "textColor": "#000000"
+                },
+                "time": {
+                  "textAlignment": 2,
+                  "font": "HFDigits",
+                  "textSize": 80,
+                  "textColor": "#000000"
+                },
+                "weekday": {
+                  "show": true,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 10,
+                  "selectedBgColor": "#000000",
+                  "selectedTextColor": "#FFFFFF",
+                  "unSelectedTextColor": "#000000"
+                },
+                "AmAndPm": {
+                  "show": true,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 10,
+                  "textColor": "#000000"
+                }
+              },
+              {
+                "size": 3,
+                "name": "Pixel_Style_Cute_Cat_A_Large",
+                "source": "",
+                radius: 28,
+                "crop_props": defaultCropProps,
+                "date": {
+                  "textAlignment": 2,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 14,
+                  "textColor": "#000000"
+                },
+                "time": {
+                  "textAlignment": 2,
+                  "font": "HFDigits",
+                  "textSize": 90,
+                  "textColor": "#000000"
+                },
+                "weekday": {
+                  "show": true,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 14,
+                  "selectedBgColor": "#000000",
+                  "selectedTextColor": "#FFFFFF",
+                  "unSelectedTextColor": "#000000"
+                },
+                "AmAndPm": {
+                  "show": true,
+                  "font": "AvenirNext-Medium",
+                  "textSize": 14,
+                  "textColor": "#000000"
+                }
+              }
+            ]
+          }
+      }
 }
 export const IconPackDefaultConfig = {
     apps: {

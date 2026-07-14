@@ -34,6 +34,7 @@ export const DEFAULT_CROP_PROPS = {
 export const TYPE_WIDGET_MAP:any = {
     1: 'time',
     2: 'calendar',
+    4: 'digital',
     5: 'battery',
     8: 'pureimage',
     9: 'countdown',
@@ -44,6 +45,7 @@ export const TYPE_WIDGET_MAP:any = {
 
 export const SOURCENAME_TYPE_WIDGET_MAP:any = {
     9: 'countImage',
+    4: 'digital_clock',
 }
 export const APP_LINK_OPTIONS = [
     { value: -1, label: 'ThemeKit' },

@@ -240,6 +240,12 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           );
           item.appLinksSource = appLinksSource;
         }
+        if (item.weekday) {
+          item.weekday.show = true;
+        }
+        if (item.AmAndPm) {
+          item.AmAndPm.show = true;
+        }
 
         // 电池组件 layoutType === 0
         if (type === 5 && item.layoutType === 0) {

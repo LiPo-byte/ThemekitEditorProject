@@ -650,6 +650,18 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('show') && (
+        <>
+          <Row>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                <InputTitle label="Show" />
+                <Switch checked={editProps.show} onChange={(nextValue) => onChange?.('show', nextValue)} />
+              </Flex>
+            </Col>
+          </Row>
+        </>
+      )}
       {hasKey('festivalName') && (
         <>
           <PropInput
@@ -790,8 +802,7 @@ export const BaseSelectedNodePropForm: React.FC<{
                 )
               })}
             </Row>
-          ) }
-          
+          )}
         </>
       )}
       {hasKey('alpha') && (
@@ -879,6 +890,33 @@ export const BaseSelectedNodePropForm: React.FC<{
           <FontColorInput
             value={editProps.textColor}
             onChange={(nextValue) => onChange?.('textColor', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('selectedBgColor') && (
+        <>
+          <FontColorInput
+            title="SelectedBgColor"
+            value={editProps.selectedBgColor}
+            onChange={(nextValue) => onChange?.('selectedBgColor', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('selectedTextColor') && (
+        <>
+          <FontColorInput
+            title="SelectedTextColor"
+            value={editProps.selectedTextColor}
+            onChange={(nextValue) => onChange?.('selectedTextColor', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('unSelectedTextColor') && (
+        <>
+          <FontColorInput
+            title="UnSelectedTextColor"
+            value={editProps.unSelectedTextColor}
+            onChange={(nextValue) => onChange?.('unSelectedTextColor', nextValue)}
           />
         </>
       )}
@@ -1122,6 +1160,20 @@ export const SelectedNodePropForm: React.FC<{
           <BaseSelectedNodePropForm editProps={editProps.title} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'title');
           }} title="Title"/>
+        </>
+      )}
+      {hasKey('weekday') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.weekday} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'weekday');
+          }} title="Weekday"/>
+        </>
+      )}
+      {hasKey('AmAndPm') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.AmAndPm} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'AmAndPm');
+          }} title="AmAndPm"/>
         </>
       )}
     </>
