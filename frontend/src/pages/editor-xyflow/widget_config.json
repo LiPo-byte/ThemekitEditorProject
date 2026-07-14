@@ -99,12 +99,12 @@
         "title": "Not customizable"
       },
       {
-        "key": "Battery-1",
+        "key": "Battery_LayoutType_1",
         "label": "Layout 1",
         "title": "Not customizable"
       },
       {
-        "key": "Battery-2",
+        "key": "Battery_LayoutType_2",
         "label": "Layout 2",
         "title": "Customizable"
       }

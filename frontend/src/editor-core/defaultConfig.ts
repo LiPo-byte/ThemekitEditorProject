@@ -2546,7 +2546,7 @@ export const WidgetDefaultConfig = {
                 "battery_100": {
                    "source": "",
                    "crop_props": defaultCropProps,
-                }
+                },
                },
                {
                  "size":3,
@@ -2604,25 +2604,25 @@ export const WidgetDefaultConfig = {
                     "textHeight": 26
                 },
                 "battery_20": {
-                   "source": "",
-                   "crop_props": defaultCropProps,
-                },
-                "battery_40": {
-                   "source": "",
-                   "crop_props": defaultCropProps,
-                },
-                "battery_60": {
-                   "source": "",
-                   "crop_props": defaultCropProps,
-                },
-                "battery_80": {
-                   "source": "",
-                   "crop_props": defaultCropProps,
-                },
-                "battery_100": {
-                   "source": "",
-                   "crop_props": defaultCropProps,
-                }
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                 },
+                 "battery_40": {
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                 },
+                 "battery_60": {
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                 },
+                 "battery_80": {
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                 },
+                 "battery_100": {
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                 },
                },
                {
                  "size":2,
@@ -2656,7 +2656,7 @@ export const WidgetDefaultConfig = {
                 "battery_100": {
                    "source": "",
                    "crop_props": defaultCropProps,
-                }
+                },
                },
                {
                  "size":3,
@@ -2690,10 +2690,425 @@ export const WidgetDefaultConfig = {
                 "battery_100": {
                    "source": "",
                    "crop_props": defaultCropProps,
-                }
+                },
                }
             ]
         }
+    },
+    Battery_LayoutType_1: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": true,
+            "type":5,
+            radius: 28,
+            "sizes":[
+               {
+                 "size":1,
+                 "layoutType":1,
+                "name":"Dbl_Styletwo_Small",
+                 "textAlignment":2,
+                 radius: 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":20,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                 },
+               },
+               {
+                 "size":2,
+                 "layoutType":1,
+                "name":"Dbl_Styletwo_Medium",
+                 "textAlignment":2,
+                 radius: 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":40,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+               },
+               {
+                 "size":3,
+                 "layoutType":1,
+                "name":"Dbl_Styletwo_Large",
+                 "textAlignment":2,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":20,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+               }
+            ]
+        },
+        android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": true,
+            "type":5,
+            "sizes":[
+               {
+                 "size":1,
+                 "layoutType":1,
+                "name":"Dbl_Styletwo_Small",
+                 "textAlignment":2,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":20,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+               },
+               {
+                 "size":2,
+                 "layoutType":1,
+                "name":"Dbl_Styletwo_Medium",
+                 "textAlignment":2,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":40,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+               },
+               {
+                 "size":3,
+                 "layoutType":1,
+                "name":"Dbl_Styletwo_Large",
+                 "textAlignment":2,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 radius: 28,
+                 "battery": {
+                    "font":"Cochin-Bold",
+                    "textSize":20,
+                    "textColor":"#000000",
+                    "alpha":1.0,
+                    "textHeight": 26
+                },
+               }
+            ]
+        }
+    },
+    Battery_LayoutType_2: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":5,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 2,
+                 "name":"Kuromi_Battery_Small",
+                 radius: 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "battery": {
+                     "font":"AvenirNext-Bold",
+                     "textSize":14,
+                     "textColor":"#efa8ff",
+                     "alpha":1.0,
+                     "textHeight": 19
+                  },
+                 "firstImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 0,
+                     "crossPadding": -1,
+                     "duration": 5,
+                     "distance": 0,
+                     "imageHeight": 155,
+                     "imageWidth": 155,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 0,
+                     "crossPadding": -1,
+                     "duration": -5,
+                     "distance": 0,
+                     "imageHeight": 155,
+                     "imageWidth": 155,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "thirdImageAnimation": {
+                     "animationCategory": 2,
+                     "animationType": 2,
+                     "padding": 57,
+                     "crossPadding": -1,
+                     "duration": 2,
+                     "distance": 0,
+                     "imageHeight": 41,
+                     "imageWidth": 42,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "fourthImageAnimation": {
+                     "animationCategory": 2,
+                     "animationType": 0,
+                     "padding": 54,
+                     "crossPadding": -1,
+                     "duration": 2,
+                     "distance": 10,
+                     "imageHeight": 39,
+                     "imageWidth": 20,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "title": {
+                     "content": "(✪ω✪)",
+                     "font": "AvenirNext-Bold",
+                     "textSize": 8,
+                     "textHeight": 11,
+                     "textColor": "#efa8ff",
+                     "alpha":1.0
+                 }
+             },
+             {
+                 "size":2,
+                 "layoutType": 2,
+                 "name":"Kuromi_Battery_Medium",
+                 radius: 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "battery": {
+                     "font":"AvenirNext-Bold",
+                     "textSize":40,
+                     "textColor":"#efa8ff",
+                     "alpha":1.0,
+                     "textHeight": 55
+                  },
+                 "firstImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 2,
+                     "padding": 30,
+                     "crossPadding": 15,
+                     "duration": 5,
+                     "distance": 0,
+                     "imageHeight": 155,
+                     "imageWidth": 148,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 2,
+                     "padding": 30,
+                     "crossPadding": 15,
+                     "duration": -5,
+                     "distance": 0,
+                     "imageHeight": 155,
+                     "imageWidth": 148,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "thirdImageAnimation": {
+                     "animationCategory": 2,
+                     "animationType": 2,
+                     "padding": 72,
+                     "crossPadding": 50,
+                     "duration": 2,
+                     "distance": 0,
+                     "imageHeight": 62,
+                     "imageWidth": 62,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "fourthImageAnimation": {
+                     "animationCategory": 2,
+                     "animationType": 2,
+                     "padding": 88,
+                     "crossPadding": 54,
+                     "duration": 3,
+                     "distance": 0,
+                     "imageHeight": 60,
+                     "imageWidth": 30,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "title": {
+                     "content": "(✪ω✪)",
+                     "font": "AvenirNext-Bold",
+                     "textSize": 15,
+                     "textHeight": 20,
+                     "textColor": "#efa8ff",
+                     "alpha":1.0
+                 }
+             },
+             {
+                 "size":3,
+                 "layoutType": 2,
+                 "name":"Kuromi_Battery_Large",
+                 radius: 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "battery": {
+                     "font":"AvenirNext-Bold",
+                     "textSize":24,
+                     "textColor":"#efa8ff",
+                     "alpha":1.0,
+                     "textHeight": 33
+                  },
+                 "firstImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 0,
+                     "crossPadding": -1,
+                     "duration": 5,
+                     "distance": 0,
+                     "imageHeight": 345,
+                     "imageWidth": 329,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "secondImageAnimation": {
+                     "animationCategory": 1,
+                     "animationType": 0,
+                     "padding": 0,
+                     "crossPadding": -1,
+                     "duration": -5,
+                     "distance": 0,
+                     "imageHeight": 345,
+                     "imageWidth": 329,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "thirdImageAnimation": {
+                     "animationCategory": 2,
+                     "animationType": 2,
+                     "padding": 114,
+                     "crossPadding": -1,
+                     "duration": 3,
+                     "distance": 0,
+                     "imageHeight": 113,
+                     "imageWidth": 114,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "fourthImageAnimation": {
+                     "animationCategory": 2,
+                     "animationType": 0,
+                     "padding": 119,
+                     "crossPadding": -1,
+                     "duration": 2,
+                     "distance": 0,
+                     "imageHeight": 107,
+                     "imageWidth": 54,
+                     "source": "",
+                     "crop_props": defaultCropProps,
+                 },
+                 "title": {
+                     "content": "(✪ω✪)",
+                     "font": "AvenirNext-Bold",
+                     "textSize": 15,
+                     "textHeight": 20,
+                     "textColor": "#efa8ff",
+                     "alpha":1.0
+                 }
+             }
+            ]
+         },
+        android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":5,
+            "sizes":[
+             {
+                 "size":1,
+                 "layoutType": 2,
+                 "name":"Kuromi_Battery_Small",
+                 radius: 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "battery": {
+                     "font":"AvenirNext-Bold",
+                     "textSize":14,
+                     "textColor":"#efa8ff",
+                     "alpha":1.0,
+                     "textHeight": 19
+                  },
+                 "title": {
+                     "content": "(✪ω✪)",
+                     "font": "AvenirNext-Bold",
+                     "textSize": 8,
+                     "textHeight": 11,
+                     "textColor": "#efa8ff",
+                     "alpha":1.0
+                 }
+             },
+             {
+                 "size":2,
+                 "layoutType": 2,
+                 "name":"Kuromi_Battery_Medium",
+                 radius: 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "battery": {
+                     "font":"AvenirNext-Bold",
+                     "textSize":40,
+                     "textColor":"#efa8ff",
+                     "alpha":1.0,
+                     "textHeight": 55
+                  },
+                 "title": {
+                     "content": "(✪ω✪)",
+                     "font": "AvenirNext-Bold",
+                     "textSize": 15,
+                     "textHeight": 20,
+                     "textColor": "#efa8ff",
+                     "alpha":1.0
+                 }
+             },
+             {
+                 "size":3,
+                 "layoutType": 2,
+                 "name":"Kuromi_Battery_Large",
+                 radius: 28,
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 "battery": {
+                     "font":"AvenirNext-Bold",
+                     "textSize":24,
+                     "textColor":"#efa8ff",
+                     "alpha":1.0,
+                     "textHeight": 33
+                  },
+                 "title": {
+                     "content": "(✪ω✪)",
+                     "font": "AvenirNext-Bold",
+                     "textSize": 15,
+                     "textHeight": 20,
+                     "textColor": "#efa8ff",
+                     "alpha":1.0
+                 }
+             }
+            ]
+         } 
     },
     CountDown_LayoutType_0: {
         ios: {

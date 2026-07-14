@@ -1040,6 +1040,20 @@ export const SelectedNodePropForm: React.FC<{
           }} title="SecondImageAnimation"/>
         </>
       )}
+      {hasKey('thirdImageAnimation') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.thirdImageAnimation} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'thirdImageAnimation');
+          }} title="ThirdImageAnimation"/>
+        </>
+      )}
+      {hasKey('fourthImageAnimation') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.fourthImageAnimation} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'fourthImageAnimation');
+          }} title="FourthImageAnimation"/>
+        </>
+      )}
       {hasKey('battery_20') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.battery_20} onChange={(key: string, value: any) => {

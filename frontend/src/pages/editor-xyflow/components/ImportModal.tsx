@@ -128,32 +128,30 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         const ext = isGif ? 'gif' : 'jpg';
         const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}.${ext}`;
         const uploadResult = await uploadMediaFromZip(expectedFilename, zip);
-        if (!uploadResult) {
-          message.warning(`压缩包缺少 ${expectedFilename}`);
-          continue;
+        if (uploadResult) {
+          const mediaSize = await getBlobImageSize(uploadResult.mediaBlob);
+          const targetSize =
+            (CONFIG_SIZE_MAP as Record<number, { width?: number; height?: number }>)[
+              sizeNumber
+            ] ?? {};
+          const targetWidth = Number(targetSize.width);
+          const targetHeight = Number(targetSize.height);
+          const scaleX =
+            Number.isFinite(targetWidth) && targetWidth > 0
+              ? targetWidth / mediaSize.width
+              : 1;
+          const scaleY =
+            Number.isFinite(targetHeight) && targetHeight > 0
+              ? targetHeight / mediaSize.height
+              : 1;
+          item.source = uploadResult.url;
+          item.crop_props = {
+            ...DEFAULT_CROP_PROPS,
+            ...(item.crop_props ?? {}),
+            scaleX,
+            scaleY,
+          };
         }
-        const mediaSize = await getBlobImageSize(uploadResult.mediaBlob);
-        const targetSize =
-          (CONFIG_SIZE_MAP as Record<number, { width?: number; height?: number }>)[
-            sizeNumber
-          ] ?? {};
-        const targetWidth = Number(targetSize.width);
-        const targetHeight = Number(targetSize.height);
-        const scaleX =
-          Number.isFinite(targetWidth) && targetWidth > 0
-            ? targetWidth / mediaSize.width
-            : 1;
-        const scaleY =
-          Number.isFinite(targetHeight) && targetHeight > 0
-            ? targetHeight / mediaSize.height
-            : 1;
-        item.source = uploadResult.url;
-        item.crop_props = {
-          ...DEFAULT_CROP_PROPS,
-          ...(item.crop_props ?? {}),
-          scaleX,
-          scaleY,
-        };
         if (typeof item.radius !== 'number') {
           item.radius = DEFAULT_RADIUS;
         }
@@ -182,6 +180,30 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           }
           item.secondImageAnimation.source = uploadResult.url;
           item.secondImageAnimation.crop_props = {
+            ...DEFAULT_CROP_PROPS,
+          };
+        }
+        if (item.thirdImageAnimation) {
+          const filename = `widgets_${sizeLabel}_animation_third.png`;
+          const uploadResult = await uploadMediaFromZip(filename, zip);
+          if (!uploadResult) {
+            message.warning(`压缩包缺少 ${filename}`);
+            continue;
+          }
+          item.thirdImageAnimation.source = uploadResult.url;
+          item.thirdImageAnimation.crop_props = {
+            ...DEFAULT_CROP_PROPS,
+          };
+        }
+        if (item.fourthImageAnimation) {
+          const filename = `widgets_${sizeLabel}_animation_fourth.png`;
+          const uploadResult = await uploadMediaFromZip(filename, zip);
+          if (!uploadResult) {
+            message.warning(`压缩包缺少 ${filename}`);
+            continue;
+          }
+          item.fourthImageAnimation.source = uploadResult.url;
+          item.fourthImageAnimation.crop_props = {
             ...DEFAULT_CROP_PROPS,
           };
         }
@@ -217,6 +239,35 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
             }),
           );
           item.appLinksSource = appLinksSource;
+        }
+
+        // 电池组件 layoutType === 0
+        if (type === 5 && item.layoutType === 0) {
+          const batterSource = ['battery_20', 'battery_40', 'battery_60', 'battery_80', 'battery_100'];
+          await Promise.all(
+            batterSource.map(async (key: any) => {
+              const filenameBase = `widgets_${sizeLabel}_${key}`;
+              const candidateFilenames = [
+                `${filenameBase}.png`,
+                `${filenameBase}.jpg`,
+                `${filenameBase}.jpeg`,
+              ];
+              let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+              for (const filename of candidateFilenames) {
+                uploadResult = await uploadMediaFromZip(filename, zip);
+                if (uploadResult) break;
+              }
+              if (!uploadResult) {
+                message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
+              }
+              item[key] = {
+                crop_props: {
+                  ...DEFAULT_CROP_PROPS,
+                },
+                source: uploadResult ? uploadResult.url : '',
+              }
+            }),
+          );
         }
       }
 

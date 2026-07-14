@@ -32,6 +32,9 @@ import launcherLayout_8 from './widget/launcher-layout_8';
 import launcherLayout_9 from './widget/launcher-layout_9';
 import dynamicLayout_0 from './widget/dynamic-layout_0';
 import batteryLayout_0 from './widget/battery-layout_0';
+import batteryLayout_1 from './widget/battery-layout_1';
+import batteryLayout_2 from './widget/battery-layout_2';
+
 
 
 
@@ -110,6 +113,8 @@ export default function EditorStage() {
           launcher_9: launcherLayout_9,
           dynamic_0: dynamicLayout_0,
           battery_0: batteryLayout_0,
+          battery_1: batteryLayout_1,
+          battery_2: batteryLayout_2,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
@@ -25,9 +25,7 @@ export default function BatteryLayout_0(props: any) {
       .filter((item) => item?.source);
   }, [data]);
 
-  const activeIndexRef = useRef(0);
-  const imageRef = useRef<HTMLImageElement | null>(null);
-  const percentRef = useRef<HTMLDivElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const resolveBatteryPercent = (key?: string) => {
     const match = key?.match(/(\d+)/);
@@ -35,31 +33,19 @@ export default function BatteryLayout_0(props: any) {
     return Number.isFinite(value) ? value : 100;
   };
 
-  const updateActive = (index: number) => {
-    const next = batterySources[index];
-    if (imageRef.current) {
-      imageRef.current.src = next?.source ?? '';
-    }
-    if (percentRef.current) {
-      percentRef.current.textContent = `${resolveBatteryPercent(next?.key)}%`;
-    }
-  };
-
   useEffect(() => {
-    activeIndexRef.current = 0;
-    updateActive(0);
+    setActiveIndex(0);
   }, [batterySources]);
 
   useEffect(() => {
     if (batterySources.length <= 1) return undefined;
     const timer = window.setInterval(() => {
-      activeIndexRef.current = (activeIndexRef.current + 1) % batterySources.length;
-      updateActive(activeIndexRef.current);
+      setActiveIndex((prev) => (prev + 1) % batterySources.length);
     }, 1000);
     return () => window.clearInterval(timer);
   }, [batterySources]);
 
-  const activeBattery = batterySources[0];
+  const activeBattery = batterySources[activeIndex];
   const textpos = (textAlign: number): any => {
     if (textAlign === 1) {
       return {
@@ -87,21 +73,23 @@ export default function BatteryLayout_0(props: any) {
       boxSizing: 'border-box',
       position: 'relative',
     }}>
-      {activeBattery ? (
+      {batterySources.map((item, index) => (
         <img
-          ref={imageRef}
-          src={activeBattery.source}
+          key={item.key}
+          src={item.source}
           alt=""
           style={{
+            position: 'absolute',
+            inset: 0,
             width: '100%',
             height: '100%',
             objectFit: 'cover',
             display: 'block',
+            opacity: index === activeIndex ? 1 : 0,
           }}
         />
-      ) : null}
+      ))}
       <div
-        ref={percentRef}
         style={{
           ...getTextStyle(props.parentId, data.battery),
           position: 'absolute',
