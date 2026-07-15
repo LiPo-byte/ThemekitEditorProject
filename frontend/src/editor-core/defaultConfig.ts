@@ -4005,6 +4005,394 @@ export const WidgetDefaultConfig = {
                 }
             ]
         }
+    },
+    Weather_LayoutType_1: {
+        "ios": {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 12,
+            // "separateLineColor": "#FFFFFF",
+            // "separateLineAlpha": 0.3,
+            "imageCloud": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageRain": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSnow": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSun": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageThunder": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageWind": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "sizes": [
+                {
+                    "size": 1,
+                    "layoutType": 1,
+                    "name": "Weather_Q_Small",
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherWeekday": {
+                        "font": "HFGeo",
+                        "textSize": 20,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherDate": {
+                        "font": "HFGeo",
+                        "textSize": 13,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherSub": {
+                        "font": "HFGeo",
+                        "textSize": 14,
+                        "textColor": "#FFFFFF"
+                    }
+                },
+                {
+                    "size": 2,
+                    "layoutType": 1,
+                    "name": "Weather_Q_Medium",
+                    "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                    "weatherWeekday": {
+                        "font": "HFGeo",
+                        "textSize": 25,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherDate": {
+                        "font": "HFGeo",
+                        "textSize": 18,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherSub": {
+                        "font": "HFGeo",
+                        "textSize": 14,
+                        "textColor": "#FFFFFF"
+                    }
+                },
+                {
+                    "size": 3,
+                    "layoutType": 1,
+                    "name": "Weather_Q_Large",
+                    "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                    "weatherWeekday": {
+                        "font": "HFGeo",
+                        "textSize": 25,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherDate": {
+                        "font": "HFGeo",
+                        "textSize": 18,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherSub": {
+                        "font": "HFGeo",
+                        "textSize": 14,
+                        "textColor": "#FFFFFF"
+                    }
+                }
+            ]
+        },
+        "android": {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 12,
+            // "separateLineColor": "#FFFFFF",
+            // "separateLineAlpha": 0.3,
+            "imageCloud": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageRain": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSnow": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSun": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageThunder": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageWind": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "sizes": [
+                {
+                    "size": 1,
+                    "layoutType": 1,
+                    "name": "Weather_Q_Small",
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherWeekday": {
+                        "font": "HFGeo",
+                        "textSize": 20,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherDate": {
+                        "font": "HFGeo",
+                        "textSize": 13,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherSub": {
+                        "font": "HFGeo",
+                        "textSize": 14,
+                        "textColor": "#FFFFFF"
+                    }
+                },
+                {
+                    "size": 2,
+                    "layoutType": 1,
+                    "name": "Weather_Q_Medium",
+                    "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                    "weatherWeekday": {
+                        "font": "HFGeo",
+                        "textSize": 25,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherDate": {
+                        "font": "HFGeo",
+                        "textSize": 18,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherSub": {
+                        "font": "HFGeo",
+                        "textSize": 14,
+                        "textColor": "#FFFFFF"
+                    }
+                },
+                {
+                    "size": 3,
+                    "layoutType": 1,
+                    "name": "Weather_Q_Large",
+                    "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                    "weatherWeekday": {
+                        "font": "HFGeo",
+                        "textSize": 25,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherDate": {
+                        "font": "HFGeo",
+                        "textSize": 18,
+                        "textColor": "#FFFFFF"
+                    },
+                    "weatherSub": {
+                        "font": "HFGeo",
+                        "textSize": 14,
+                        "textColor": "#FFFFFF"
+                    }
+                }
+            ]
+        }
+    },
+    Weather_LayoutType_2: {
+        "ios": {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 12,
+            "imageCloud": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageRain": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSnow": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSun": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageThunder": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageWind": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "sizes": [
+                {
+                    "size": 1,
+                    "layoutType": 2,
+                    "name": "Beach_Vacation_A_Small",
+                    "textAlignment": 1,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherMain": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherWeekday": {
+                        "font": "Helvetica-Medium",
+                        "textSize": 20,
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherDate": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherSub": {
+                        "textColor": "#F5F1D8"
+                    }
+                },
+                {
+                    "size": 2,
+                    "layoutType": 2,
+                    "name": "Beach_Vacation_A_Medium",
+                    "textAlignment": 1,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherMain": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherWeekday": {
+                        "font": "Helvetica-Medium",
+                        "textSize": 36,
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherDate": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherSub": {
+                        "textColor": "#F5F1D8"
+                    }
+                },
+                {
+                    "size": 3,
+                    "layoutType": 2,
+                    "name": "Beach_Vacation_A_Large",
+                    "textAlignment": 1,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherMain": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherWeekday": {
+                        "font": "Helvetica-Medium",
+                        "textSize": 45,
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherDate": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherSub": {
+                        "textColor": "#F5F1D8"
+                    }
+                }
+            ]
+        },
+        "android": {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 12,
+            "sizes": [
+                {
+                    "size": 1,
+                    "layoutType": 2,
+                    "name": "Beach_Vacation_A_Small",
+                    "textAlignment": 1,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherMain": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherWeekday": {
+                        "font": "Helvetica-Medium",
+                        "textSize": 20,
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherDate": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherSub": {
+                        "textColor": "#F5F1D8"
+                    }
+                },
+                {
+                    "size": 2,
+                    "layoutType": 2,
+                    "name": "Beach_Vacation_A_Medium",
+                    "textAlignment": 1,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherMain": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherWeekday": {
+                        "font": "Helvetica-Medium",
+                        "textSize": 36,
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherDate": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherSub": {
+                        "textColor": "#F5F1D8"
+                    }
+                },
+                {
+                    "size": 3,
+                    "layoutType": 2,
+                    "name": "Beach_Vacation_A_Large",
+                    "textAlignment": 1,
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherMain": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherWeekday": {
+                        "font": "Helvetica-Medium",
+                        "textSize": 45,
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherDate": {
+                        "textColor": "#F5F1D8"
+                    },
+                    "weatherSub": {
+                        "textColor": "#F5F1D8"
+                    }
+                }
+            ]
+        }
     }
 }
 export const IconPackDefaultConfig = {

@@ -1078,6 +1078,20 @@ export const SelectedNodePropForm: React.FC<{
           }} title="Calendar"/>
         </>
       )}
+      {hasKey('weatherDate') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.weatherDate} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'weatherDate');
+          }} title="WeatherDate"/>
+        </>
+      )}
+      {hasKey('weatherWeekday') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.weatherWeekday} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'weatherWeekday');
+          }} title="WeatherWeekday"/>
+        </>
+      )}
       {hasKey('firstImageAnimation') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.firstImageAnimation} onChange={(key: string, value: any) => {

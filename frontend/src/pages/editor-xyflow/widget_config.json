@@ -127,10 +127,12 @@
   },
   {
     "key": "Weather",
-    "label": "Weather 待定",
+    "label": "Weather",
     "title": "All layouts customizable",
     "children": [
-      { "key": "Weather_LayoutType_0", "label": "Layout 0" }
+      { "key": "Weather_LayoutType_0", "label": "Layout 0" },
+      { "key": "Weather_LayoutType_1", "label": "Layout 1" },
+      { "key": "Weather_LayoutType_2", "label": "Layout 2" }
     ]
   },
   {

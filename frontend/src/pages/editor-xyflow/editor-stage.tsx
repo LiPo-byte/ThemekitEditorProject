@@ -36,6 +36,8 @@ import batteryLayout_1 from './widget/battery-layout_1';
 import batteryLayout_2 from './widget/battery-layout_2';
 import DigitalLayout_0 from './widget/digital-layout_0';
 import WeatherLayout_0 from './widget/weather-layout_0';
+import WeatherLayout_1 from './widget/weather-layout_1';
+import WeatherLayout_2 from './widget/weather-layout_2';
 
 import ActionPopover from './components/ActionPopover';
 import PlatformGroupNode from './components/PlatformGroupNode';
@@ -120,6 +122,8 @@ export default function EditorStage() {
           battery_2: batteryLayout_2,
           digital_0: DigitalLayout_0,
           weather_0: WeatherLayout_0,
+          weather_1: WeatherLayout_1,
+          weather_2: WeatherLayout_2,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}
