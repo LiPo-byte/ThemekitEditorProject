@@ -118,6 +118,42 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         return false;
       }
 
+      if (type === 12) {
+        const weatherImageEntries = [
+          { key: 'cloud', field: 'imageCloud' },
+          { key: 'rain', field: 'imageRain' },
+          { key: 'snow', field: 'imageSnow' },
+          { key: 'sun', field: 'imageSun' },
+          { key: 'thunder', field: 'imageThunder' },
+          { key: 'wind', field: 'imageWind' },
+        ];
+        for (let index = 0; index < weatherImageEntries.length; index += 1) {
+          const { key, field } = weatherImageEntries[index];
+          // if (!spec[field]) continue;
+          const filenameBase = `image_${key}`;
+          const candidateFilenames = [
+            `${filenameBase}.png`,
+            `${filenameBase}.jpg`,
+            `${filenameBase}.jpeg`,
+          ];
+          let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+          for (const filename of candidateFilenames) {
+            uploadResult = await uploadMediaFromZip(filename, zip);
+            if (uploadResult) break;
+          }
+          if (!uploadResult) {
+            message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
+            continue;
+          }
+          spec[field] = {
+            source: uploadResult.url,
+            crop_props: {
+              ...DEFAULT_CROP_PROPS,
+            }
+          };
+        }
+      }
+
       for (let i = 0; i < sizes.length; i += 1) {
         const item = sizes[i] as Record<string, any>;
         const sizeNumber = Number(item?.size);

@@ -41,6 +41,7 @@ export const TYPE_WIDGET_MAP:any = {
     6: 'quotation',
     14: 'launcher',
     13: 'dynamic',
+    12: 'weather',
 }
 
 export const SOURCENAME_TYPE_WIDGET_MAP:any = {

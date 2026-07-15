@@ -3827,7 +3827,185 @@ export const WidgetDefaultConfig = {
               }
             ]
           }
-      }
+      },
+    Weather_LayoutType_0: {
+        "ios": {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 12,
+            "separateLineColor": "#FFFFFF",
+            "separateLineAlpha": 0.3,
+            "imageCloud": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageRain": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSnow": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSun": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageThunder": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageWind": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "sizes": [
+                {
+                    "size": 1,
+                    "layoutType": 0,
+                    "name": "Weather_Q_Small",
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherMain": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 40,
+                        "textColor": "#000000"
+                    },
+                    "weatherSub": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 10,
+                        "textColor": "#000000"
+                    },
+                },
+                {
+                    "size": 2,
+                    "layoutType": 0,
+                    "name": "Weather_Q_Medium",
+                    "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                    "weatherMain": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 40,
+                        "textColor": "#000000"
+                    },
+                    "weatherSub": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 10,
+                        "textColor": "#000000"
+                    },
+                },
+                {
+                    "size": 3,
+                    "layoutType": 0,
+                    "name": "Weather_Q_Large",
+                    "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                    "weatherMain": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 40,
+                        "textColor": "#000000"
+                    },
+                    "weatherSub": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 10,
+                        "textColor": "#000000"
+                    },
+                }
+            ]
+        },
+        "android": {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 12,
+            "separateLineColor": "#FFFFFF",
+            "separateLineAlpha": 0.3,
+            "imageCloud": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageRain": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSnow": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSun": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageThunder": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageWind": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "sizes": [
+                {
+                    "size": 1,
+                    "layoutType": 0,
+                    "name": "Weather_Q_Small",
+                    "source": "",
+                    "crop_props": defaultCropProps,
+                    radius: 28,
+                    "weatherMain": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 40,
+                        "textColor": "#000000"
+                    },
+                    "weatherSub": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 10,
+                        "textColor": "#000000"
+                    },
+                },
+                {
+                    "size": 2,
+                    "layoutType": 0,
+                    "name": "Weather_Q_Medium",
+                    "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                    "weatherMain": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 40,
+                        "textColor": "#000000"
+                    },
+                    "weatherSub": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 10,
+                        "textColor": "#000000"
+                    },
+                },
+                {
+                    "size": 3,
+                    "layoutType": 0,
+                    "name": "Weather_Q_Large",
+                    "source": "",
+                    radius: 28,
+                    "crop_props": defaultCropProps,
+                    "weatherMain": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 40,
+                        "textColor": "#000000"
+                    },
+                    "weatherSub": {
+                        "font": "AvenirNext-Medium",
+                        "textSize": 10,
+                        "textColor": "#000000"
+                    },
+                }
+            ]
+        }
+    }
 }
 export const IconPackDefaultConfig = {
     apps: {

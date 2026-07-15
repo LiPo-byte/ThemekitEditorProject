@@ -62,6 +62,12 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
     'battery_60',
     'battery_80',
     'battery_100',
+    'imageCloud',
+    'imageRain',
+    'imageSnow',
+    'imageSun',
+    'imageThunder',
+    'imageWind'
   ];
   const showKey = ['weekday', 'AmAndPm']
   if (Array.isArray(value)) {
@@ -250,6 +256,26 @@ export const useWidgetExportBundle = (nodeId?: string) => {
       const type:any = selectedNodeData ? selectedNodeData.type : 1;
       zip.file('widgets_spec.json', JSON.stringify(widgetsSpec, null, 2));
       pushLine('success', '生成 widgets_spec.json');
+      const weatherImageEntries = [
+        { key: 'cloud', source: (selectedNodeData as any)?.imageCloud?.source },
+        { key: 'rain', source: (selectedNodeData as any)?.imageRain?.source },
+        { key: 'snow', source: (selectedNodeData as any)?.imageSnow?.source },
+        { key: 'sun', source: (selectedNodeData as any)?.imageSun?.source },
+        { key: 'thunder', source: (selectedNodeData as any)?.imageThunder?.source },
+        { key: 'wind', source: (selectedNodeData as any)?.imageWind?.source },
+      ];
+      for (let imageIndex = 0; imageIndex < weatherImageEntries.length; imageIndex += 1) {
+        const { key, source: imageSource } = weatherImageEntries[imageIndex];
+        if (!imageSource || typeof imageSource !== 'string') continue;
+        const filename = `image_${key}.png`;
+        try {
+          const imageBlob = await toPngBlobFromUrl(imageSource);
+          zip.file(filename, imageBlob);
+          pushLine('success', `生成 ${filename}`);
+        } catch {
+          pushLine('warning', `跳过 ${filename}（资源下载失败）`);
+        }
+      }
 
       for (let index = 0; index < childNodes.length; index += 1) {
         const childNode = childNodes[index] as any;
@@ -259,7 +285,6 @@ export const useWidgetExportBundle = (nodeId?: string) => {
 
         const data = (childNode?.data ?? {}) as any;
         const source = data?.source;
-        // if (!source) continue;
         const batteryEntries = [
           { key: 'battery_20', source: data?.battery_20?.source },
           { key: 'battery_40', source: data?.battery_40?.source },
@@ -342,7 +367,7 @@ export const useWidgetExportBundle = (nodeId?: string) => {
           zip.file(`widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'}`, previewBlob);
           pushLine(
             'success',
-            `生成 widgets_${sizeLabel}_preview.gif ${formatSizeText(previewWidth, previewHeight)}`,
+            `生成 widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'} ${formatSizeText(previewWidth, previewHeight)}`,
           );
         }
 
@@ -394,6 +419,26 @@ export const useWidgetExportBundle = (nodeId?: string) => {
             secondAnimationBlob,
           );
           pushLine('success', `生成 widgets_${sizeLabel}_animation_second.png`);
+        }
+
+        const thirdImageAnimationSource = data?.thirdImageAnimation?.source;
+        if (thirdImageAnimationSource) {
+          const thirdAnimationBlob = await toPngBlobFromUrl(thirdImageAnimationSource);
+          zip.file(
+            `widgets_${sizeLabel}_animation_third.png`,
+            thirdAnimationBlob,
+          );
+          pushLine('success', `生成 widgets_${sizeLabel}_animation_third.png`);
+        }
+
+        const fourthImageAnimationSource = data?.fourthImageAnimation?.source;
+        if (fourthImageAnimationSource) {
+          const fourthAnimationBlob = await toPngBlobFromUrl(fourthImageAnimationSource);
+          zip.file(
+            `widgets_${sizeLabel}_animation_fourth.png`,
+            fourthAnimationBlob,
+          );
+          pushLine('success', `生成 widgets_${sizeLabel}_animation_fourth.png`);
         }
 
         if (Array.isArray(data?.appLinks) && data?.appLinksSource) {

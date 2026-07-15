@@ -86,7 +86,7 @@
   },
   {
     "key": "Digital_LayoutType_0",
-    "label": "Digital Clock 待定",
+    "label": "Digital Clock",
     "title": "All layouts customizable"
   },
   {
@@ -128,7 +128,10 @@
   {
     "key": "Weather",
     "label": "Weather 待定",
-    "title": "All layouts customizable"
+    "title": "All layouts customizable",
+    "children": [
+      { "key": "Weather_LayoutType_0", "label": "Layout 0" }
+    ]
   },
   {
     "key": "Dynamic_LayoutType_0",

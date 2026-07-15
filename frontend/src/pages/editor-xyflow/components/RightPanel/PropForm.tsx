@@ -810,6 +810,11 @@ export const BaseSelectedNodePropForm: React.FC<{
           <AlphaSlider value={editProps.alpha} onChange={(nextValue) => onChange?.('alpha', nextValue)} />
         </>
       )}
+      {hasKey('separateLineAlpha') && (
+        <>
+          <AlphaSlider value={editProps.separateLineAlpha} onChange={(nextValue) => onChange?.('separateLineAlpha', nextValue)} />
+        </>
+      )}
       {hasKey('textHeight') && (
         <>
           <PropInput
@@ -917,6 +922,15 @@ export const BaseSelectedNodePropForm: React.FC<{
             title="UnSelectedTextColor"
             value={editProps.unSelectedTextColor}
             onChange={(nextValue) => onChange?.('unSelectedTextColor', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('separateLineColor') && (
+        <>
+          <FontColorInput
+            title="SeparateLineColor"
+            value={editProps.separateLineColor}
+            onChange={(nextValue) => onChange?.('separateLineColor', nextValue)}
           />
         </>
       )}
@@ -1174,6 +1188,62 @@ export const SelectedNodePropForm: React.FC<{
           <BaseSelectedNodePropForm editProps={editProps.AmAndPm} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'AmAndPm');
           }} title="AmAndPm"/>
+        </>
+      )}
+      {hasKey('weatherMain') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.weatherMain} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'weatherMain');
+          }} title="WeatherMain"/>
+        </>
+      )}
+      {hasKey('weatherSub') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.weatherSub} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'weatherSub');
+          }} title="WeatherSub"/>
+        </>
+      )}
+      {hasKey('imageCloud') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.imageCloud} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'imageCloud');
+          }} title="ImageCloud"/>
+        </>
+      )}
+      {hasKey('imageSun') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.imageSun} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'imageSun');
+          }} title="ImageSun"/>
+        </>
+      )}
+      {hasKey('imageRain') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.imageRain} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'imageRain');
+          }} title="ImageRain"/>
+        </>
+      )}
+      {hasKey('imageSnow') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.imageSnow} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'imageSnow');
+          }} title="ImageSnow"/>
+        </>
+      )}
+      {hasKey('imageThunder') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.imageThunder} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'imageThunder');
+          }} title="ImageThunder"/>
+        </>
+      )}
+      {hasKey('imageWind') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.imageWind} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'imageWind');
+          }} title="ImageWind"/>
         </>
       )}
     </>
