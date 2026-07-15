@@ -70,7 +70,7 @@ export default function WeatherLayout1(props: any) {
       <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', justifyContent: 'space-between' }}>
         {days[size].map((day: any, index: number) => {
           return (
-            <div style={{
+            <div key={day} style={{
               display: 'flex',
               flexDirection: 'column-reverse',
               justifyContent: 'space-between'

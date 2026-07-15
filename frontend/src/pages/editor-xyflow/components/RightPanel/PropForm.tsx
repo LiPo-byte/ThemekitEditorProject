@@ -217,7 +217,8 @@ export const AgentTagsMultipleSelect: React.FC = () => {
 const FontFamilyInput: React.FC<{
   value?: string;
   onChange?: (value: string) => void;
-}> = ({ value, onChange }) => {
+  title?: string,
+}> = ({ value, onChange, title }) => {
   const isMixed = value === MIXED_VALUE;
   const fontValue = isMixed ? undefined : value;
   return (
@@ -225,7 +226,7 @@ const FontFamilyInput: React.FC<{
       <Row style={{ marginBottom: '5px' }}>
         <Col span={24}>
           <Flex justify="space-between" align="center">
-            <InputTitle label="Font" />
+            <InputTitle label={title || 'Font'} />
             <FontSelect
               value={fontValue}
               onChange={onChange}
@@ -307,13 +308,14 @@ const BackgroundColorInput: React.FC<{
 const TextAlignment: React.FC<{
   value?: number;
   onChange?: (value: number) => void;
-}> = ({ value, onChange }) => {
+  title?: string,
+}> = ({ value, onChange, title }) => {
   return (
     <>
       <Row style={{ marginBottom: '5px' }}>
         <Col span={24}>
         <Flex align='center' justify='space-between'>
-          <InputTitle label="TextAlignment" />
+          <InputTitle label={title || "TextAlignment"} />
           <Segmented
             value={value}
             block
@@ -738,11 +740,78 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('commonField') && (
+        <>
+          <FontFamilyInput
+            title="CommonField"
+            value={editProps.commonField}
+            onChange={(nextValue) => onChange?.('commonField', nextValue)}
+          />
+        </>
+      )}
       {hasKey('textAlignment') && (
         <>
           <TextAlignment
             value={editProps.textAlignment}
             onChange={(nextValue) => onChange?.('textAlignment', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('topTextAlignment') && (
+        <>
+          <TextAlignment
+            title="TopTextAlignment"
+            value={editProps.topTextAlignment}
+            onChange={(nextValue) => onChange?.('topTextAlignment', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('bottomTextAlignment') && (
+        <>
+          <TextAlignment
+            title="BottomTextAlignment"
+            value={editProps.bottomTextAlignment}
+            onChange={(nextValue) => onChange?.('bottomTextAlignment', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('clockPadding') && (
+        <>
+          <PropInput
+            LabelName="ClockPadding"
+            value={editProps.clockPadding}
+            type="number"
+            onChange={(nextValue) => onChange?.('clockPadding', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('textPadding') && (
+        <>
+          <PropInput
+            LabelName="TextPadding"
+            value={editProps.textPadding}
+            type="number"
+            onChange={(nextValue) => onChange?.('textPadding', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('itemSpacing') && (
+        <>
+          <PropInput
+            LabelName="ItemSpacing"
+            value={editProps.itemSpacing}
+            type="number"
+            onChange={(nextValue) => onChange?.('itemSpacing', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('lineSpacing') && (
+        <>
+          <PropInput
+            LabelName="LineSpacing"
+            value={editProps.lineSpacing}
+            type="number"
+            onChange={(nextValue) => onChange?.('lineSpacing', nextValue)}
           />
         </>
       )}
@@ -1007,6 +1076,16 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('intCommonField') && (
+        <>
+          <PropInput
+            LabelName="IntCommonField"
+            value={editProps.intCommonField}
+            type="number"
+            onChange={(nextValue) => onChange?.('intCommonField', nextValue)}
+          />
+        </>
+      )}
       {hasKey('source') && (
         <>
           <ImageUpload
@@ -1120,6 +1199,14 @@ export const SelectedNodePropForm: React.FC<{
           }} title="FourthImageAnimation"/>
         </>
       )}
+      {hasKey('clock') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.clock} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'clock');
+          }} title="Clock"/>
+        </>
+      )}
+      
       {hasKey('battery_20') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.battery_20} onChange={(key: string, value: any) => {
@@ -1258,6 +1345,13 @@ export const SelectedNodePropForm: React.FC<{
           <BaseSelectedNodePropForm editProps={editProps.imageWind} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'imageWind');
           }} title="ImageWind"/>
+        </>
+      )}
+      {hasKey('player') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.player} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'player');
+          }} title="Player"/>
         </>
       )}
     </>

@@ -70,15 +70,15 @@
   },
   {
     "key": "Clock",
-    "label": "Clock 待定",
+    "label": "Clock",
     "children": [
       {
-        "key": "Clock-0",
+        "key": "Clock_LayoutType_0",
         "label": "Layout 0",
         "title": "Customizable"
       },
       {
-        "key": "Clock-1",
+        "key": "Clock_LayoutType_1",
         "label": "Layout 1",
         "title": "Not customizable"
       }
@@ -155,8 +155,8 @@
     ]
   },
   {
-    "key": "TimeMixBattery",
-    "label": "Time Mix Battery 待定",
+    "key": "TimeMixBattery_LayoutType_0",
+    "label": "Time Mix Battery",
     "title": "All layouts customizable"
   },
   {
@@ -165,8 +165,8 @@
     "title": "All layouts customizable"
   },
   {
-    "key": "Music",
-    "label": "Music 待定",
+    "key": "Music_LayoutType_0",
+    "label": "Music",
     "title": "Not customizable"
   },
   {

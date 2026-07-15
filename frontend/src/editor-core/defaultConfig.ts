@@ -2256,7 +2256,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 2,
-                 "name":"Calendar_AndroidS_Medium",
+                "name":"Calendar_Android_Medium",
                  "source": '',
                  "crop_props": defaultCropProps,
                  "radius": 28,
@@ -2706,7 +2706,7 @@ export const WidgetDefaultConfig = {
                {
                  "size":1,
                  "layoutType":1,
-                "name":"Dbl_Styletwo_Small",
+                "name":"Battery_IOS_Small",
                  "textAlignment":2,
                  radius: 28,
                  "source": "",
@@ -2722,7 +2722,7 @@ export const WidgetDefaultConfig = {
                {
                  "size":2,
                  "layoutType":1,
-                "name":"Dbl_Styletwo_Medium",
+                "name":"Battery_IOS_Medium",
                  "textAlignment":2,
                  radius: 28,
                  "source": "",
@@ -2738,7 +2738,7 @@ export const WidgetDefaultConfig = {
                {
                  "size":3,
                  "layoutType":1,
-                "name":"Dbl_Styletwo_Large",
+                "name":"Battery_IOS_Large",
                  "textAlignment":2,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -2762,7 +2762,7 @@ export const WidgetDefaultConfig = {
                {
                  "size":1,
                  "layoutType":1,
-                "name":"Dbl_Styletwo_Small",
+                "name":"Battery_Android_Small",
                  "textAlignment":2,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -2778,7 +2778,7 @@ export const WidgetDefaultConfig = {
                {
                  "size":2,
                  "layoutType":1,
-                "name":"Dbl_Styletwo_Medium",
+                "name":"Battery_Android_Medium",
                  "textAlignment":2,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -2794,7 +2794,7 @@ export const WidgetDefaultConfig = {
                {
                  "size":3,
                  "layoutType":1,
-                "name":"Dbl_Styletwo_Large",
+                "name":"Battery_Android_Large",
                  "textAlignment":2,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -2820,7 +2820,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 2,
-                 "name":"Kuromi_Battery_Small",
+                "name":"Battery_IOS_Small",
                  radius: 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -2891,7 +2891,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 2,
-                 "name":"Kuromi_Battery_Medium",
+                "name":"Battery_IOS_Medium",
                  radius: 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -2962,7 +2962,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 2,
-                 "name":"Kuromi_Battery_Large",
+                "name":"Battery_IOS_Large",
                  radius: 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -3041,7 +3041,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":1,
                  "layoutType": 2,
-                 "name":"Kuromi_Battery_Small",
+                "name":"Battery_Android_Small",
                  radius: 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -3064,7 +3064,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":2,
                  "layoutType": 2,
-                 "name":"Kuromi_Battery_Medium",
+                "name":"Battery_Android_Medium",
                  radius: 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -3087,7 +3087,7 @@ export const WidgetDefaultConfig = {
              {
                  "size":3,
                  "layoutType": 2,
-                 "name":"Kuromi_Battery_Large",
+                "name":"Battery_Android_Large",
                  radius: 28,
                  "source": "",
                  "crop_props": defaultCropProps,
@@ -3359,7 +3359,7 @@ export const WidgetDefaultConfig = {
                   "title": {
                         "font":"HelveticaNeue",
                         "textSize":24,
-                         "textColor":"#FFFFFF",
+                         "textColor":"#000000",
                          "content": 'App Name',
                         },
                   "appLinks":[""],
@@ -3621,7 +3621,7 @@ export const WidgetDefaultConfig = {
           "sizes": [
             {
               "size": 1,
-              "name": "Pixel_Style_Cute_Cat_A_Small",
+              "name": "Digital_IOS_Small",
               "source": "",
               radius: 28,
               "crop_props": defaultCropProps,
@@ -3654,7 +3654,7 @@ export const WidgetDefaultConfig = {
             },
             {
               "size": 2,
-              "name": "Pixel_Style_Cute_Cat_A_Medium",
+              "name": "Digital_IOS_Medium",
               "source": "",
               radius: 28,
               "crop_props": defaultCropProps,
@@ -3687,7 +3687,7 @@ export const WidgetDefaultConfig = {
             },
             {
               "size": 3,
-              "name": "Pixel_Style_Cute_Cat_A_Large",
+              "name": "Digital_IOS_Large",
               "source": "",
               radius: 28,
               "crop_props": defaultCropProps,
@@ -3728,7 +3728,7 @@ export const WidgetDefaultConfig = {
             "sizes": [
               {
                 "size": 1,
-                "name": "Pixel_Style_Cute_Cat_A_Small",
+                "name": "Digital_Android_Small",
                 "source": "",
                 radius: 28,
                 "crop_props": defaultCropProps,
@@ -3761,7 +3761,7 @@ export const WidgetDefaultConfig = {
               },
               {
                 "size": 2,
-                "name": "Pixel_Style_Cute_Cat_A_Medium",
+                "name": "Digital_Android_Medium",
                 "source": "",
                 radius: 28,
                 "crop_props": defaultCropProps,
@@ -3794,7 +3794,7 @@ export const WidgetDefaultConfig = {
               },
               {
                 "size": 3,
-                "name": "Pixel_Style_Cute_Cat_A_Large",
+                "name": "Digital_Android_Large",
                 "source": "",
                 radius: 28,
                 "crop_props": defaultCropProps,
@@ -3864,7 +3864,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 1,
                     "layoutType": 0,
-                    "name": "Weather_Q_Small",
+                    "name": "Weather_IOS_Small",
                     "source": "",
                     "crop_props": defaultCropProps,
                     radius: 28,
@@ -3882,7 +3882,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 2,
                     "layoutType": 0,
-                    "name": "Weather_Q_Medium",
+                    "name": "Weather_IOS_Medium",
                     "source": "",
                     radius: 28,
                     "crop_props": defaultCropProps,
@@ -3900,7 +3900,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 3,
                     "layoutType": 0,
-                    "name": "Weather_Q_Large",
+                    "name": "Weather_IOS_Large",
                     "source": "",
                     radius: 28,
                     "crop_props": defaultCropProps,
@@ -3952,7 +3952,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 1,
                     "layoutType": 0,
-                    "name": "Weather_Q_Small",
+                    "name": "Weather_Android_Small",
                     "source": "",
                     "crop_props": defaultCropProps,
                     radius: 28,
@@ -3970,7 +3970,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 2,
                     "layoutType": 0,
-                    "name": "Weather_Q_Medium",
+                    "name": "Weather_Android_Medium",
                     "source": "",
                     radius: 28,
                     "crop_props": defaultCropProps,
@@ -3988,7 +3988,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 3,
                     "layoutType": 0,
-                    "name": "Weather_Q_Large",
+                    "name": "Weather_Android_Large",
                     "source": "",
                     radius: 28,
                     "crop_props": defaultCropProps,
@@ -4042,7 +4042,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 1,
                     "layoutType": 1,
-                    "name": "Weather_Q_Small",
+                    "name": "Weather_IOS_Small",
                     "source": "",
                     "crop_props": defaultCropProps,
                     radius: 28,
@@ -4065,7 +4065,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 2,
                     "layoutType": 1,
-                    "name": "Weather_Q_Medium",
+                    "name": "Weather_IOS_Medium",
                     "source": "",
                     radius: 28,
                     "crop_props": defaultCropProps,
@@ -4088,7 +4088,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 3,
                     "layoutType": 1,
-                    "name": "Weather_Q_Large",
+                    "name": "Weather_IOS_Large",
                     "source": "",
                     radius: 28,
                     "crop_props": defaultCropProps,
@@ -4145,7 +4145,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 1,
                     "layoutType": 1,
-                    "name": "Weather_Q_Small",
+                    "name": "Weather_Android_Small",
                     "source": "",
                     "crop_props": defaultCropProps,
                     radius: 28,
@@ -4168,7 +4168,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 2,
                     "layoutType": 1,
-                    "name": "Weather_Q_Medium",
+                    "name": "Weather_Android_Medium",
                     "source": "",
                     radius: 28,
                     "crop_props": defaultCropProps,
@@ -4191,7 +4191,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 3,
                     "layoutType": 1,
-                    "name": "Weather_Q_Large",
+                    "name": "Weather_Android_Large",
                     "source": "",
                     radius: 28,
                     "crop_props": defaultCropProps,
@@ -4248,7 +4248,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 1,
                     "layoutType": 2,
-                    "name": "Beach_Vacation_A_Small",
+                    "name": "Weather_IOS_Small",
                     "textAlignment": 1,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -4271,7 +4271,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 2,
                     "layoutType": 2,
-                    "name": "Beach_Vacation_A_Medium",
+                    "name": "Weather_IOS_Medium",
                     "textAlignment": 1,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -4294,7 +4294,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 3,
                     "layoutType": 2,
-                    "name": "Beach_Vacation_A_Large",
+                    "name": "Weather_IOS_Large",
                     "textAlignment": 1,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -4325,7 +4325,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 1,
                     "layoutType": 2,
-                    "name": "Beach_Vacation_A_Small",
+                    "name": "Weather_Android_Small",
                     "textAlignment": 1,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -4348,7 +4348,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 2,
                     "layoutType": 2,
-                    "name": "Beach_Vacation_A_Medium",
+                    "name": "Weather_Android_Medium",
                     "textAlignment": 1,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -4371,7 +4371,7 @@ export const WidgetDefaultConfig = {
                 {
                     "size": 3,
                     "layoutType": 2,
-                    "name": "Beach_Vacation_A_Large",
+                    "name": "Weather_Android_Large",
                     "textAlignment": 1,
                     "source": "",
                     "crop_props": defaultCropProps,
@@ -4393,6 +4393,562 @@ export const WidgetDefaultConfig = {
                 }
             ]
         }
+    },
+    Clock_LayoutType_0: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":3,
+            "textAlignment":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Clock_IOS_Small",
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock":{
+                      "clockPadding": 16,
+                      "dialImage":"",
+                      "hourHandImage":"",
+                      "minuteHandImage":""
+                  }
+              },
+               {
+                   "size":2,
+                   "name":"Clock_IOS_Medium",
+                   "textAlignment":2,
+                   "itemSpacing":24,
+                   "lineSpacing":8,
+                   "bgImage": "",
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                   radius: 28,
+                   "clock":{
+                       "clockPadding": 16,
+                       "textPadding": 16,
+                       "dialImage":"",
+                       "hourHandImage":"",
+                       "minuteHandImage": ""
+                   },
+                   "day":{
+                      "font":"AvenirNext-HeavyItalic",
+                      "textSize":24,
+                      "textHeight":33,
+                      "textColor":"#000000",
+                      "alpha":1.0
+                   },
+                   "date":{
+                      "font":"AvenirNext-HeavyItalic",
+                      "textSize":16,
+                      "textHeight":22,
+                      "textColor":"#000000",
+                      "alpha":1.0
+                   }
+              },
+               {
+                  "size":3,
+                  "name":"Clock_IOS_Large",
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock":{
+                      "clockPadding": 21,
+                      "dialImage": "",
+                      "hourHandImage": "",
+                      "minuteHandImage": "",
+                  }
+              }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":3,
+            "textAlignment":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Clock_Android_Small",
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock":{
+                      "clockPadding": 16,
+                      "dialImage":"",
+                      "hourHandImage":"",
+                      "minuteHandImage":""
+                  }
+              },
+               {
+                   "size":2,
+                   "name":"Clock_Android_Medium",
+                   "textAlignment":2,
+                   "itemSpacing":24,
+                   "lineSpacing":8,
+                   "bgImage": "",
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                   radius: 28,
+                   "clock":{
+                       "clockPadding": 16,
+                       "textPadding": 16,
+                       "dialImage":"",
+                       "hourHandImage":"",
+                       "minuteHandImage": ""
+                   },
+                   "day":{
+                      "font":"AvenirNext-HeavyItalic",
+                      "textSize":24,
+                      "textHeight":33,
+                      "textColor":"#000000",
+                      "alpha":1.0
+                   },
+                   "date":{
+                      "font":"AvenirNext-HeavyItalic",
+                      "textSize":16,
+                      "textHeight":22,
+                      "textColor":"#000000",
+                      "alpha":1.0
+                   }
+              },
+               {
+                  "size":3,
+                  "name":"Clock_Android_Large",
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock":{
+                      "clockPadding": 21,
+                      "dialImage": "",
+                      "hourHandImage": "",
+                      "minuteHandImage": "",
+                  }
+              }
+            ]
+         }
+    },
+    Clock_LayoutType_1: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":3,
+            "textAlignment":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Clock_IOS_Small",
+                  "layoutType":1,
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock":{
+                      "clockPadding": 16,
+                      "dialImage":"",
+                      "hourHandImage":"",
+                      "minuteHandImage":""
+                  }
+              },
+               {
+                   "size":2,
+                   "name":"Clock_IOS_Medium",
+                   "textAlignment":2,
+                   "itemSpacing":24,
+                   "lineSpacing":8,
+                   "bgImage": "",
+                   "layoutType":1,
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                   radius: 28,
+                   "clock":{
+                       "clockPadding": 16,
+                       "textPadding": 16,
+                       "dialImage":"",
+                       "hourHandImage":"",
+                       "minuteHandImage": ""
+                   },
+                   "day":{
+                      "font":"AvenirNext-HeavyItalic",
+                      "textSize":24,
+                      "textHeight":33,
+                      "textColor":"#000000",
+                      "alpha":1.0
+                   },
+                   "date":{
+                      "font":"AvenirNext-HeavyItalic",
+                      "textSize":16,
+                      "textHeight":22,
+                      "textColor":"#000000",
+                      "alpha":1.0
+                   }
+              },
+               {
+                  "size":3,
+                  "name":"Clock_IOS_Large",
+                  "layoutType":1,
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock":{
+                      "clockPadding": 21,
+                      "dialImage": "",
+                      "hourHandImage": "",
+                      "minuteHandImage": "",
+                  }
+              }
+            ]
+         },
+         android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":3,
+            "textAlignment":2,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"Clock_Android_Small",
+                  "layoutType":1,
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock":{
+                      "clockPadding": 16,
+                      "dialImage":"",
+                      "hourHandImage":"",
+                      "minuteHandImage":""
+                  }
+              },
+               {
+                   "size":2,
+                   "name":"Clock_Android_Medium",
+                   "textAlignment":2,
+                   "itemSpacing":24,
+                   "lineSpacing":8,
+                   "bgImage": "",
+                   "layoutType":1,
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                   radius: 28,
+                   "clock":{
+                       "clockPadding": 16,
+                       "textPadding": 16,
+                       "dialImage":"",
+                       "hourHandImage":"",
+                       "minuteHandImage": ""
+                   },
+                   "day":{
+                      "font":"AvenirNext-HeavyItalic",
+                      "textSize":24,
+                      "textHeight":33,
+                      "textColor":"#000000",
+                      "alpha":1.0
+                   },
+                   "date":{
+                      "font":"AvenirNext-HeavyItalic",
+                      "textSize":16,
+                      "textHeight":22,
+                      "textColor":"#000000",
+                      "alpha":1.0
+                   }
+              },
+               {
+                  "size":3,
+                  "name":"Clock_Android_Large",
+                  "layoutType":1,
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock":{
+                      "clockPadding": 21,
+                      "dialImage": "",
+                      "hourHandImage": "",
+                      "minuteHandImage": "",
+                  }
+              }
+            ]
+         }, 
+    },
+    Music_LayoutType_0: {
+        ios: {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 17,
+            "sizes": [
+              {
+                "size": 1,
+                "layoutType": 0,
+                "name": "Music_IOS_Small",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "player": {
+                  "borderColor": "#000000",
+                  "textColor": "#000000",
+                  "font": "AvenirNext-DemiBold",
+                  "commonField": "AvenirNext-Medium",
+                  "textSize": 18,
+                  "intCommonField": 12,
+                },
+                "appLinks":[-2]
+              },
+              {
+                "size": 2,
+                "layoutType": 0,
+                "name": "Music_IOS_Medium",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "player": {
+                  "borderColor": "#000000",
+                  "textColor": "#000000",
+                  "font": "AvenirNext-DemiBold",
+                  "commonField": "AvenirNext-Medium",
+                  "textSize": 10,
+                  "intCommonField": 8,
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                },
+                "appLinks":[-2]
+              },
+              {
+                "size": 3,
+                "layoutType": 0,
+                "name": "Music_IOS_Large",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "player": {
+                  "borderColor": "#000000",
+                  "textColor": "#000000",
+                  "font": "AvenirNext-DemiBold",
+                  "commonField": "AvenirNext-Medium",
+                  "textSize": 18,
+                  "intCommonField": 12,
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                },
+                "appLinks":[-2]
+              }
+            ]
+          },
+        android: {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 17,
+            "sizes": [
+              {
+                "size": 1,
+                "layoutType": 0,
+                "name": "Music_Android_Small",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "player": {
+                  "borderColor": "#000000",
+                  "textColor": "#000000",
+                  "font": "AvenirNext-DemiBold",
+                  "commonField": "AvenirNext-Medium",
+                  "textSize": 18,
+                  "intCommonField": 12,
+                },
+                "appLinks":[-2]
+              },
+              {
+                "size": 2,
+                "layoutType": 0,
+                "name": "Music_Android_Medium",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "player": {
+                  "borderColor": "#000000",
+                  "textColor": "#000000",
+                  "font": "AvenirNext-DemiBold",
+                  "commonField": "AvenirNext-Medium",
+                  "textSize": 10,
+                  "intCommonField": 8,
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                },
+                "appLinks":[-2]
+              },
+              {
+                "size": 3,
+                "layoutType": 0,
+                "name": "Music_Android_Large",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "player": {
+                  "borderColor": "#000000",
+                  "textColor": "#000000",
+                  "font": "AvenirNext-DemiBold",
+                  "commonField": "AvenirNext-Medium",
+                  "textSize": 18,
+                  "intCommonField": 12,
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                },
+                "appLinks":[-2]
+              }
+            ]
+          }  
+    },
+    TimeMixBattery_LayoutType_0: {
+        ios: {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 15,
+            "source": "",
+            "crop_props": defaultCropProps,
+            radius: 28,
+            "sizes": [
+              {
+                "size": 1,
+                "layoutType": 0,
+                "name": "Time_Mix_Battery_IOS_Small",
+                "padding": 16,
+                "battery": {
+                  "backgroundColor": "000000",
+                  "textColor": "#FFFFFF"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 60,
+                  "textHeight": 85,
+                  "textColor": "#000000",
+                  "alpha": 0.5,
+                  "topTextAlignment": 3,
+                  "bottomTextAlignment": 2
+                }
+              },
+              {
+                "size": 2,
+                "layoutType": 0,
+                "name": "Time_Mix_Battery_IOS_Medium",
+                "padding": 86,
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "battery": {
+                  "backgroundColor": "#000000",
+                  "textColor": "#FFFFFF"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 90,
+                  "textHeight": 127,
+                  "textColor": "#000000",
+                  "alpha": 0.5,
+                  "topTextAlignment": 3,
+                  "bottomTextAlignment": 2
+                }
+              },
+              {
+                "size": 3,
+                "layoutType": 0,
+                "name": "Time_Mix_Battery_IOS_Large",
+                "padding": 46,
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "battery": {
+                  "backgroundColor": "#000000",
+                  "textColor": "#FFFFFF"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 150,
+                  "textHeight": 211,
+                  "textColor": "000000",
+                  "alpha": 0.5,
+                  "topTextAlignment": 3,
+                  "bottomTextAlignment": 2
+                }
+              }
+            ]
+          },
+        android: {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 15,
+            "source": "",
+            "crop_props": defaultCropProps,
+            radius: 28,
+            "sizes": [
+              {
+                "size": 1,
+                "layoutType": 0,
+                "name": "Time_Mix_Battery_Android_Small",
+                "padding": 16,
+                "battery": {
+                  "backgroundColor": "000000",
+                  "textColor": "#FFFFFF"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 60,
+                  "textHeight": 85,
+                  "textColor": "#000000",
+                  "alpha": 0.5,
+                  "topTextAlignment": 3,
+                  "bottomTextAlignment": 2
+                }
+              },
+              {
+                "size": 2,
+                "layoutType": 0,
+                "name": "Time_Mix_Battery_Android_Medium",
+                "padding": 86,
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "battery": {
+                  "backgroundColor": "#000000",
+                  "textColor": "#FFFFFF"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 90,
+                  "textHeight": 127,
+                  "textColor": "#000000",
+                  "alpha": 0.5,
+                  "topTextAlignment": 3,
+                  "bottomTextAlignment": 2
+                }
+              },
+              {
+                "size": 3,
+                "layoutType": 0,
+                "name": "Time_Mix_Battery_Android_Large",
+                "padding": 46,
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "battery": {
+                  "backgroundColor": "#000000",
+                  "textColor": "#FFFFFF"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 150,
+                  "textHeight": 211,
+                  "textColor": "000000",
+                  "alpha": 0.5,
+                  "topTextAlignment": 3,
+                  "bottomTextAlignment": 2
+                }
+              }
+            ]
+          }  
     }
 }
 export const IconPackDefaultConfig = {

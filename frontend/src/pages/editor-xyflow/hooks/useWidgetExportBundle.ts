@@ -441,6 +441,16 @@ export const useWidgetExportBundle = (nodeId?: string) => {
           pushLine('success', `生成 widgets_${sizeLabel}_animation_fourth.png`);
         }
 
+        const musicPlayerSource = data?.player?.source;
+        if (musicPlayerSource) {
+          const musicPlayerBlob = await toPngBlobFromUrl(musicPlayerSource);
+          zip.file(
+            `widgets_${sizeLabel}_player.png`,
+            musicPlayerBlob,
+          );
+          pushLine('success', `生成 widgets_${sizeLabel}_player.png`);
+        }
+
         if (Array.isArray(data?.appLinks) && data?.appLinksSource) {
           const appLinksSource = Array.isArray(data?.appLinksSource)
             ? data.appLinksSource

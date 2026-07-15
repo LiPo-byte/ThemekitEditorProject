@@ -38,6 +38,13 @@ import DigitalLayout_0 from './widget/digital-layout_0';
 import WeatherLayout_0 from './widget/weather-layout_0';
 import WeatherLayout_1 from './widget/weather-layout_1';
 import WeatherLayout_2 from './widget/weather-layout_2';
+import ClockLayout_0 from './widget/clock-layout_0';
+import ClockLayout_1 from './widget/clock-layout_1';
+import MusicLayout_0 from './widget/music-layout_0';
+import TimeMixBatteryLayout_0 from './widget/timemixbattery-layout_0';
+
+
+
 
 import ActionPopover from './components/ActionPopover';
 import PlatformGroupNode from './components/PlatformGroupNode';
@@ -124,6 +131,10 @@ export default function EditorStage() {
           weather_0: WeatherLayout_0,
           weather_1: WeatherLayout_1,
           weather_2: WeatherLayout_2,
+          clock_0: ClockLayout_0,
+          clock_1: ClockLayout_1,
+          music_0: MusicLayout_0,
+          timemixbattery_0 :TimeMixBatteryLayout_0
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}
