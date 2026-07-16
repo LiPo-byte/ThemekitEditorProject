@@ -4049,17 +4049,17 @@ export const WidgetDefaultConfig = {
                     "weatherWeekday": {
                         "font": "HFGeo",
                         "textSize": 20,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherDate": {
                         "font": "HFGeo",
                         "textSize": 13,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherSub": {
                         "font": "HFGeo",
                         "textSize": 14,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     }
                 },
                 {
@@ -4072,17 +4072,17 @@ export const WidgetDefaultConfig = {
                     "weatherWeekday": {
                         "font": "HFGeo",
                         "textSize": 25,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherDate": {
                         "font": "HFGeo",
                         "textSize": 18,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherSub": {
                         "font": "HFGeo",
                         "textSize": 14,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     }
                 },
                 {
@@ -4095,17 +4095,17 @@ export const WidgetDefaultConfig = {
                     "weatherWeekday": {
                         "font": "HFGeo",
                         "textSize": 25,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherDate": {
                         "font": "HFGeo",
                         "textSize": 18,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherSub": {
                         "font": "HFGeo",
                         "textSize": 14,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     }
                 }
             ]
@@ -4152,17 +4152,17 @@ export const WidgetDefaultConfig = {
                     "weatherWeekday": {
                         "font": "HFGeo",
                         "textSize": 20,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherDate": {
                         "font": "HFGeo",
                         "textSize": 13,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherSub": {
                         "font": "HFGeo",
                         "textSize": 14,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     }
                 },
                 {
@@ -4175,17 +4175,17 @@ export const WidgetDefaultConfig = {
                     "weatherWeekday": {
                         "font": "HFGeo",
                         "textSize": 25,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherDate": {
                         "font": "HFGeo",
                         "textSize": 18,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherSub": {
                         "font": "HFGeo",
                         "textSize": 14,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     }
                 },
                 {
@@ -4198,17 +4198,17 @@ export const WidgetDefaultConfig = {
                     "weatherWeekday": {
                         "font": "HFGeo",
                         "textSize": 25,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherDate": {
                         "font": "HFGeo",
                         "textSize": 18,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     },
                     "weatherSub": {
                         "font": "HFGeo",
                         "textSize": 14,
-                        "textColor": "#FFFFFF"
+                        "textColor": "#000000"
                     }
                 }
             ]
@@ -4806,15 +4806,15 @@ export const WidgetDefaultConfig = {
             "isLockScreen": false,
             "isGif": false,
             "type": 15,
-            "source": "",
-            "crop_props": defaultCropProps,
-            radius: 28,
             "sizes": [
               {
                 "size": 1,
                 "layoutType": 0,
                 "name": "Time_Mix_Battery_IOS_Small",
                 "padding": 16,
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
                 "battery": {
                   "backgroundColor": "000000",
                   "textColor": "#FFFFFF"
@@ -4880,15 +4880,15 @@ export const WidgetDefaultConfig = {
             "isLockScreen": false,
             "isGif": false,
             "type": 15,
-            "source": "",
-            "crop_props": defaultCropProps,
-            radius: 28,
             "sizes": [
               {
                 "size": 1,
                 "layoutType": 0,
                 "name": "Time_Mix_Battery_Android_Small",
                 "padding": 16,
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
                 "battery": {
                   "backgroundColor": "000000",
                   "textColor": "#FFFFFF"
@@ -4949,6 +4949,606 @@ export const WidgetDefaultConfig = {
               }
             ]
           }  
+    },
+    TimeMixCalendarMixBattery_LayoutType_0: {
+        ios: {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 16,
+            "textAlignment": 3,
+            "sizes": [
+              {
+                "size": 1,
+                "layoutType": 0,
+                "padding": 16,
+                "name": "Time_Mix_Calendar_Mix_Battery_IOS_Small",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "battery": {
+                  "backgroundColor": "#FFF1D3",
+                  "textColor": "#4F1826"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 55,
+                  "textHeight": 68,
+                  "textColor": "#FFF1D3",
+                  "alpha": 0.8
+                },
+                "day": {
+                  "font": "AvenirNext-Medium",
+                  "textSize": 19,
+                  "textHeight": 26,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0,
+                  "topSpacing":15,
+                  "bottomSpacing": 36
+                },
+                "date": {
+                  "font": "Helvetica",
+                  "textSize": 14,
+                  "textHeight": 17,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0
+                }
+              },
+              {
+                "size": 2,
+                "layoutType": 0,
+                "name": "Time_Mix_Calendar_Mix_Battery_IOS_Medium",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "padding": 16,
+                "battery": {
+                  "backgroundColor": "#FFF1D3",
+                  "textColor": "#4F1826"
+                },
+                "time": {
+                  "font": "HelveticaNeue-Bold",
+                  "textSize": 38,
+                  "textHeight": 52,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0
+                },
+                "day": {
+                  "font": "AvenirNext-Medium",
+                  "textSize": 20,
+                  "textHeight": 27,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0,
+                  "topSpacing": 69,
+                  "bottomSpacing": 40
+                },
+                "date": {
+                  "font": "AvenirNext-Medium",
+                  "textSize": 20,
+                  "textHeight": 27,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0
+                }
+              },
+              {
+                "size": 3,
+                "layoutType": 0,
+                "name": "Time_Mix_Calendar_Mix_Battery_IOS_Large",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "padding": 16,
+                "battery": {
+                  "backgroundColor": "#FFF1D3",
+                  "textColor": "#4F1826"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 125,
+                  "textHeight": 171,
+                  "textColor": "#FFF1D3",
+                  "alpha": 0.8
+                },
+                "day": {
+                  "font": "AvenirNext-Medium",
+                  "textSize": 37,
+                  "textHeight": 51,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0,
+                  "topSpacing": 100,
+                  "bottomSpacing": 67
+                },
+                "date": {
+                  "font": "Helvetica",
+                  "textSize": 25,
+                  "textHeight": 30,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0
+                }
+              }
+            ]
+          },
+        android: {
+            "version": 0,
+            "isLockScreen": false,
+            "isGif": false,
+            "type": 16,
+            "textAlignment": 3,
+            "sizes": [
+              {
+                "size": 1,
+                "layoutType": 0,
+                "padding": 16,
+                "name": "Time_Mix_Calendar_Mix_Battery_Android_Small",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "battery": {
+                  "backgroundColor": "#FFF1D3",
+                  "textColor": "#4F1826"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 55,
+                  "textHeight": 68,
+                  "textColor": "#FFF1D3",
+                  "alpha": 0.8
+                },
+                "day": {
+                  "font": "AvenirNext-Medium",
+                  "textSize": 19,
+                  "textHeight": 26,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0,
+                  "topSpacing":15,
+                  "bottomSpacing": 36
+                },
+                "date": {
+                  "font": "Helvetica",
+                  "textSize": 14,
+                  "textHeight": 17,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0
+                }
+              },
+              {
+                "size": 2,
+                "layoutType": 0,
+                "name": "Time_Mix_Calendar_Mix_Battery_Android_Medium",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "padding": 16,
+                "battery": {
+                  "backgroundColor": "#FFF1D3",
+                  "textColor": "#4F1826"
+                },
+                "time": {
+                  "font": "HelveticaNeue-Bold",
+                  "textSize": 38,
+                  "textHeight": 52,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0
+                },
+                "day": {
+                  "font": "AvenirNext-Medium",
+                  "textSize": 20,
+                  "textHeight": 27,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0,
+                  "topSpacing": 69,
+                  "bottomSpacing": 40
+                },
+                "date": {
+                  "font": "AvenirNext-Medium",
+                  "textSize": 20,
+                  "textHeight": 27,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0
+                }
+              },
+              {
+                "size": 3,
+                "layoutType": 0,
+                "name": "Time_Mix_Calendar_Mix_Battery_Android_Large",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                "padding": 16,
+                "battery": {
+                  "backgroundColor": "#FFF1D3",
+                  "textColor": "#4F1826"
+                },
+                "time": {
+                  "font": "AvenirNext-Heavy",
+                  "textSize": 125,
+                  "textHeight": 171,
+                  "textColor": "#FFF1D3",
+                  "alpha": 0.8
+                },
+                "day": {
+                  "font": "AvenirNext-Medium",
+                  "textSize": 37,
+                  "textHeight": 51,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0,
+                  "topSpacing": 100,
+                  "bottomSpacing": 67
+                },
+                "date": {
+                  "font": "Helvetica",
+                  "textSize": 25,
+                  "textHeight": 30,
+                  "textColor": "#FFF1D3",
+                  "alpha": 1.0
+                }
+              }
+            ]
+          }
+    },
+    TimeMixCalendarMixBattery_LayoutType_1: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":16,
+            "sizes":[
+                   {
+                      "size":1,
+                 "layoutType": 1,
+                 "name": "Time_Mix_Calendar_Mix_Battery_IOS_Small",
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 radius: 28,
+                     "battery": {
+                   "backgroundColor": "#D8D8D8",
+                   "textColor":"#FFFFFF"
+                      },
+                      "time":{
+                           "font":"AvenirNext-Heavy",
+                           "textSize":60,
+                           "textColor":"#FFBCBC",
+                           "alpha":1.0,
+                      "topTextAlignment": 3,
+                      "bottomTextAlignment": 2
+                      },
+                      "day" :{
+                           "font":"PingFangSC-Semibold",
+                           "textSize":19,
+                           "textColor":"#000000",
+                           "alpha":1.0
+                      }
+                   },
+                   {
+                      "size":2,
+                 "layoutType": 1,
+                "name": "Time_Mix_Calendar_Mix_Battery_IOS_Medium",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                 "battery": {
+                     "backgroundColor": "#D8D8D8",
+                     "textColor":"#FFFFFF"
+                  },
+                      "time":{
+                           "font":"AvenirNext-Heavy",
+                           "textSize":75,
+                           "textColor":"#FFBCBC",
+                           "alpha":1.0,
+                      "topTextAlignment": 1,
+                      "bottomTextAlignment": 3
+                      },
+                      "day" :{
+                           "font":"PingFangSC-Semibold",
+                           "textSize":35,
+                           "textColor":"#000000",
+                           "alpha":1.0
+                      }
+                   },
+                   {
+                      "size":3,
+                 "layoutType": 1,
+                "name": "Time_Mix_Calendar_Mix_Battery_IOS_Large",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                 "battery": {
+                     "backgroundColor": "#D8D8D8",
+                  "textColor":"#FFFFFF"
+                  },
+                      "time":{
+                           "font":"AvenirNext-Heavy",
+                           "textSize":120,
+                           "textColor":"#FFBCBC",
+                           "alpha":1.0,
+                      "topTextAlignment": 1,
+                      "bottomTextAlignment": 3
+                      },
+                      "day" :{
+                           "font":"PingFangSC-Semibold",
+                           "textSize":44,
+                           "textColor":"#000000",
+                           "alpha":1.0
+                      }
+                   }
+            ]
+         },
+        android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":16,
+            "sizes":[
+                   {
+                      "size":1,
+                 "layoutType": 1,
+                 "name": "Time_Mix_Calendar_Mix_Battery_Android_Small",
+                 "source": "",
+                 "crop_props": defaultCropProps,
+                 radius: 28,
+                     "battery": {
+                   "backgroundColor": "#D8D8D8",
+                   "textColor":"#FFFFFF"
+                      },
+                      "time":{
+                           "font":"AvenirNext-Heavy",
+                           "textSize":60,
+                           "textColor":"#FFBCBC",
+                           "alpha":1.0,
+                      "topTextAlignment": 3,
+                      "bottomTextAlignment": 2
+                      },
+                      "day" :{
+                           "font":"PingFangSC-Semibold",
+                           "textSize":19,
+                           "textColor":"#000000",
+                           "alpha":1.0
+                      }
+                   },
+                   {
+                      "size":2,
+                 "layoutType": 1,
+                "name": "Time_Mix_Calendar_Mix_Battery_Android_Medium",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                 "battery": {
+                     "backgroundColor": "#D8D8D8",
+                     "textColor":"#FFFFFF"
+                  },
+                      "time":{
+                           "font":"AvenirNext-Heavy",
+                           "textSize":75,
+                           "textColor":"#FFBCBC",
+                           "alpha":1.0,
+                      "topTextAlignment": 1,
+                      "bottomTextAlignment": 3
+                      },
+                      "day" :{
+                           "font":"PingFangSC-Semibold",
+                           "textSize":35,
+                           "textColor":"#000000",
+                           "alpha":1.0
+                      }
+                   },
+                   {
+                      "size":3,
+                 "layoutType": 1,
+                "name": "Time_Mix_Calendar_Mix_Battery_Android_Large",
+                "source": "",
+                "crop_props": defaultCropProps,
+                radius: 28,
+                 "battery": {
+                     "backgroundColor": "#D8D8D8",
+                  "textColor":"#FFFFFF"
+                  },
+                      "time":{
+                           "font":"AvenirNext-Heavy",
+                           "textSize":120,
+                           "textColor":"#FFBCBC",
+                           "alpha":1.0,
+                      "topTextAlignment": 1,
+                      "bottomTextAlignment": 3
+                      },
+                      "day" :{
+                           "font":"PingFangSC-Semibold",
+                           "textSize":44,
+                           "textColor":"#000000",
+                           "alpha":1.0
+                      }
+                   }
+            ]
+         }
+    },
+    ClockMixBattery_LayoutType_0: {
+        ios: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":18,
+            minuteClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            hourClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            dotClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            dialLargeClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            dialSmallClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "sizes":[
+               {
+                  "size": 1,
+                  "layoutType": 0,
+                  "name": "Clock_Mix_Battery_IOS_Small",
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock": {
+                     "clockPadding": 0,
+                     "dialImage":"",
+                     "hourHandImage":"",
+                     "minuteHandImage":"",
+                     "tintColor": "#000000",
+                     "dialColor":"#636362",
+                     "alpha": 1.0
+                  },
+                  "battery": {
+                     "containerColor": "#BDBDBD",
+                     "alpha": 0.5,
+                     "backgroundColor": "#000000"
+                  }
+              },
+               {
+                   "size": 2,
+                   "layoutType": 0,
+                   "name": "Clock_Mix_Battery_IOS_Medium",
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                   radius: 28,
+                   "clock": {
+                     "clockPadding": 0,
+                     "dialImage":"",
+                     "hourHandImage":"",
+                     "minuteHandImage":"",
+                     "tintColor": "#000000",
+                     "dialColor":"#636362",
+                     "alpha": 1.0
+                   },
+                   "battery": {
+                     "containerColor": "#BDBDBD",
+                     "alpha": 0.5,
+                     "backgroundColor": "#000000"
+                  }
+              },
+               {
+                  "size": 3,
+                  "layoutType": 0,
+                  "name": "Clock_Mix_Battery_IOS_Large",
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                   radius: 28,
+                  "clock": {
+                     "clockPadding": 40,
+                     "dialImage":"",
+                     "hourHandImage":"",
+                     "minuteHandImage":"",
+                     "tintColor": "#000000",
+                     "dialColor":"#636362",
+                     "alpha": 1.0
+                  },
+                  "battery": {
+                     "containerColor": "#BDBDBD",
+                     "alpha": 0.5,
+                     "backgroundColor": "#000000"
+                  }
+              }
+            ]
+         },
+        android: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type":18,
+            minuteClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            hourClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            dotClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            dialLargeClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            dialSmallClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "sizes":[
+               {
+                  "size": 1,
+                  "layoutType": 0,
+                  "name": "Clock_Mix_Battery_Android_Small",
+                  "source": "",
+                  "crop_props": defaultCropProps,
+                  radius: 28,
+                  "clock": {
+                     "clockPadding": 0,
+                     "dialImage":"",
+                     "hourHandImage":"",
+                     "minuteHandImage":"",
+                     "tintColor": "#000000",
+                     "dialColor":"#636362",
+                     "alpha": 1.0
+                  },
+                  "battery": {
+                     "containerColor": "#BDBDBD",
+                     "alpha": 0.5,
+                     "backgroundColor": "#000000"
+                  }
+              },
+               {
+                   "size": 2,
+                   "layoutType": 0,
+                   "name": "Clock_Mix_Battery_Android_Medium",
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                   radius: 28,
+                   "clock": {
+                     "clockPadding": 0,
+                     "dialImage":"",
+                     "hourHandImage":"",
+                     "minuteHandImage":"",
+                     "tintColor": "#000000",
+                     "dialColor":"#636362",
+                     "alpha": 1.0
+                   },
+                   "battery": {
+                     "containerColor": "#BDBDBD",
+                     "alpha": 0.5,
+                     "backgroundColor": "#000000"
+                  }
+              },
+               {
+                  "size": 3,
+                  "layoutType": 0,
+                  "name": "Clock_Mix_Battery_Android_Large",
+                   "source": "",
+                   "crop_props": defaultCropProps,
+                   radius: 28,
+                  "clock": {
+                     "clockPadding": 40,
+                     "dialImage":"",
+                     "hourHandImage":"",
+                     "minuteHandImage":"",
+                     "tintColor": "#000000",
+                     "dialColor":"#636362",
+                     "alpha": 1.0
+                  },
+                  "battery": {
+                     "containerColor": "#BDBDBD",
+                     "alpha": 0.5,
+                     "backgroundColor": "#000000"
+                  }
+              }
+            ]
+         } 
     }
 }
 export const IconPackDefaultConfig = {

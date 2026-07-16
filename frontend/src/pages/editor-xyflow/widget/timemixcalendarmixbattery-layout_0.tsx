@@ -10,7 +10,7 @@ import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
 
-export default function TimeMixBatteryLayout0(props: any) {
+export default function TimeMixCalendarMixBatteryLayout_0(props: any) {
   const data = props.data;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
@@ -24,17 +24,17 @@ export default function TimeMixBatteryLayout0(props: any) {
     color: textData?.textColor ?? '#111827',
     // lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
     lineHeight: 1,
-    height: textData?.textHeight + 'px',
+    // height: textData?.textHeight + 'px',
     zIndex: 9,
     position: 'relative' as const,
     whiteSpace: 'nowrap',
     marginTop: (textData?.topSpacing || 0) + 'px',
     marginBottom: (textData?.bottomSpacing || 0) + 'px',
   });
-  // const getTimeStyle:any = (textData?: any) => ({
-  //   textAlign:
-  //     textData.textAlignment === 1 ? 'left' : (data.textAlignment === 2 ? 'center' : 'right')
-  // });
+  const getTimeStyle:any = (textData?: any) => ({
+    textAlign:
+      textData.textAlignment === 1 ? 'left' : (data.time.textAlignment === 2 ? 'center' : 'right')
+  });
   const batteryStyle = useMemo(() => {
     const batteryColor = data?.battery?.textColor ?? '#111827';
     const batteryFillColor = data?.battery?.backgroundColor ?? batteryColor;
@@ -46,8 +46,7 @@ export default function TimeMixBatteryLayout0(props: any) {
       wrap: {
         position: 'absolute' as const,
         top: '16px',
-        left: '16px',
-        // left: `${data.padding ?? 0}px`,
+        left: `${data.padding ?? 0}px`,
         display: 'flex',
         alignItems: 'center',
         zIndex: 9,
@@ -111,30 +110,15 @@ export default function TimeMixBatteryLayout0(props: any) {
 
   const timeElement = useMemo(() => {
     return (
-        <div style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          padding: `0 ${data.padding}`,
-        }}>
+        <>
             <div style={{
-                width: '100%',
                 ...getTextStyle(data.time),
-                textAlign: data.time.topTextAlignment === 1 ? 'left' : (data.time.topTextAlignment === 2 ? 'center' : 'right')
+                ...getTimeStyle(data.time),
             }}>
-                10
-            </div>
-            <div style={{
-                width: '100%',
-                ...getTextStyle(data.time),
-                textAlign: data.time.bottomTextAlignment === 1 ? 'left' : (data.time.bottomTextAlignment === 2 ? 'center' : 'right')
-            }}>
+                10 <br />
                 09
             </div>
-        </div>
+        </>
     )
   }, [data])
 
@@ -154,6 +138,16 @@ export default function TimeMixBatteryLayout0(props: any) {
         </div>
       </div>
       { data.time && timeElement}
+      {data.day && (
+        <div style={{ ...getTextStyle(data.day) }}>
+          Wednesday
+        </div>
+      )}
+      {data.date && (
+        <div style={getTextStyle(data.date)}>
+          March 23
+        </div>
+      )}
     </div>
   );
 }

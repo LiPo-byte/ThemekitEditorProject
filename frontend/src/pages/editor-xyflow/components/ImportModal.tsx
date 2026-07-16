@@ -143,6 +143,45 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           }
           if (!uploadResult) {
             message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
+            spec[field] = {
+              source: '',
+              crop_props: {
+                ...DEFAULT_CROP_PROPS,
+              }
+            };
+            continue;
+          }
+          spec[field] = {
+            source: uploadResult.url,
+            crop_props: {
+              ...DEFAULT_CROP_PROPS,
+            }
+          };
+        }
+      }
+      if (type === 18) {
+        const clockImageEntries = [
+          { key: 'minute_clock', field: 'minuteClock'},
+          { key: 'hour_clock', field: 'hourClock' },
+          { key: 'dot_clock', field: 'dotClock' },
+          { key: 'dial_large_clock', field: 'dialLargeClock' },
+          { key: 'dial_small_clock', field: 'dialSmallClock' },
+        ]
+        for (let index = 0; index < clockImageEntries.length; index += 1) {
+          const { key, field } = clockImageEntries[index];
+          const filenameBase = `widgets_${key}`;
+          const candidateFilenames = [
+            `${filenameBase}.png`,
+            `${filenameBase}.jpg`,
+            `${filenameBase}.jpeg`,
+          ];
+          let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+          for (const filename of candidateFilenames) {
+            uploadResult = await uploadMediaFromZip(filename, zip);
+            if (uploadResult) break;
+          }
+          if (!uploadResult) {
+            message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
             continue;
           }
           spec[field] = {

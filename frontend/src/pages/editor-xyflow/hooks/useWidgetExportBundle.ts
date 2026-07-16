@@ -67,7 +67,12 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
     'imageSnow',
     'imageSun',
     'imageThunder',
-    'imageWind'
+    'imageWind',
+    'minuteClock',
+    'hourClock',
+    'dotClock',
+    'dialLargeClock',
+    'dialSmallClock',
   ];
   const showKey = ['weekday', 'AmAndPm']
   if (Array.isArray(value)) {
@@ -268,6 +273,26 @@ export const useWidgetExportBundle = (nodeId?: string) => {
         const { key, source: imageSource } = weatherImageEntries[imageIndex];
         if (!imageSource || typeof imageSource !== 'string') continue;
         const filename = `image_${key}.png`;
+        try {
+          const imageBlob = await toPngBlobFromUrl(imageSource);
+          zip.file(filename, imageBlob);
+          pushLine('success', `生成 ${filename}`);
+        } catch {
+          pushLine('warning', `跳过 ${filename}（资源下载失败）`);
+        }
+      }
+
+      const clockImageEntries = [
+        { key: 'minute_clock', source: (selectedNodeData as any)?.minuteClock?.source },
+        { key: 'hour_clock', source: (selectedNodeData as any)?.hourClock?.source },
+        { key: 'dot_clock', source: (selectedNodeData as any)?.dotClock?.source },
+        { key: 'dial_large_clock', source: (selectedNodeData as any)?.dialLargeClock?.source },
+        { key: 'dial_small_clock', source: (selectedNodeData as any)?.dialSmallClock?.source },
+      ]
+      for (let imageIndex = 0; imageIndex < clockImageEntries.length; imageIndex += 1) {
+        const { key, source: imageSource } = clockImageEntries[imageIndex];
+        if (!imageSource || typeof imageSource !== 'string') continue;
+        const filename = `widgets_${key}.png`;
         try {
           const imageBlob = await toPngBlobFromUrl(imageSource);
           zip.file(filename, imageBlob);

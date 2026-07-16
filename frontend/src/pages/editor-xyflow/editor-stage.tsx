@@ -42,8 +42,9 @@ import ClockLayout_0 from './widget/clock-layout_0';
 import ClockLayout_1 from './widget/clock-layout_1';
 import MusicLayout_0 from './widget/music-layout_0';
 import TimeMixBatteryLayout_0 from './widget/timemixbattery-layout_0';
-
-
+import TimeMixCalendarMixBatteryLayout_0 from './widget/timemixcalendarmixbattery-layout_0';
+import TimeMixCalendarMixBatteryLayout_1 from './widget/timemixcalendarmixbattery-layout_1';
+import ClockMixBatteryLayout_0 from './widget/clockmixbattery-layout_0';
 
 
 import ActionPopover from './components/ActionPopover';
@@ -134,7 +135,10 @@ export default function EditorStage() {
           clock_0: ClockLayout_0,
           clock_1: ClockLayout_1,
           music_0: MusicLayout_0,
-          timemixbattery_0 :TimeMixBatteryLayout_0
+          timemixbattery_0: TimeMixBatteryLayout_0,
+          timemixcalendarmixbattery_0: TimeMixCalendarMixBatteryLayout_0,
+          timemixcalendarmixbattery_1: TimeMixCalendarMixBatteryLayout_1,
+          clockmixbattery_0: ClockMixBatteryLayout_0
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}

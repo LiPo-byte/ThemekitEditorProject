@@ -17,6 +17,7 @@ export default function TimeMixBatteryLayout0(props: any) {
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
 
   if (!data) return null;
+  const size = data.size;
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
     fontFamily: resolveWidgetFontFamily(props.parentId, textData?.font),
@@ -24,9 +25,9 @@ export default function TimeMixBatteryLayout0(props: any) {
     color: textData?.textColor ?? '#111827',
     // lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 'normal',
     lineHeight: 1,
-    height: textData?.textHeight + 'px',
+    height: textData?.textHeight ? `${textData.textHeight}px` : undefined,
     zIndex: 9,
-    position: 'relative' as const,
+    // position: 'relative' as const,
     whiteSpace: 'nowrap',
     marginTop: (textData?.topSpacing || 0) + 'px',
     marginBottom: (textData?.bottomSpacing || 0) + 'px',
@@ -35,6 +36,7 @@ export default function TimeMixBatteryLayout0(props: any) {
   //   textAlign:
   //     textData.textAlignment === 1 ? 'left' : (data.textAlignment === 2 ? 'center' : 'right')
   // });
+  const batteryHeightSize: any = {1:100, 2: 120, 3: 200};
   const batteryStyle = useMemo(() => {
     const batteryColor = data?.battery?.textColor ?? '#111827';
     const batteryFillColor = data?.battery?.backgroundColor ?? batteryColor;
@@ -45,26 +47,29 @@ export default function TimeMixBatteryLayout0(props: any) {
     return {
       wrap: {
         position: 'absolute' as const,
-        top: '16px',
-        left: '16px',
+        top: '50%',
+        left: 20,
+        transform: 'translate(-50%, -50%)',
         // left: `${data.padding ?? 0}px`,
         display: 'flex',
         alignItems: 'center',
         zIndex: 9,
       },
       body: {
-        width: '30px',
-        height: '12px',
-        borderRadius: '3px',
-        // backgroundColor: batteryColor,
+        width: '12px',
+        height: batteryHeightSize[size],
+        borderRadius: '999px',
+        backgroundColor: '#d1d5db',
         position: 'relative' as const,
         boxSizing: 'border-box' as const,
-        overflow: 'visible' as const,
+        overflow: 'hidden' as const,
       },
       fill: {
-        width: `${batteryPercent}%`,
-        height: '100%',
-        borderRadius: '3px',
+        position: 'absolute' as const,
+        bottom: 0,
+        width: '100%',
+        height: `${batteryPercent}%`,
+        borderRadius: '999px',
         backgroundColor: batteryFillColor,
         opacity: 1,
       },
@@ -82,28 +87,19 @@ export default function TimeMixBatteryLayout0(props: any) {
         textShadow: '0 1px 1px rgba(0, 0, 0, 0.35)',
         pointerEvents: 'none' as const,
       },
-      cap: {
-        position: 'absolute' as const,
-        right: '-1px',
-        top: '50%',
-        transform: 'translate(30%, -50%)',
-        width: '3px',
-        height: '6px',
-        borderRadius: '2px',
-        backgroundColor: batteryFillColor,
-      },
       percentText: `${batteryPercent}`,
     };
   }, [data]);
 
+  const paddSize: any = {1: 30, 2: 90, 3: 40};
   const containerStyle = useMemo(() => {
     return {
       backgroundColor: '#ffffff',
       overflow: isCropEditingNode ? 'visible' : 'hidden',
       borderRadius: `${data.radius ?? 0}px`,
       position: 'relative' as const,
-      paddingLeft: `${data.padding ?? 0}px`,
-      paddingRight: `${data.padding ?? 0}px`,
+      paddingLeft: `${paddSize[size] ?? 0}px`,
+      paddingRight: `${paddSize[size] ?? 0}px`,
       paddingTop: '16px',
       paddingBottom: data.size === 3 ? '32px' : '16px',
     };
@@ -150,9 +146,20 @@ export default function TimeMixBatteryLayout0(props: any) {
         <div style={batteryStyle.body}>
           <div style={batteryStyle.fill} />
           <span style={batteryStyle.text}>{batteryStyle.percentText}</span>
-          <div style={batteryStyle.cap} />
         </div>
       </div>
+      {(size === 2 || size === 3) && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          ...getTextStyle(data.weekday || data.day),
+          zIndex: 999,
+        }}>
+          Wednesday
+        </div>
+      )}
       { data.time && timeElement}
     </div>
   );

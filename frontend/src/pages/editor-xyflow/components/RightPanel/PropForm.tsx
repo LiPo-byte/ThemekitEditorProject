@@ -1242,6 +1242,41 @@ export const SelectedNodePropForm: React.FC<{
           }} title="Battery_100"/>
         </>
       )}
+      {hasKey('minuteClock') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.minuteClock} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'minuteClock');
+          }} title="MinuteClock"/>
+        </>
+      )}
+      {hasKey('hourClock') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.hourClock} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'hourClock');
+          }} title="HourClock"/>
+        </>
+      )}
+      {hasKey('dotClock') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.dotClock} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'dotClock');
+          }} title="DotClock"/>
+        </>
+      )}
+      {hasKey('dialLargeClock') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.dialLargeClock} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'dialLargeClock');
+          }} title="DialLargeClock"/>
+        </>
+      )}
+      {hasKey('dialSmallClock') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.dialSmallClock} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'dialSmallClock');
+          }} title="DialSmallClock"/>
+        </>
+      )}
       {hasKey('quote') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.quote} onChange={(key: string, value: any) => {

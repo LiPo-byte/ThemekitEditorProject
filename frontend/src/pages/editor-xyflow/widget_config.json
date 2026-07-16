@@ -161,8 +161,12 @@
   },
   {
     "key": "TimeMixCalendarMixBattery",
-    "label": "Time Mix Calendar Mix Battery 待定",
-    "title": "All layouts customizable"
+    "label": "Time Mix Calendar Mix Battery",
+    "title": "All layouts customizable",
+    "children": [
+      { "key": "TimeMixCalendarMixBattery_LayoutType_0", "label": "LayoutType 0" },
+      { "key": "TimeMixCalendarMixBattery_LayoutType_1", "label": "LayoutType 1" }
+    ]
   },
   {
     "key": "Music_LayoutType_0",
@@ -170,8 +174,8 @@
     "title": "Not customizable"
   },
   {
-    "key": "ClockMixBattery",
-    "label": "Clock Mix Battery 待定",
+    "key": "ClockMixBattery_LayoutType_0",
+    "label": "Clock Mix Battery",
     "title": "All layouts customizable"
   }
 ]

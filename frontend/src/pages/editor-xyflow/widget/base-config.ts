@@ -44,13 +44,17 @@ export const TYPE_WIDGET_MAP:any = {
     13: 'dynamic',
     12: 'weather',
     15: 'timemixbattery',
+    16: 'timemixcalendarmixbattery',
     17: 'music',
+    18: 'clockmixbattery',
 }
 
 export const SOURCENAME_TYPE_WIDGET_MAP:any = {
     9: 'countImage',
     4: 'digital_clock',
     15: 'mix_battery_time',
+    16: 'mix_battery_time_calendar',
+    18: 'mix_battery_clock',
 }
 export const APP_LINK_OPTIONS = [
     { value: -1, label: 'ThemeKit' },
