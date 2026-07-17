@@ -46,6 +46,8 @@ import TimeMixCalendarMixBatteryLayout_0 from './widget/timemixcalendarmixbatter
 import TimeMixCalendarMixBatteryLayout_1 from './widget/timemixcalendarmixbattery-layout_1';
 import ClockMixBatteryLayout_0 from './widget/clockmixbattery-layout_0';
 
+import Icon from './icon';
+import Preview from './icon/preview';
 
 import ActionPopover from './components/ActionPopover';
 import PlatformGroupNode from './components/PlatformGroupNode';
@@ -138,7 +140,9 @@ export default function EditorStage() {
           timemixbattery_0: TimeMixBatteryLayout_0,
           timemixcalendarmixbattery_0: TimeMixCalendarMixBatteryLayout_0,
           timemixcalendarmixbattery_1: TimeMixCalendarMixBatteryLayout_1,
-          clockmixbattery_0: ClockMixBatteryLayout_0
+          clockmixbattery_0: ClockMixBatteryLayout_0,
+          icon: Icon,
+          icon_preview: Preview,
         }}
         nodesDraggable={false}
         elementsSelectable={!cropToolOpen}

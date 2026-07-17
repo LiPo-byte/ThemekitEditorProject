@@ -64,16 +64,17 @@ export const widgetConfig2Nodes: any = (config: any) => {
       : [];
     const widgetNodes: any[] = [];
 
+    let themekitType = '';
     sizes.forEach((item: any) => {
       const sizeConfig = CONFIG_SIZE_MAP[item.size] || CONFIG_SIZE_MAP[1];
       const { layoutType } = item;
       const { width, height } = sizeConfig;
       groupWidth = Math.max(groupWidth, width + gap * 2);
       // 添加默认的source 和 crop_props
-
+      themekitType = getWidgetType(platformConfig.type, layoutType);
       widgetNodes.push({
         id: nanoid(),
-        type: getWidgetType(platformConfig.type, layoutType),
+        type: themekitType,
         metaable: true,
         data: { ...item },
         cropable: true,
@@ -101,6 +102,7 @@ export const widgetConfig2Nodes: any = (config: any) => {
       data: {
         ...platformConfig,
         label: system,
+        themekitType: themekitType,
       },
       packable: true,
       parentId: rootGroupId,
@@ -159,6 +161,9 @@ export const widgetConfig2Nodes: any = (config: any) => {
     className: 'widget-group-node',
     deleteable: true,
     position: { x: 0, y: 0 },
+    data: {
+      category: 'widget',
+    },
     draggable: false,
     selectable: false,
     connectable: false,

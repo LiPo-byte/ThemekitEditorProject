@@ -15,6 +15,9 @@ import fontManifest from './components/font-manifest.json';
 // import { WidgetDefaultConfig } from '@/editor-core/defaultConfig';
 // import { CONFIG_SIZE_MAP } from './widget/base-config'
 import { widgetConfig2Nodes } from './widget/util';
+import { iconPackConfig2Nodes } from './icon/util';
+import { DEFAULT_CROP_PROPS } from './widget/base-config';
+
 import { nanoid } from 'nanoid';
 import { getProjectDetail, postApiV1Project, putApiV1ProjectElementsBatch } from './service';
 import { toJpeg } from 'html-to-image';
@@ -47,13 +50,13 @@ export type CropProps = {
   translateY: number;
 };
 
-const DEFAULT_CROP_PROPS: CropProps = {
-  scaleX: 1,
-  scaleY: 1,
-  rotation: 0,
-  translateX: 0,
-  translateY: 0,
-};
+// const DEFAULT_CROP_PROPS: CropProps = {
+//   scaleX: 1,
+//   scaleY: 1,
+//   rotation: 0,
+//   translateX: 0,
+//   translateY: 0,
+// };
 
 const toCropProps = (value: unknown): CropProps => {
   if (!value || typeof value !== 'object') return { ...DEFAULT_CROP_PROPS };
@@ -90,6 +93,7 @@ type EditorCoreCtxValue = {
   selectNode: (fn: FlowNode, append?: boolean) => void;
   deselectedNode: (nodeId?: string) => void;
   addWidget: (config: any) => void;
+  addIconPack: (config: any) => void;
   deleteSelectedNodes: () => void;
   undo: () => void;
   redo: () => void;
@@ -156,6 +160,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   selectNode: noopSelectNode,
   deselectedNode: noopDeselectedNode,
   addWidget: noopAddNodeGroup,
+  addIconPack: noopAddNodeGroup,
   deleteSelectedNodes: noopDeleteSelectedNodes,
   undo: () => {},
   redo: () => {},
@@ -244,23 +249,29 @@ const detectChangedRootId = (
   return null;
 };
 
+const ELEMENT_LOADERS: Record<
+  string,
+  ((configJson: any) => { nodes: FlowNode[]; rootNode: FlowNode } | null | undefined)
+> = {
+  widget: (configJson) => widgetConfig2Nodes(configJson),
+  iconpack: (configJson) => iconPackConfig2Nodes(configJson),
+};
+
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
   if (!Array.isArray(elements)) return [];
   const allNodes: FlowNode[] = [];
-  elements.forEach((element) => {
-    if (!element || element.category !== 'widget') return;
-    const configJson = element.config_json;
-    if (!configJson || typeof configJson !== 'object') return;
-    const { nodes: createdNodes, rootNode } = widgetConfig2Nodes(configJson);
-    if (!Array.isArray(createdNodes) || !rootNode) return;
-
+  const normalizeNodes = (
+    createdNodes: FlowNode[],
+    rootNode: FlowNode,
+    element: any,
+  ) => {
     const rootKey = String(element.element_key ?? rootNode.id);
     const baseX =
       typeof element.x === 'number' && Number.isFinite(element.x) ? element.x : 0;
     const baseY =
       typeof element.y === 'number' && Number.isFinite(element.y) ? element.y : 0;
 
-    const normalizedNodes = createdNodes.map((node: any) => {
+    return createdNodes.map((node: any) => {
       if (!node || typeof node !== 'object') return node;
       if (node.id === rootNode.id) {
         return {
@@ -277,6 +288,18 @@ const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
       }
       return node;
     });
+  };
+
+  elements.forEach((element) => {
+    if (!element) return;
+    const configJson = element.config_json;
+    if (!configJson || typeof configJson !== 'object') return;
+    const category = String(element.category || '');
+    const loader = ELEMENT_LOADERS[category];
+    if (!loader) return;
+    const result = loader(configJson);
+    if (!result?.nodes || !result.rootNode) return;
+    const normalizedNodes = normalizeNodes(result.nodes, result.rootNode, element);
     allNodes.push(...(normalizedNodes as FlowNode[]));
   });
   return allNodes;
@@ -506,34 +529,111 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const canRedo = future.length > 0;
   // 撤销回退
 
-  const addWidget = (config: any) => {
-    const { nodes: newNodes, rootNode } = widgetConfig2Nodes(config);
-    if (!rootNode) return;
+
+  const appendNodesBySlot = (newNodes: FlowNode[], rootNode: FlowNode) => {
+    const COLUMN_COUNT = 6;
+    const DEFAULT_GAP = 100;
+    const ROW_TOLERANCE = 4;
+
+    const readNumber = (value: unknown) => {
+      const num = typeof value === 'number' ? value : Number(value);
+      return Number.isFinite(num) ? num : 0;
+    };
+
+    const getNodeSize = (node: FlowNode) => {
+      const style = (node.style ?? {}) as { width?: number | string; height?: number | string };
+      const measured = ((node as any).measured ?? {}) as { width?: number; height?: number };
+      return {
+        width: readNumber(style.width ?? measured.width),
+        height: readNumber(style.height ?? measured.height),
+      };
+    };
+
+    const resolveNextPosition = (prevNodes: FlowNode[], targetNode: FlowNode) => {
+      const roots = prevNodes.filter((node) => node.type === 'group' && !node.parentId);
+      if (!roots.length) return { x: 0, y: 0 };
+
+      const rows: Array<{
+        y: number;
+        bottom: number;
+        nodes: Array<{ node: FlowNode; x: number; width: number }>;
+        maxRight: number;
+        minX: number;
+      }> = [];
+
+      const sortedRoots = [...roots].sort((a, b) => {
+        const ay = readNumber(a.position?.y);
+        const by = readNumber(b.position?.y);
+        if (ay !== by) return ay - by;
+        return readNumber(a.position?.x) - readNumber(b.position?.x);
+      });
+
+      sortedRoots.forEach((node) => {
+        const x = readNumber(node.position?.x);
+        const y = readNumber(node.position?.y);
+        const size = getNodeSize(node);
+        const row = rows.find((item) => Math.abs(item.y - y) <= ROW_TOLERANCE);
+        const entry = { node, x, width: size.width };
+        if (row) {
+          row.nodes.push(entry);
+          row.maxRight = Math.max(row.maxRight, x + size.width);
+          row.minX = Math.min(row.minX, x);
+          row.bottom = Math.max(row.bottom, y + size.height);
+        } else {
+          rows.push({
+            y,
+            bottom: y + size.height,
+            nodes: [entry],
+            maxRight: x + size.width,
+            minX: x,
+          });
+        }
+      });
+
+      rows.forEach((row) => {
+        row.nodes.sort((a, b) => a.x - b.x);
+      });
+      rows.sort((a, b) => a.y - b.y);
+
+      let gapX = DEFAULT_GAP;
+      let gapY = DEFAULT_GAP;
+      rows.forEach((row) => {
+        for (let index = 1; index < row.nodes.length; index += 1) {
+          const prev = row.nodes[index - 1];
+          const current = row.nodes[index];
+          const candidate = current.x - (prev.x + prev.width);
+          if (candidate > 0) {
+            gapX = Math.min(gapX, candidate);
+          }
+        }
+      });
+      for (let index = 1; index < rows.length; index += 1) {
+        const prev = rows[index - 1];
+        const current = rows[index];
+        const candidate = current.y - prev.bottom;
+        if (candidate > 0) {
+          gapY = Math.min(gapY, candidate);
+        }
+      }
+
+      const rowWithSpace = rows.find((row) => row.nodes.length < COLUMN_COUNT);
+      if (rowWithSpace) {
+        return {
+          x: rowWithSpace.maxRight + gapX,
+          y: rowWithSpace.y,
+        };
+      }
+
+      const lastRow = rows[rows.length - 1];
+      const minRowX = Math.min(...rows.map((row) => row.minX));
+      return {
+        x: Number.isFinite(minRowX) ? minRowX : 0,
+        y: lastRow.bottom + gapY,
+      };
+    };
 
     commitNodes((prev) => {
-      const SLOT_SIZE = 1200;
-      const COLUMN_COUNT = 6;
-      const occupiedSlots = new Set<number>();
-
-      prev
-        .filter((node) => node.type === 'group' && !node.parentId)
-        .forEach((node) => {
-          const x = typeof node.position?.x === 'number' ? node.position.x : 0;
-          const y = typeof node.position?.y === 'number' ? node.position.y : 0;
-          const col = Math.round(x / SLOT_SIZE);
-          const row = Math.round(y / SLOT_SIZE);
-          if (col < 0 || row < 0 || col >= COLUMN_COUNT) return;
-          occupiedSlots.add(row * COLUMN_COUNT + col);
-        });
-
-      let slotIndex = 0;
-      while (occupiedSlots.has(slotIndex)) {
-        slotIndex += 1;
-      }
-      const nextPosition = {
-        x: (slotIndex % COLUMN_COUNT) * SLOT_SIZE,
-        y: Math.floor(slotIndex / COLUMN_COUNT) * SLOT_SIZE,
-      };
+      const nextPosition = resolveNextPosition(prev, rootNode);
 
       const patchedNodes = cloneNodes(newNodes);
       const rootNodeIndex = patchedNodes.findIndex(
@@ -548,6 +648,17 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
       return [...prev, ...patchedNodes];
     });
+  };
+
+  const addIconPack = (config: any) => {
+    const { nodes: newNodes, rootNode } = iconPackConfig2Nodes(config);
+    if (!rootNode) return;
+    appendNodesBySlot(newNodes, rootNode);
+  };
+  const addWidget = (config: any) => {
+    const { nodes: newNodes, rootNode } = widgetConfig2Nodes(config);
+    if (!rootNode) return;
+    appendNodesBySlot(newNodes, rootNode);
   };
 
   const selectedBranchNodes = useMemo(
@@ -793,64 +904,115 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  const buildElementsPayloadFromNodes = () => {
-    const rootNodes = nodes.filter((node) => node.type === 'group' && !node.parentId);
-    return rootNodes.map((rootNode) => {
-      const platformNodes = nodes.filter(
-        (node) => (node.type === 'platform_group') && node.parentId === rootNode.id,
+  const buildWidgetElementPayload = (rootNode: FlowNode) => {
+    const platformNodes = nodes.filter(
+      (node) => (node.type === 'platform_group') && node.parentId === rootNode.id,
+    );
+    const pickPlatformNode = (platform: 'ios' | 'android' | 'common') => {
+      const bySuffix = platformNodes.find((node) => String(node.id).endsWith(`_${platform}`));
+      if (bySuffix) return bySuffix;
+      const bySystem = platformNodes.find((node) => {
+        const system = String((node.data as Record<string, any>)?.system ?? '').toLowerCase();
+        return system === platform;
+      });
+      if (bySystem) return bySystem;
+      const sorted = [...platformNodes].sort(
+        (a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0),
       );
-      const pickPlatformNode = (platform: 'ios' | 'android' | 'common') => {
-        const bySuffix = platformNodes.find((node) => String(node.id).endsWith(`_${platform}`));
-        if (bySuffix) return bySuffix;
-        const bySystem = platformNodes.find((node) => {
-          const system = String((node.data as Record<string, any>)?.system ?? '').toLowerCase();
-          return system === platform;
-        });
-        if (bySystem) return bySystem;
-        const sorted = [...platformNodes].sort(
-          (a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0),
-        );
-        if (sorted.length >= 2) {
-          if (platform === 'ios') return sorted[0];
-          if (platform === 'android') return sorted[1];
-          return undefined;
-        }
+      if (sorted.length >= 2) {
+        if (platform === 'ios') return sorted[0];
+        if (platform === 'android') return sorted[1];
         return undefined;
-      };
-      const buildPlatformConfig = (platformNode: FlowNode | undefined) => {
-        if (!platformNode) return null;
-        const platformData = ((platformNode.data as Record<string, any>) ?? {}) as Record<string, any>;
-        const sizeNodes = nodes
-          .filter((node: any) => node.parentId === platformNode.id && node.metaable)
-          .map((node) => ({ ...((node.data as Record<string, any>) ?? {}) }))
-          .sort((a: any, b: any) => Number(a.size ?? 0) - Number(b.size ?? 0));
-        return {
-          ...platformData,
-          sizes: sizeNodes,
-        };
-      };
-
-      const iosConfig = buildPlatformConfig(pickPlatformNode('ios'));
-      const androidConfig = buildPlatformConfig(pickPlatformNode('android'));
-      const commonConfig = buildPlatformConfig(pickPlatformNode('common'));
-      const config_json = {
-        ios: iosConfig?.sizes.length ? iosConfig : undefined,
-        android: androidConfig?.sizes.length ? androidConfig : undefined,
-        common: commonConfig?.sizes.length ? commonConfig : undefined,
-      };
-
+      }
+      return undefined;
+    };
+    const buildPlatformConfig = (platformNode: FlowNode | undefined) => {
+      if (!platformNode) return null;
+      const platformData = ((platformNode.data as Record<string, any>) ?? {}) as Record<string, any>;
+      const sizeNodes = nodes
+        .filter((node: any) => node.parentId === platformNode.id && node.metaable)
+        .map((node) => ({ ...((node.data as Record<string, any>) ?? {}) }))
+        .sort((a: any, b: any) => Number(a.size ?? 0) - Number(b.size ?? 0));
       return {
-        element_key: rootNode.id,
-        category: 'widget',
-        subtype: 'time',
-        x: rootNode.position?.x ?? 0,
-        y: rootNode.position?.y ?? 0,
-        visible: true,
-        locked: false,
-        schema_version: 1,
-        config_json,
+        ...platformData,
+        sizes: sizeNodes,
+      };
+    };
+
+    const iosConfig = buildPlatformConfig(pickPlatformNode('ios'));
+    const androidConfig = buildPlatformConfig(pickPlatformNode('android'));
+    const commonConfig = buildPlatformConfig(pickPlatformNode('common'));
+    const config_json = {
+      ios: iosConfig?.sizes.length ? iosConfig : undefined,
+      android: androidConfig?.sizes.length ? androidConfig : undefined,
+      common: commonConfig?.sizes.length ? commonConfig : undefined,
+    };
+
+    return {
+      element_key: rootNode.id,
+      category: 'widget',
+      subtype: 'time',
+      x: rootNode.position?.x ?? 0,
+      y: rootNode.position?.y ?? 0,
+      visible: true,
+      locked: false,
+      schema_version: 1,
+      config_json,
+    };
+  };
+
+  const buildIconPackElementPayload = (rootNode: FlowNode) => {
+    const platformGroup = nodes.find(
+      (node) => node.type === 'platform_group' && node.parentId === rootNode.id,
+    );
+    const iconParentId = platformGroup?.id ?? rootNode.id;
+    const iconNodes = nodes.filter(
+      (node) => node.type === 'icon' && node.parentId === iconParentId,
+    );
+    const apps: Record<string, any> = {};
+    iconNodes.forEach((node, index) => {
+      const data = (node.data as Record<string, any>) ?? {};
+      const key = String(data.key ?? data.name ?? node.id ?? index);
+      apps[key] = {
+        name: data.name ?? key,
+        source: data.source ?? '',
+        crop_props: data.crop_props ?? DEFAULT_CROP_PROPS,
+        radius: typeof data.radius === 'number' ? data.radius : undefined,
       };
     });
+    return {
+      element_key: rootNode.id,
+      category: 'iconpack',
+      subtype: 'iconpack',
+      x: rootNode.position?.x ?? 0,
+      y: rootNode.position?.y ?? 0,
+      visible: true,
+      locked: false,
+      schema_version: 1,
+      config_json: {
+        apps,
+      },
+    };
+  };
+
+  const ELEMENT_BUILDERS: Record<
+    string,
+    ((rootNode: FlowNode) => Record<string, any>) | undefined
+  > = {
+    widget: buildWidgetElementPayload,
+    iconpack: buildIconPackElementPayload,
+  };
+
+  const buildElementsPayloadFromNodes = () => {
+    const rootNodes = nodes.filter((node) => node.type === 'group' && !node.parentId);
+    const elements: any[] = [];
+    rootNodes.forEach((rootNode) => {
+      const category = (rootNode.data as Record<string, any> | undefined)?.category ?? 'widget';
+      const builder = ELEMENT_BUILDERS[category];
+      if (!builder) return;
+      elements.push(builder(rootNode));
+    });
+    return elements;
   };
 
   const generateProjectPayload = async () => {
@@ -992,6 +1154,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       selectNode,
       deselectedNode,
       addWidget,
+      addIconPack,
       deleteSelectedNodes,
       undo,
       redo,
@@ -1076,6 +1239,7 @@ export const useEditorGetParentNodeData = () => useContext(EditorCoreCtx).getPar
 export const useEditorSelectNode = () => useContext(EditorCoreCtx).selectNode;
 export const useEditorDeselectedNode = () => useContext(EditorCoreCtx).deselectedNode;
 export const useEditorAddWidget = () => useContext(EditorCoreCtx).addWidget;
+export const useEditorAddIconPack = () => useContext(EditorCoreCtx).addIconPack;
 export const useEditorDeleteSelectedNodes = () => useContext(EditorCoreCtx).deleteSelectedNodes;
 export const useEditorUndo = () => useContext(EditorCoreCtx).undo;
 export const useEditorRedo = () => useContext(EditorCoreCtx).redo;

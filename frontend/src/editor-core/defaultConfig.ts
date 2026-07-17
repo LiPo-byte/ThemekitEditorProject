@@ -5551,7 +5551,7 @@ export const WidgetDefaultConfig = {
          } 
     }
 }
-export const IconPackDefaultConfig = {
+export const IconPackDefaultConfig1 = {
     apps: {
         zoom: {
             name: 'zoom',
@@ -5610,5 +5610,66 @@ export const IconPackDefaultConfig = {
         weather: { name: 'Weather', crop_props: defaultCropProps, source: 'weather.svg' },
         whatsapp: { name: 'WhatsApp', crop_props: defaultCropProps, source: 'whatsapp.svg' },
         youtube: { name: 'Youtube', crop_props: defaultCropProps, source: 'youtube.svg' },
+    }
+}
+export const IconPackDefaultConfig = {
+    apps: {
+        zoom: {
+            name: 'zoom',
+            "crop_props": defaultCropProps,
+            source: ''
+        },
+        amazon: { name: 'Amazon', crop_props: defaultCropProps, source: '' },
+        app_store: { name: 'App Store', crop_props: defaultCropProps, source: '' },
+        apple_store: { name: 'Apple Store', crop_props: defaultCropProps, source: '' },
+        apple_tv: { name: 'Apple TV', crop_props: defaultCropProps, source: '' },
+        books: { name: 'Books', crop_props: defaultCropProps, source: '' },
+        calculator: { name: 'Calculator', crop_props: defaultCropProps, source: '' },
+        calendar: { name: 'Calendar', crop_props: defaultCropProps, source: '' },
+        camera: { name: 'Camera', crop_props: defaultCropProps, source: '' },
+        chrome: { name: 'Chrome', crop_props: defaultCropProps, source: '' },
+        clips: { name: 'Clips', crop_props: defaultCropProps, source: '' },
+        clock: { name: 'Clock', crop_props: defaultCropProps, source: '' },
+        contacts: { name: 'Contacts', crop_props: defaultCropProps, source: '' },
+        facebook: { name: 'Facebook', crop_props: defaultCropProps, source: '' },
+        facetime: { name: 'Facetime', crop_props: defaultCropProps, source: '' },
+        files: { name: 'Files', crop_props: defaultCropProps, source: '' },
+        find_my_iphone: { name: 'Find My iPhone', crop_props: defaultCropProps, source: '' },
+        gmail: { name: 'Gmail', crop_props: defaultCropProps, source: '' },
+        google_maps: { name: 'Google Maps', crop_props: defaultCropProps, source: '' },
+        google_photos: { name: 'Google Photos', crop_props: defaultCropProps, source: '' },
+        google: { name: 'Google', crop_props: defaultCropProps, source: '' },
+        health: { name: 'Health', crop_props: defaultCropProps, source: '' },
+        imovie: { name: 'iMovie', crop_props: defaultCropProps, source: '' },
+        instagram: { name: 'Instagram', crop_props: defaultCropProps, source: '' },
+        itunes: { name: 'iTunes', crop_props: defaultCropProps, source: '' },
+        line: { name: 'Line', crop_props: defaultCropProps, source: '' },
+        mail: { name: 'Mail', crop_props: defaultCropProps, source: '' },
+        maps: { name: 'Maps', crop_props: defaultCropProps, source: '' },
+        messages: { name: 'Messages', crop_props: defaultCropProps, source: '' },
+        messenger: { name: 'Messenger', crop_props: defaultCropProps, source: '' },
+        music: { name: 'Music', crop_props: defaultCropProps, source: '' },
+        netflix: { name: 'Netflix', crop_props: defaultCropProps, source: '' },
+        notes: { name: 'Notes', crop_props: defaultCropProps, source: '' },
+        phone: { name: 'Phone', crop_props: defaultCropProps, source: '' },
+        photos: { name: 'Photos', crop_props: defaultCropProps, source: '' },
+        pinterest: { name: 'Pinterest', crop_props: defaultCropProps, source: '' },
+        podcasts: { name: 'Podcasts', crop_props: defaultCropProps, source: '' },
+        reddit: { name: 'Reddit', crop_props: defaultCropProps, source: '' },
+        reminders: { name: 'Reminders', crop_props: defaultCropProps, source: '' },
+        safari: { name: 'Safari', crop_props: defaultCropProps, source: '' },
+        settings: { name: 'Settings', crop_props: defaultCropProps, source: '' },
+        snapchat: { name: 'Snapchat', crop_props: defaultCropProps, source: '' },
+        spotify: { name: 'Spotify', crop_props: defaultCropProps, source: '' },
+        telegram: { name: 'Telegram', crop_props: defaultCropProps, source: '' },
+        tiktok: { name: 'Tiktok', crop_props: defaultCropProps, source: '' },
+        tumblr: { name: 'Tumblr', crop_props: defaultCropProps, source: '' },
+        twitch: { name: 'Twitch', crop_props: defaultCropProps, source: '' },
+        twitter: { name: 'Twitter', crop_props: defaultCropProps, source: '' },
+        wallet: { name: 'Wallet', crop_props: defaultCropProps, source: '' },
+        watch: { name: 'Watch', crop_props: defaultCropProps, source: '' },
+        weather: { name: 'Weather', crop_props: defaultCropProps, source: '' },
+        whatsapp: { name: 'WhatsApp', crop_props: defaultCropProps, source: '' },
+        youtube: { name: 'Youtube', crop_props: defaultCropProps, source: '' },
     }
 }

@@ -8,6 +8,7 @@ import {
   useEditorLeftPanlOpen,
   useEditorLeftPanlOpenSetter,
   useEditorImportModalOpen,
+  useEditorAddIconPack,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
@@ -74,8 +75,8 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const EditorBottomToolBar: React.FC = () => {
   const { styles } = useStyles();
+  const addIconPack = useEditorAddIconPack();
   const visible = useEditorBottomToolBarVisible();
-  const core = useEditorCore();
   // const coreLoading = useEditorCoreLoading();
   const setLeftPanlOpen = useEditorLeftPanlOpenSetter();
   const setImportModalOpen = useEditorImportModalOpenSetter();
@@ -84,8 +85,8 @@ const EditorBottomToolBar: React.FC = () => {
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
   const onAddIconPack = () => {
-    core?.addIconPack(IconPackDefaultConfig)
-}
+    addIconPack(IconPackDefaultConfig)
+  }
   if (!visible) return null;
 
   return (
