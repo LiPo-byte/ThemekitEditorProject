@@ -8,10 +8,8 @@ import {
 import { useViewport } from '@xyflow/react';
 import {
   CELL,
-  COLUMNS,
   GAP_X,
   GAP_Y,
-  ROWS,
   canPlace,
   cellKey,
   getDesktopFitMetrics,
@@ -19,6 +17,7 @@ import {
   getSpanPixelSize,
   parseSlotId,
   slotId,
+  useDesktopGridSize,
   useDesktopIcons,
   type CellPos,
   type DesktopIcon,
@@ -62,20 +61,6 @@ function iconPixelStyle(
   };
 }
 
-const boardStyle: CSSProperties = {
-  position: 'relative',
-  width: COLUMNS * CELL + (COLUMNS - 1) * GAP_X,
-  height: ROWS * CELL + (ROWS - 1) * GAP_Y,
-};
-
-const slotGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: `repeat(${COLUMNS}, ${CELL}px)`,
-  gridTemplateRows: `repeat(${ROWS}, ${CELL}px)`,
-  columnGap: GAP_X,
-  rowGap: GAP_Y,
-};
-
 const slotStyle: CSSProperties = {
   borderRadius: 40,
   border: '1px dashed #c5c5c5',
@@ -110,9 +95,30 @@ function isPaletteData(data: unknown): data is PaletteDragData {
 export default function DraggableGrid() {
   const { zoom } = useViewport();
   const icons = useDesktopIcons();
+  const { columns, rows } = useDesktopGridSize();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [paletteGhost, setPaletteGhost] = useState<DesktopIcon | null>(null);
   const [hoverSlot, setHoverSlot] = useState<CellPos | null>(null);
+
+  const boardStyle = useMemo<CSSProperties>(
+    () => ({
+      position: 'relative',
+      width: columns * CELL + (columns - 1) * GAP_X,
+      height: rows * CELL + (rows - 1) * GAP_Y,
+    }),
+    [columns, rows],
+  );
+
+  const slotGridStyle = useMemo<CSSProperties>(
+    () => ({
+      display: 'grid',
+      gridTemplateColumns: `repeat(${columns}, ${CELL}px)`,
+      gridTemplateRows: `repeat(${rows}, ${CELL}px)`,
+      columnGap: GAP_X,
+      rowGap: GAP_Y,
+    }),
+    [columns, rows],
+  );
 
   useDragDropMonitor({
     onDragStart(event) {
@@ -145,9 +151,11 @@ export default function DraggableGrid() {
   const draggingIcon =
     icons.find((icon) => icon.id === draggingId) ?? paletteGhost;
 
+  const grid = useMemo(() => ({ columns, rows }), [columns, rows]);
+
   const hoverValid =
     draggingIcon && hoverSlot
-      ? canPlace(icons, draggingIcon, hoverSlot.col, hoverSlot.row)
+      ? canPlace(icons, draggingIcon, hoverSlot.col, hoverSlot.row, grid)
       : false;
 
   // 拖拽中排除当前项，原占位格子会重新显示，便于落点
@@ -160,9 +168,9 @@ export default function DraggableGrid() {
     <>
       <div style={boardStyle}>
         <div style={slotGridStyle}>
-          {Array.from({ length: ROWS * COLUMNS }, (_, index) => {
-            const col = index % COLUMNS;
-            const row = Math.floor(index / COLUMNS);
+          {Array.from({ length: rows * columns }, (_, index) => {
+            const col = index % columns;
+            const row = Math.floor(index / columns);
             return (
               <Slot
                 key={slotId(col, row)}

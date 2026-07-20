@@ -17,18 +17,19 @@ import {
   type WidgetSizeLabel,
 } from '../widget/base-config';
 
+import type {
+  ExportBundleOptions,
+  ExportProgressLevel,
+  ExportProgressLine,
+} from './exportBundleShared';
+
+export type {
+  ExportBundleOptions,
+  ExportProgressLevel,
+  ExportProgressLine,
+} from './exportBundleShared';
+
 type SizeLabel = WidgetSizeLabel;
-export type ExportProgressLevel = 'info' | 'success' | 'warning' | 'error';
-export type ExportProgressLine = {
-  level: ExportProgressLevel;
-  text: string;
-};
-type ExportBundleOptions = {
-  onProgressLine?: (line: ExportProgressLine) => void;
-  onWarning?: (text: string) => void;
-  onSuccess?: (text: string) => void;
-  onError?: (text: string) => void;
-};
 
 const EXPORT_JPEG_QUALITY = 1;
 const EXPORT_PREVIEW_SCALE = 3;

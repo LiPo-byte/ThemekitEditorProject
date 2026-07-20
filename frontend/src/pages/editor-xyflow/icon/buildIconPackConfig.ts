@@ -88,30 +88,51 @@ const createMetaableSectionSerializer = (options: {
   };
 };
 
-/** preview：桌面预览节点（desketopShow / targetElementKeys 等） */
+/** preview：支持多个桌面预览（4×3 / 4×8 等），序列化为数组 */
 const serializePreview: SectionSerializer = ({
   rootNode,
   nodes,
   platformGroups,
 }) => {
-  const group = findPlatformGroup(platformGroups, 'preview', '_preview');
-  const previewNode = nodes.find(
+  const previewGroups = platformGroups.filter(
     (node) =>
-      node.type === 'preview' &&
-      (group ? node.parentId === group.id : node.parentId === rootNode.id),
+      getNodeData(node).label === 'preview' ||
+      String(node.id).includes('_preview'),
   );
-  if (!previewNode) return undefined;
+  const groupIds = new Set(previewGroups.map((node) => String(node.id)));
+  const groupX = new Map(
+    previewGroups.map((node) => [String(node.id), Number(node.position?.x ?? 0)]),
+  );
 
-  const data = getNodeData(previewNode);
-  return {
-    preview: {
-      name: data.name ?? 'list_view',
+  const previewNodes = nodes
+    .filter((node) => {
+      if (node.type !== 'preview') return false;
+      if (groupIds.size > 0) return groupIds.has(String(node.parentId));
+      return node.parentId === rootNode.id;
+    })
+    .sort(
+      (a, b) =>
+        (groupX.get(String(a.parentId)) ?? 0) -
+        (groupX.get(String(b.parentId)) ?? 0),
+    );
+
+  if (!previewNodes.length) return undefined;
+
+  const preview = previewNodes.map((previewNode) => {
+    const data = getNodeData(previewNode);
+    return {
+      name: data.name ?? 'short_preview',
       targetElementKeys: Array.isArray(data.targetElementKeys)
         ? data.targetElementKeys
         : [rootNode.id],
       desketopShow: Array.isArray(data.desketopShow) ? data.desketopShow : [],
-    },
-  };
+      row: Number(data.row) > 0 ? Number(data.row) : undefined,
+      col: Number(data.col) > 0 ? Number(data.col) : undefined,
+      size: Array.isArray(data.size) ? data.size : undefined,
+    };
+  });
+
+  return { preview };
 };
 
 /**

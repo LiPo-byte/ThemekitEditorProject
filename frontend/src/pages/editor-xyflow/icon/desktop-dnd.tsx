@@ -10,8 +10,32 @@ import {
 import { DragDropProvider, type DragEndEvent } from '@dnd-kit/react';
 import { nanoid } from 'nanoid';
 
-export const COLUMNS = 4;
-export const ROWS = 8;
+export type GridSize = {
+  columns: number;
+  rows: number;
+};
+
+/** 仅当节点未配置 col/row 时的兜底；有 data 时以节点自身为准 */
+export const DEFAULT_PREVIEW_GRID: GridSize = { columns: 4, rows: 5 };
+
+/**
+ * 从 preview.data.col / preview.data.row 解析网格尺寸。
+ * 每个 preview 各自独立；缺省或非法时用 fallback，不写死所有节点同一尺寸。
+ */
+export const parseGridSize = (
+  col: unknown,
+  row: unknown,
+  fallback: GridSize = DEFAULT_PREVIEW_GRID,
+): GridSize => {
+  const columns = Math.floor(Number(col));
+  const rows = Math.floor(Number(row));
+  return {
+    columns:
+      Number.isFinite(columns) && columns >= 1 ? columns : fallback.columns,
+    rows: Number.isFinite(rows) && rows >= 1 ? rows : fallback.rows,
+  };
+};
+
 /** 桌面单格 icon 固定边长（不随 gap 变化） */
 export const CELL = 180;
 /** 水平间距（可单独调） */
@@ -141,9 +165,12 @@ export function canPlace(
   icon: Pick<DesktopIcon, 'id' | 'colSpan' | 'rowSpan'>,
   col: number,
   row: number,
+  grid: GridSize,
 ): boolean {
   if (col < 0 || row < 0) return false;
-  if (col + icon.colSpan > COLUMNS || row + icon.rowSpan > ROWS) return false;
+  if (col + icon.colSpan > grid.columns || row + icon.rowSpan > grid.rows) {
+    return false;
+  }
   const occupied = getOccupiedKeys(icons, icon.id);
   for (let r = row; r < row + icon.rowSpan; r += 1) {
     for (let c = col; c < col + icon.colSpan; c += 1) {
@@ -158,11 +185,12 @@ export function moveIcon(
   id: string,
   col: number,
   row: number,
+  grid: GridSize,
 ): DesktopIcon[] {
   const icon = icons.find((item) => item.id === id);
   if (!icon) return icons;
   if (icon.col === col && icon.row === row) return icons;
-  if (!canPlace(icons, icon, col, row)) return icons;
+  if (!canPlace(icons, icon, col, row, grid)) return icons;
   return icons.map((item) =>
     item.id === id ? { ...item, col, row } : item,
   );
@@ -179,10 +207,13 @@ const findFirstAvailableSlot = (
   icons: DesktopIcon[],
   colSpan: CellSpan,
   rowSpan: CellSpan,
+  grid: GridSize,
 ): CellPos | null => {
-  for (let row = 0; row < ROWS; row += 1) {
-    for (let col = 0; col < COLUMNS; col += 1) {
-      if (canPlace(icons, { id: '__placing__', colSpan, rowSpan }, col, row)) {
+  for (let row = 0; row < grid.rows; row += 1) {
+    for (let col = 0; col < grid.columns; col += 1) {
+      if (
+        canPlace(icons, { id: '__placing__', colSpan, rowSpan }, col, row, grid)
+      ) {
         return { col, row };
       }
     }
@@ -196,7 +227,10 @@ const findFirstAvailableSlot = (
  * - pureImage size1/2/3 → 2×2 / 4×2 / 4×4
  * 若无 col/row，则按顺序自动找空位摆放。
  */
-export const desketopShowToDesktopIcons = (desketopShow: unknown): DesktopIcon[] => {
+export const desketopShowToDesktopIcons = (
+  desketopShow: unknown,
+  grid: GridSize,
+): DesktopIcon[] => {
   if (!Array.isArray(desketopShow)) return [];
 
   const result: DesktopIcon[] = [];
@@ -239,9 +273,9 @@ export const desketopShowToDesktopIcons = (desketopShow: unknown): DesktopIcon[]
     if (
       col == null ||
       row == null ||
-      !canPlace(result, { id, colSpan, rowSpan }, col, row)
+      !canPlace(result, { id, colSpan, rowSpan }, col, row, grid)
     ) {
-      const slot = findFirstAvailableSlot(result, colSpan, rowSpan);
+      const slot = findFirstAvailableSlot(result, colSpan, rowSpan, grid);
       if (!slot) return;
       col = slot.col;
       row = slot.row;
@@ -271,6 +305,7 @@ export const desketopShowToDesktopIcons = (desketopShow: unknown): DesktopIcon[]
 export const mergeDesktopIconsFromSource = (
   prev: DesktopIcon[],
   sourceIcons: DesktopIcon[],
+  grid: GridSize,
 ): DesktopIcon[] => {
   const prevById = new Map(prev.map((item) => [item.id, item]));
   const next: DesktopIcon[] = [];
@@ -279,7 +314,13 @@ export const mergeDesktopIconsFromSource = (
     const old = prevById.get(item.id);
     if (
       old &&
-      canPlace(next, { id: item.id, colSpan: item.colSpan, rowSpan: item.rowSpan }, old.col, old.row)
+      canPlace(
+        next,
+        { id: item.id, colSpan: item.colSpan, rowSpan: item.rowSpan },
+        old.col,
+        old.row,
+        grid,
+      )
     ) {
       next.push({
         ...item,
@@ -299,13 +340,14 @@ export const mergeDesktopIconsFromSource = (
         { id: item.id, colSpan: item.colSpan, rowSpan: item.rowSpan },
         preferredCol,
         preferredRow,
+        grid,
       )
     ) {
       next.push({ ...item, col: preferredCol, row: preferredRow });
       return;
     }
 
-    const slot = findFirstAvailableSlot(next, item.colSpan, item.rowSpan);
+    const slot = findFirstAvailableSlot(next, item.colSpan, item.rowSpan, grid);
     if (!slot) return;
     next.push({ ...item, col: slot.col, row: slot.row });
   });
@@ -323,6 +365,8 @@ function isPaletteData(data: unknown): data is PaletteDragData {
 
 type DesktopDndContextValue = {
   icons: DesktopIcon[];
+  columns: number;
+  rows: number;
 };
 
 const DesktopDndContext = createContext<DesktopDndContextValue | null>(null);
@@ -335,19 +379,37 @@ export function useDesktopIcons() {
   return ctx.icons;
 }
 
+export function useDesktopGridSize(): GridSize {
+  const ctx = useContext(DesktopDndContext);
+  if (!ctx) {
+    throw new Error('useDesktopGridSize must be used within DesktopDndProvider');
+  }
+  return { columns: ctx.columns, rows: ctx.rows };
+}
+
 export function DesktopDndProvider({
   children,
   initialIcons = [],
+  columns,
+  rows,
 }: {
   children: ReactNode;
   /** desketopShow 转换后的列表；变化时同步，不整树 remount */
   initialIcons?: DesktopIcon[];
+  /** 网格列数（来自当前 preview.data.col，每个 preview 各自不同） */
+  columns: number;
+  /** 网格行数（来自当前 preview.data.row，每个 preview 各自不同） */
+  rows: number;
 }) {
+  const grid = useMemo(
+    () => ({ columns, rows }),
+    [columns, rows],
+  );
   const [icons, setIcons] = useState<DesktopIcon[]>(initialIcons);
 
   useEffect(() => {
     setIcons((prev) => {
-      const next = mergeDesktopIconsFromSource(prev, initialIcons);
+      const next = mergeDesktopIconsFromSource(prev, initialIcons, grid);
       const unchanged =
         prev.length === next.length &&
         prev.every((item, index) => {
@@ -364,34 +426,42 @@ export function DesktopDndProvider({
         });
       return unchanged ? prev : next;
     });
-  }, [initialIcons]);
+  }, [initialIcons, grid]);
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const source = event.operation.source;
-    const slot = parseSlotId(event.operation.target?.id);
-    if (event.canceled || source?.id == null || !slot) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const source = event.operation.source;
+      const slot = parseSlotId(event.operation.target?.id);
+      if (event.canceled || source?.id == null || !slot) return;
 
-    const data = source.data;
-    if (isPaletteData(data)) {
-      setIcons((prev) => {
-        const nextIcon: DesktopIcon = {
-          id: nanoid(),
-          label: data.label,
-          col: slot.col,
-          row: slot.row,
-          colSpan: data.colSpan,
-          rowSpan: data.rowSpan,
-        };
-        if (!canPlace(prev, nextIcon, slot.col, slot.row)) return prev;
-        return [...prev, nextIcon];
-      });
-      return;
-    }
+      const data = source.data;
+      if (isPaletteData(data)) {
+        setIcons((prev) => {
+          const nextIcon: DesktopIcon = {
+            id: nanoid(),
+            label: data.label,
+            col: slot.col,
+            row: slot.row,
+            colSpan: data.colSpan,
+            rowSpan: data.rowSpan,
+          };
+          if (!canPlace(prev, nextIcon, slot.col, slot.row, grid)) return prev;
+          return [...prev, nextIcon];
+        });
+        return;
+      }
 
-    setIcons((prev) => moveIcon(prev, String(source.id), slot.col, slot.row));
-  }, []);
+      setIcons((prev) =>
+        moveIcon(prev, String(source.id), slot.col, slot.row, grid),
+      );
+    },
+    [grid],
+  );
 
-  const value = useMemo(() => ({ icons }), [icons]);
+  const value = useMemo(
+    () => ({ icons, columns: grid.columns, rows: grid.rows }),
+    [icons, grid],
+  );
 
   return (
     <DesktopDndContext.Provider value={value}>

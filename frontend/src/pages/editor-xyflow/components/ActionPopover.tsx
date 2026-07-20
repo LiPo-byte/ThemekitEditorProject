@@ -4,10 +4,8 @@ import { useEditorDeleteSelectedNodes, useEditorOpenCropEditor } from '../contex
 import { App, Button, Modal, Typography } from 'antd';
 import { ExportOutlined, DeleteTwoTone, TableOutlined } from '@ant-design/icons';
 import { CropSvg } from '@/icons';
-import {
-  type ExportProgressLine,
-  useWidgetExportBundle,
-} from '../hooks/useWidgetExportBundle';
+import { useExportBundle } from '../hooks/useExportBundle';
+import type { ExportProgressLine } from '../hooks/exportBundleShared';
 
 /**
  * 选中节点上方的浮动操作栏（Action Popover）。
@@ -19,7 +17,7 @@ const ActionPopover: React.FC = (props: any) => {
   const { message } = App.useApp();
   const openCropEditor = useEditorOpenCropEditor();
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
-  const { exporting, exportBundle } = useWidgetExportBundle(nodeId);
+  const { exporting, exportBundle } = useExportBundle(nodeId);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportLogs, setExportLogs] = useState<ExportProgressLine[]>([]);
   const [runningDots, setRunningDots] = useState('');
