@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Position, NodeToolbar } from '@xyflow/react';
 import { useEditorDeleteSelectedNodes, useEditorOpenCropEditor } from '../context';
 import { App, Button, Modal, Typography } from 'antd';
-import { ExportOutlined, DeleteTwoTone } from '@ant-design/icons';
+import { ExportOutlined, DeleteTwoTone, TableOutlined } from '@ant-design/icons';
 import { CropSvg } from '@/icons';
 import {
   type ExportProgressLine,
@@ -84,6 +84,9 @@ const ActionPopover: React.FC = (props: any) => {
         )}
         {actionList.includes('deleteable') && (
           <Button onClick={onDelete} icon={<DeleteTwoTone />} shape="circle" />
+        )}
+        {actionList.includes('desktopeditable') && (
+          <Button onClick={() => {}} icon={<TableOutlined />} shape="circle" />
         )}
       </NodeToolbar>
       <Modal

@@ -5671,5 +5671,34 @@ export const IconPackDefaultConfig = {
         weather: { name: 'Weather', crop_props: defaultCropProps, source: '' },
         whatsapp: { name: 'WhatsApp', crop_props: defaultCropProps, source: '' },
         youtube: { name: 'Youtube', crop_props: defaultCropProps, source: '' },
-    }
+    },
+    pureImage: {
+            "version":0,
+            "isLockScreen":false,
+            "isGif": false,
+            "type": 8,
+            "sizes":[
+               {
+                  "size":1,
+                  "name":"PureImage_IOS_Small",
+                  "source": "",
+                  radius: 28,
+                  "crop_props": defaultCropProps,
+                },
+                {
+                "size":2,
+                "name":"PureImage_IOS_Medium",
+                radius: 28,
+                "source": "",
+                "crop_props": defaultCropProps,
+                },
+                {
+                "size":3,
+                "name":"PureImage_IOS_Large",
+                radius: 28,
+                "source": "",
+                "crop_props": defaultCropProps,
+                }
+            ]
+        }
 }

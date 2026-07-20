@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import {
   DragOverlay,
   useDraggable,
@@ -9,9 +9,14 @@ import { useViewport } from '@xyflow/react';
 import {
   CELL,
   COLUMNS,
-  GAP,
+  GAP_X,
+  GAP_Y,
   ROWS,
   canPlace,
+  cellKey,
+  getDesktopFitMetrics,
+  getOccupiedKeys,
+  getSpanPixelSize,
   parseSlotId,
   slotId,
   useDesktopIcons,
@@ -19,31 +24,56 @@ import {
   type DesktopIcon,
   type PaletteDragData,
 } from './desktop-dnd';
+import { xyFlowTypeNodeType } from '../xyFlowTypeNodeType';
+import { CONFIG_SIZE_MAP } from '../widget/base-config';
+
+function getSlotSize(icon: Pick<DesktopIcon, 'colSpan' | 'rowSpan'>) {
+  return {
+    width: getSpanPixelSize(icon.colSpan, 'x'),
+    height: getSpanPixelSize(icon.rowSpan, 'y'),
+  };
+}
+
+/** 组件等比例缩放进格子；icon 本身固定 180×180 */
+function getDesktopItemMetrics(icon: DesktopIcon) {
+  if (icon.xyflowType === 'icon') {
+    return getDesktopFitMetrics(CELL, CELL, icon.colSpan, icon.rowSpan);
+  }
+  const size = Number(icon.data?.size ?? 1);
+  const sizeConfig = CONFIG_SIZE_MAP[size] || CONFIG_SIZE_MAP[1];
+  return getDesktopFitMetrics(
+    sizeConfig.width,
+    sizeConfig.height,
+    icon.colSpan,
+    icon.rowSpan,
+  );
+}
 
 function iconPixelStyle(
   icon: Pick<DesktopIcon, 'col' | 'row' | 'colSpan' | 'rowSpan'>,
 ): CSSProperties {
-  const step = CELL + GAP;
+  const { width, height } = getSlotSize(icon);
   return {
     position: 'absolute',
-    left: icon.col * step,
-    top: icon.row * step,
-    width: icon.colSpan * CELL + (icon.colSpan - 1) * GAP,
-    height: icon.rowSpan * CELL + (icon.rowSpan - 1) * GAP,
+    left: icon.col * (CELL + GAP_X),
+    top: icon.row * (CELL + GAP_Y),
+    width,
+    height,
   };
 }
 
 const boardStyle: CSSProperties = {
   position: 'relative',
-  width: COLUMNS * CELL + (COLUMNS - 1) * GAP,
-  height: ROWS * CELL + (ROWS - 1) * GAP,
+  width: COLUMNS * CELL + (COLUMNS - 1) * GAP_X,
+  height: ROWS * CELL + (ROWS - 1) * GAP_Y,
 };
 
 const slotGridStyle: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: `repeat(${COLUMNS}, ${CELL}px)`,
   gridTemplateRows: `repeat(${ROWS}, ${CELL}px)`,
-  gap: GAP,
+  columnGap: GAP_X,
+  rowGap: GAP_Y,
 };
 
 const slotStyle: CSSProperties = {
@@ -120,6 +150,12 @@ export default function DraggableGrid() {
       ? canPlace(icons, draggingIcon, hoverSlot.col, hoverSlot.row)
       : false;
 
+  // 拖拽中排除当前项，原占位格子会重新显示，便于落点
+  const occupiedKeys = useMemo(
+    () => getOccupiedKeys(icons, draggingId ?? undefined),
+    [icons, draggingId],
+  );
+
   return (
     <>
       <div style={boardStyle}>
@@ -127,7 +163,14 @@ export default function DraggableGrid() {
           {Array.from({ length: ROWS * COLUMNS }, (_, index) => {
             const col = index % COLUMNS;
             const row = Math.floor(index / COLUMNS);
-            return <Slot key={slotId(col, row)} col={col} row={row} />;
+            return (
+              <Slot
+                key={slotId(col, row)}
+                col={col}
+                row={row}
+                occupied={occupiedKeys.has(cellKey(col, row))}
+              />
+            );
           })}
         </div>
 
@@ -191,24 +234,35 @@ export default function DraggableGrid() {
 }
 
 function OverlayIcon({ icon, zoom }: { icon: DesktopIcon; zoom: number }) {
-  const width = (icon.colSpan * CELL + (icon.colSpan - 1) * GAP) * zoom;
-  const height = (icon.rowSpan * CELL + (icon.rowSpan - 1) * GAP) * zoom;
+  const { width, height } = getSlotSize(icon);
 
   return (
-    <div style={{ width, height }}>
-      <IconFace
-        label={icon.label}
+    <div style={{ width: width * zoom, height: height * zoom }}>
+      <div
         style={{
-          borderRadius: 40 * zoom,
-          fontSize: 20 * zoom,
-          cursor: 'grabbing',
+          width,
+          height,
+          transform: `scale(${zoom})`,
+          transformOrigin: '0 0',
         }}
-      />
+      >
+        <DesktopItemContent
+          icon={icon}
+          style={{
+            borderRadius: 40,
+            cursor: 'grabbing',
+          }}
+        />
+      </div>
     </div>
   );
 }
 
-function Slot({ col, row }: CellPos) {
+function Slot({
+  col,
+  row,
+  occupied,
+}: CellPos & { occupied?: boolean }) {
   const { ref, isDropTarget } = useDroppable({ id: slotId(col, row) });
 
   return (
@@ -216,10 +270,56 @@ function Slot({ col, row }: CellPos) {
       ref={ref}
       style={{
         ...slotStyle,
+        opacity: occupied && !isDropTarget ? 0 : 1,
         background: isDropTarget ? '#e6f4ff' : slotStyle.background,
         borderColor: isDropTarget ? '#1677ff' : '#c5c5c5',
       }}
     />
+  );
+}
+
+function DesktopItemContent({
+  icon,
+  style,
+}: {
+  icon: DesktopIcon;
+  style?: CSSProperties;
+}) {
+  const Comp = icon.xyflowType ? xyFlowTypeNodeType[icon.xyflowType] : null;
+  if (Comp && icon.data) {
+    const { width, height } = getSlotSize(icon);
+    const metrics = getDesktopItemMetrics(icon);
+    const offsetX = (width - metrics.fittedWidth) / 2;
+    const offsetY = (height - metrics.fittedHeight) / 2;
+    return (
+      <div
+        style={{
+          width,
+          height,
+          overflow: 'hidden',
+          borderRadius: 40,
+          position: 'relative',
+          ...style,
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: offsetX,
+            top: offsetY,
+            width: metrics.fittedWidth,
+            height: metrics.fittedHeight,
+            overflow: 'hidden',
+          }}
+        >
+          <Comp id={icon.id} data={icon.data} scale={metrics.scale} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ ...iconFaceStyle, ...style }}>{icon.label}</div>
   );
 }
 
@@ -241,17 +341,7 @@ function DesktopIconItem({
         zIndex: 2,
       }}
     >
-      <IconFace label={icon.label} />
+      <DesktopItemContent icon={icon} />
     </div>
   );
-}
-
-function IconFace({
-  label,
-  style,
-}: {
-  label: string;
-  style?: CSSProperties;
-}) {
-  return <div style={{ ...iconFaceStyle, ...style }}>{label}</div>;
 }

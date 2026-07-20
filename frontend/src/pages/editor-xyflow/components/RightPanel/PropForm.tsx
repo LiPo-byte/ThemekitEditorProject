@@ -39,6 +39,7 @@ import {
   Slider,
   Space
 } from 'antd';
+import SelectElements from './SelectElements';
 // import type { ColorPickerProps } from 'antd';
 
 import { createStyles } from 'antd-style';
@@ -51,6 +52,7 @@ import {
   useEditorBackgroundVariantSetter,
   useEditorShowAxis,
   useEditorShowAxisSetter,
+  useEditorGetElementsConfigMap,
 } from '../../context';
 import FontSelect from '../FontSelect';
 
@@ -105,6 +107,35 @@ const useImageUploadStyles = createStyles(({ css }) => ({
     width: 20px;
     height: 20px;
     border-radius: 5px;
+    object-fit: cover;
+  `,
+  appCell: css`
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: #f3f3f3;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    font-size: 8px;
+    font-weight: 600;
+    text-align: center;
+    box-sizing: border-box;
+    color: #595959;
+    word-break: break-word;
+    user-select: none;
+    font-family: AvenirNext-HeavyItalic;
+  `,
+  appCellSelected: css`
+    border-color: #1677ff;
+    // background: #1677ff;
+  `,
+  appCellImg: css`
+    width: 100%;
+    height: 100%;
     object-fit: cover;
   `,
 }));
@@ -1100,6 +1131,55 @@ export const BaseSelectedNodePropForm: React.FC<{
   );
 };
 
+const AppsGridForm: React.FC<{
+  apps: Record<string, any>;
+  desketopShow: any;
+  onChange?: (key: string, value: any, keyClass?: string) => void;
+}> = ({ apps, onChange, desketopShow }) => {
+  const { styles } = useImageUploadStyles();
+  const appList = Array.isArray(apps) ? apps : [];
+  const showList = Array.isArray(desketopShow) ? desketopShow : [];
+
+  const toggleSelect = (appName: string, selected: boolean, index: number) => {
+    const temp = [...showList];
+    if (!selected) {
+      onChange?.('desketopShow', temp.filter((i: any) => (i.type === 'icon') && i.name !== appName));
+    } else {
+      temp.push({
+        type: 'icon',
+        ...appList[index],
+      })
+      onChange?.('desketopShow', temp);
+    }
+  };
+
+  return (
+    <Row gutter={[8, 8]}>
+      {appList.map((app: any, index: number) => {
+        // const app = (appValue ?? {}) as Record<string, any>;
+        const imageUrl = app.previewsource || '';
+        const label = String(app.name);
+        const selected = (showList.findIndex((i: any) => (i.type === 'icon' && i.name === label))) >= 0;
+
+        return (
+          <Col key={label} span={6}>
+            <div
+              className={`${styles.appCell}${selected ? ` ${styles.appCellSelected}` : ''}`}
+              onClick={() => toggleSelect(app.name, !selected, index)}
+            >
+              {imageUrl ? (
+                <img className={styles.appCellImg} src={imageUrl} alt={label} />
+              ) : (
+                label
+              )}
+            </div>
+          </Col>
+        );
+      })}
+    </Row>
+  );
+};
+
 export const SelectedNodePropForm: React.FC<{
   editProps: Record<string, any>;
   onChange?: (key: string, value: any, keyClass?: string) => void;
@@ -1387,6 +1467,32 @@ export const SelectedNodePropForm: React.FC<{
           <BaseSelectedNodePropForm editProps={editProps.player} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'player');
           }} title="Player"/>
+        </>
+      )}
+      {hasKey('apps') && (
+        <>
+          <Divider style={{
+            width: '280px',
+            marginLeft: '-16px',
+          }} size="small"></Divider>
+          <Space orientation="vertical" size="medium" style={{ display: 'flex' }}>
+            <Typography.Title level={5} style={{ margin: 0 }}>
+              Apps
+            </Typography.Title>
+            <AppsGridForm apps={editProps.apps} desketopShow={editProps.desketopShow} onChange={onChange} />
+          </Space>
+        </>
+      )}
+      {hasKey('targetElementKeys') && (
+        <>
+          <Divider style={{
+            width: '280px',
+            marginLeft: '-16px',
+          }} size="small"></Divider>
+          <Space orientation="vertical" size="medium" style={{ display: 'flex' }}>
+            {/* <SelectElements targetElementKeys={editProps.targetElementKeys} desketopShow={editProps.desketopShow} onChange={onChange} /> */}
+            <SelectElements targetElementKeys={editProps.targetElementKeys} desketopShow={editProps.desketopShow} onChange={onChange} />
+          </Space>
         </>
       )}
     </>

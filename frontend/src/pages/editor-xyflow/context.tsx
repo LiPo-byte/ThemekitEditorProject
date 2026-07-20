@@ -16,6 +16,7 @@ import fontManifest from './components/font-manifest.json';
 // import { CONFIG_SIZE_MAP } from './widget/base-config'
 import { widgetConfig2Nodes } from './widget/util';
 import { iconPackConfig2Nodes } from './icon/util';
+import { buildIconPackConfigJson } from './icon/buildIconPackConfig';
 import { DEFAULT_CROP_PROPS } from './widget/base-config';
 
 import { nanoid } from 'nanoid';
@@ -127,6 +128,7 @@ type EditorCoreCtxValue = {
   generatePreviewImage: (rootId?: string) => Promise<string | null>;
   generateProjectPayload: () => Promise<Record<string, any> | null>;
   saveProjectPayload: () => Promise<Record<string, any> | null>;
+  getElementsConfigMap: () => Record<string, any>;
 };
 
 const noopSetNodes: React.Dispatch<React.SetStateAction<FlowNode[]>> = () => {};
@@ -194,6 +196,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   generatePreviewImage: async () => null,
   generateProjectPayload: async () => null,
   saveProjectPayload: async () => null,
+  getElementsConfigMap: () => ({}),
 });
 
 const cloneNodes = (items: FlowNode[]): FlowNode[] => {
@@ -251,10 +254,10 @@ const detectChangedRootId = (
 
 const ELEMENT_LOADERS: Record<
   string,
-  ((configJson: any) => { nodes: FlowNode[]; rootNode: FlowNode } | null | undefined)
+  ((configJson: any, element_key?: any) => { nodes: FlowNode[]; rootNode: FlowNode } | null | undefined)
 > = {
   widget: (configJson) => widgetConfig2Nodes(configJson),
-  iconpack: (configJson) => iconPackConfig2Nodes(configJson),
+  iconpack: (configJson, element_key) => iconPackConfig2Nodes(configJson, element_key),
 };
 
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
@@ -293,11 +296,12 @@ const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
   elements.forEach((element) => {
     if (!element) return;
     const configJson = element.config_json;
+    // const key = element.key
     if (!configJson || typeof configJson !== 'object') return;
     const category = String(element.category || '');
     const loader = ELEMENT_LOADERS[category];
     if (!loader) return;
-    const result = loader(configJson);
+    const result = loader(configJson, element.element_key);
     if (!result?.nodes || !result.rootNode) return;
     const normalizedNodes = normalizeNodes(result.nodes, result.rootNode, element);
     allNodes.push(...(normalizedNodes as FlowNode[]));
@@ -712,10 +716,11 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     let nodeid:string = ';'
     if (selectedNodesMap.size === 1) {
       selectedNodesMap.forEach((node: any, id: string) => {
-        const { packable, deleteable, cropable, data } = node;
+        const { packable, deleteable, cropable, desktopeditable, data } = node;
         packable && action.push('packable');
         deleteable && action.push('deleteable');
         cropable && data && data.source && action.push('cropable');
+        desktopeditable && action.push('desktopeditable');
         nodeid = id;
       })
     }
@@ -961,39 +966,17 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     };
   };
 
-  const buildIconPackElementPayload = (rootNode: FlowNode) => {
-    const platformGroup = nodes.find(
-      (node) => node.type === 'platform_group' && node.parentId === rootNode.id,
-    );
-    const iconParentId = platformGroup?.id ?? rootNode.id;
-    const iconNodes = nodes.filter(
-      (node) => node.type === 'icon' && node.parentId === iconParentId,
-    );
-    const apps: Record<string, any> = {};
-    iconNodes.forEach((node, index) => {
-      const data = (node.data as Record<string, any>) ?? {};
-      const key = String(data.key ?? data.name ?? node.id ?? index);
-      apps[key] = {
-        name: data.name ?? key,
-        source: data.source ?? '',
-        crop_props: data.crop_props ?? DEFAULT_CROP_PROPS,
-        radius: typeof data.radius === 'number' ? data.radius : undefined,
-      };
-    });
-    return {
-      element_key: rootNode.id,
-      category: 'iconpack',
-      subtype: 'iconpack',
-      x: rootNode.position?.x ?? 0,
-      y: rootNode.position?.y ?? 0,
-      visible: true,
-      locked: false,
-      schema_version: 1,
-      config_json: {
-        apps,
-      },
-    };
-  };
+  const buildIconPackElementPayload = (rootNode: FlowNode) => ({
+    element_key: rootNode.id,
+    category: 'iconpack',
+    subtype: 'iconpack',
+    x: rootNode.position?.x ?? 0,
+    y: rootNode.position?.y ?? 0,
+    visible: true,
+    locked: false,
+    schema_version: 1,
+    config_json: buildIconPackConfigJson(rootNode, nodes),
+  });
 
   const ELEMENT_BUILDERS: Record<
     string,
@@ -1014,6 +997,21 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     });
     return elements;
   };
+
+  const elementsConfigMap = useMemo(() => {
+    const map: Record<string, any> = {};
+    buildElementsPayloadFromNodes().forEach((element) => {
+      const key = String(element?.element_key ?? '');
+      if (!key) return;
+      map[key] = element?.config_json ?? {};
+    });
+    return map;
+  }, [nodes]);
+
+  const getElementsConfigMap = useMemo(
+    () => () => elementsConfigMap,
+    [elementsConfigMap],
+  );
 
   const generateProjectPayload = async () => {
     if (!projectId) return null;
@@ -1188,6 +1186,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       generatePreviewImage,
       generateProjectPayload,
       saveProjectPayload,
+      getElementsConfigMap,
     }),
     [
       nodes,
@@ -1219,6 +1218,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       generatePreviewImage,
       generateProjectPayload,
       saveProjectPayload,
+      getElementsConfigMap,
     ],
   );
 
@@ -1327,3 +1327,4 @@ export const useEditorConfirmCropEditor = () => useContext(EditorCoreCtx).confir
 export const useEditorGeneratePreviewImage = () => useContext(EditorCoreCtx).generatePreviewImage;
 export const useEditorGenerateProjectPayload = () => useContext(EditorCoreCtx).generateProjectPayload;
 export const useEditorSaveProjectPayload = () => useContext(EditorCoreCtx).saveProjectPayload;
+export const useEditorGetElementsConfigMap = () => useContext(EditorCoreCtx).getElementsConfigMap;

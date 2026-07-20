@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -11,11 +12,61 @@ import { nanoid } from 'nanoid';
 
 export const COLUMNS = 4;
 export const ROWS = 8;
+/** 桌面单格 icon 固定边长（不随 gap 变化） */
 export const CELL = 180;
-export const GAP = 20;
+/** 水平间距（可单独调） */
+export const GAP_X = 20;
+/** 垂直间距（可单独调） */
+export const GAP_Y = 20;
+/** @deprecated 使用 GAP_X；保留兼容旧引用 */
+export const GAP = GAP_X;
 
 /** 支持的占格：1×1 / 2×2 / 4×2 / 4×4 */
 export type CellSpan = 1 | 2 | 4;
+
+export type SpanAxis = 'x' | 'y';
+
+/**
+ * span 个格子占用的像素边长。
+ * icon 恒为 CELL(180)；间距按轴向用 GAP_X / GAP_Y。
+ * 例：colSpan=2 → 2*180 + GAP_X
+ * 例：rowSpan=2 → 2*180 + GAP_Y
+ */
+export const getSpanPixelSize = (span: number, axis: SpanAxis = 'x') => {
+  const gap = axis === 'x' ? GAP_X : GAP_Y;
+  return span * CELL + Math.max(0, span - 1) * gap;
+};
+
+/**
+ * 设计稿尺寸等比例适配桌面占格（cover）。
+ * - icon 格子本身仍是 180×180
+ * - scale = max(scaleX, scaleY)，等比例铺满格子；多出的边会被裁切
+ * - 大尺寸 329×345 进 4×4 时，原先用 min 会被高度卡住导致宽度留白
+ */
+export const getDesktopFitMetrics = (
+  designWidth: number,
+  designHeight: number,
+  colSpan: number,
+  rowSpan: number = colSpan,
+) => {
+  const slotWidth = getSpanPixelSize(colSpan, 'x');
+  const slotHeight = getSpanPixelSize(rowSpan, 'y');
+  const scaleX = slotWidth / designWidth;
+  const scaleY = slotHeight / designHeight;
+  const scale = Math.max(scaleX, scaleY);
+  return {
+    slotWidth,
+    slotHeight,
+    scaleX,
+    scaleY,
+    scale,
+    fittedWidth: designWidth * scale,
+    fittedHeight: designHeight * scale,
+    cell: CELL,
+    gapX: GAP_X,
+    gapY: GAP_Y,
+  };
+};
 
 export interface DesktopIcon {
   id: string;
@@ -24,6 +75,10 @@ export interface DesktopIcon {
   row: number;
   colSpan: CellSpan;
   rowSpan: CellSpan;
+  /** 对应 xyFlowTypeNodeType 的 key，用于渲染真实组件 */
+  xyflowType?: string;
+  /** 传给对应组件的 data */
+  data?: Record<string, any>;
 }
 
 export interface CellPos {
@@ -46,15 +101,6 @@ export const PALETTE_ITEM_DATA: PaletteDragData = {
   colSpan: 1,
   rowSpan: 1,
 };
-
-const INITIAL_ICONS: DesktopIcon[] = [
-  { id: 'size-22', label: '2×2', col: 2, row: 0, colSpan: 2, rowSpan: 2 },
-  { id: 'size-42', label: '4×2', col: 0, row: 2, colSpan: 4, rowSpan: 2 },
-  { id: 'a', label: 'A', col: 0, row: 0, colSpan: 1, rowSpan: 1 },
-  { id: 'b', label: 'B', col: 1, row: 0, colSpan: 1, rowSpan: 1 },
-  { id: 'c', label: 'C', col: 0, row: 1, colSpan: 1, rowSpan: 1 },
-  { id: 'd', label: 'D', col: 1, row: 1, colSpan: 1, rowSpan: 1 },
-];
 
 export function cellKey(col: number, row: number): string {
   return `${col},${row}`;
@@ -122,6 +168,151 @@ export function moveIcon(
   );
 }
 
+/** pureImage size → 桌面占格（4 列网格） */
+const PUREIMAGE_SIZE_SPAN: Record<number, { colSpan: CellSpan; rowSpan: CellSpan }> = {
+  1: { colSpan: 2, rowSpan: 2 },
+  2: { colSpan: 4, rowSpan: 2 },
+  3: { colSpan: 4, rowSpan: 4 },
+};
+
+const findFirstAvailableSlot = (
+  icons: DesktopIcon[],
+  colSpan: CellSpan,
+  rowSpan: CellSpan,
+): CellPos | null => {
+  for (let row = 0; row < ROWS; row += 1) {
+    for (let col = 0; col < COLUMNS; col += 1) {
+      if (canPlace(icons, { id: '__placing__', colSpan, rowSpan }, col, row)) {
+        return { col, row };
+      }
+    }
+  }
+  return null;
+};
+
+/**
+ * 将 preview.data.desketopShow 转为 DesktopIcon[]。
+ * - app → 1×1
+ * - pureImage size1/2/3 → 2×2 / 4×2 / 4×4
+ * 若无 col/row，则按顺序自动找空位摆放。
+ */
+export const desketopShowToDesktopIcons = (desketopShow: unknown): DesktopIcon[] => {
+  if (!Array.isArray(desketopShow)) return [];
+
+  const result: DesktopIcon[] = [];
+
+  desketopShow.forEach((item: any, index: number) => {
+    if (!item || typeof item !== 'object') return;
+
+    const id = String(item.element_key ?? `desktop-${index}`);
+    let label = id;
+    let colSpan: CellSpan = 1;
+    let rowSpan: CellSpan = 1;
+    let xyflowType = typeof item.xyflowType === 'string' ? item.xyflowType : undefined;
+    let data: Record<string, any> | undefined;
+
+    if (item.app) {
+      label = String(item.app.name ?? item.app.key ?? id);
+      colSpan = 1;
+      rowSpan = 1;
+      xyflowType = xyflowType || 'icon';
+      data = { ...item.app };
+    } else if (item.config?.sizes?.[0]) {
+      const sizeItem = item.config.sizes[0];
+      const size = Number(sizeItem?.size ?? 1);
+      label = String(sizeItem?.name ?? `size_${size}`);
+      const span = PUREIMAGE_SIZE_SPAN[size] ?? PUREIMAGE_SIZE_SPAN[1];
+      colSpan = span.colSpan;
+      rowSpan = span.rowSpan;
+      xyflowType = xyflowType || 'pureimage_0';
+      data = { ...sizeItem };
+    } else {
+      label = String(item.name ?? item.label ?? id);
+      if (typeof item.colSpan === 'number') colSpan = item.colSpan as CellSpan;
+      if (typeof item.rowSpan === 'number') rowSpan = item.rowSpan as CellSpan;
+      data = item.data && typeof item.data === 'object' ? { ...item.data } : undefined;
+    }
+
+    let col = typeof item.col === 'number' ? item.col : null;
+    let row = typeof item.row === 'number' ? item.row : null;
+
+    if (
+      col == null ||
+      row == null ||
+      !canPlace(result, { id, colSpan, rowSpan }, col, row)
+    ) {
+      const slot = findFirstAvailableSlot(result, colSpan, rowSpan);
+      if (!slot) return;
+      col = slot.col;
+      row = slot.row;
+    }
+
+    result.push({
+      id,
+      label,
+      col,
+      row,
+      colSpan,
+      rowSpan,
+      xyflowType,
+      data,
+    });
+  });
+
+  return result;
+};
+
+/**
+ * 用最新 sourceIcons 同步桌面列表：
+ * - 仍存在的项保留原 col/row（拖拽位置不丢）
+ * - 新增项自动找空位
+ * - 已删除项移除
+ */
+export const mergeDesktopIconsFromSource = (
+  prev: DesktopIcon[],
+  sourceIcons: DesktopIcon[],
+): DesktopIcon[] => {
+  const prevById = new Map(prev.map((item) => [item.id, item]));
+  const next: DesktopIcon[] = [];
+
+  sourceIcons.forEach((item) => {
+    const old = prevById.get(item.id);
+    if (
+      old &&
+      canPlace(next, { id: item.id, colSpan: item.colSpan, rowSpan: item.rowSpan }, old.col, old.row)
+    ) {
+      next.push({
+        ...item,
+        col: old.col,
+        row: old.row,
+      });
+      return;
+    }
+
+    const preferredCol = typeof item.col === 'number' ? item.col : null;
+    const preferredRow = typeof item.row === 'number' ? item.row : null;
+    if (
+      preferredCol != null &&
+      preferredRow != null &&
+      canPlace(
+        next,
+        { id: item.id, colSpan: item.colSpan, rowSpan: item.rowSpan },
+        preferredCol,
+        preferredRow,
+      )
+    ) {
+      next.push({ ...item, col: preferredCol, row: preferredRow });
+      return;
+    }
+
+    const slot = findFirstAvailableSlot(next, item.colSpan, item.rowSpan);
+    if (!slot) return;
+    next.push({ ...item, col: slot.col, row: slot.row });
+  });
+
+  return next;
+};
+
 function isPaletteData(data: unknown): data is PaletteDragData {
   return (
     !!data &&
@@ -144,8 +335,36 @@ export function useDesktopIcons() {
   return ctx.icons;
 }
 
-export function DesktopDndProvider({ children }: { children: ReactNode }) {
-  const [icons, setIcons] = useState<DesktopIcon[]>(INITIAL_ICONS);
+export function DesktopDndProvider({
+  children,
+  initialIcons = [],
+}: {
+  children: ReactNode;
+  /** desketopShow 转换后的列表；变化时同步，不整树 remount */
+  initialIcons?: DesktopIcon[];
+}) {
+  const [icons, setIcons] = useState<DesktopIcon[]>(initialIcons);
+
+  useEffect(() => {
+    setIcons((prev) => {
+      const next = mergeDesktopIconsFromSource(prev, initialIcons);
+      const unchanged =
+        prev.length === next.length &&
+        prev.every((item, index) => {
+          const other = next[index];
+          return (
+            item.id === other.id &&
+            item.col === other.col &&
+            item.row === other.row &&
+            item.colSpan === other.colSpan &&
+            item.rowSpan === other.rowSpan &&
+            item.xyflowType === other.xyflowType &&
+            item.label === other.label
+          );
+        });
+      return unchanged ? prev : next;
+    });
+  }, [initialIcons]);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const source = event.operation.source;
