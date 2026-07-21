@@ -1,11 +1,16 @@
 import React from 'react';
 import { InboxOutlined } from '@ant-design/icons';
-import { useEditorAddWidget, useEditorProjectId } from '../context';
-import { message, Segmented, Upload, Typography } from 'antd';
+import {
+  useEditorAddIconPack,
+  useEditorAddWidget,
+  useEditorProjectId,
+} from '../context';
+import { message, Segmented, Select, Upload, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import { CONFIG_SIZE_MAP, DEFAULT_CROP_PROPS, DEFAULT_RADIUS, SIZE_LABEL_MAP, SOURCENAME_TYPE_WIDGET_MAP, TYPE_WIDGET_MAP } from '../widget/base-config';
 import JSZip from 'jszip';
 import { uploadProjectImage } from '../service';
+import { IconPackDefaultConfig } from '@/editor-core/defaultConfig';
 
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
@@ -42,6 +47,7 @@ type Props = {
   onClose: () => void;
 };
 type ImportSystem = 'ios' | 'android' | 'common';
+type ImportKind = 'widget' | 'iconPack';
 
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -70,7 +76,9 @@ const getBlobImageSize = (blob: Blob) =>
 const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const { styles } = useStyles();
   const addWidget = useEditorAddWidget();
+  const addIconPack = useEditorAddIconPack();
   const projectId = useEditorProjectId();
+  const [importKind, setImportKind] = React.useState<ImportKind>('widget');
   const [importSystem, setImportSystem] = React.useState<ImportSystem>('common');
   const uploadMediaFromZip = async (filename: string, zip: JSZip) => {
     if (!projectId) {
@@ -364,12 +372,84 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     return false;
   };
 
+  /**
+   * 深拷贝 IconPackDefaultConfig，按 apps key 在 zip 里找 icon_{key}.jpg/png 上传填 url；
+   * 找不到则 source 置空。preview 暂不处理。
+   */
+  const readIconPackFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    try {
+      if (!projectId) {
+        message.error('项目未初始化，无法上传资源');
+        return false;
+      }
+
+      const zip = await JSZip.loadAsync(file);
+      const config = structuredClone(IconPackDefaultConfig) as typeof IconPackDefaultConfig;
+      const apps = config.apps as Record<string, { source?: string; [key: string]: any }>;
+      let uploadedCount = 0;
+
+      for (const key of Object.keys(apps)) {
+        const app = apps[key];
+        if (!app || typeof app !== 'object') continue;
+
+        const candidates = [
+          `icon_${key}.jpg`,
+          `icon_${key}.jpeg`,
+          `icon_${key}.png`,
+        ];
+        let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+        for (const filename of candidates) {
+          uploadResult = await uploadMediaFromZip(filename, zip);
+          if (uploadResult) break;
+        }
+
+        if (uploadResult) {
+          app.source = uploadResult.url;
+          uploadedCount += 1;
+        } else {
+          app.source = '';
+        }
+      }
+
+      addIconPack(config);
+      onClose();
+      message.success(`IconPack 导入成功（上传 ${uploadedCount} 个）`);
+    } catch (error) {
+      console.error('[ImportModal] iconpack 导入失败:', error);
+      message.error('iconpack 导入失败');
+    }
+    return false;
+  };
+
+  const beforeUpload = async (file: File) => {
+    if (importKind === 'iconPack') {
+      return readIconPackFromZip(file);
+    }
+    return readWidgetsSpecFromZip(file);
+  };
+
   return (
     <>
       <div className={`${styles.panel} ${!open ? styles.panelClosed : ''}`}>
         <Typography.Title level={5} className={styles.title}>
           Import
         </Typography.Title>
+        <Select<ImportKind>
+          value={importKind}
+          onChange={setImportKind}
+          options={[
+            { label: 'Widget', value: 'widget' },
+            { label: 'IconPack', value: 'iconPack' },
+          ]}
+          style={{ width: '100%' }}
+        />
         <Segmented<ImportSystem>
           block
           value={importSystem}
@@ -380,7 +460,12 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
             { label: 'Android', value: 'android' },
           ]}
         />
-        <Upload.Dragger fileList={[]} accept=".zip,application/zip" maxCount={1} beforeUpload={readWidgetsSpecFromZip}>
+        <Upload.Dragger
+          fileList={[]}
+          accept=".zip,application/zip"
+          maxCount={1}
+          beforeUpload={beforeUpload}
+        >
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
