@@ -36,6 +36,7 @@ import TimeMixCalendarMixBatteryLayout_1 from './widget/timemixcalendarmixbatter
 import ClockMixBatteryLayout_0 from './widget/clockmixbattery-layout_0';
 import Icon from './icon';
 import PlatformGroupNode from './components/PlatformGroupNode';
+import Wallpaper from './wallpaper/wallpaper';
 
 /** 不含 preview，避免与 icon/preview 循环依赖 */
 export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
@@ -76,4 +77,5 @@ export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   timemixcalendarmixbattery_1: TimeMixCalendarMixBatteryLayout_1,
   clockmixbattery_0: ClockMixBatteryLayout_0,
   icon: Icon,
+  wallpaper: Wallpaper,
 };

@@ -6,6 +6,7 @@ import {
 } from './exportBundleShared';
 import { useWidgetExportBundle } from './useWidgetExportBundle';
 import { useIconPackExportBundle } from './useIconPackExportBundle';
+import { useWallpaperExportBundle } from './useWallpaperExportBundle';
 
 const DEFAULT_EXPORT_CATEGORY = 'widget';
 
@@ -34,14 +35,14 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
   const iconPackExport = useIconPackExportBundle(
     category === 'iconpack' ? nodeId : undefined,
   );
-  // const wallpaperExport = useWallpaperExportBundle(
-  //   category === 'wallpaper' ? nodeId : undefined,
-  // );
+  const wallpaperExport = useWallpaperExportBundle(
+    category === 'wallpaper' ? nodeId : undefined,
+  );
 
   const byCategory: Record<string, ExportBundleApi> = {
     widget: widgetExport,
     iconpack: iconPackExport,
-    // wallpaper: wallpaperExport,
+    wallpaper: wallpaperExport,
   };
 
   const active =
@@ -60,5 +61,5 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
 export const listRegisteredExportCategories = () => [
   'widget',
   'iconpack',
-  // 'wallpaper',
+  'wallpaper',
 ];

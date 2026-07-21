@@ -7,8 +7,11 @@ import {
   useEditorImportModalOpenSetter,
   useEditorLeftPanlOpen,
   useEditorLeftPanlOpenSetter,
+  useEditorLeftPanlContent,
+  useEditorLeftPanlContentSetter,
   useEditorImportModalOpen,
   useEditorAddIconPack,
+  type LeftPanlContent,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
@@ -79,13 +82,23 @@ const EditorBottomToolBar: React.FC = () => {
   const visible = useEditorBottomToolBarVisible();
   // const coreLoading = useEditorCoreLoading();
   const setLeftPanlOpen = useEditorLeftPanlOpenSetter();
+  const setLeftPanlContent = useEditorLeftPanlContentSetter();
   const setImportModalOpen = useEditorImportModalOpenSetter();
   const importModalOpen = useEditorImportModalOpen();
   const leftPanlOpen = useEditorLeftPanlOpen();
+  const leftPanlContent = useEditorLeftPanlContent();
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
   const onAddIconPack = () => {
     addIconPack(IconPackDefaultConfig)
+  }
+  const onToggleLeftPanl = (content: LeftPanlContent) => {
+    if (leftPanlOpen && leftPanlContent === content) {
+      setLeftPanlOpen(false);
+      return;
+    }
+    setLeftPanlContent(content);
+    setLeftPanlOpen(true);
   }
   if (!visible) return null;
 
@@ -94,11 +107,11 @@ const EditorBottomToolBar: React.FC = () => {
         <div className={styles.toolbarbody}>
             <Flex gap="medium" align="center">
                 <Button type='primary' icon={<SelectSvg color="#000000" size={14} />}></Button>
-                <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Widget</Button>
+                <Button type='text' onClick={() => { onToggleLeftPanl('widget'); }} >Widget</Button>
                 <Button type='text' onClick={onAddIconPack} >Icon Pack</Button>
-                <Button type='text' onClick={() => {}} >Wallpaper</Button>
-                <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Lock Screen</Button>
-                <Button type='text' onClick={() => {setLeftPanlOpen(!leftPanlOpen)}} >Theme</Button>
+                <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button>
+                <Button type='text' onClick={() => { onToggleLeftPanl('lockScreen'); }} >Lock Screen</Button>
+                <Button type='text' onClick={() => { onToggleLeftPanl('theme'); }} >Theme</Button>
                 <Button
                   color={importModalOpen ? 'primary' : 'default'}
                   variant='filled'

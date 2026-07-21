@@ -16,7 +16,9 @@ import fontManifest from './components/font-manifest.json';
 // import { CONFIG_SIZE_MAP } from './widget/base-config'
 import { widgetConfig2Nodes } from './widget/util';
 import { iconPackConfig2Nodes } from './icon/util';
+import { wallpaperConfig2Nodes, buildWallpaperConfigJson } from './wallpaper/util';
 import { buildIconPackConfigJson } from './icon/buildIconPackConfig';
+
 import { DEFAULT_CROP_PROPS } from './widget/base-config';
 
 import { nanoid } from 'nanoid';
@@ -42,6 +44,8 @@ type FontManifestItem = {
 const MANIFEST_FONTS = (fontManifest as FontManifestItem[]).filter(
   (item) => item.file && item.postscriptName,
 );
+
+export type LeftPanlContent = 'widget' | 'lockScreen' | 'theme' | 'wallpaper';
 
 export type CropProps = {
   scaleX: number;
@@ -95,6 +99,7 @@ type EditorCoreCtxValue = {
   deselectedNode: (nodeId?: string) => void;
   addWidget: (config: any) => void;
   addIconPack: (config: any) => void;
+  addWallpaper: (config: any) => void;
   deleteSelectedNodes: () => void;
   undo: () => void;
   redo: () => void;
@@ -103,6 +108,8 @@ type EditorCoreCtxValue = {
   canRedo: boolean;
   leftPanlOpen: boolean;
   setLeftPanlOpen: (bool: boolean) => void;
+  leftPanlContent: LeftPanlContent;
+  setLeftPanlContent: (content: LeftPanlContent) => void;
   rightPanlOpen: boolean;
   setRightPanlOpen: (bool: boolean) => void;
   cropToolOpen: boolean;
@@ -163,6 +170,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   deselectedNode: noopDeselectedNode,
   addWidget: noopAddNodeGroup,
   addIconPack: noopAddNodeGroup,
+  addWallpaper: noopAddNodeGroup,
   deleteSelectedNodes: noopDeleteSelectedNodes,
   undo: () => {},
   redo: () => {},
@@ -171,6 +179,8 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   canRedo: false,
   leftPanlOpen: false,
   setLeftPanlOpen: (_bool: boolean) => {},
+  leftPanlContent: 'widget',
+  setLeftPanlContent: (_content: LeftPanlContent) => {},
   rightPanlOpen: false,
   setRightPanlOpen: (bool: boolean) => {},
   cropToolOpen: false,
@@ -258,6 +268,7 @@ const ELEMENT_LOADERS: Record<
 > = {
   widget: (configJson) => widgetConfig2Nodes(configJson),
   iconpack: (configJson, element_key) => iconPackConfig2Nodes(configJson, element_key),
+  wallpaper: (configJson, element_key) => wallpaperConfig2Nodes(configJson, element_key),
 };
 
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
@@ -332,6 +343,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [future, setFuture] = useState<FlowNode[][]>([]);
 
   const [leftPanlOpen, setLeftPanlOpen] = useState<boolean>(false);
+  const [leftPanlContent, setLeftPanlContent] = useState<LeftPanlContent>('widget');
   const [rightPanlOpen, setRightPanlOpen] = useState<boolean>(false);
   const [cropToolOpen, setCropToolOpen] = useState<boolean>(false);
   const [hideUI, setHideUI] = useState<boolean>(false);
@@ -664,6 +676,11 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     if (!rootNode) return;
     appendNodesBySlot(newNodes, rootNode);
   };
+  const addWallpaper = (config: any) => {
+    const { nodes: newNodes, rootNode } = wallpaperConfig2Nodes(config);
+    if (!rootNode) return;
+    appendNodesBySlot(newNodes, rootNode);
+  };
 
   const selectedBranchNodes = useMemo(
     () => {
@@ -978,12 +995,25 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     config_json: buildIconPackConfigJson(rootNode, nodes),
   });
 
+  const buildWallpaperElementPayload = (rootNode: FlowNode) => ({
+    element_key: rootNode.id,
+    category: 'wallpaper',
+    subtype: 'wallpaper',
+    x: rootNode.position?.x ?? 0,
+    y: rootNode.position?.y ?? 0,
+    visible: true,
+    locked: false,
+    schema_version: 1,
+    config_json: buildWallpaperConfigJson(rootNode, nodes),
+  });
+
   const ELEMENT_BUILDERS: Record<
     string,
     ((rootNode: FlowNode) => Record<string, any>) | undefined
   > = {
     widget: buildWidgetElementPayload,
     iconpack: buildIconPackElementPayload,
+    wallpaper: buildWallpaperElementPayload,
   };
 
   const buildElementsPayloadFromNodes = () => {
@@ -1153,6 +1183,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       deselectedNode,
       addWidget,
       addIconPack,
+      addWallpaper,
       deleteSelectedNodes,
       undo,
       redo,
@@ -1161,6 +1192,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       canRedo,
       leftPanlOpen,
       setLeftPanlOpen,
+      leftPanlContent,
+      setLeftPanlContent,
       rightPanlOpen,
       setRightPanlOpen,
       cropToolOpen,
@@ -1205,6 +1238,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       canUndo,
       canRedo,
       leftPanlOpen,
+      leftPanlContent,
       rightPanlOpen,
       cropToolOpen,
       hideUI,
@@ -1240,6 +1274,7 @@ export const useEditorSelectNode = () => useContext(EditorCoreCtx).selectNode;
 export const useEditorDeselectedNode = () => useContext(EditorCoreCtx).deselectedNode;
 export const useEditorAddWidget = () => useContext(EditorCoreCtx).addWidget;
 export const useEditorAddIconPack = () => useContext(EditorCoreCtx).addIconPack;
+export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpaper;
 export const useEditorDeleteSelectedNodes = () => useContext(EditorCoreCtx).deleteSelectedNodes;
 export const useEditorUndo = () => useContext(EditorCoreCtx).undo;
 export const useEditorRedo = () => useContext(EditorCoreCtx).redo;
@@ -1293,6 +1328,8 @@ export const useEditorUIVisibility = () => DEFAULT_EDITOR_UI_VISIBILITY;
 export const useEditorUIVisibilitySetter = () => noopUISetter;
 export const useEditorLeftPanlOpen = () => useContext(EditorCoreCtx).leftPanlOpen;
 export const useEditorLeftPanlOpenSetter = () => useContext(EditorCoreCtx).setLeftPanlOpen;
+export const useEditorLeftPanlContent = () => useContext(EditorCoreCtx).leftPanlContent;
+export const useEditorLeftPanlContentSetter = () => useContext(EditorCoreCtx).setLeftPanlContent;
 // export const useEditorRightPanlOpen = () => DEFAULT_EDITOR_UI_VISIBILITY.rightPanel;
 // export const useEditorRightPanlOpenSetter = () => noopBooleanSetter;
 export const useEditorToolbarVisible = () => DEFAULT_EDITOR_UI_VISIBILITY.editorToolbar && !useContext(EditorCoreCtx).hideUI;

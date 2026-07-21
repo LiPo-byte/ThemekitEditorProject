@@ -1,11 +1,33 @@
 import { createStyles } from 'antd-style';
 import React from 'react';
-import { useEditorLeftPanlOpen, useEditorLeftPanlOpenSetter, useEditorAddWidget } from '../context';
+import {
+  useEditorLeftPanlOpen,
+  useEditorLeftPanlOpenSetter,
+  useEditorLeftPanlContent,
+  useEditorAddWidget,
+  useEditorAddWallpaper,
+  type LeftPanlContent,
+} from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { Button, Col, Menu, Row, Typography, type MenuProps, Flex } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import widgetitems from '../widget_config.json';
-import { WidgetDefaultConfig } from '@/editor-core/defaultConfig'
+import wallpaperitems from '../wallpaper_config.json';
+
+import { WidgetDefaultConfig, WallpaperDefaultConfig } from '@/editor-core/defaultConfig'
+
+const LEFT_PANL_TITLE_MAP: Record<LeftPanlContent, string> = {
+  widget: 'Widget',
+  lockScreen: 'Lock Screen',
+  theme: 'Theme',
+  wallpaper: 'Wallpaper',
+};
+const LEFT_PANL_MENU_MAP: Record<LeftPanlContent, any> = {
+  widget: widgetitems,
+  lockScreen: [],
+  theme: [],
+  wallpaper: wallpaperitems,
+}
 
 const useStyles = createStyles(({ token, css }) => ({
   shell: css`
@@ -68,15 +90,29 @@ const useStyles = createStyles(({ token, css }) => ({
 const LeftPanel: React.FC<any> = () => {
   const { styles } = useStyles();
   const addWidget = useEditorAddWidget();
+  const addWallpaper = useEditorAddWallpaper();
   const open = useEditorLeftPanlOpen();
   const setOpen = useEditorLeftPanlOpenSetter();
+  const leftPanlContent = useEditorLeftPanlContent();
   const playEnterAnimation = useEnterAnimation(true || open, { durationMs: 280 });
   const handleAddWidget = (param: { key: keyof typeof WidgetDefaultConfig }) => {
     const { key } = param;
-    console.log(key);
     if (WidgetDefaultConfig[key]) {
       addWidget(WidgetDefaultConfig[key]);
     }
+  };
+  const handleAddWallpaper = (param: { key: keyof typeof WallpaperDefaultConfig }) => {
+    const { key } = param;
+    if (WallpaperDefaultConfig[key]) {
+      addWallpaper(WallpaperDefaultConfig[key]);
+    }
+  };
+  const LEFT_PANL_ADD_HANDLER_MAP: Partial<Record<LeftPanlContent, (param: any) => void>> = {
+    widget: handleAddWidget,
+    wallpaper: handleAddWallpaper,
+  };
+  const handleMenuClick = (param: any) => {
+    LEFT_PANL_ADD_HANDLER_MAP[leftPanlContent]?.(param);
   };
 
   return (
@@ -89,7 +125,7 @@ const LeftPanel: React.FC<any> = () => {
             <Col span={24} >
               <Flex align='center' justify='space-between'>
                 <Typography.Title level={5} style={{ margin: 0 }}>
-                    Widget
+                    {LEFT_PANL_TITLE_MAP[leftPanlContent]}
                 </Typography.Title>
                 <Button type="text" onClick={() => {setOpen(false)}} icon={<CloseOutlined />} />
               </Flex>
@@ -98,15 +134,13 @@ const LeftPanel: React.FC<any> = () => {
         </div>
         <div className={styles.menuScroll}>
           <Menu
-            onClick={(param: any) => {
-              handleAddWidget(param)
-            }}
+            onClick={handleMenuClick}
             style={{
               border: 'none',
             }}
             mode="inline"
             selectable={false}
-            items={widgetitems as MenuProps['items']}
+            items={LEFT_PANL_MENU_MAP[leftPanlContent]}
           />
         </div>
       </div>

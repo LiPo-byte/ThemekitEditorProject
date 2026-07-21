@@ -3,6 +3,7 @@ import { InboxOutlined } from '@ant-design/icons';
 import {
   useEditorAddIconPack,
   useEditorAddWidget,
+  useEditorAddWallpaper,
   useEditorProjectId,
 } from '../context';
 import { message, Segmented, Select, Upload, Typography } from 'antd';
@@ -10,7 +11,7 @@ import { createStyles } from 'antd-style';
 import { CONFIG_SIZE_MAP, DEFAULT_CROP_PROPS, DEFAULT_RADIUS, SIZE_LABEL_MAP, SOURCENAME_TYPE_WIDGET_MAP, TYPE_WIDGET_MAP } from '../widget/base-config';
 import JSZip from 'jszip';
 import { uploadProjectImage } from '../service';
-import { IconPackDefaultConfig } from '@/editor-core/defaultConfig';
+import { IconPackDefaultConfig, WallpaperDefaultConfig } from '@/editor-core/defaultConfig';
 
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
@@ -47,7 +48,7 @@ type Props = {
   onClose: () => void;
 };
 type ImportSystem = 'ios' | 'android' | 'common';
-type ImportKind = 'widget' | 'iconPack';
+// type ImportKind = 'widget' | 'iconPack' ;
 
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -77,8 +78,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const { styles } = useStyles();
   const addWidget = useEditorAddWidget();
   const addIconPack = useEditorAddIconPack();
+  const addWallpaper = useEditorAddWallpaper();
   const projectId = useEditorProjectId();
-  const [importKind, setImportKind] = React.useState<ImportKind>('widget');
+  const [importKind, setImportKind] = React.useState<any>('widget');
   const [importSystem, setImportSystem] = React.useState<ImportSystem>('common');
   const uploadMediaFromZip = async (filename: string, zip: JSZip) => {
     if (!projectId) {
@@ -428,9 +430,99 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     return false;
   };
 
+  /**
+   * 优先读 wallpaper_spec.json；没有则用 WallpaperDefaultConfig。
+   * 按各尺寸 name/key 在 zip 里找 {name}.jpg/png 上传填 url。
+   */
+  const readWallpaperFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    try {
+      if (!projectId) {
+        message.error('项目未初始化，无法上传资源');
+        return false;
+      }
+
+      const zip = await JSZip.loadAsync(file);
+      const specFile =
+        zip.file('wallpaper_spec.json') ??
+        zip.file(/(^|\/)wallpaper_spec\.json$/i)?.[0];
+
+      let config: Record<string, any> = structuredClone(
+        WallpaperDefaultConfig.Wallpaper,
+      ) as Record<string, any>;
+
+      if (specFile) {
+        try {
+          const specText = await specFile.async('string');
+          const parsed = JSON.parse(specText);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            config = parsed;
+          }
+        } catch (error) {
+          console.warn('[ImportModal] wallpaper_spec.json 解析失败，使用默认配置:', error);
+        }
+      }
+
+      let uploadedCount = 0;
+      for (const key of Object.keys(config)) {
+        const item = config[key];
+        if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+
+        const nameToken = String(item.name || key || '')
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, '_')
+          .replace(/[^a-z0-9_\-]/g, '');
+        const candidates = [
+          `${nameToken}.jpg`,
+          `${nameToken}.jpeg`,
+          `${nameToken}.png`,
+          `${key}.jpg`,
+          `${key}.jpeg`,
+          `${key}.png`,
+        ].filter(Boolean);
+
+        let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+        for (const filename of candidates) {
+          uploadResult = await uploadMediaFromZip(filename, zip);
+          if (uploadResult) break;
+        }
+
+        if (uploadResult) {
+          item.source = uploadResult.url;
+          item.crop_props = item.crop_props || DEFAULT_CROP_PROPS;
+          uploadedCount += 1;
+        } else {
+          item.source = '';
+        }
+
+        item.name = item.name || key;
+        item.width = Number(item.width) > 0 ? Number(item.width) : undefined;
+        item.height = Number(item.height) > 0 ? Number(item.height) : undefined;
+      }
+
+      addWallpaper(config);
+      onClose();
+      message.success(`Wallpaper 导入成功（上传 ${uploadedCount} 个）`);
+    } catch (error) {
+      console.error('[ImportModal] wallpaper 导入失败:', error);
+      message.error('wallpaper 导入失败');
+    }
+    return false;
+  };
+
   const beforeUpload = async (file: File) => {
     if (importKind === 'iconPack') {
       return readIconPackFromZip(file);
+    }
+    if (importKind === 'wallpaper') {
+      return readWallpaperFromZip(file);
     }
     return readWidgetsSpecFromZip(file);
   };
@@ -441,12 +533,16 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         <Typography.Title level={5} className={styles.title}>
           Import
         </Typography.Title>
-        <Select<ImportKind>
+        <Select
           value={importKind}
           onChange={setImportKind}
           options={[
             { label: 'Widget', value: 'widget' },
             { label: 'IconPack', value: 'iconPack' },
+            { label: 'WallPaper', options: [{
+              label: 'wallpaper',
+              value: 'wallpaper',
+            }] },
           ]}
           style={{ width: '100%' }}
         />

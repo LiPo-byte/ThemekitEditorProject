@@ -19,27 +19,29 @@ const DEFAULT_ICON_RADIUS = 39.96;
 const PREVIEW_INNER_GAP = 50;
 
 /** 默认桌面预览布局；后续新尺寸往这里加即可 */
-const DEFAULT_PREVIEW_CONFIGS = [
-  { name: 'list_view', col: 4, row: 3, size: [738, 564], withName: false },
-  {
-    name: 'preview_long',
-    col: 4,
-    row: 6,
-    size: [887, 1920],
-    withName: true,
-    withBanner: true,
-    gridPaddingY: DEFAULT_GRID_PADDING_Y,
-  },
-  {
-    name: 'preview_short',
-    col: 4,
-    row: 5,
-    size: [887, 1578],
-    withName: true,
-    withBanner: true,
-    gridPaddingY: DEFAULT_GRID_PADDING_Y,
-  },
-];
+// const DEFAULT_PREVIEW_CONFIGS = [
+//   { name: 'list_view', col: 4, row: 3, size: [738, 564], withName: false },
+//   {
+//     name: 'preview_long',
+//     col: 4,
+//     row: 6,
+//     size: [887, 1920],
+//     withName: true,
+//     withBanner: true,
+//     gridPaddingY: DEFAULT_GRID_PADDING_Y,
+//   },
+//   {
+//     name: 'preview_short',
+//     col: 4,
+//     row: 5,
+//     size: [887, 1578],
+//     withName: true,
+//     withBanner: true,
+//     gridPaddingY: DEFAULT_GRID_PADDING_Y,
+//   },
+// ];
+
+const DEFAULT_PREVIEW_CONFIGS:any = [];
 
 /**
  * 归一化 preview 配置为数组。
@@ -63,7 +65,7 @@ const normalizePreviewConfigs = (preview: unknown): Record<string, any>[] => {
         row: grid.rows,
       },
     ];
-    DEFAULT_PREVIEW_CONFIGS.forEach((defaults) => {
+    DEFAULT_PREVIEW_CONFIGS.forEach((defaults: any) => {
       const exists = items.some(
         (item) =>
           item.name === defaults.name ||
@@ -84,7 +86,7 @@ const normalizePreviewConfigs = (preview: unknown): Record<string, any>[] => {
     return items;
   }
 
-  return DEFAULT_PREVIEW_CONFIGS.map((item) => ({
+  return DEFAULT_PREVIEW_CONFIGS.map((item: any) => ({
     ...item,
     desketopShow: [],
   }));
@@ -143,6 +145,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
   const platformWidth = contentWidth + ICON_GAP * 2;
   const platformHeight = contentHeight + ICON_GAP * 2;
 
+  
   const previewConfigs = normalizePreviewConfigs(preview);
   const previewLayouts = previewConfigs.map((item, index) => {
     const grid = parseGridSize(item.col, item.row);
@@ -220,7 +223,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
       category: 'iconpack',
     },
     draggable: false,
-    selectable: false,
+    // selectable: false,
     connectable: false,
     focusable: false,
     zIndex: 1,
@@ -261,7 +264,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
       parentId: platformGroupId,
       extent: 'parent',
       draggable: false,
-      selectable: false,
+      // selectable: false,
       connectable: false,
       focusable: false,
       style: {
@@ -313,7 +316,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
         parentId: pureImageGroupId,
         extent: 'parent',
         draggable: false,
-        selectable: false,
+        // selectable: false,
         connectable: false,
         focusable: false,
         style: {
@@ -335,7 +338,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
       parentId: rootGroupId,
       extent: 'parent',
       draggable: false,
-      selectable: false,
+      // selectable: false,
       connectable: false,
       focusable: false,
       zIndex: 10,

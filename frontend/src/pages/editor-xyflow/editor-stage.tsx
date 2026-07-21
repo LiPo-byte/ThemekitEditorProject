@@ -7,6 +7,7 @@ import {
   useKeyPress,
   Controls,
   ViewportPortal,
+  type Node as FlowNode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './editor-stage.css';
@@ -29,6 +30,31 @@ import {
 export const xyFlowTypeNodeType = {
   ...baseXyFlowTypeNodeType,
   preview: Preview,
+};
+
+/** 自身可选则返回自身；否则沿 parentId 找最近 selectable !== false 的祖先 */
+const resolveSelectableTarget = (
+  node: FlowNode,
+  allNodes: FlowNode[],
+): FlowNode | null => {
+  const nodeById = new Map(allNodes.map((item) => [item.id, item] as const));
+  let current: FlowNode | undefined = nodeById.get(node.id) ?? node;
+
+  if (current.selectable !== false) {
+    return current;
+  }
+
+  let parentId = current.parentId;
+  while (parentId) {
+    const parent = nodeById.get(parentId);
+    if (!parent) break;
+    if (parent.selectable !== false) {
+      return parent;
+    }
+    parentId = parent.parentId;
+  }
+
+  return null;
 };
 
 export default function EditorStage() {
@@ -118,7 +144,9 @@ export default function EditorStage() {
         selectionOnDrag={false}
         onNodeClick={(event, node) => {
           if (cropToolOpen) return;
-          seletNode(node, Boolean(event.shiftKey));
+          const target = resolveSelectableTarget(node, nodes);
+          if (!target) return;
+          seletNode(target, Boolean(event.shiftKey));
         }}
         onPaneClick={(_) => {
           if (cropToolOpen) return;
