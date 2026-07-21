@@ -1,9 +1,14 @@
 import { nanoid } from 'nanoid';
 import { CONFIG_SIZE_MAP, DEFAULT_CROP_PROPS } from '../widget/base-config';
 import {
+  BANNER_GAP as PREVIEW_BANNER_GAP,
+  BANNER_PADDING as PREVIEW_BANNER_PADDING,
   CELL as PREVIEW_CELL,
+  DEFAULT_GRID_PADDING_Y,
   GAP_X as PREVIEW_GAP_X,
   GAP_Y as PREVIEW_GAP_Y,
+  getCellSlotY,
+  parseGridPaddingY,
   parseGridSize,
 } from './desktop-dnd';
 
@@ -15,9 +20,25 @@ const PREVIEW_INNER_GAP = 50;
 
 /** 默认桌面预览布局；后续新尺寸往这里加即可 */
 const DEFAULT_PREVIEW_CONFIGS = [
-  { name: 'list_view', col: 4, row: 3, size: [738, 564] },
-  { name: 'preview_long', col: 4, row: 8, size: [887, 1920] },
-  { name: 'preview_short', col: 4, row: 7, size: [887, 1578] },
+  { name: 'list_view', col: 4, row: 3, size: [738, 564], withName: false },
+  {
+    name: 'preview_long',
+    col: 4,
+    row: 6,
+    size: [887, 1920],
+    withName: true,
+    withBanner: true,
+    gridPaddingY: DEFAULT_GRID_PADDING_Y,
+  },
+  {
+    name: 'preview_short',
+    col: 4,
+    row: 5,
+    size: [887, 1578],
+    withName: true,
+    withBanner: true,
+    gridPaddingY: DEFAULT_GRID_PADDING_Y,
+  },
 ];
 
 /**
@@ -125,13 +146,28 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
   const previewConfigs = normalizePreviewConfigs(preview);
   const previewLayouts = previewConfigs.map((item, index) => {
     const grid = parseGridSize(item.col, item.row);
-    const width =
+    const withName = item.withName !== false;
+    const withBanner = item.withBanner === true;
+    const gridPaddingY = parseGridPaddingY(item.gridPaddingY);
+    const cellY = getCellSlotY(withName);
+    const gridWidth =
       grid.columns * PREVIEW_CELL + (grid.columns - 1) * PREVIEW_GAP_X;
+    const width = withBanner
+      ? gridWidth + PREVIEW_BANNER_PADDING * 2
+      : gridWidth;
     const height =
-      grid.rows * PREVIEW_CELL + (grid.rows - 1) * PREVIEW_GAP_Y;
+      grid.rows * cellY +
+      (grid.rows - 1) * PREVIEW_GAP_Y +
+      gridPaddingY * 2 +
+      (withBanner
+        ? PREVIEW_BANNER_GAP + PREVIEW_CELL + PREVIEW_BANNER_PADDING * 2
+        : 0);
     return {
       item,
       grid,
+      withName,
+      withBanner,
+      gridPaddingY,
       width,
       height,
       groupWidth: width + PREVIEW_INNER_GAP * 2,
@@ -320,7 +356,17 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
 
   previewLayouts.forEach((layout) => {
     const previewGroupId = nanoid() + '_preview';
-    const { item, grid, width, height, groupWidth, groupHeight } = layout;
+    const {
+      item,
+      grid,
+      withName,
+      withBanner,
+      gridPaddingY,
+      width,
+      height,
+      groupWidth,
+      groupHeight,
+    } = layout;
 
     nodes.push({
       id: previewGroupId,
@@ -364,6 +410,9 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
             : [width, height],
         col: grid.columns,
         row: grid.rows,
+        withName,
+        withBanner,
+        gridPaddingY,
       },
       position: {
         x: PREVIEW_INNER_GAP,

@@ -129,6 +129,12 @@ const serializePreview: SectionSerializer = ({
       row: Number(data.row) > 0 ? Number(data.row) : undefined,
       col: Number(data.col) > 0 ? Number(data.col) : undefined,
       size: Array.isArray(data.size) ? data.size : undefined,
+      withName: data.withName !== false,
+      withBanner: data.withBanner === true,
+      gridPaddingY:
+        Number(data.gridPaddingY) > 0
+          ? Math.floor(Number(data.gridPaddingY))
+          : undefined,
     };
   });
 
