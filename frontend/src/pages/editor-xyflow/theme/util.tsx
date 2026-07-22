@@ -7,7 +7,11 @@ const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 
 export const DEFAULT_THEME_CONFIG = {
-  selectElements: [] as any[],
+  selectElements: {
+    apps: ['JfIrTp9fSA-O0Ys20P6fK'],
+    widgets: ['Nvw04RLQELBBSZCvLXBJy', 'Eh_xiQlOn9mYgc-PLx3VA', 'ROROdFjq-xnQecpb5zeXy,ios'],
+    wallpaper: ['Y1qoiMyNlvyXZUfecUx4M'],
+  },
   preview_long: {
     width: 887,
     height: 1920,
@@ -59,9 +63,6 @@ export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
   const childNodes: any[] = [];
   let cursorX = GAP;
   let maxPlatformHeight = 0;
-  const selectElements = Array.isArray(source.selectElements)
-    ? source.selectElements
-    : [];
 
   entries.forEach(({ key, item }) => {
     const width = Number(item.width) || 887;
@@ -106,6 +107,7 @@ export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
         name: item.name || key,
         width,
         height,
+        selectElements: source.selectElements,
         showElements: Array.isArray(item.showElements) ? item.showElements : [],
       },
       position: { x: GAP, y: GAP },
@@ -131,7 +133,6 @@ export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
     position: { x: 0, y: 0 },
     data: {
       category: 'theme',
-      selectElements,
     },
     draggable: false,
     connectable: false,
@@ -166,10 +167,12 @@ export const buildThemeConfigJson = (
     .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
 
   const config: Record<string, any> = {
-    selectElements: Array.isArray(rootData.selectElements)
-      ? rootData.selectElements
-      : [],
+    // selectElements: Array.isArray(rootData.selectElements)
+    //   ? rootData.selectElements
+    //   : [],
   };
+  
+  let selectElements = {};
 
   platformNodes.forEach((platformNode) => {
     const platformData = getNodeData(platformNode);
@@ -189,6 +192,9 @@ export const buildThemeConfigJson = (
         : {};
 
     const { key: _key, ...rest } = data;
+    if (data.selectElements) {
+        selectElements = data.selectElements
+    }
     config[key] = {
       ...defaults,
       ...rest,
@@ -199,6 +205,7 @@ export const buildThemeConfigJson = (
       showElements: Array.isArray(data.showElements) ? data.showElements : [],
     };
   });
+  config.selectElements = selectElements;
 
   return config;
 };

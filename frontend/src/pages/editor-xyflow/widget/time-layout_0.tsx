@@ -43,11 +43,13 @@ import './style.css';
 
 export default function TimeLayout_1(props: any) {
   const data = props.data;
+  const scale = props.scale || 1;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
 
   const getParentNodeData = useEditorGetParentNodeData();
-  const { textAlignment } = getParentNodeData(props.id) || {};
+  const parentData = getParentNodeData(props.id) ?? props.parentData ?? {};
+  const { textAlignment } = parentData;
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
 
   if (!data) return null;
@@ -87,7 +89,11 @@ export default function TimeLayout_1(props: any) {
   }, [textAlignment, data, isCropEditingNode])
 
   return (
-    <div className={`size_${data?.size}`} style={containerStyle}>
+    <div className={`size_${data?.size}`} style={{
+        ...containerStyle,
+        transform: `scale(${scale}, ${scale})`,
+        transformOrigin: '0 0',
+      }}>
       <CropEditableImage
         nodeId={props.id}
         source={data.source}

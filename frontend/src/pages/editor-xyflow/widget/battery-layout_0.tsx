@@ -13,6 +13,7 @@ const getTextStyle = (parentId?: string, textData?: any) => ({
 });
 export default function BatteryLayout_0(props: any) {
   const data = props.data;
+  const scale = props.scale || 1;
   if (!data) return null;
 
   const batterySources = useMemo(() => {
@@ -67,6 +68,8 @@ export default function BatteryLayout_0(props: any) {
 
   return (
     <div className={`size_${data?.size}`} style={{
+      transform: `scale(${scale}, ${scale})`,
+      transformOrigin: '0 0',
       backgroundColor: '#ffffff',
       overflow: 'hidden',
       borderRadius: `${data.radius ?? 0}px`,

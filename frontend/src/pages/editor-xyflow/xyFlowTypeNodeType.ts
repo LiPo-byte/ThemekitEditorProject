@@ -37,20 +37,15 @@ import ClockMixBatteryLayout_0 from './widget/clockmixbattery-layout_0';
 import Icon from './icon';
 import PlatformGroupNode from './components/PlatformGroupNode';
 import Wallpaper from './wallpaper/wallpaper';
-import PreviewLong from './theme/preview_long';
-import PreviewShort from './theme/preview_short';
-import ListView from './theme/list_view';
-import PreviewLongIpad from './theme/preview_long_ipad';
-import ListViewIpad from './theme/list_view_ipad';
+// import PreviewLong from './theme/preview_long';
+// import PreviewShort from './theme/preview_short';
+// import ListView from './theme/list_view';
+// import PreviewLongIpad from './theme/preview_long_ipad';
+// import ListViewIpad from './theme/list_view_ipad';
 
 /** 不含 preview，避免与 icon/preview 循环依赖 */
 export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   platform_group: PlatformGroupNode,
-  preview_long: PreviewLong,
-  preview_short: PreviewShort,
-  list_view: ListView,
-  preview_long_ipad: PreviewLongIpad,
-  list_view_ipad: ListViewIpad,
   time_0: TimeLayout_0,
   time_1: TimeLayout_1,
   time_2: TimeLayout_2,

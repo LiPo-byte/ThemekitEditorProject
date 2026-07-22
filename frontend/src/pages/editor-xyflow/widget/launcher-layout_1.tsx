@@ -20,6 +20,7 @@ const getTextStyle = (parentId?: string, textData?: any) => ({
 });
 export default function LauncherLayout_1(props: any) {
   const data = props.data;
+  const scale = props.scale || 1;
   if (!data) return null;
   const size = data.size;
   const cropToolOpen = useEditorCropToolOpen();
@@ -58,6 +59,8 @@ export default function LauncherLayout_1(props: any) {
     <div
       className={`size_${data?.size}`}
       style={{
+        transform: `scale(${scale}, ${scale})`,
+        transformOrigin: '0 0',
         backgroundColor: '#ffffff',
         borderRadius: `${data.radius ?? 0}px`,
         boxSizing: 'border-box',

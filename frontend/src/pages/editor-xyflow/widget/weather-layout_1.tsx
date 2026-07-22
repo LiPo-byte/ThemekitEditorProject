@@ -29,10 +29,11 @@ const getTextStyle = (parentId?: string, textData?: any) => ({
 });
 export default function WeatherLayout1(props: any) {
   const data = props.data;
+  const scale = props.scale || 1;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const getParentNodeData = useEditorGetParentNodeData();
-  const parentData = getParentNodeData(props.id) || {};
+  const parentData = getParentNodeData(props.id) ?? props.parentData ?? {};
   const iconSource = parentData?.imageCloud?.source;
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
 
@@ -57,6 +58,8 @@ export default function WeatherLayout1(props: any) {
     <div
       className={`size_${data?.size}`}
       style={{
+        transform: `scale(${scale}, ${scale})`,
+        transformOrigin: '0 0',
         ...getContainerStyle(data.radius, isCropEditingNode ? 'visible' : 'hidden'),
         padding: size === 3 ? '70px 12px' : '10px 12px',
       }}

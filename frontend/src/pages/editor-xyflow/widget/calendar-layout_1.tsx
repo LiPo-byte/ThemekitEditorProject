@@ -14,6 +14,7 @@ export default function CalendarLayout_0(props: any) {
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
   const data = props.data;
+  const scale = props.scale || 1;
   const size = Number(data?.size ?? 1) as 1 | 2 | 3;
   const daySize = { 1: 17, 2: 23, 3: 31 };
   const paddingSize = { 1: 18, 2: 54, 3: 20 };
@@ -31,6 +32,8 @@ export default function CalendarLayout_0(props: any) {
     <div
       className={`size_${size}`}
       style={{
+        transform: `scale(${scale}, ${scale})`,
+        transformOrigin: '0 0',
         backgroundColor: '#ffffff',
         overflow: isCropEditingNode ? 'visible' : 'hidden',
         borderRadius: `${data.radius ?? 0}px`,

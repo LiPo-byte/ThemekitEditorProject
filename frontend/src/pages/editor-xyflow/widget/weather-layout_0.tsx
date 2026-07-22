@@ -95,10 +95,11 @@ const getDividerStyle:any = (color?: string, alpha?: number, marginBottom = 18) 
 
 export default function WeatherLayout0(props: any) {
   const data = props.data;
+  const scale = props.scale || 1;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const getParentNodeData = useEditorGetParentNodeData();
-  const parentData = getParentNodeData(props.id) || {};
+  const parentData = getParentNodeData(props.id) ?? props.parentData ?? {};
   const { separateLineColor, separateLineAlpha } = parentData;
   const iconSource = parentData?.imageCloud?.source;
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
@@ -119,7 +120,11 @@ export default function WeatherLayout0(props: any) {
   return (
     <div
       className={`size_${data?.size}`}
-      style={getContainerStyle(data.radius, isCropEditingNode ? 'visible' : 'hidden')}
+      style={{
+        ...getContainerStyle(data.radius, isCropEditingNode ? 'visible' : 'hidden'),
+        transform: `scale(${scale}, ${scale})`,
+        transformOrigin: '0 0',
+      }}
     >
       <CropEditableImage
         nodeId={props.id}

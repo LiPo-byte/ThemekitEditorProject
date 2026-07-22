@@ -12,6 +12,7 @@ import './style.css';
 
 export default function TimeLayout_1(props: any) {
   const data = props.data;
+  const scale = props.scale || 1;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
@@ -141,7 +142,11 @@ export default function TimeLayout_1(props: any) {
   }, [data])
 
   return (
-    <div className={`size_${data?.size}`} style={containerStyle}>
+    <div className={`size_${data?.size}`} style={{
+        ...containerStyle,
+        transform: `scale(${scale}, ${scale})`,
+        transformOrigin: '0 0',
+      }}>
       <CropEditableImage
         nodeId={props.id}
         source={data.source}

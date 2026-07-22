@@ -49,6 +49,25 @@ export const TYPE_WIDGET_MAP:any = {
     18: 'clockmixbattery',
 }
 
+/** 与 TYPE_WIDGET_MAP 对应的展示名（大驼峰单词，空格分隔） */
+export const TYPE_WIDGET_NAME_MAP: any = {
+    1: 'Time',
+    2: 'Calendar',
+    3: 'Clock',
+    4: 'Digital',
+    5: 'Battery',
+    8: 'Pure Image',
+    9: 'Countdown',
+    6: 'Quotation',
+    14: 'Launcher',
+    13: 'Dynamic',
+    12: 'Weather',
+    15: 'Time Mix Battery',
+    16: 'Time Mix Calendar Mix Battery',
+    17: 'Music',
+    18: 'Clock Mix Battery',
+}
+
 export const SOURCENAME_TYPE_WIDGET_MAP:any = {
     9: 'countImage',
     4: 'digital_clock',

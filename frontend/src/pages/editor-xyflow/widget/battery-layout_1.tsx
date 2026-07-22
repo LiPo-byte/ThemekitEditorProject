@@ -21,11 +21,14 @@ export default function BatteryLayout_1(props: any) {
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
   const data = props.data;
+  const scale = props.scale || 1;
   if (!data) return null;
 
   
   return (
     <div className={`size_${data?.size}`} style={{
+      transform: `scale(${scale}, ${scale})`,
+      transformOrigin: '0 0',
       backgroundColor: '#ffffff',
       overflow: isCropEditingNode ? 'visible' : 'hidden',
       borderRadius: `${data.radius ?? 0}px`,

@@ -8,6 +8,7 @@ import './style.css';
 
 export default function LauncherLayout_8(props: any) {
   const data = props.data;
+  const scale = props.scale || 1;
   if (!data) return null;
   const size = data.size;
   const paddingSize: any = {1: 16, 2: 20, 3: 28};
@@ -48,6 +49,8 @@ export default function LauncherLayout_8(props: any) {
     <div
       className={`size_${data?.size}`}
       style={{
+        transform: `scale(${scale}, ${scale})`,
+        transformOrigin: '0 0',
         backgroundColor: '#ffffff',
         borderRadius: `${data.radius ?? 0}px`,
         boxSizing: 'border-box',

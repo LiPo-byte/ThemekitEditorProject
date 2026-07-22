@@ -14,6 +14,7 @@ export default function QuotationLayout_0(props: any) {
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
   const data = props.data;
+  const scale = props.scale || 1;
 
   if (!data) return null;
 //   "quote":{
@@ -32,6 +33,8 @@ export default function QuotationLayout_0(props: any) {
     <div
       className={`size_${data?.size ?? 1}`}
       style={{
+        transform: `scale(${scale}, ${scale})`,
+        transformOrigin: '0 0',
         backgroundColor: '#ffffff',
         overflow: isCropEditingNode ? 'visible' : 'hidden',
         borderRadius: `${data.radius ?? 0}px`,

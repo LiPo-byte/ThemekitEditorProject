@@ -1131,54 +1131,54 @@ export const BaseSelectedNodePropForm: React.FC<{
   );
 };
 
-const AppsGridForm: React.FC<{
-  apps: Record<string, any>;
-  desketopShow: any;
-  onChange?: (key: string, value: any, keyClass?: string) => void;
-}> = ({ apps, onChange, desketopShow }) => {
-  const { styles } = useImageUploadStyles();
-  const appList = Array.isArray(apps) ? apps : [];
-  const showList = Array.isArray(desketopShow) ? desketopShow : [];
+// const AppsGridForm: React.FC<{
+//   apps: Record<string, any>;
+//   desketopShow: any;
+//   onChange?: (key: string, value: any, keyClass?: string) => void;
+// }> = ({ apps, onChange, desketopShow }) => {
+//   const { styles } = useImageUploadStyles();
+//   const appList = Array.isArray(apps) ? apps : [];
+//   const showList = Array.isArray(desketopShow) ? desketopShow : [];
 
-  const toggleSelect = (appName: string, selected: boolean, index: number) => {
-    const temp = [...showList];
-    if (!selected) {
-      onChange?.('desketopShow', temp.filter((i: any) => (i.type === 'icon') && i.name !== appName));
-    } else {
-      temp.push({
-        type: 'icon',
-        ...appList[index],
-      })
-      onChange?.('desketopShow', temp);
-    }
-  };
+//   const toggleSelect = (appName: string, selected: boolean, index: number) => {
+//     const temp = [...showList];
+//     if (!selected) {
+//       onChange?.('desketopShow', temp.filter((i: any) => (i.type === 'icon') && i.name !== appName));
+//     } else {
+//       temp.push({
+//         type: 'icon',
+//         ...appList[index],
+//       })
+//       onChange?.('desketopShow', temp);
+//     }
+//   };
 
-  return (
-    <Row gutter={[8, 8]}>
-      {appList.map((app: any, index: number) => {
-        // const app = (appValue ?? {}) as Record<string, any>;
-        const imageUrl = app.previewsource || '';
-        const label = String(app.name);
-        const selected = (showList.findIndex((i: any) => (i.type === 'icon' && i.name === label))) >= 0;
+//   return (
+//     <Row gutter={[8, 8]}>
+//       {appList.map((app: any, index: number) => {
+//         // const app = (appValue ?? {}) as Record<string, any>;
+//         const imageUrl = app.previewsource || '';
+//         const label = String(app.name);
+//         const selected = (showList.findIndex((i: any) => (i.type === 'icon' && i.name === label))) >= 0;
 
-        return (
-          <Col key={label} span={6}>
-            <div
-              className={`${styles.appCell}${selected ? ` ${styles.appCellSelected}` : ''}`}
-              onClick={() => toggleSelect(app.name, !selected, index)}
-            >
-              {imageUrl ? (
-                <img className={styles.appCellImg} src={imageUrl} alt={label} />
-              ) : (
-                label
-              )}
-            </div>
-          </Col>
-        );
-      })}
-    </Row>
-  );
-};
+//         return (
+//           <Col key={label} span={6}>
+//             <div
+//               className={`${styles.appCell}${selected ? ` ${styles.appCellSelected}` : ''}`}
+//               onClick={() => toggleSelect(app.name, !selected, index)}
+//             >
+//               {imageUrl ? (
+//                 <img className={styles.appCellImg} src={imageUrl} alt={label} />
+//               ) : (
+//                 label
+//               )}
+//             </div>
+//           </Col>
+//         );
+//       })}
+//     </Row>
+//   );
+// };
 
 export const SelectedNodePropForm: React.FC<{
   editProps: Record<string, any>;
@@ -1469,7 +1469,7 @@ export const SelectedNodePropForm: React.FC<{
           }} title="Player"/>
         </>
       )}
-      {hasKey('apps') && (
+      {/* {hasKey('apps') && (
         <>
           <Divider style={{
             width: '280px',
@@ -1482,16 +1482,15 @@ export const SelectedNodePropForm: React.FC<{
             <AppsGridForm apps={editProps.apps} desketopShow={editProps.desketopShow} onChange={onChange} />
           </Space>
         </>
-      )}
-      {hasKey('targetElementKeys') && (
+      )} */}
+      {hasKey('selectElements') && (
         <>
           <Divider style={{
             width: '280px',
             marginLeft: '-16px',
           }} size="small"></Divider>
           <Space orientation="vertical" size="medium" style={{ display: 'flex' }}>
-            {/* <SelectElements targetElementKeys={editProps.targetElementKeys} desketopShow={editProps.desketopShow} onChange={onChange} /> */}
-            <SelectElements targetElementKeys={editProps.targetElementKeys} desketopShow={editProps.desketopShow} onChange={onChange} />
+            <SelectElements selectElements={editProps.selectElements} showElements={editProps.showElements} onChange={onChange} />
           </Space>
         </>
       )}
