@@ -23,8 +23,8 @@ export const DEFAULT_THEME_CONFIG = {
     showElements: [],
   },
   list_view: {
-    width: 492,
-    height: 1065,
+    width: 984,
+    height: 2130,
     showElements: [],
   },
   preview_long_ipad: {
