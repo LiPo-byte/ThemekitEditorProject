@@ -11,6 +11,7 @@ import {
   useEditorLeftPanlContentSetter,
   useEditorImportModalOpen,
   useEditorAddIconPack,
+  useEditorAddTheme,
   type LeftPanlContent,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
@@ -18,6 +19,7 @@ import { SelectSvg, } from '@/icons'
 import { Button, Flex } from 'antd';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { IconPackDefaultConfig } from '@/editor-core/defaultConfig'
+import { DEFAULT_THEME_CONFIG } from '../theme/util';
 import ImportModal from './ImportModal';
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -79,6 +81,7 @@ const useStyles = createStyles(({ token, css }) => ({
 const EditorBottomToolBar: React.FC = () => {
   const { styles } = useStyles();
   const addIconPack = useEditorAddIconPack();
+  const addTheme = useEditorAddTheme();
   const visible = useEditorBottomToolBarVisible();
   // const coreLoading = useEditorCoreLoading();
   const setLeftPanlOpen = useEditorLeftPanlOpenSetter();
@@ -91,6 +94,9 @@ const EditorBottomToolBar: React.FC = () => {
 
   const onAddIconPack = () => {
     addIconPack(IconPackDefaultConfig)
+  }
+  const onAddTheme = () => {
+    addTheme(DEFAULT_THEME_CONFIG)
   }
   const onToggleLeftPanl = (content: LeftPanlContent) => {
     if (leftPanlOpen && leftPanlContent === content) {
@@ -111,7 +117,7 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='text' onClick={onAddIconPack} >Icon Pack</Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('lockScreen'); }} >Lock Screen</Button>
-                <Button type='text' onClick={() => { onToggleLeftPanl('theme'); }} >Theme</Button>
+                <Button type='text' onClick={onAddTheme} >Theme</Button>
                 <Button
                   color={importModalOpen ? 'primary' : 'default'}
                   variant='filled'

@@ -1,29 +1,56 @@
 import { nanoid } from 'nanoid';
 import type { Node as FlowNode } from '@xyflow/react';
-import { DEFAULT_CROP_PROPS } from '../widget/base-config';
 
 const GAP = 50;
-const DEFAULT_WALLPAPER_WIDTH = 887;
-const DEFAULT_WALLPAPER_HEIGHT = 1920;
 
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 
-const isWallpaperItem = (value: unknown): value is Record<string, any> =>
+export const DEFAULT_THEME_CONFIG = {
+  selectElements: [] as any[],
+  preview_long: {
+    width: 887,
+    height: 1920,
+    showElements: [],
+  },
+  preview_short: {
+    width: 887,
+    height: 1578,
+    showElements: [],
+  },
+  list_view: {
+    width: 492,
+    height: 1065,
+    showElements: [],
+  },
+  preview_long_ipad: {
+    width: 2048,
+    height: 2732,
+    showElements: [],
+  },
+  list_view_ipad: {
+    width: 1024,
+    height: 1366,
+    showElements: [],
+  },
+};
+
+const isThemeSurfaceItem = (value: unknown): value is Record<string, any> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
-/** 读取 config 中所有壁纸条目：wallpaper / wallpaper_ipad / 其它自定义 key */
-const getWallpaperEntries = (
+/** 读取 theme config 中各预览面：key 即 node type */
+const getThemeSurfaceEntries = (
   config: Record<string, any> | null | undefined,
 ): Array<{ key: string; item: Record<string, any> }> => {
   if (!config || typeof config !== 'object') return [];
   return Object.entries(config)
-    .filter(([, value]) => isWallpaperItem(value))
+    .filter(([key, value]) => key !== 'selectElements' && isThemeSurfaceItem(value))
     .map(([key, item]) => ({ key, item: item as Record<string, any> }));
 };
 
-export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
-  const entries = getWallpaperEntries(config);
+export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
+  const source = config || DEFAULT_THEME_CONFIG;
+  const entries = getThemeSurfaceEntries(source);
   if (!entries.length) {
     return { nodes: [], rootNode: null };
   }
@@ -32,10 +59,13 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
   const childNodes: any[] = [];
   let cursorX = GAP;
   let maxPlatformHeight = 0;
+  const selectElements = Array.isArray(source.selectElements)
+    ? source.selectElements
+    : [];
 
   entries.forEach(({ key, item }) => {
-    const width = Number(item.width) || DEFAULT_WALLPAPER_WIDTH;
-    const height = Number(item.height) || DEFAULT_WALLPAPER_HEIGHT;
+    const width = Number(item.width) || 887;
+    const height = Number(item.height) || 1920;
     const platformGroupId = `${nanoid()}_${key}`;
     const platformWidth = width + GAP * 2;
     const platformHeight = height + GAP * 2;
@@ -48,7 +78,7 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
       position: { x: cursorX, y: GAP },
       data: {
         label: key,
-        themekitType: 'wallpaper',
+        themekitType: key,
       },
       parentId: rootGroupId,
       extent: 'parent',
@@ -69,15 +99,14 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
 
     childNodes.push({
       id: nanoid(),
-      type: 'wallpaper',
+      type: key,
       data: {
         ...item,
         key,
         name: item.name || key,
-        source: item.source || '',
         width,
         height,
-        crop_props: item.crop_props || DEFAULT_CROP_PROPS,
+        showElements: Array.isArray(item.showElements) ? item.showElements : [],
       },
       position: { x: GAP, y: GAP },
       parentId: platformGroupId,
@@ -94,25 +123,23 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
     cursorX += platformWidth + GAP;
   });
 
-  const rootWidth = cursorX;
-  const rootHeight = maxPlatformHeight + GAP * 2;
-
   const rootNode = {
     id: rootGroupId,
     type: 'group',
     deleteable: true,
+    packable: true,
     position: { x: 0, y: 0 },
     data: {
-      category: 'wallpaper',
+      category: 'theme',
+      selectElements,
     },
-    packable: true,
     draggable: false,
     connectable: false,
     focusable: false,
     zIndex: 1,
     style: {
-      width: rootWidth,
-      height: rootHeight,
+      width: cursorX,
+      height: maxPlatformHeight + GAP * 2,
       background: '#f5f7ff',
       border: '1px solid #b4c0ff',
       borderRadius: 16,
@@ -125,11 +152,12 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
   };
 };
 
-/** 从当前 nodes 组装 wallpaper 的 config_json（按 platform label 还原各尺寸） */
-export const buildWallpaperConfigJson = (
+/** 从当前 nodes 组装 theme 的 config_json（按 platform label 还原各预览面） */
+export const buildThemeConfigJson = (
   rootNode: FlowNode,
   nodes: FlowNode[],
 ): Record<string, any> => {
+  const rootData = getNodeData(rootNode);
   const platformNodes = nodes
     .filter(
       (node) =>
@@ -137,23 +165,38 @@ export const buildWallpaperConfigJson = (
     )
     .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
 
-  const config: Record<string, any> = {};
+  const config: Record<string, any> = {
+    selectElements: Array.isArray(rootData.selectElements)
+      ? rootData.selectElements
+      : [],
+  };
+
   platformNodes.forEach((platformNode) => {
     const platformData = getNodeData(platformNode);
-    const key = String(platformData.label || platformData.themekitType || 'wallpaper');
-    const wallpaperNode = nodes.find(
-      (node) => node.type === 'wallpaper' && node.parentId === platformNode.id,
-    );
-    const data = getNodeData(wallpaperNode);
-    const width = Number(data.width) || DEFAULT_WALLPAPER_WIDTH;
-    const height = Number(data.height) || DEFAULT_WALLPAPER_HEIGHT;
+    const key = String(platformData.label || platformData.themekitType || '');
+    if (!key) return;
 
+    const surfaceNode = nodes.find(
+      (node) =>
+        node.parentId === platformNode.id &&
+        (node.type === key || String(getNodeData(node).key ?? '') === key),
+    );
+    const data = getNodeData(surfaceNode);
+    const defaults =
+      (DEFAULT_THEME_CONFIG as Record<string, any>)[key] &&
+      typeof (DEFAULT_THEME_CONFIG as Record<string, any>)[key] === 'object'
+        ? (DEFAULT_THEME_CONFIG as Record<string, any>)[key]
+        : {};
+
+    const { key: _key, ...rest } = data;
     config[key] = {
-      source: data.source ?? '',
+      ...defaults,
+      ...rest,
       name: data.name || key,
-      width,
-      height,
-      crop_props: data.crop_props || DEFAULT_CROP_PROPS,
+      width: Number(data.width) > 0 ? Number(data.width) : Number(defaults.width) || 887,
+      height:
+        Number(data.height) > 0 ? Number(data.height) : Number(defaults.height) || 1920,
+      showElements: Array.isArray(data.showElements) ? data.showElements : [],
     };
   });
 

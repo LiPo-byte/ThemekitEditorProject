@@ -10,10 +10,13 @@ export type GridSpanLayoutItemProps = {
   style?: CSSProperties;
 };
 
+/** gap: 单值四向相同；数组为 [水平 gapX / columnGap, 垂直 gapY / rowGap] */
+export type GridSpanGap = number | string | readonly [number | string, number | string];
+
 export type GridSpanLayoutProps = {
   rows: number;
   cols: number;
-  gap?: number | string;
+  gap?: GridSpanGap;
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
@@ -24,6 +27,16 @@ const toPositiveInt = (value: unknown, fallback: number) => {
   if (!Number.isFinite(parsed)) return fallback;
   const result = Math.floor(parsed);
   return result > 0 ? result : fallback;
+};
+
+const resolveGapStyle = (gap: GridSpanGap = 0): CSSProperties => {
+  if (typeof gap === 'number' || typeof gap === 'string') {
+    return { gap };
+  }
+  return {
+    columnGap: gap[0],
+    rowGap: gap[1],
+  };
 };
 
 const GridSpanLayoutItem: React.FC<GridSpanLayoutItemProps> = ({ children }) => <>{children}</>;
@@ -45,6 +58,7 @@ const GridSpanLayout = ((props: GridSpanLayoutProps) => {
   const safeRows = toPositiveInt(rows, 1);
   const safeCols = toPositiveInt(cols, 1);
   const childList = Children.toArray(children);
+  const gapStyle = resolveGapStyle(gap);
 
   return (
     <div
@@ -55,7 +69,7 @@ const GridSpanLayout = ((props: GridSpanLayoutProps) => {
         height: '100%',
         gridTemplateRows: `repeat(${safeRows}, minmax(0, 1fr))`,
         gridTemplateColumns: `repeat(${safeCols}, minmax(0, 1fr))`,
-        gap,
+        ...gapStyle,
         ...style,
       }}
     >

@@ -42,11 +42,11 @@ const getWidgetType = (type: number, layoutType?: number) => {
     let lyt = layoutType || 0;
     return wt + '_' + lyt;
 }
-export const widgetConfig2Nodes: any = (config: any) => {
+export const widgetConfig2Nodes: any = (config: any, element_key?: any) => {
   const gap = 50;
   const res:any = [];
   const { ios, android, common } = config;
-  const rootGroupId = nanoid();
+  const rootGroupId = element_key || nanoid();
   const platformNodes: any[] = [];
 
   const pushPlatformNodes = (platformConfig: any, groupX: number, system: string) => {

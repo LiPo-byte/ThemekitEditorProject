@@ -17,6 +17,8 @@ import fontManifest from './components/font-manifest.json';
 import { widgetConfig2Nodes } from './widget/util';
 import { iconPackConfig2Nodes } from './icon/util';
 import { wallpaperConfig2Nodes, buildWallpaperConfigJson } from './wallpaper/util';
+import { themeConfig2Nodes, buildThemeConfigJson } from './theme/util';
+
 import { buildIconPackConfigJson } from './icon/buildIconPackConfig';
 
 import { DEFAULT_CROP_PROPS } from './widget/base-config';
@@ -100,6 +102,7 @@ type EditorCoreCtxValue = {
   addWidget: (config: any) => void;
   addIconPack: (config: any) => void;
   addWallpaper: (config: any) => void;
+  addTheme: (config: any) => void;
   deleteSelectedNodes: () => void;
   undo: () => void;
   redo: () => void;
@@ -171,6 +174,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   addWidget: noopAddNodeGroup,
   addIconPack: noopAddNodeGroup,
   addWallpaper: noopAddNodeGroup,
+  addTheme: noopAddNodeGroup,
   deleteSelectedNodes: noopDeleteSelectedNodes,
   undo: () => {},
   redo: () => {},
@@ -266,9 +270,10 @@ const ELEMENT_LOADERS: Record<
   string,
   ((configJson: any, element_key?: any) => { nodes: FlowNode[]; rootNode: FlowNode } | null | undefined)
 > = {
-  widget: (configJson) => widgetConfig2Nodes(configJson),
+  widget: (configJson, element_key) => widgetConfig2Nodes(configJson, element_key),
   iconpack: (configJson, element_key) => iconPackConfig2Nodes(configJson, element_key),
   wallpaper: (configJson, element_key) => wallpaperConfig2Nodes(configJson, element_key),
+  theme: (configJson, element_key) => themeConfig2Nodes(configJson, element_key),
 };
 
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
@@ -681,6 +686,11 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     if (!rootNode) return;
     appendNodesBySlot(newNodes, rootNode);
   };
+  const addTheme = (config: any) => {
+    const { nodes: newNodes, rootNode } = themeConfig2Nodes(config);
+    if (!rootNode) return;
+    appendNodesBySlot(newNodes, rootNode);
+  };
 
   const selectedBranchNodes = useMemo(
     () => {
@@ -1007,6 +1017,18 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     config_json: buildWallpaperConfigJson(rootNode, nodes),
   });
 
+  const buildThemeElementPayload = (rootNode: FlowNode) => ({
+    element_key: rootNode.id,
+    category: 'theme',
+    subtype: 'theme',
+    x: rootNode.position?.x ?? 0,
+    y: rootNode.position?.y ?? 0,
+    visible: true,
+    locked: false,
+    schema_version: 1,
+    config_json: buildThemeConfigJson(rootNode, nodes),
+  });
+
   const ELEMENT_BUILDERS: Record<
     string,
     ((rootNode: FlowNode) => Record<string, any>) | undefined
@@ -1014,6 +1036,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     widget: buildWidgetElementPayload,
     iconpack: buildIconPackElementPayload,
     wallpaper: buildWallpaperElementPayload,
+    theme: buildThemeElementPayload,
   };
 
   const buildElementsPayloadFromNodes = () => {
@@ -1184,6 +1207,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       addWidget,
       addIconPack,
       addWallpaper,
+      addTheme,
       deleteSelectedNodes,
       undo,
       redo,
@@ -1275,6 +1299,7 @@ export const useEditorDeselectedNode = () => useContext(EditorCoreCtx).deselecte
 export const useEditorAddWidget = () => useContext(EditorCoreCtx).addWidget;
 export const useEditorAddIconPack = () => useContext(EditorCoreCtx).addIconPack;
 export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpaper;
+export const useEditorAddTheme = () => useContext(EditorCoreCtx).addTheme;
 export const useEditorDeleteSelectedNodes = () => useContext(EditorCoreCtx).deleteSelectedNodes;
 export const useEditorUndo = () => useContext(EditorCoreCtx).undo;
 export const useEditorRedo = () => useContext(EditorCoreCtx).redo;
