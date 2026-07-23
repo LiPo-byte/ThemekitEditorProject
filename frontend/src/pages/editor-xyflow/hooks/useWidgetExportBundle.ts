@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import JSZip from 'jszip';
+import type { Node as FlowNode } from '@xyflow/react';
 import { useEditorNodes } from '../context';
 import { useNodeChildElements } from './useNodeChildElements';
 import { cropMediaByUrl } from '../util/cropMediaByUrl';
@@ -28,6 +29,11 @@ export type {
   ExportProgressLevel,
   ExportProgressLine,
 } from './exportBundleShared';
+
+export type WidgetExportFile = {
+  filename: string;
+  blob: Blob;
+};
 
 type SizeLabel = WidgetSizeLabel;
 
@@ -216,6 +222,308 @@ const getExportRule = (params: {
   return WIDGET_EXPORT_FILE_RULES.default[sizeLabel][mode];
 };
 
+const getNodeSelectorById = (nodeId: string) => {
+  if (!nodeId) return '';
+  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+    return `.xyflow-stage .react-flow__node[data-id="${CSS.escape(nodeId)}"]`;
+  }
+  return `.xyflow-stage .react-flow__node[data-id="${nodeId}"]`;
+};
+
+const resolveWidgetChildContext = (nodes: FlowNode[], nodeId?: string) => {
+  if (!nodeId) {
+    return { childNodes: [] as FlowNode[], elementById: new Map<string, HTMLElement>() };
+  }
+  const childNodes = nodes.filter((node) => node.parentId === nodeId);
+  const elementById = new Map<string, HTMLElement>();
+  if (typeof document !== 'undefined') {
+    childNodes.forEach((node) => {
+      const selector = getNodeSelectorById(String(node.id));
+      if (!selector) return;
+      const element = document.querySelector(selector) as HTMLElement | null;
+      if (element) elementById.set(String(node.id), element);
+    });
+  }
+  return { childNodes, elementById };
+};
+
+/**
+ * 收集 Widget 可导出资源（不打包、不下载）。
+ * nodeId 应为 platform_group（与单品导出一致）。
+ */
+export const collectWidgetExportFiles = async (
+  nodes: FlowNode[],
+  nodeId?: string,
+  options?: ExportBundleOptions,
+): Promise<WidgetExportFile[] | null> => {
+  const pushLine = (level: ExportProgressLevel, text: string) => {
+    options?.onProgressLine?.({ level, text });
+  };
+
+  const { childNodes, elementById } = resolveWidgetChildContext(nodes, nodeId);
+  if (!childNodes.length || !elementById.size) {
+    pushLine('warning', '未获取到可导出的子节点');
+    options?.onWarning?.('未获取到可导出的子节点');
+    return null;
+  }
+
+  pushLine('info', '开始收集 Widget 资源...');
+  const files: WidgetExportFile[] = [];
+  const pushFile = (filename: string, blob: Blob) => {
+    files.push({ filename, blob });
+    pushLine('success', `生成 ${filename}`);
+  };
+
+  const selectedNode = nodes.find(
+    (node) => String(node.id) === String(nodeId),
+  );
+  const selectedNodeData = ((selectedNode?.data as Record<
+    string,
+    unknown
+  > | null) ?? {}) as Record<string, unknown>;
+  const childConfigs = childNodes
+    .map((node: any) => ({ ...(node?.data ?? {}) }))
+    .filter((config) => Object.keys(config).length > 0)
+    .sort((a: any, b: any) => Number(a?.size ?? 0) - Number(b?.size ?? 0));
+  const widgetsSpec = sanitizeWidgetsSpec({
+    ...selectedNodeData,
+    sizes: childConfigs,
+  });
+  const type: any = selectedNodeData ? selectedNodeData.type : 1;
+  pushFile(
+    'widgets_spec.json',
+    new Blob([JSON.stringify(widgetsSpec, null, 2)], {
+      type: 'application/json',
+    }),
+  );
+
+  const weatherImageEntries = [
+    { key: 'cloud', source: (selectedNodeData as any)?.imageCloud?.source },
+    { key: 'rain', source: (selectedNodeData as any)?.imageRain?.source },
+    { key: 'snow', source: (selectedNodeData as any)?.imageSnow?.source },
+    { key: 'sun', source: (selectedNodeData as any)?.imageSun?.source },
+    { key: 'thunder', source: (selectedNodeData as any)?.imageThunder?.source },
+    { key: 'wind', source: (selectedNodeData as any)?.imageWind?.source },
+  ];
+  for (let imageIndex = 0; imageIndex < weatherImageEntries.length; imageIndex += 1) {
+    const { key, source: imageSource } = weatherImageEntries[imageIndex];
+    if (!imageSource || typeof imageSource !== 'string') continue;
+    const filename = `image_${key}.png`;
+    try {
+      const imageBlob = await toPngBlobFromUrl(imageSource);
+      pushFile(filename, imageBlob);
+    } catch {
+      pushLine('warning', `跳过 ${filename}（资源下载失败）`);
+    }
+  }
+
+  const clockImageEntries = [
+    { key: 'minute_clock', source: (selectedNodeData as any)?.minuteClock?.source },
+    { key: 'hour_clock', source: (selectedNodeData as any)?.hourClock?.source },
+    { key: 'dot_clock', source: (selectedNodeData as any)?.dotClock?.source },
+    { key: 'dial_large_clock', source: (selectedNodeData as any)?.dialLargeClock?.source },
+    { key: 'dial_small_clock', source: (selectedNodeData as any)?.dialSmallClock?.source },
+  ];
+  for (let imageIndex = 0; imageIndex < clockImageEntries.length; imageIndex += 1) {
+    const { key, source: imageSource } = clockImageEntries[imageIndex];
+    if (!imageSource || typeof imageSource !== 'string') continue;
+    const filename = `widgets_${key}.png`;
+    try {
+      const imageBlob = await toPngBlobFromUrl(imageSource);
+      pushFile(filename, imageBlob);
+    } catch {
+      pushLine('warning', `跳过 ${filename}（资源下载失败）`);
+    }
+  }
+
+  for (let index = 0; index < childNodes.length; index += 1) {
+    const childNode = childNodes[index] as any;
+    const childNodeId = String(childNode?.id ?? '');
+    const targetElement = elementById.get(childNodeId) ?? null;
+    if (!targetElement) continue;
+
+    const data = (childNode?.data ?? {}) as any;
+    const source = data?.source;
+    const batteryEntries = [
+      { key: 'battery_20', source: data?.battery_20?.source },
+      { key: 'battery_40', source: data?.battery_40?.source },
+      { key: 'battery_60', source: data?.battery_60?.source },
+      { key: 'battery_80', source: data?.battery_80?.source },
+      { key: 'battery_100', source: data?.battery_100?.source },
+    ].filter((item) => typeof item.source === 'string' && item.source);
+    const batterySources = batteryEntries.map((item) => item.source as string);
+    const isDynamic =
+      Boolean(data?.firstImageAnimation) ||
+      Boolean(data?.secondImageAnimation) ||
+      isGifSource(source);
+
+    const sizeNumber = Number(data?.size ?? 0);
+    const sizeLabel =
+      SIZE_LABEL_MAP[sizeNumber] ?? `size_${sizeNumber || index + 1}`;
+    const platform = resolvePlatform(childNode?.parentId);
+    const layoutType = Number(data?.layoutType ?? 0);
+    const fixedRule = SIZE_LABEL_MAP[sizeNumber]
+      ? getExportRule({
+          sizeLabel: SIZE_LABEL_MAP[sizeNumber],
+          platform,
+          layoutType,
+          mode: data?.isGif ? 'dynamic' : 'static',
+        })
+      : null;
+    const sizeConfig = getSizeConfig(sizeNumber);
+    const timejpgWidth = fixedRule?.timejpg.width ?? sizeConfig.width;
+    const timejpgHeight = fixedRule?.timejpg.height ?? sizeConfig.height;
+    const timegifWidth = fixedRule?.timegif.width ?? sizeConfig.width;
+    const timegifHeight = fixedRule?.timegif.height ?? sizeConfig.height;
+    const previewWidth = fixedRule?.preview.width ?? sizeConfig.width;
+    const previewHeight = fixedRule?.preview.height ?? sizeConfig.height;
+    const normalizedCropProps = normalizeCropProps(data?.crop_props ?? {});
+    pushLine('info', `开始处理 widgets_${sizeLabel}...`);
+
+    const { jpegBlob, gifBlob } = await cropMediaByUrl(source, {
+      transform: normalizedCropProps,
+      targetElement,
+      gifOutputWidth: timegifWidth,
+      gifOutputHeight: timegifHeight,
+      jpegOutputWidth: timejpgWidth,
+      jpegOutputHeight: timejpgHeight,
+      jpegQuality: EXPORT_JPEG_QUALITY,
+      outputScale: 1,
+      renderScale: 2,
+      resizeMode: 'stretch',
+    });
+    if (!jpegBlob) {
+      pushLine('warning', `跳过 ${sizeLabel} 主图（未找到 source）`);
+    } else {
+      const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}`;
+      pushFile(`${expectedFilename}.jpg`, jpegBlob);
+      pushLine(
+        'info',
+        `${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
+      );
+      if (gifBlob) {
+        pushFile(`${expectedFilename}.gif`, gifBlob);
+        pushLine(
+          'info',
+          `${expectedFilename}.gif ${formatSizeText(timegifWidth, timegifHeight)}`,
+        );
+      }
+    }
+
+    if (source) {
+      const previewBlob = await generateElementPreview(targetElement, {
+        isGif: isDynamic,
+        sourceUrl: source,
+        scale: EXPORT_PREVIEW_SCALE,
+        jpegQuality: EXPORT_JPEG_QUALITY,
+        outputWidth: previewWidth,
+        outputHeight: previewHeight,
+      });
+      if (previewBlob) {
+        const previewName = `widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'}`;
+        pushFile(previewName, previewBlob);
+        pushLine(
+          'info',
+          `${previewName} ${formatSizeText(previewWidth, previewHeight)}`,
+        );
+      }
+    }
+
+    if (batterySources.length) {
+      const previewBlob = await generateElementPreview(targetElement, {
+        isGif: true,
+        fps: 1,
+        durationMs: batterySources.length * 1000,
+        scale: EXPORT_PREVIEW_SCALE,
+        outputWidth: previewWidth,
+        outputHeight: previewHeight,
+      });
+      if (previewBlob) {
+        pushFile(`widgets_${sizeLabel}_preview.gif`, previewBlob);
+        pushLine(
+          'info',
+          `widgets_${sizeLabel}_preview.gif ${formatSizeText(previewWidth, previewHeight)}`,
+        );
+      }
+      const promislist = batteryEntries.map((bs: any) => {
+        return toPngBlobFromUrl(bs.source, {
+          width: timejpgWidth,
+          height: timejpgHeight,
+          mimeType: 'image/jpeg',
+        }).then((jpegBlob) => {
+          if (!jpegBlob) return;
+          const expectedFilename = `widgets_${sizeLabel}_${bs.key}`;
+          pushFile(`${expectedFilename}.jpg`, jpegBlob);
+          pushLine(
+            'info',
+            `${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
+          );
+        });
+      });
+      await Promise.all(promislist);
+    }
+
+    const firstAnimationSource = data?.firstImageAnimation?.source;
+    if (firstAnimationSource) {
+      const firstAnimationBlob = await toPngBlobFromUrl(firstAnimationSource);
+      pushFile(`widgets_${sizeLabel}_animation_first.png`, firstAnimationBlob);
+    }
+
+    const secondAnimationSource = data?.secondImageAnimation?.source;
+    if (secondAnimationSource) {
+      const secondAnimationBlob = await toPngBlobFromUrl(secondAnimationSource);
+      pushFile(`widgets_${sizeLabel}_animation_second.png`, secondAnimationBlob);
+    }
+
+    const thirdImageAnimationSource = data?.thirdImageAnimation?.source;
+    if (thirdImageAnimationSource) {
+      const thirdAnimationBlob = await toPngBlobFromUrl(thirdImageAnimationSource);
+      pushFile(`widgets_${sizeLabel}_animation_third.png`, thirdAnimationBlob);
+    }
+
+    const fourthImageAnimationSource = data?.fourthImageAnimation?.source;
+    if (fourthImageAnimationSource) {
+      const fourthAnimationBlob = await toPngBlobFromUrl(fourthImageAnimationSource);
+      pushFile(`widgets_${sizeLabel}_animation_fourth.png`, fourthAnimationBlob);
+    }
+
+    const musicPlayerSource = data?.player?.source;
+    if (musicPlayerSource) {
+      const musicPlayerBlob = await toPngBlobFromUrl(musicPlayerSource);
+      pushFile(`widgets_${sizeLabel}_player.png`, musicPlayerBlob);
+    }
+
+    if (Array.isArray(data?.appLinks) && data?.appLinksSource) {
+      const appLinksSource = Array.isArray(data?.appLinksSource)
+        ? data.appLinksSource
+        : [];
+      for (let appLinkIndex = 0; appLinkIndex < data.appLinks.length; appLinkIndex += 1) {
+        const linkSource = appLinksSource[appLinkIndex]?.source;
+        const filename = `link${sizeLabel}_${appLinkIndex + 1}.png`;
+        if (!linkSource || typeof linkSource !== 'string') {
+          pushLine('warning', `跳过 ${filename}（未找到 appLinksSource）`);
+          continue;
+        }
+        try {
+          const linkBlob = await toPngBlobFromUrl(linkSource);
+          pushFile(filename, linkBlob);
+        } catch {
+          pushLine('warning', `跳过 ${filename}（资源下载失败）`);
+        }
+      }
+    }
+  }
+
+  if (!files.length || (files.length === 1 && files[0].filename === 'widgets_spec.json')) {
+    pushLine('warning', '没有可导出的文件');
+    options?.onWarning?.('没有可导出的文件');
+    return [];
+  }
+
+  pushLine('success', `Widget 资源收集完成，共 ${files.length} 个文件`);
+  return files;
+};
+
 export const useWidgetExportBundle = (nodeId?: string) => {
   const nodes = useEditorNodes();
   const { elements, childNodes } = useNodeChildElements(nodeId);
@@ -235,278 +543,14 @@ export const useWidgetExportBundle = (nodeId?: string) => {
 
     setExporting(true);
     try {
-      pushLine('info', '开始导出资源...');
-      const elementById = new Map<string, HTMLElement>();
-      elements.forEach((element) => {
-        const id = element.dataset.id;
-        if (!id) return;
-        elementById.set(id, element);
-      });
-
-      const zip = new JSZip();
-      const selectedNode = nodes.find(
-        (node) => String(node.id) === String(nodeId),
-      );
-      const selectedNodeData = ((selectedNode?.data as Record<
-        string,
-        unknown
-      > | null) ?? {}) as Record<string, unknown>;
-      const childConfigs = childNodes
-        .map((node: any) => ({ ...(node?.data ?? {}) }))
-        .filter((config) => Object.keys(config).length > 0)
-        .sort((a: any, b: any) => Number(a?.size ?? 0) - Number(b?.size ?? 0));
-      const widgetsSpec = sanitizeWidgetsSpec({
-        ...selectedNodeData,
-        sizes: childConfigs,
-      });
-      const type:any = selectedNodeData ? selectedNodeData.type : 1;
-      zip.file('widgets_spec.json', JSON.stringify(widgetsSpec, null, 2));
-      pushLine('success', '生成 widgets_spec.json');
-      const weatherImageEntries = [
-        { key: 'cloud', source: (selectedNodeData as any)?.imageCloud?.source },
-        { key: 'rain', source: (selectedNodeData as any)?.imageRain?.source },
-        { key: 'snow', source: (selectedNodeData as any)?.imageSnow?.source },
-        { key: 'sun', source: (selectedNodeData as any)?.imageSun?.source },
-        { key: 'thunder', source: (selectedNodeData as any)?.imageThunder?.source },
-        { key: 'wind', source: (selectedNodeData as any)?.imageWind?.source },
-      ];
-      for (let imageIndex = 0; imageIndex < weatherImageEntries.length; imageIndex += 1) {
-        const { key, source: imageSource } = weatherImageEntries[imageIndex];
-        if (!imageSource || typeof imageSource !== 'string') continue;
-        const filename = `image_${key}.png`;
-        try {
-          const imageBlob = await toPngBlobFromUrl(imageSource);
-          zip.file(filename, imageBlob);
-          pushLine('success', `生成 ${filename}`);
-        } catch {
-          pushLine('warning', `跳过 ${filename}（资源下载失败）`);
-        }
-      }
-
-      const clockImageEntries = [
-        { key: 'minute_clock', source: (selectedNodeData as any)?.minuteClock?.source },
-        { key: 'hour_clock', source: (selectedNodeData as any)?.hourClock?.source },
-        { key: 'dot_clock', source: (selectedNodeData as any)?.dotClock?.source },
-        { key: 'dial_large_clock', source: (selectedNodeData as any)?.dialLargeClock?.source },
-        { key: 'dial_small_clock', source: (selectedNodeData as any)?.dialSmallClock?.source },
-      ]
-      for (let imageIndex = 0; imageIndex < clockImageEntries.length; imageIndex += 1) {
-        const { key, source: imageSource } = clockImageEntries[imageIndex];
-        if (!imageSource || typeof imageSource !== 'string') continue;
-        const filename = `widgets_${key}.png`;
-        try {
-          const imageBlob = await toPngBlobFromUrl(imageSource);
-          zip.file(filename, imageBlob);
-          pushLine('success', `生成 ${filename}`);
-        } catch {
-          pushLine('warning', `跳过 ${filename}（资源下载失败）`);
-        }
-      }
-
-      for (let index = 0; index < childNodes.length; index += 1) {
-        const childNode = childNodes[index] as any;
-        const childNodeId = String(childNode?.id ?? '');
-        const targetElement = elementById.get(childNodeId) ?? null;
-        if (!targetElement) continue;
-
-        const data = (childNode?.data ?? {}) as any;
-        const source = data?.source;
-        const batteryEntries = [
-          { key: 'battery_20', source: data?.battery_20?.source },
-          { key: 'battery_40', source: data?.battery_40?.source },
-          { key: 'battery_60', source: data?.battery_60?.source },
-          { key: 'battery_80', source: data?.battery_80?.source },
-          { key: 'battery_100', source: data?.battery_100?.source },
-        ].filter((item) => typeof item.source === 'string' && item.source);
-        const batterySources = batteryEntries.map((item) => item.source as string);
-        const isDynamic =
-          Boolean(data?.firstImageAnimation) ||
-          Boolean(data?.secondImageAnimation) ||
-          isGifSource(source)
-
-        const sizeNumber = Number(data?.size ?? 0);
-        const sizeLabel =
-          SIZE_LABEL_MAP[sizeNumber] ?? `size_${sizeNumber || index + 1}`;
-        const platform = resolvePlatform(childNode?.parentId);
-        const layoutType = Number(data?.layoutType ?? 0);
-        const fixedRule = SIZE_LABEL_MAP[sizeNumber]
-          ? getExportRule({
-              sizeLabel: SIZE_LABEL_MAP[sizeNumber],
-              platform,
-              layoutType,
-              mode: data?.isGif ? 'dynamic' : 'static',
-            })
-          : null;
-        const sizeConfig = getSizeConfig(sizeNumber);
-        const timejpgWidth = fixedRule?.timejpg.width ?? sizeConfig.width;
-        const timejpgHeight = fixedRule?.timejpg.height ?? sizeConfig.height;
-        const timegifWidth = fixedRule?.timegif.width ?? sizeConfig.width;
-        const timegifHeight = fixedRule?.timegif.height ?? sizeConfig.height;
-        const previewWidth = fixedRule?.preview.width ?? sizeConfig.width;
-        const previewHeight = fixedRule?.preview.height ?? sizeConfig.height;
-        const normalizedCropProps = normalizeCropProps(data?.crop_props ?? {});
-        pushLine('info', `开始处理 widgets_${sizeLabel}...`);
-
-
-        const { jpegBlob, gifBlob } = await cropMediaByUrl(source, {
-          transform: normalizedCropProps,
-          targetElement,
-          gifOutputWidth: timegifWidth,
-          gifOutputHeight: timegifHeight,
-          jpegOutputWidth: timejpgWidth,
-          jpegOutputHeight: timejpgHeight,
-          jpegQuality: EXPORT_JPEG_QUALITY,
-          outputScale: 1,
-          renderScale: 2,
-          resizeMode: 'stretch',
-        });
-        if (!jpegBlob) {
-          pushLine('warning', `跳过 ${sizeLabel} 主图（未找到 source）`);
-        } else {
-          //   const ext = isGif ? 'gif' : 'jpg';
-          // const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}.${ext}`;
-          const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}`;
-          zip.file(`${expectedFilename}.jpg`, jpegBlob);
-          pushLine(
-            'success',
-            `生成 ${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
-          );
-          if (gifBlob) {
-            zip.file(`${expectedFilename}.gif`, gifBlob);
-            pushLine(
-              'success',
-              `生成 ${expectedFilename}.gif ${formatSizeText(timegifWidth, timegifHeight)}`,
-            );
-          }
-        }
-
-        if (source) {
-          // pushLine('warning', `跳过 widgets_${sizeLabel}_preview（未找到 source）`);
-          const previewBlob = await generateElementPreview(targetElement, {
-            isGif: isDynamic,
-            sourceUrl: source,
-            scale: EXPORT_PREVIEW_SCALE,
-            jpegQuality: EXPORT_JPEG_QUALITY,
-            outputWidth: previewWidth,
-            outputHeight: previewHeight,
-          });
-          zip.file(`widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'}`, previewBlob);
-          pushLine(
-            'success',
-            `生成 widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'} ${formatSizeText(previewWidth, previewHeight)}`,
-          );
-        }
-
-        if (batterySources.length) {
-          const previewBlob = await generateElementPreview(targetElement, {
-            isGif: true,
-            fps: 1,
-            durationMs: batterySources.length * 1000,
-            scale: EXPORT_PREVIEW_SCALE,
-            outputWidth: previewWidth,
-            outputHeight: previewHeight,
-          });
-          zip.file(`widgets_${sizeLabel}_preview.gif`, previewBlob);
-          pushLine(
-            'success',
-            `生成 widgets_${sizeLabel}_preview.gif ${formatSizeText(previewWidth, previewHeight)}`,
-          );
-          const promislist = batteryEntries.map((bs: any) => {
-            return toPngBlobFromUrl(bs.source, { width: timejpgWidth, height: timejpgHeight, mimeType: 'image/jpeg' }).then(jpegBlob => {
-              if (!jpegBlob) return;
-              const expectedFilename = `widgets_${sizeLabel}_${bs.key}`;
-              zip.file(`${expectedFilename}.jpg`, jpegBlob);
-              pushLine(
-                'success',
-                `生成 ${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
-              );
-            })
-          })
-          await Promise.all(promislist);
-        }
-
-
-        const firstAnimationSource = data?.firstImageAnimation?.source;
-        if (firstAnimationSource) {
-          const firstAnimationBlob = await toPngBlobFromUrl(firstAnimationSource);
-          zip.file(
-            `widgets_${sizeLabel}_animation_first.png`,
-            firstAnimationBlob,
-          );
-          pushLine('success', `生成 widgets_${sizeLabel}_animation_first.png`);
-        }
-
-
-        const secondAnimationSource = data?.secondImageAnimation?.source;
-        if (secondAnimationSource) {
-          const secondAnimationBlob = await toPngBlobFromUrl(secondAnimationSource);
-          zip.file(
-            `widgets_${sizeLabel}_animation_second.png`,
-            secondAnimationBlob,
-          );
-          pushLine('success', `生成 widgets_${sizeLabel}_animation_second.png`);
-        }
-
-        const thirdImageAnimationSource = data?.thirdImageAnimation?.source;
-        if (thirdImageAnimationSource) {
-          const thirdAnimationBlob = await toPngBlobFromUrl(thirdImageAnimationSource);
-          zip.file(
-            `widgets_${sizeLabel}_animation_third.png`,
-            thirdAnimationBlob,
-          );
-          pushLine('success', `生成 widgets_${sizeLabel}_animation_third.png`);
-        }
-
-        const fourthImageAnimationSource = data?.fourthImageAnimation?.source;
-        if (fourthImageAnimationSource) {
-          const fourthAnimationBlob = await toPngBlobFromUrl(fourthImageAnimationSource);
-          zip.file(
-            `widgets_${sizeLabel}_animation_fourth.png`,
-            fourthAnimationBlob,
-          );
-          pushLine('success', `生成 widgets_${sizeLabel}_animation_fourth.png`);
-        }
-
-        const musicPlayerSource = data?.player?.source;
-        if (musicPlayerSource) {
-          const musicPlayerBlob = await toPngBlobFromUrl(musicPlayerSource);
-          zip.file(
-            `widgets_${sizeLabel}_player.png`,
-            musicPlayerBlob,
-          );
-          pushLine('success', `生成 widgets_${sizeLabel}_player.png`);
-        }
-
-        if (Array.isArray(data?.appLinks) && data?.appLinksSource) {
-          const appLinksSource = Array.isArray(data?.appLinksSource)
-            ? data.appLinksSource
-            : [];
-          for (let appLinkIndex = 0; appLinkIndex < data.appLinks.length; appLinkIndex += 1) {
-            const linkSource = appLinksSource[appLinkIndex]?.source;
-            const filename = `link${sizeLabel}_${appLinkIndex + 1}.png`;
-            if (!linkSource || typeof linkSource !== 'string') {
-              pushLine('warning', `跳过 ${filename}（未找到 appLinksSource）`);
-              continue;
-            }
-            try {
-              const linkBlob = await toPngBlobFromUrl(linkSource);
-              zip.file(filename, linkBlob);
-              pushLine('success', `生成 ${filename}`);
-            } catch {
-              pushLine('warning', `跳过 ${filename}（资源下载失败）`);
-            }
-          }
-        }
-      }
-
-      const fileCount = Object.keys(zip.files).length;
-      if (!fileCount || (fileCount === 1 && zip.files['widgets_spec.json'])) {
-        pushLine('warning', '没有可导出的文件');
-        options?.onWarning?.('没有可导出的文件');
-        return;
-      }
+      const files = await collectWidgetExportFiles(nodes, nodeId, options);
+      if (!files?.length) return;
 
       pushLine('info', '正在打包 zip...');
+      const zip = new JSZip();
+      for (const file of files) {
+        zip.file(file.filename, file.blob);
+      }
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       downloadBlob(zipBlob, `widgets-export-${Date.now()}.zip`);
       pushLine('success', '导出完成');

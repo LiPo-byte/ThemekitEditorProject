@@ -60,6 +60,108 @@ const sanitizeFileToken = (value: string) =>
     .replace(/\s+/g, '_')
     .replace(/[^a-z0-9_\-]/g, '');
 
+export type WallpaperExportFile = {
+  filename: string;
+  blob: Blob;
+};
+
+/**
+ * 收集 Wallpaper 可导出资源（不打包、不下载）。
+ * nodeId 为 wallpaper 根 group 下任意节点均可。
+ */
+export const collectWallpaperExportFiles = async (
+  nodes: FlowNode[],
+  nodeId?: string,
+  options?: ExportBundleOptions,
+): Promise<WallpaperExportFile[] | null> => {
+  const pushLine = (level: ExportProgressLevel, text: string) => {
+    options?.onProgressLine?.({ level, text });
+  };
+
+  const rootNode = findRootGroupNode(nodes, nodeId);
+  if (!rootNode || getNodeData(rootNode).category !== 'wallpaper') {
+    pushLine('warning', '当前选中节点不属于 wallpaper');
+    options?.onWarning?.('当前选中节点不属于 wallpaper');
+    return null;
+  }
+
+  pushLine('info', '开始收集 Wallpaper 资源...');
+  const files: WallpaperExportFile[] = [];
+
+  // const configJson = buildWallpaperConfigJson(rootNode, nodes);
+  // files.push({
+  //   filename: 'wallpaper_spec.json',
+  //   blob: new Blob([JSON.stringify(configJson, null, 2)], {
+  //     type: 'application/json',
+  //   }),
+  // });
+  // pushLine('success', '生成 wallpaper_spec.json');
+
+  const platformGroups = nodes.filter(
+    (node) =>
+      node.type === 'platform_group' && node.parentId === rootNode.id,
+  );
+  const platformIds = new Set(platformGroups.map((node) => node.id));
+  const wallpaperNodes = nodes.filter(
+    (node) =>
+      node.type === 'wallpaper' &&
+      Boolean(node.parentId) &&
+      platformIds.has(node.parentId as string),
+  );
+
+  for (let index = 0; index < wallpaperNodes.length; index += 1) {
+    const wallpaperNode = wallpaperNodes[index];
+    const data = getNodeData(wallpaperNode);
+    const name = sanitizeFileToken(
+      String(data.name ?? wallpaperNode.id ?? `wallpaper_${index}`),
+    );
+    const filename = `${name || 'wallpaper'}.jpg`;
+    const outputWidth =
+      Number(data.width) > 0 ? Number(data.width) : DEFAULT_WALLPAPER_WIDTH;
+    const outputHeight =
+      Number(data.height) > 0
+        ? Number(data.height)
+        : DEFAULT_WALLPAPER_HEIGHT;
+    const targetElement = queryNodeElement(String(wallpaperNode.id));
+    const source = data.source;
+
+    pushLine('info', `开始处理 ${filename}...`);
+
+    if (source && typeof source === 'string') {
+      try {
+        const { jpegBlob } = await cropMediaByUrl(source, {
+          transform: normalizeCropProps(data.crop_props),
+          targetElement,
+          jpegOutputWidth: outputWidth,
+          jpegOutputHeight: outputHeight,
+          jpegQuality: EXPORT_JPEG_QUALITY,
+          outputScale: 1,
+          renderScale: 2,
+          resizeMode: 'stretch',
+        });
+        if (!jpegBlob) {
+          pushLine('warning', `跳过 ${filename}（裁剪失败）`);
+          continue;
+        }
+        files.push({ filename, blob: jpegBlob });
+        pushLine('success', `生成 ${filename}`);
+        continue;
+      } catch {
+        pushLine('warning', `${filename} 裁剪失败，尝试截图导出...`);
+      }
+    }
+  }
+
+  if (!files.length) {
+    pushLine('warning', '没有可导出的文件');
+    options?.onWarning?.('没有可导出的文件');
+    return [];
+  }
+
+  pushLine('success', `Wallpaper 资源收集完成，共 ${files.length} 个文件`);
+  return files;
+};
+
 export const useWallpaperExportBundle = (nodeId?: string) => {
   const nodes = useEditorNodes();
   const [exporting, setExporting] = useState(false);
@@ -72,91 +174,16 @@ export const useWallpaperExportBundle = (nodeId?: string) => {
 
       if (exporting) return;
 
-      const rootNode = findRootGroupNode(nodes, nodeId);
-      if (!rootNode || getNodeData(rootNode).category !== 'wallpaper') {
-        pushLine('warning', '当前选中节点不属于 wallpaper');
-        options?.onWarning?.('当前选中节点不属于 wallpaper');
-        return;
-      }
-
       setExporting(true);
       try {
-        pushLine('info', '开始导出 Wallpaper 资源...');
-        const zip = new JSZip();
-
-        // const configJson = buildWallpaperConfigJson(rootNode, nodes);
-        // zip.file('wallpaper_spec.json', JSON.stringify(configJson, null, 2));
-        // pushLine('success', '生成 wallpaper_spec.json');
-        // console.log(configJson, 'configJson')
-
-        const platformGroups = nodes.filter(
-          (node) =>
-            node.type === 'platform_group' && node.parentId === rootNode.id,
-        );
-        const platformIds = new Set(platformGroups.map((node) => node.id));
-        const wallpaperNodes = nodes.filter(
-          (node) =>
-            node.type === 'wallpaper' &&
-            Boolean(node.parentId) &&
-            platformIds.has(node.parentId as string),
-        );
-
-        for (let index = 0; index < wallpaperNodes.length; index += 1) {
-          const wallpaperNode = wallpaperNodes[index];
-          const data = getNodeData(wallpaperNode);
-          const name = sanitizeFileToken(
-            String(data.name ?? wallpaperNode.id ?? `wallpaper_${index}`),
-          );
-          const filename = `${name || 'wallpaper'}.jpg`;
-          const outputWidth =
-            Number(data.width) > 0 ? Number(data.width) : DEFAULT_WALLPAPER_WIDTH;
-          const outputHeight =
-            Number(data.height) > 0
-              ? Number(data.height)
-              : DEFAULT_WALLPAPER_HEIGHT;
-          const targetElement = queryNodeElement(String(wallpaperNode.id));
-          const source = data.source;
-
-          pushLine('info', `开始处理 ${filename}...`);
-
-          if (source && typeof source === 'string') {
-            try {
-              const { jpegBlob } = await cropMediaByUrl(source, {
-                transform: normalizeCropProps(data.crop_props),
-                targetElement,
-                jpegOutputWidth: outputWidth,
-                jpegOutputHeight: outputHeight,
-                jpegQuality: EXPORT_JPEG_QUALITY,
-                outputScale: 1,
-                renderScale: 2,
-                resizeMode: 'stretch',
-              });
-              if (!jpegBlob) {
-                pushLine('warning', `跳过 ${filename}（裁剪失败）`);
-                continue;
-              }
-              zip.file(filename, jpegBlob);
-              pushLine('success', `生成 ${filename}`);
-              continue;
-            } catch {
-              pushLine('warning', `${filename} 裁剪失败，尝试截图导出...`);
-            }
-          }
-
-          // if (!targetElement) {
-          //   pushLine('warning', `跳过 ${filename}（未找到 source / DOM 节点）`);
-          //   continue;
-          // }
-        }
-
-        const fileCount = Object.keys(zip.files).length;
-        if (!fileCount || (fileCount === 1 && zip.files['wallpaper_spec.json'])) {
-          pushLine('warning', '没有可导出的文件');
-          options?.onWarning?.('没有可导出的文件');
-          return;
-        }
+        const files = await collectWallpaperExportFiles(nodes, nodeId, options);
+        if (!files?.length) return;
 
         pushLine('info', '正在打包 zip...');
+        const zip = new JSZip();
+        for (const file of files) {
+          zip.file(file.filename, file.blob);
+        }
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         downloadBlob(zipBlob, `wallpaper-export-${Date.now()}.zip`);
         pushLine('success', '导出完成');

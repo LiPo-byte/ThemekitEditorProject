@@ -4,6 +4,18 @@ import type { Node as FlowNode } from '@xyflow/react';
 import { useEditorNodes } from '../context';
 import { generateElementPreview } from '../util/generateElementPreview';
 import {
+  collectIconPackExportFiles,
+  type IconPackExportFile,
+} from './useIconPackExportBundle';
+import {
+  collectWidgetExportFiles,
+  type WidgetExportFile,
+} from './useWidgetExportBundle';
+import {
+  collectWallpaperExportFiles,
+  type WallpaperExportFile,
+} from './useWallpaperExportBundle';
+import {
   findRootGroupNode,
   type ExportBundleOptions,
   type ExportProgressLevel,
@@ -91,8 +103,209 @@ const collectThemeSurfaceNodes = (
   return surfaces;
 };
 
+/** 从 theme 各预览面读取 selectElements（与 buildThemeConfigJson 一致，后者覆盖前者） */
+const resolveThemeSelectElements = (
+  rootNode: FlowNode,
+  nodes: FlowNode[],
+): Record<string, any> => {
+  const platformNodes = nodes
+    .filter(
+      (node) =>
+        node.type === 'platform_group' && node.parentId === rootNode.id,
+    )
+    .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
+
+  let selectElements: Record<string, any> = {};
+  platformNodes.forEach((platformNode) => {
+    const platformData = getNodeData(platformNode);
+    const key = String(platformData.label || platformData.themekitType || '');
+    if (!key) return;
+    const surfaceNode = nodes.find(
+      (node) =>
+        node.parentId === platformNode.id &&
+        (node.type === key || String(getNodeData(node).key ?? '') === key),
+    );
+    const data = getNodeData(surfaceNode);
+    if (data.selectElements && typeof data.selectElements === 'object') {
+      selectElements = data.selectElements;
+    }
+  });
+  return selectElements;
+};
+
+/** 收集 selectElements.apps 关联的 iconpack 导出资源列表 */
+const collectThemeIconPackAssets = async (
+  nodes: FlowNode[],
+  selectElements: Record<string, any>,
+  options?: ExportBundleOptions,
+): Promise<Array<IconPackExportFile & { elementKey: string }>> => {
+  const pushLine = (level: ExportProgressLevel, text: string) => {
+    options?.onProgressLine?.({ level, text });
+  };
+
+  const appKeys = Array.isArray(selectElements?.apps)
+    ? selectElements.apps.map((key: unknown) => String(key)).filter(Boolean)
+    : [];
+
+  if (!appKeys.length) {
+    pushLine('info', 'selectElements.apps 为空，跳过 icon 资源收集');
+    return [];
+  }
+
+  pushLine('info', `开始收集关联 iconpack 资源（${appKeys.length} 个）...`);
+  const result: Array<IconPackExportFile & { elementKey: string }> = [];
+
+  for (const elementKey of appKeys) {
+    pushLine('info', `收集 iconpack: ${elementKey}`);
+    const files = await collectIconPackExportFiles(nodes, elementKey, options);
+    if (!files?.length) {
+      pushLine('warning', `iconpack ${elementKey} 无可导出资源`);
+      continue;
+    }
+    for (const file of files) {
+      result.push({ ...file, elementKey });
+      pushLine(
+        'success',
+        `icon 资源: [${elementKey}] ${file.kind}/${file.key} → ${file.filename}`,
+      );
+    }
+  }
+
+  pushLine('info', `icon 资源列表共 ${result.length} 个文件`);
+  return result;
+};
+
+/** 仅 1 个时原名；多个时在扩展名前加 _1 / _2 … */
+const withExportIndex = (
+  filename: string,
+  index: number,
+  total: number,
+): string => {
+  if (total <= 1) return filename;
+  const dot = filename.lastIndexOf('.');
+  if (dot <= 0) return `${filename}_${index}`;
+  return `${filename.slice(0, dot)}_${index}${filename.slice(dot)}`;
+};
+
+/** 解析 selectElements.widgets 条目 → platform_group id */
+const resolveWidgetPlatformGroupId = (
+  nodes: FlowNode[],
+  selectionKey: string,
+): string | null => {
+  const [elementKeyRaw, systemRaw] = String(selectionKey).split(',');
+  const elementKey = String(elementKeyRaw || '').trim();
+  const system = String(systemRaw || 'common').trim() || 'common';
+  if (!elementKey) return null;
+
+  const platformNode = nodes.find(
+    (node) =>
+      node.type === 'platform_group' &&
+      String(node.parentId) === elementKey &&
+      String(getNodeData(node).label || '') === system,
+  );
+  return platformNode ? String(platformNode.id) : null;
+};
+
+/** 收集 selectElements.widgets 关联资源，并按数量决定是否加 _1/_2 */
+const collectThemeWidgetAssets = async (
+  nodes: FlowNode[],
+  selectElements: Record<string, any>,
+  options?: ExportBundleOptions,
+): Promise<WidgetExportFile[]> => {
+  const pushLine = (level: ExportProgressLevel, text: string) => {
+    options?.onProgressLine?.({ level, text });
+  };
+
+  const widgetKeys = Array.isArray(selectElements?.widgets)
+    ? selectElements.widgets.map((key: unknown) => String(key)).filter(Boolean)
+    : [];
+
+  if (!widgetKeys.length) {
+    pushLine('info', 'selectElements.widgets 为空，跳过 widget 资源收集');
+    return [];
+  }
+
+  const total = widgetKeys.length;
+  pushLine('info', `开始收集关联 widget 资源（${total} 个）...`);
+  const result: WidgetExportFile[] = [];
+
+  for (let i = 0; i < widgetKeys.length; i += 1) {
+    const selectionKey = widgetKeys[i];
+    const index = i + 1;
+    const platformGroupId = resolveWidgetPlatformGroupId(nodes, selectionKey);
+    if (!platformGroupId) {
+      pushLine('warning', `未找到 widget platform: ${selectionKey}`);
+      continue;
+    }
+    pushLine('info', `收集 widget: ${selectionKey}`);
+    const files = await collectWidgetExportFiles(
+      nodes,
+      platformGroupId,
+      options,
+    );
+    if (!files?.length) {
+      pushLine('warning', `widget ${selectionKey} 无可导出资源`);
+      continue;
+    }
+    for (const file of files) {
+      const filename = withExportIndex(file.filename, index, total);
+      result.push({ filename, blob: file.blob });
+      pushLine('success', `widget 资源: [${selectionKey}] → ${filename}`);
+    }
+  }
+
+  pushLine('info', `widget 资源列表共 ${result.length} 个文件`);
+  return result;
+};
+
+/** 收集 selectElements.wallpaper 关联资源，并按数量决定是否加 _1/_2 */
+const collectThemeWallpaperAssets = async (
+  nodes: FlowNode[],
+  selectElements: Record<string, any>,
+  options?: ExportBundleOptions,
+): Promise<WallpaperExportFile[]> => {
+  const pushLine = (level: ExportProgressLevel, text: string) => {
+    options?.onProgressLine?.({ level, text });
+  };
+
+  const wallpaperKeys = Array.isArray(selectElements?.wallpaper)
+    ? selectElements.wallpaper
+        .map((key: unknown) => String(key))
+        .filter(Boolean)
+    : [];
+
+  if (!wallpaperKeys.length) {
+    pushLine('info', 'selectElements.wallpaper 为空，跳过 wallpaper 资源收集');
+    return [];
+  }
+
+  const total = wallpaperKeys.length;
+  pushLine('info', `开始收集关联 wallpaper 资源（${total} 个）...`);
+  const result: WallpaperExportFile[] = [];
+
+  for (let i = 0; i < wallpaperKeys.length; i += 1) {
+    const elementKey = wallpaperKeys[i];
+    const index = i + 1;
+    pushLine('info', `收集 wallpaper: ${elementKey}`);
+    const files = await collectWallpaperExportFiles(nodes, elementKey, options);
+    if (!files?.length) {
+      pushLine('warning', `wallpaper ${elementKey} 无可导出资源`);
+      continue;
+    }
+    for (const file of files) {
+      const filename = withExportIndex(file.filename, index, total);
+      result.push({ filename, blob: file.blob });
+      pushLine('success', `wallpaper 资源: [${elementKey}] → ${filename}`);
+    }
+  }
+
+  pushLine('info', `wallpaper 资源列表共 ${result.length} 个文件`);
+  return result;
+};
+
 export const useThemeExportBundle = (nodeId?: string) => {
   const nodes = useEditorNodes();
+  
   const [exporting, setExporting] = useState(false);
 
   const exportBundle = useCallback(
@@ -153,8 +366,37 @@ export const useThemeExportBundle = (nodeId?: string) => {
           }
         }
 
-        // TODO: 用 buildThemeConfigJson(rootNode, nodes) 生成 theme_spec.json 并写入 zip
-        // TODO: 如需打包 selectElements 关联的 widget/icon/wallpaper 资源，在此补充
+        // selectElements 关联资源：icon / widget / wallpaper 写入 zip
+        const selectElements = resolveThemeSelectElements(rootNode, nodes);
+        const iconAssets = await collectThemeIconPackAssets(
+          nodes,
+          selectElements,
+          options,
+        );
+        for (const file of iconAssets) {
+          zip.file(file.filename, file.blob);
+          pushLine('success', `写入 zip: ${file.filename}`);
+        }
+
+        const widgetAssets = await collectThemeWidgetAssets(
+          nodes,
+          selectElements,
+          options,
+        );
+        for (const file of widgetAssets) {
+          zip.file(file.filename, file.blob);
+          pushLine('success', `写入 zip: ${file.filename}`);
+        }
+
+        const wallpaperAssets = await collectThemeWallpaperAssets(
+          nodes,
+          selectElements,
+          options,
+        );
+        for (const file of wallpaperAssets) {
+          zip.file(file.filename, file.blob);
+          pushLine('success', `写入 zip: ${file.filename}`);
+        }
 
         const fileCount = Object.keys(zip.files).length;
         if (!fileCount) {
