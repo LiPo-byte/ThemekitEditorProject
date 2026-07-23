@@ -5672,6 +5672,40 @@ export const IconPackDefaultConfig = {
         whatsapp: { name: 'WhatsApp', crop_props: defaultCropProps, source: '' },
         youtube: { name: 'Youtube', crop_props: defaultCropProps, source: '' },
     },
+    preview_long: {
+        width: 887,
+        height: 1920,
+        isGif: false,
+        exportWidth: 887,
+        exportHeight: 1920,
+        selectElements: {
+            apps: [],
+        },
+        showElements: [],
+        source: '',
+    },
+    preview_short: {
+        width: 887,
+        height: 1578,
+        exportWidth: 887,
+        exportHeight: 1578,
+        selectElements: {
+            apps: [],
+        },
+        showElements: [],
+        source: '',
+    },
+    list_view: {
+        width: 738,
+        height: 564,
+        exportWidth: 738,
+        exportHeight: 564,
+        selectElements: {
+            apps: [],
+        },
+        showElements: [],
+        source: '',
+    },
     // pureImage: {
     //         "version":0,
     //         "isLockScreen":false,

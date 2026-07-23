@@ -316,6 +316,11 @@ export default function ThemeHomePreview(props: ThemeHomePreviewProps) {
     ? gridLeft - layout.dockPadding * dockScale
     : (width - dockDisplayW) / 2;
 
+  // showElements 中的 wallpaper 优先；否则用 data.source 作背景
+  const wallpaperSource = String(wallpaper?.data?.source || '').trim();
+  const dataSource = String(data.source || '').trim();
+  const backgroundSource = wallpaperSource || dataSource;
+
   return (
     <div
       style={{
@@ -327,10 +332,10 @@ export default function ThemeHomePreview(props: ThemeHomePreviewProps) {
         boxSizing: 'border-box',
       }}
     >
-      {wallpaper?.data?.source ? (
+      {backgroundSource ? (
         <img
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-          src={wallpaper.data.source}
+          src={backgroundSource}
           alt=""
         />
       ) : null}

@@ -13,6 +13,7 @@ export default function Icon(props: any) {
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
   const data = props.data;
   const scale = typeof props.scale === 'number' ? props.scale : 1;
+  const showName = props.showName !== false;
 
   if (!data) return null;
 
@@ -45,7 +46,7 @@ export default function Icon(props: any) {
         radius={numericSize ? radius * scale : radius}
         cropProps={data.crop_props}
       />
-      <div>{ data.name }</div>
+      {showName ? <div>{data.name}</div> : null}
     </div>
   );
 }

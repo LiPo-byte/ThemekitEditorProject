@@ -16,6 +16,7 @@ import ActionPopover from './components/ActionPopover';
 import PreviewLong from './theme/preview_long';
 import PreviewShort from './theme/preview_short';
 import ListView from './theme/list_view';
+import ListViewShort from './theme/list_view_short';
 import PreviewLongIpad from './theme/preview_long_ipad';
 import ListViewIpad from './theme/list_view_ipad';
 import { xyFlowTypeNodeType as baseXyFlowTypeNodeType } from './xyFlowTypeNodeType';
@@ -37,6 +38,7 @@ export const xyFlowTypeNodeType = {
   preview_long: PreviewLong,
   preview_short: PreviewShort,
   list_view: ListView,
+  list_view_short: ListViewShort,
   preview_long_ipad: PreviewLongIpad,
   list_view_ipad: ListViewIpad,
   preview: Preview,

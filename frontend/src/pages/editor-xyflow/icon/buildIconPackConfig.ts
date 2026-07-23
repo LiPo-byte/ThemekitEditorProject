@@ -1,4 +1,5 @@
 import type { Node as FlowNode } from '@xyflow/react';
+import { IconPackDefaultConfig } from '@/editor-core/defaultConfig';
 import { DEFAULT_CROP_PROPS } from '../widget/base-config';
 
 type SerializeCtx = {
@@ -9,29 +10,11 @@ type SerializeCtx = {
 
 type SectionSerializer = (ctx: SerializeCtx) => Record<string, any> | undefined;
 
-const PLATFORM_META_KEYS = new Set(['label', 'themekitType']);
-
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 
-const findPlatformGroup = (
-  groups: FlowNode[],
-  label: string,
-  idSuffix?: string,
-) =>
-  groups.find((node) => getNodeData(node).label === label) ??
-  (idSuffix
-    ? groups.find((node) => String(node.id).endsWith(idSuffix))
-    : undefined);
-
-const omitPlatformMeta = (data: Record<string, any>) => {
-  const next: Record<string, any> = {};
-  Object.keys(data).forEach((key) => {
-    if (PLATFORM_META_KEYS.has(key)) return;
-    next[key] = data[key];
-  });
-  return next;
-};
+const findPlatformGroup = (groups: FlowNode[], label: string) =>
+  groups.find((node) => getNodeData(node).label === label);
 
 /** apps：icon 节点 → Record<key, appItem> */
 const serializeApps: SectionSerializer = ({ rootNode, nodes, platformGroups }) => {
@@ -57,88 +40,54 @@ const serializeApps: SectionSerializer = ({ rootNode, nodes, platformGroups }) =
 };
 
 /**
- * widget 类分组通用序列化：platform_group + metaable children → { ...platformData, sizes }
- * 新增同类配置（如未来其它 layout）只需注册一项。
+ * 预览面：preview_long / preview_short / list_view 等
+ * platform_group.label === key，子节点 type === key
  */
-const createMetaableSectionSerializer = (options: {
-  configKey: string;
-  label: string;
-  idSuffix?: string;
-}): SectionSerializer => {
-  return ({ nodes, platformGroups }) => {
-    const group = findPlatformGroup(
-      platformGroups,
-      options.label,
-      options.idSuffix,
+const serializeSurfaces: SectionSerializer = ({ nodes, platformGroups }) => {
+  const defaults = IconPackDefaultConfig as Record<string, any>;
+  const groups = [...platformGroups]
+    .filter((node) => getNodeData(node).label !== 'iconpack')
+    .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
+
+  const surfaces: Record<string, any> = {};
+  groups.forEach((platformNode) => {
+    const platformData = getNodeData(platformNode);
+    const key = String(platformData.label || platformData.themekitType || '');
+    if (!key) return;
+
+    const surfaceNode = nodes.find(
+      (node) =>
+        node.parentId === platformNode.id &&
+        (node.type === key || String(getNodeData(node).key ?? '') === key),
     );
-    if (!group) return undefined;
+    if (!surfaceNode) return;
 
-    const platformData = omitPlatformMeta(getNodeData(group));
-    const sizes = nodes
-      .filter((node: any) => node.parentId === group.id && node.metaable)
-      .map((node) => ({ ...getNodeData(node) }))
-      .sort((a, b) => Number(a.size ?? 0) - Number(b.size ?? 0));
+    const data = getNodeData(surfaceNode);
+    const surfaceDefaults =
+      defaults[key] && typeof defaults[key] === 'object' ? defaults[key] : {};
+    const { key: _key, ...rest } = data;
 
-    return {
-      [options.configKey]: {
-        ...platformData,
-        sizes,
-      },
-    };
-  };
-};
-
-/** preview：支持多个桌面预览（4×3 / 4×8 等），序列化为数组 */
-const serializePreview: SectionSerializer = ({
-  rootNode,
-  nodes,
-  platformGroups,
-}) => {
-  const previewGroups = platformGroups.filter(
-    (node) =>
-      getNodeData(node).label === 'preview' ||
-      String(node.id).includes('_preview'),
-  );
-  const groupIds = new Set(previewGroups.map((node) => String(node.id)));
-  const groupX = new Map(
-    previewGroups.map((node) => [String(node.id), Number(node.position?.x ?? 0)]),
-  );
-
-  const previewNodes = nodes
-    .filter((node) => {
-      if (node.type !== 'preview') return false;
-      if (groupIds.size > 0) return groupIds.has(String(node.parentId));
-      return node.parentId === rootNode.id;
-    })
-    .sort(
-      (a, b) =>
-        (groupX.get(String(a.parentId)) ?? 0) -
-        (groupX.get(String(b.parentId)) ?? 0),
-    );
-
-  if (!previewNodes.length) return undefined;
-
-  const preview = previewNodes.map((previewNode) => {
-    const data = getNodeData(previewNode);
-    return {
-      name: data.name ?? 'short_preview',
-      targetElementKeys: Array.isArray(data.targetElementKeys)
-        ? data.targetElementKeys
-        : [rootNode.id],
-      desketopShow: Array.isArray(data.desketopShow) ? data.desketopShow : [],
-      row: Number(data.row) > 0 ? Number(data.row) : undefined,
-      col: Number(data.col) > 0 ? Number(data.col) : undefined,
-      size: Array.isArray(data.size) ? data.size : undefined,
-      withName: data.withName !== false,
-      withBanner: data.withBanner === true,
-      gridPaddingY:
-        Number(data.gridPaddingY) > 0
-          ? Math.floor(Number(data.gridPaddingY))
-          : undefined,
+    surfaces[key] = {
+      ...surfaceDefaults,
+      ...rest,
+      name: data.name || key,
+      width:
+        Number(data.width) > 0
+          ? Number(data.width)
+          : Number(surfaceDefaults.width) || 887,
+      height:
+        Number(data.height) > 0
+          ? Number(data.height)
+          : Number(surfaceDefaults.height) || 1920,
+      selectElements:
+        data.selectElements && typeof data.selectElements === 'object'
+          ? data.selectElements
+          : surfaceDefaults.selectElements || { apps: [] },
+      showElements: Array.isArray(data.showElements) ? data.showElements : [],
     };
   });
 
-  return { preview };
+  return Object.keys(surfaces).length ? surfaces : undefined;
 };
 
 /**
@@ -147,14 +96,7 @@ const serializePreview: SectionSerializer = ({
  */
 const ICONPACK_SECTION_SERIALIZERS: SectionSerializer[] = [
   serializeApps,
-  createMetaableSectionSerializer({
-    configKey: 'pureImage',
-    label: 'pureImage',
-    idSuffix: '_pureImage',
-  }),
-  serializePreview,
-  // 例：未来其它 metaable 分组
-  // createMetaableSectionSerializer({ configKey: 'xxx', label: 'xxx', idSuffix: '_xxx' }),
+  serializeSurfaces,
 ];
 
 /** 从当前 nodes 组装 iconpack 的 config_json */

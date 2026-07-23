@@ -171,31 +171,57 @@ export const useIconPackExportBundle = (nodeId?: string) => {
           }
         }
 
-        // type === 'preview' → 桌面预览截图
-        const previewNodes = nodes.filter(
-          (node) =>
-            node.type === 'preview' &&
-            isUnderRoot(nodes, node, String(rootNode.id)),
-        );
-        for (let index = 0; index < previewNodes.length; index += 1) {
-          const previewNode = previewNodes[index];
-          const data = getNodeData(previewNode);
-          const name = sanitizeFileToken(
-            String(data.name ?? `preview_${index}`),
+        // preview_long / preview_short / list_view → icons_{key}.jpg|png
+        const surfaceGroups = platformGroups
+          .filter((node) => getNodeData(node).label !== 'iconpack')
+          .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
+        for (let index = 0; index < surfaceGroups.length; index += 1) {
+          const platformNode = surfaceGroups[index];
+          const platformData = getNodeData(platformNode);
+          const key = String(
+            platformData.label || platformData.themekitType || '',
           );
-          const filename = `icons_${name || 'preview'}.${name === 'list_view' ? 'png' : 'jpg'}`;
-          const size = Array.isArray(data.size) ? data.size : [];
-          const outputWidth = Number(size[0]) || undefined;
-          const outputHeight = Number(size[1]) || undefined;
-          const targetElement = queryNodeElement(String(previewNode.id));
+          if (!key) continue;
+
+          const surfaceNode = nodes.find(
+            (node) =>
+              node.parentId === platformNode.id &&
+              (node.type === key ||
+                String(getNodeData(node).key ?? '') === key),
+          );
+          if (!surfaceNode || !isUnderRoot(nodes, surfaceNode, String(rootNode.id))) {
+            continue;
+          }
+
+          const data = getNodeData(surfaceNode);
+          const name = sanitizeFileToken(String(data.name || key || `preview_${index}`));
+          const filename = `icons_${name || 'preview'}.${
+            name === 'list_view' ? 'png' : 'jpg'
+          }`;
+          const outputWidth =
+            Number(data.exportWidth) > 0
+              ? Number(data.exportWidth)
+              : Number(data.width) > 0
+                ? Number(data.width)
+                : undefined;
+          const outputHeight =
+            Number(data.exportHeight) > 0
+              ? Number(data.exportHeight)
+              : Number(data.height) > 0
+                ? Number(data.height)
+                : undefined;
+          const targetElement = queryNodeElement(String(surfaceNode.id));
           if (!targetElement) {
             pushLine('warning', `跳过 ${filename}（未找到 DOM 节点）`);
             continue;
           }
-          pushLine('info', `开始处理 ${filename}...`);
+          pushLine(
+            'info',
+            `开始处理 ${filename}${outputWidth && outputHeight ? ` ${outputWidth}x${outputHeight}` : ''}...`,
+          );
           try {
             const previewBlob = await generateElementPreview(targetElement, {
-              isGif: false,
+              isGif: Boolean(data.isGif),
               scale: EXPORT_PREVIEW_SCALE,
               jpegQuality: EXPORT_JPEG_QUALITY,
               outputWidth,
