@@ -5718,3 +5718,35 @@ export const WallpaperDefaultConfig = {
         }
     }
 }
+export const DEFAULT_THEME_CONFIG = {
+  selectElements: {
+    apps: [],
+    widgets: [],
+    wallpaper: [],
+  },
+  preview_long: {
+    width: 887,
+    height: 1920,
+    showElements: [],
+  },
+  preview_short: {
+    width: 887,
+    height: 1578,
+    showElements: [],
+  },
+  list_view: {
+    width: 984,
+    height: 2130,
+    showElements: [],
+  },
+  preview_long_ipad: {
+    width: 2048,
+    height: 2732,
+    showElements: [],
+  },
+  list_view_ipad: {
+    width: 1024,
+    height: 1366,
+    showElements: [],
+  },
+};

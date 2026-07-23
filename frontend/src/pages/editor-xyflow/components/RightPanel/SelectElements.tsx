@@ -350,7 +350,7 @@ const WallpaperCells: React.FC<{
   );
 };
 
-const ElementConfigViewApps: React.FC<{
+export const ElementConfigViewApps: React.FC<{
   elementKey: string;
   config: Record<string, any> | null;
   onChange: any;
@@ -377,7 +377,7 @@ const ElementConfigViewApps: React.FC<{
     </div>
   );
 };
-const ElementConfigViewWidgets: React.FC<{
+export const ElementConfigViewWidgets: React.FC<{
   elementKey: string;
   config: Record<string, any> | null;
   onChange: any;
@@ -404,7 +404,7 @@ const ElementConfigViewWidgets: React.FC<{
     </div>
   );
 };
-const ElementConfigViewWallpaper: React.FC<{
+export const ElementConfigViewWallpaper: React.FC<{
   elementKey: string;
   config: any;
   onChange: any;

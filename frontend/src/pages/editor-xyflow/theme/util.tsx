@@ -1,43 +1,12 @@
 import { nanoid } from 'nanoid';
 import type { Node as FlowNode } from '@xyflow/react';
+import { DEFAULT_THEME_CONFIG } from '@/editor-core/defaultConfig';
 
 const GAP = 50;
 
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 
-export const DEFAULT_THEME_CONFIG = {
-  selectElements: {
-    apps: ['JfIrTp9fSA-O0Ys20P6fK'],
-    widgets: ['Nvw04RLQELBBSZCvLXBJy', 'Eh_xiQlOn9mYgc-PLx3VA', 'ROROdFjq-xnQecpb5zeXy,ios'],
-    wallpaper: ['Y1qoiMyNlvyXZUfecUx4M'],
-  },
-  preview_long: {
-    width: 887,
-    height: 1920,
-    showElements: [],
-  },
-  preview_short: {
-    width: 887,
-    height: 1578,
-    showElements: [],
-  },
-  list_view: {
-    width: 984,
-    height: 2130,
-    showElements: [],
-  },
-  preview_long_ipad: {
-    width: 2048,
-    height: 2732,
-    showElements: [],
-  },
-  list_view_ipad: {
-    width: 1024,
-    height: 1366,
-    showElements: [],
-  },
-};
 
 const isThemeSurfaceItem = (value: unknown): value is Record<string, any> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
