@@ -9,11 +9,16 @@ export type GenerateElementPreviewOptions = {
   fps?: number;
   durationMs?: number;
   jpegQuality?: number;
+  /** gif.js 取样步长：数值越大体积越小、画质越差，常用 10~20 */
+  gifQuality?: number;
   sourceUrl?: string;
   cropTransform?: CropTransform;
   outputWidth?: number;
   outputHeight?: number;
 };
+
+/** 预览 GIF 硬上限，避免多源采样把体积打爆 */
+const GIF_MAX_FRAMES = 16;
 
 const wait = (ms: number) =>
   new Promise<void>((resolve) => {
@@ -225,13 +230,16 @@ const decodeGifFrames = async (sourceUrl: string, minDelayMs = 20) => {
 
 const encodeGifFromCanvases = async (
   frames: Array<{ canvas: HTMLCanvasElement; delay: number }>,
+  gifQuality = 18,
 ) => {
   if (!frames.length) throw new Error('No gif frames.');
   const firstFrame = frames[0].canvas;
+  // gif.js: quality 越小颜色越准、体积越大
+  const quality = Math.min(30, Math.max(1, Math.round(gifQuality)));
   return await new Promise<Blob>((resolve, reject) => {
     const gif = new GIF({
       workers: 2,
-      quality: 10,
+      quality,
       width: firstFrame.width,
       height: firstFrame.height,
       workerScript: '/scripts/gif.worker.js',
@@ -248,6 +256,56 @@ const encodeGifFromCanvases = async (
   });
 };
 
+type DecodedGifFrame = { canvas: HTMLCanvasElement; delayMs: number };
+
+const getImageSource = (img: HTMLImageElement) => img.currentSrc || img.src || '';
+
+const getGifDurationMs = (frames: DecodedGifFrame[]) =>
+  frames.reduce((sum, frame) => sum + Math.max(1, frame.delayMs), 0);
+
+const pickFrameIndexAtTime = (frames: DecodedGifFrame[], timeMs: number) => {
+  if (!frames.length) return 0;
+  const duration = getGifDurationMs(frames);
+  if (duration <= 0) return 0;
+  let cursor = ((timeMs % duration) + duration) % duration;
+  for (let index = 0; index < frames.length; index += 1) {
+    cursor -= Math.max(1, frames[index].delayMs);
+    if (cursor < 0) return index;
+  }
+  return frames.length - 1;
+};
+
+const waitImageSrc = (img: HTMLImageElement, nextSrc: string) =>
+  new Promise<void>((resolve) => {
+    const onDone = () => {
+      img.removeEventListener('load', onDone);
+      img.removeEventListener('error', onDone);
+      resolve();
+    };
+    img.addEventListener('load', onDone);
+    img.addEventListener('error', onDone);
+    img.src = nextSrc;
+  });
+
+const applyImageSources = async (
+  entries: Array<{ img: HTMLImageElement; source: string }>,
+  dataUrlBySource: Map<string, string[]>,
+  frameIndexBySource: Map<string, number>,
+  appliedDataUrlByImage: Map<HTMLImageElement, string>,
+) => {
+  await Promise.all(
+    entries.map(async ({ img, source }) => {
+      const dataUrls = dataUrlBySource.get(source);
+      if (!dataUrls?.length) return;
+      const frameIndex = frameIndexBySource.get(source) ?? 0;
+      const nextSrc = dataUrls[Math.min(frameIndex, dataUrls.length - 1)];
+      if (appliedDataUrlByImage.get(img) === nextSrc) return;
+      await waitImageSrc(img, nextSrc);
+      appliedDataUrlByImage.set(img, nextSrc);
+    }),
+  );
+};
+
 export const generateElementPreview = async (
   element: HTMLElement,
   options: GenerateElementPreviewOptions = {},
@@ -255,17 +313,20 @@ export const generateElementPreview = async (
   const {
     isGif = false,
     scale = 1,
-    fps = 12,
-    durationMs = 1800,
+    fps = 8,
+    durationMs = 1200,
     jpegQuality = 0.92,
+    gifQuality = 18,
     sourceUrl,
     outputWidth,
     outputHeight,
   } = options;
+  // GIF 最终会落到 output/layout 尺寸，过高 scale 只增加截图成本，不提升体积收益
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
+  const captureScale = isGif ? Math.min(safeScale, 1) : safeScale;
 
   if (!isGif) {
-    const canvas = await captureElementPreviewCanvas(element, safeScale);
+    const canvas = await captureElementPreviewCanvas(element, captureScale);
     if (!canvas) {
       throw new Error('Element is not visible.');
     }
@@ -276,83 +337,150 @@ export const generateElementPreview = async (
     return await canvasToBlob(normalizedCanvas, 'image/jpeg', jpegQuality);
   }
 
-  if (sourceUrl && isGifSource(sourceUrl)) {
-    const captureElement = getCaptureElement(element);
-    const imageElements = Array.from(
-      captureElement.querySelectorAll('img'),
-    ) as HTMLImageElement[];
-    const targetImages = imageElements.filter((img) => {
-      const src = img.currentSrc || img.src || '';
-      if (!src) return false;
-      if (src === sourceUrl) return true;
-      return isGifSource(src);
+  const captureElement = getCaptureElement(element);
+  const imageElements = Array.from(
+    captureElement.querySelectorAll('img'),
+  ) as HTMLImageElement[];
+  const gifImageEntries = imageElements
+    .map((img) => {
+      const source = getImageSource(img);
+      return { img, source };
+    })
+    .filter(({ source }) => {
+      if (!source) return false;
+      if (sourceUrl && source === sourceUrl) return isGifSource(sourceUrl);
+      return isGifSource(source);
     });
-    if (targetImages.length) {
-      const originalSources = targetImages.map((img) => img.src);
-      const decodedFrames = await decodeGifFrames(sourceUrl, 20);
-      const capturedFrames: Array<{ canvas: HTMLCanvasElement; delay: number }> = [];
+
+  if (gifImageEntries.length) {
+    const uniqueSources = Array.from(
+      new Set(gifImageEntries.map((entry) => entry.source)),
+    );
+    const decodedBySource = new Map<string, DecodedGifFrame[]>();
+    await Promise.all(
+      uniqueSources.map(async (source) => {
+        try {
+          decodedBySource.set(source, await decodeGifFrames(source, 20));
+        } catch {
+          // Keep other sources usable when one gif fails to decode.
+        }
+      }),
+    );
+
+    const usableEntries = gifImageEntries.filter((entry) =>
+      decodedBySource.has(entry.source),
+    );
+    const usableSources = Array.from(
+      new Set(usableEntries.map((entry) => entry.source)),
+    );
+
+    if (usableEntries.length && usableSources.length) {
+      const loopDurationMs = Math.max(
+        ...usableSources.map((source) =>
+          getGifDurationMs(decodedBySource.get(source) || []),
+        ),
+        1,
+      );
+      const safeFps = Math.max(1, fps);
+      const maxDurationMs = Math.max(1, Math.round(durationMs));
+      const timelineMs = Math.min(loopDurationMs, maxDurationMs);
+      const sampleDelay = Math.max(40, Math.round(1000 / safeFps));
+      const maxFrameCount = Math.min(
+        GIF_MAX_FRAMES,
+        Math.max(2, Math.round((maxDurationMs / 1000) * safeFps)),
+      );
+      const sampleCount = Math.min(
+        maxFrameCount,
+        Math.max(2, Math.ceil(timelineMs / sampleDelay)),
+      );
+
+      const dataUrlBySource = new Map<string, string[]>();
+      usableSources.forEach((source) => {
+        const frames = decodedBySource.get(source) || [];
+        dataUrlBySource.set(
+          source,
+          frames.map((frame) => frame.canvas.toDataURL('image/png')),
+        );
+      });
+
+      const originalSources = usableEntries.map((entry) => entry.img.src);
+      const appliedDataUrlByImage = new Map<HTMLImageElement, string>();
+      const capturedFrames: Array<{ canvas: HTMLCanvasElement; delay: number }> =
+        [];
       const layoutSize = getElementLayoutSize(element);
       const width = Math.max(1, Math.round(outputWidth ?? layoutSize.width));
       const height = Math.max(1, Math.round(outputHeight ?? layoutSize.height));
+
       try {
-        for (let index = 0; index < decodedFrames.length; index += 1) {
-          const decodedFrame = decodedFrames[index];
-          const frameDataUrl = decodedFrame.canvas.toDataURL('image/png');
-          await Promise.all(
-            targetImages.map(
-              (img) =>
-                new Promise<void>((resolve) => {
-                  const onDone = () => {
-                    img.removeEventListener('load', onDone);
-                    img.removeEventListener('error', onDone);
-                    resolve();
-                  };
-                  img.addEventListener('load', onDone);
-                  img.addEventListener('error', onDone);
-                  img.src = frameDataUrl;
-                }),
-            ),
+        let lastIndexKey = '';
+        for (let index = 0; index < sampleCount; index += 1) {
+          const timeMs =
+            sampleCount <= 1
+              ? 0
+              : Math.min(
+                  timelineMs - 1,
+                  Math.round((index * timelineMs) / sampleCount),
+                );
+          const frameIndexBySource = new Map<string, number>();
+          const indexKey = usableSources
+            .map((source) => {
+              const frameIndex = pickFrameIndexAtTime(
+                decodedBySource.get(source) || [],
+                timeMs,
+              );
+              frameIndexBySource.set(source, frameIndex);
+              return `${source}:${frameIndex}`;
+            })
+            .join('|');
+
+          if (indexKey === lastIndexKey && capturedFrames.length) {
+            capturedFrames[capturedFrames.length - 1].delay += sampleDelay;
+            continue;
+          }
+          lastIndexKey = indexKey;
+
+          await applyImageSources(
+            usableEntries,
+            dataUrlBySource,
+            frameIndexBySource,
+            appliedDataUrlByImage,
           );
           await new Promise<void>((resolve) =>
             window.requestAnimationFrame(() => resolve()),
           );
 
-          const frameCanvas = await captureElementPreviewCanvas(element, safeScale);
+          const frameCanvas = await captureElementPreviewCanvas(
+            element,
+            captureScale,
+          );
           if (!frameCanvas) continue;
           capturedFrames.push({
             canvas:
               frameCanvas.width === width && frameCanvas.height === height
                 ? frameCanvas
                 : normalizeCanvasSize(frameCanvas, width, height),
-            delay: decodedFrame.delayMs,
+            delay: sampleDelay,
           });
         }
       } finally {
         await Promise.all(
-          targetImages.map(
-            (img, index) =>
-              new Promise<void>((resolve) => {
-                const onDone = () => {
-                  img.removeEventListener('load', onDone);
-                  img.removeEventListener('error', onDone);
-                  resolve();
-                };
-                img.addEventListener('load', onDone);
-                img.addEventListener('error', onDone);
-                img.src = originalSources[index];
-              }),
+          usableEntries.map((entry, index) =>
+            waitImageSrc(entry.img, originalSources[index]),
           ),
         );
       }
 
       if (capturedFrames.length) {
-        return await encodeGifFromCanvases(capturedFrames);
+        return await encodeGifFromCanvases(capturedFrames, gifQuality);
       }
     }
   }
 
-  const delay = Math.max(1, Math.round(1000 / Math.max(1, fps)));
-  const frameCount = Math.max(2, Math.round((durationMs / 1000) * Math.max(1, fps)));
+  const delay = Math.max(40, Math.round(1000 / Math.max(1, fps)));
+  const frameCount = Math.min(
+    GIF_MAX_FRAMES,
+    Math.max(2, Math.round((durationMs / 1000) * Math.max(1, fps))),
+  );
   const frames: Array<{ canvas: HTMLCanvasElement; delay: number }> = [];
   const fallbackTargetWidth = outputWidth ? Math.max(1, Math.round(outputWidth)) : null;
   const fallbackTargetHeight = outputHeight ? Math.max(1, Math.round(outputHeight)) : null;
@@ -362,7 +490,7 @@ export const generateElementPreview = async (
     } else {
       await wait(16);
     }
-    const frameCanvas = await captureElementPreviewCanvas(element, safeScale);
+    const frameCanvas = await captureElementPreviewCanvas(element, captureScale);
     if (!frameCanvas) continue;
     const normalizedCanvas =
       fallbackTargetWidth && fallbackTargetHeight
@@ -373,5 +501,5 @@ export const generateElementPreview = async (
   if (!frames.length) {
     throw new Error('Element is not visible.');
   }
-  return await encodeGifFromCanvases(frames);
+  return await encodeGifFromCanvases(frames, gifQuality);
 };
