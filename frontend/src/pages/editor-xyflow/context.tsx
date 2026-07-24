@@ -99,10 +99,10 @@ type EditorCoreCtxValue = {
   getParentNodeData: (nodeId: string) => Record<string, any> | null;
   selectNode: (fn: FlowNode, append?: boolean) => void;
   deselectedNode: (nodeId?: string) => void;
-  addWidget: (config: any) => void;
-  addIconPack: (config: any) => void;
-  addWallpaper: (config: any) => void;
-  addTheme: (config: any) => void;
+  addWidget: (config: any) => string | undefined;
+  addIconPack: (config: any) => string | undefined;
+  addWallpaper: (config: any) => string | undefined;
+  addTheme: (config: any) => string | undefined;
   deleteSelectedNodes: () => void;
   undo: () => void;
   redo: () => void;
@@ -145,7 +145,7 @@ const noopSetNodes: React.Dispatch<React.SetStateAction<FlowNode[]>> = () => {};
 const noopChangeNodeProp = (_updater: (prev: FlowNode[]) => FlowNode[]) => {};
 const noopSelectNode = (_fn: FlowNode, _append?: boolean) => {};
 const noopDeselectedNode = (_nodeId?: string) => {};
-const noopAddNodeGroup = () => {};
+const noopAddNodeGroup = (_config?: any): string | undefined => undefined;
 const noopDeleteSelectedNodes = () => {};
 const noopGetParentNodeData = (_nodeId: string) => null;
 
@@ -673,23 +673,27 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const addIconPack = (config: any) => {
     const { nodes: newNodes, rootNode } = iconPackConfig2Nodes(config);
-    if (!rootNode) return;
+    if (!rootNode) return undefined;
     appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
   };
   const addWidget = (config: any) => {
     const { nodes: newNodes, rootNode } = widgetConfig2Nodes(config);
-    if (!rootNode) return;
+    if (!rootNode) return undefined;
     appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
   };
   const addWallpaper = (config: any) => {
     const { nodes: newNodes, rootNode } = wallpaperConfig2Nodes(config);
-    if (!rootNode) return;
+    if (!rootNode) return undefined;
     appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
   };
   const addTheme = (config: any) => {
     const { nodes: newNodes, rootNode } = themeConfig2Nodes(config);
-    if (!rootNode) return;
+    if (!rootNode) return undefined;
     appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
   };
 
   const selectedBranchNodes = useMemo(

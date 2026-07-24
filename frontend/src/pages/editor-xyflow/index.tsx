@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import CropTool from './components/CropTool';
 import EditorBottomToolBar from './components/EditorBottomToolBar';
 // import EditorCanvas from './components/EditorCanvas';
@@ -11,17 +11,13 @@ import RightPanel from './components/RightPanel';
 // import ZoomToolBar from './components/ZoomToolBar';
 import {
   EditorCoreProvider,
-  // useEditorImportModalOpen,
-  // useEditorImportModalOpenSetter,
-  // useEditorGlobalLoading,
-  // useEditorSaveStatus,
-  // useEditorAddWidget
+  useEditorGlobalLoading,
 } from './context';
 import { useStyles } from './style';
 
 const EditorPageContent: React.FC = () => {
   const { styles } = useStyles();
-  // const globalLoading = useEditorGlobalLoading();
+  const globalLoading = useEditorGlobalLoading();
   return (
     <div className={styles.root}>
       <div className={styles.body}>
@@ -32,6 +28,14 @@ const EditorPageContent: React.FC = () => {
         <EditorBottomToolBar />
         <HeaderControls />
         <CropTool />
+        {globalLoading ? (
+          <div className={styles.loadingMask}>
+            <div className={styles.loadingCard}>
+              <span className={styles.loadingDot} />
+              导入中...
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

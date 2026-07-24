@@ -2,16 +2,22 @@ import React from 'react';
 import { InboxOutlined } from '@ant-design/icons';
 import {
   useEditorAddIconPack,
+  useEditorAddTheme,
   useEditorAddWidget,
   useEditorAddWallpaper,
+  useEditorGlobalLoadingSetter,
   useEditorProjectId,
 } from '../context';
-import { message, Segmented, Select, Upload, Typography } from 'antd';
+import { Button, message, Segmented, Select, Upload, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import { CONFIG_SIZE_MAP, DEFAULT_CROP_PROPS, DEFAULT_RADIUS, SIZE_LABEL_MAP, SOURCENAME_TYPE_WIDGET_MAP, TYPE_WIDGET_MAP } from '../widget/base-config';
 import JSZip from 'jszip';
 import { uploadProjectImage } from '../service';
-import { IconPackDefaultConfig, WallpaperDefaultConfig } from '@/editor-core/defaultConfig';
+import {
+  DEFAULT_THEME_CONFIG,
+  IconPackDefaultConfig,
+  WallpaperDefaultConfig,
+} from '@/editor-core/defaultConfig';
 
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
@@ -41,6 +47,23 @@ const useStyles = createStyles(({ token, css }) => ({
     opacity: 0;
     pointer-events: none;
   `,
+  themeMeta: css`
+    font-size: 12px;
+    line-height: 1.5;
+    color: ${token.colorTextSecondary};
+  `,
+  widgetRow: css`
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    background: ${token.colorFillQuaternary};
+  `,
+  widgetRowTitle: css`
+    font-size: 12px;
+    color: ${token.colorText};
+  `,
 }));
 
 type Props = {
@@ -48,10 +71,139 @@ type Props = {
   onClose: () => void;
 };
 type ImportSystem = 'ios' | 'android' | 'common';
-// type ImportKind = 'widget' | 'iconPack' ;
+type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'theme';
+/** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
+type ExportIndex = number | null;
+
+type ThemePendingImport = {
+  zip: JSZip;
+  fileName: string;
+  hasIconPack: boolean;
+  wallpaperIndices: ExportIndex[];
+  widgetIndices: ExportIndex[];
+  widgetSystems: ImportSystem[];
+};
 
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** 与导出 withExportIndex 对齐：有 index 时在扩展名前加 _N */
+const applyIndexSuffix = (filename: string, index: ExportIndex): string => {
+  if (index == null) return filename;
+  const dot = filename.lastIndexOf('.');
+  if (dot <= 0) return `${filename}_${index}`;
+  return `${filename.slice(0, dot)}_${index}${filename.slice(dot)}`;
+};
+
+const listZipBasenames = (zip: JSZip): string[] =>
+  Object.keys(zip.files)
+    .filter((path) => !zip.files[path]?.dir)
+    .map((path) => path.split('/').pop() || '')
+    .filter(Boolean);
+
+/** 发现 widgets_spec.json / widgets_spec_1.json … */
+const discoverWidgetIndices = (zip: JSZip): ExportIndex[] => {
+  const indices = new Set<number>();
+  let hasPlain = false;
+  for (const name of listZipBasenames(zip)) {
+    const match = /^widgets_spec(?:_(\d+))?\.json$/i.exec(name);
+    if (!match) continue;
+    if (match[1]) indices.add(Number(match[1]));
+    else hasPlain = true;
+  }
+  if (indices.size > 0) return [...indices].sort((a, b) => a - b);
+  if (hasPlain) return [null];
+  return [];
+};
+
+/** 发现 wallpaper / wallpaper_ipad 的 _N 分组 */
+const discoverWallpaperIndices = (zip: JSZip): ExportIndex[] => {
+  const indices = new Set<number>();
+  let hasPlain = false;
+  for (const name of listZipBasenames(zip)) {
+    const match =
+      /^(wallpaper(?:_ipad)?)(?:_(\d+))?\.(?:jpg|jpeg|png)$/i.exec(name);
+    if (!match) continue;
+    if (match[2]) indices.add(Number(match[2]));
+    else hasPlain = true;
+  }
+  if (indices.size > 0) return [...indices].sort((a, b) => a - b);
+  if (hasPlain) return [null];
+  return [];
+};
+
+const hasIconPackAssets = (zip: JSZip): boolean =>
+  listZipBasenames(zip).some((name) => /^icon_.+\.(?:jpg|jpeg|png)$/i.test(name));
+
+const resolveAmazonApp = (apps: any): Record<string, any> | null => {
+  if (Array.isArray(apps)) {
+    return (
+      apps.find((app) => String(app?.name ?? app?.key ?? '').toLowerCase() === 'amazon') ?? null
+    );
+  }
+  if (!apps || typeof apps !== 'object') return null;
+  if (apps.amazon && typeof apps.amazon === 'object') {
+    return { key: 'amazon', name: 'amazon', ...apps.amazon };
+  }
+  const entry = Object.entries(apps).find(
+    ([key, value]) =>
+      String(key).toLowerCase() === 'amazon' ||
+      String((value as any)?.name ?? '').toLowerCase() === 'amazon',
+  );
+  if (!entry) return null;
+  const [key, value] = entry;
+  if (value && typeof value === 'object') {
+    return { key, name: String((value as any).name ?? key), ...(value as any) };
+  }
+  return { key, name: key, source: String(value ?? '') };
+};
+
+/** 与 AddThemeModal 一致：用已导入节点 config 拼 showElements */
+const buildThemeShowElements = (params: {
+  iconPackId: string;
+  iconPackConfig: Record<string, any>;
+  wallpaperItems: Array<{ id: string; config: Record<string, any> }>;
+  widgetItems: Array<{ id: string; system: ImportSystem; config: Record<string, any> }>;
+}) => {
+  const showElements: Array<Record<string, any>> = [];
+  const firstWallpaper = params.wallpaperItems[0];
+  const wallpaperData = firstWallpaper?.config?.wallpaper;
+  if (firstWallpaper && wallpaperData) {
+    showElements.push({
+      key: `${firstWallpaper.id}_wallpaper`,
+      category: 'wallpaper',
+      data: { ...wallpaperData },
+    });
+  }
+
+  params.widgetItems.forEach((item) => {
+    const selectionKey = `${item.id},${item.system}`;
+    const platformConfig = item.config?.[item.system];
+    if (!platformConfig) return;
+    const sizeItem = (platformConfig.sizes || []).find(
+      (entry: any) => Number(entry?.size) === 1,
+    );
+    if (!sizeItem) return;
+    showElements.push({
+      key: `${selectionKey}_size_1`,
+      category: 'widget',
+      data: {
+        ...platformConfig,
+        sizes: [{ ...sizeItem }],
+      },
+    });
+  });
+
+  const amazon = resolveAmazonApp(params.iconPackConfig?.apps);
+  if (amazon) {
+    showElements.push({
+      key: `${params.iconPackId}_Amazon`,
+      category: 'iconpack',
+      data: { ...amazon },
+    });
+  }
+  return showElements;
+};
 
 const getBlobImageSize = (blob: Blob) =>
   new Promise<{ width: number; height: number }>((resolve, reject) => {
@@ -79,23 +231,334 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const addWidget = useEditorAddWidget();
   const addIconPack = useEditorAddIconPack();
   const addWallpaper = useEditorAddWallpaper();
+  const addTheme = useEditorAddTheme();
+  const setGlobalLoading = useEditorGlobalLoadingSetter();
   const projectId = useEditorProjectId();
-  const [importKind, setImportKind] = React.useState<any>('widget');
+  const [importKind, setImportKind] = React.useState<ImportKind>('widget');
   const [importSystem, setImportSystem] = React.useState<ImportSystem>('common');
-  const uploadMediaFromZip = async (filename: string, zip: JSZip) => {
+  const [themePending, setThemePending] = React.useState<ThemePendingImport | null>(
+    null,
+  );
+  const [themeImporting, setThemeImporting] = React.useState(false);
+
+  const withImportLoading = async <T,>(task: () => Promise<T>): Promise<T> => {
+    setGlobalLoading(true);
+    try {
+      return await task();
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
+
+  const clearThemePending = React.useCallback(() => {
+    setThemePending(null);
+    setThemeImporting(false);
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) clearThemePending();
+  }, [open, clearThemePending]);
+
+  const handleImportKindChange = (value: ImportKind) => {
+    setImportKind(value);
+    clearThemePending();
+  };
+
+  const uploadMediaFromZip = async (
+    filename: string,
+    zip: JSZip,
+    exportIndex: ExportIndex = null,
+  ) => {
     if (!projectId) {
       throw new Error('项目未初始化，无法上传资源');
     }
+    const resolvedFilename = applyIndexSuffix(filename, exportIndex);
     const mediaFile =
-      zip.file(filename) ??
-      zip.file(new RegExp(`(^|\\/)${escapeRegExp(filename)}$`, 'i'))?.[0];
+      zip.file(resolvedFilename) ??
+      zip.file(new RegExp(`(^|\\/)${escapeRegExp(resolvedFilename)}$`, 'i'))?.[0];
     if (!mediaFile) return null;
     const mediaBlob = await mediaFile.async('blob');
-    const fileExt = filename.split('.').pop()?.toLowerCase();
+    const fileExt = resolvedFilename.split('.').pop()?.toLowerCase();
     const mimeType = fileExt ? `image/${fileExt}` : 'application/octet-stream';
-    const uploadFile = new File([mediaBlob], filename, { type: mimeType });
+    const uploadFile = new File([mediaBlob], resolvedFilename, { type: mimeType });
     const { url } = await uploadProjectImage(projectId, uploadFile);
     return { url, mediaBlob };
+  };
+
+  /** 从已加载 zip 解析一套 widget；成功返回节点 id + config */
+  const importWidgetFromZip = async (
+    zip: JSZip,
+    options?: {
+      exportIndex?: ExportIndex;
+      system?: ImportSystem;
+      silent?: boolean;
+    },
+  ): Promise<{ rootId: string; config: Record<string, any>; system: ImportSystem } | null> => {
+    const exportIndex = options?.exportIndex ?? null;
+    const system = options?.system ?? importSystem;
+    const silent = Boolean(options?.silent);
+
+    const specFilename = applyIndexSuffix('widgets_spec.json', exportIndex);
+    const specFile =
+      zip.file(specFilename) ??
+      zip.file(new RegExp(`(^|\\/)${escapeRegExp(specFilename)}$`, 'i'))?.[0];
+    if (!specFile) {
+      if (!silent) message.error(`压缩包内未找到 ${specFilename}`);
+      return null;
+    }
+
+    const specText = await specFile.async('string');
+    const spec = JSON.parse(specText);
+    const { sizes, isGif, type } = spec;
+    if (!Array.isArray(sizes)) {
+      if (!silent) message.error(`${specFilename} 缺少 sizes 数组`);
+      return null;
+    }
+
+    if (type === 12) {
+      const weatherImageEntries = [
+        { key: 'cloud', field: 'imageCloud' },
+        { key: 'rain', field: 'imageRain' },
+        { key: 'snow', field: 'imageSnow' },
+        { key: 'sun', field: 'imageSun' },
+        { key: 'thunder', field: 'imageThunder' },
+        { key: 'wind', field: 'imageWind' },
+      ];
+      for (let index = 0; index < weatherImageEntries.length; index += 1) {
+        const { key, field } = weatherImageEntries[index];
+        const filenameBase = `image_${key}`;
+        const candidateFilenames = [
+          `${filenameBase}.png`,
+          `${filenameBase}.jpg`,
+          `${filenameBase}.jpeg`,
+        ];
+        let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+        for (const filename of candidateFilenames) {
+          uploadResult = await uploadMediaFromZip(filename, zip, exportIndex);
+          if (uploadResult) break;
+        }
+        if (!uploadResult) {
+          if (!silent) message.warning(`压缩包缺少 ${applyIndexSuffix(`${filenameBase}.png`, exportIndex)}`);
+          spec[field] = {
+            source: '',
+            crop_props: {
+              ...DEFAULT_CROP_PROPS,
+            },
+          };
+          continue;
+        }
+        spec[field] = {
+          source: uploadResult.url,
+          crop_props: {
+            ...DEFAULT_CROP_PROPS,
+          },
+        };
+      }
+    }
+    if (type === 18) {
+      const clockImageEntries = [
+        { key: 'minute_clock', field: 'minuteClock' },
+        { key: 'hour_clock', field: 'hourClock' },
+        { key: 'dot_clock', field: 'dotClock' },
+        { key: 'dial_large_clock', field: 'dialLargeClock' },
+        { key: 'dial_small_clock', field: 'dialSmallClock' },
+      ];
+      for (let index = 0; index < clockImageEntries.length; index += 1) {
+        const { key, field } = clockImageEntries[index];
+        const filenameBase = `widgets_${key}`;
+        const candidateFilenames = [
+          `${filenameBase}.png`,
+          `${filenameBase}.jpg`,
+          `${filenameBase}.jpeg`,
+        ];
+        let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+        for (const filename of candidateFilenames) {
+          uploadResult = await uploadMediaFromZip(filename, zip, exportIndex);
+          if (uploadResult) break;
+        }
+        if (!uploadResult) {
+          if (!silent) message.warning(`压缩包缺少 ${applyIndexSuffix(`${filenameBase}.png`, exportIndex)}`);
+          continue;
+        }
+        spec[field] = {
+          source: uploadResult.url,
+          crop_props: {
+            ...DEFAULT_CROP_PROPS,
+          },
+        };
+      }
+    }
+
+    for (let i = 0; i < sizes.length; i += 1) {
+      const item = sizes[i] as Record<string, any>;
+      const sizeNumber = Number(item?.size);
+      const sizeLabel = SIZE_LABEL_MAP[sizeNumber];
+      if (!sizeLabel) continue;
+
+      const ext = isGif ? 'gif' : 'jpg';
+      const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}.${ext}`;
+      const uploadResult = await uploadMediaFromZip(expectedFilename, zip, exportIndex);
+      if (uploadResult) {
+        const mediaSize = await getBlobImageSize(uploadResult.mediaBlob);
+        const targetSize =
+          (CONFIG_SIZE_MAP as Record<number, { width?: number; height?: number }>)[
+            sizeNumber
+          ] ?? {};
+        const targetWidth = Number(targetSize.width);
+        const targetHeight = Number(targetSize.height);
+        const scaleX =
+          Number.isFinite(targetWidth) && targetWidth > 0
+            ? targetWidth / mediaSize.width
+            : 1;
+        const scaleY =
+          Number.isFinite(targetHeight) && targetHeight > 0
+            ? targetHeight / mediaSize.height
+            : 1;
+        item.source = uploadResult.url;
+        item.crop_props = {
+          ...DEFAULT_CROP_PROPS,
+          ...(item.crop_props ?? {}),
+          scaleX,
+          scaleY,
+        };
+      }
+      if (typeof item.radius !== 'number') {
+        item.radius = DEFAULT_RADIUS;
+      }
+
+      if (item.firstImageAnimation) {
+        const filename = `widgets_${sizeLabel}_animation_first.png`;
+        const animUpload = await uploadMediaFromZip(filename, zip, exportIndex);
+        if (!animUpload) {
+          if (!silent) message.warning(`压缩包缺少 ${applyIndexSuffix(filename, exportIndex)}`);
+          continue;
+        }
+        item.firstImageAnimation.source = animUpload.url;
+        item.firstImageAnimation.crop_props = {
+          ...DEFAULT_CROP_PROPS,
+        };
+      }
+      if (item.secondImageAnimation) {
+        const filename = `widgets_${sizeLabel}_animation_second.png`;
+        const animUpload = await uploadMediaFromZip(filename, zip, exportIndex);
+        if (!animUpload) {
+          if (!silent) message.warning(`压缩包缺少 ${applyIndexSuffix(filename, exportIndex)}`);
+          continue;
+        }
+        item.secondImageAnimation.source = animUpload.url;
+        item.secondImageAnimation.crop_props = {
+          ...DEFAULT_CROP_PROPS,
+        };
+      }
+      if (item.thirdImageAnimation) {
+        const filename = `widgets_${sizeLabel}_animation_third.png`;
+        const animUpload = await uploadMediaFromZip(filename, zip, exportIndex);
+        if (!animUpload) {
+          if (!silent) message.warning(`压缩包缺少 ${applyIndexSuffix(filename, exportIndex)}`);
+          continue;
+        }
+        item.thirdImageAnimation.source = animUpload.url;
+        item.thirdImageAnimation.crop_props = {
+          ...DEFAULT_CROP_PROPS,
+        };
+      }
+      if (item.fourthImageAnimation) {
+        const filename = `widgets_${sizeLabel}_animation_fourth.png`;
+        const animUpload = await uploadMediaFromZip(filename, zip, exportIndex);
+        if (!animUpload) {
+          if (!silent) message.warning(`压缩包缺少 ${applyIndexSuffix(filename, exportIndex)}`);
+          continue;
+        }
+        item.fourthImageAnimation.source = animUpload.url;
+        item.fourthImageAnimation.crop_props = {
+          ...DEFAULT_CROP_PROPS,
+        };
+      }
+      if (item.appLinks && Array.isArray(item.appLinks) && item.layoutType < 6) {
+        const existingAppLinksSource = Array.isArray(item.appLinksSource)
+          ? item.appLinksSource
+          : [];
+        const appLinksSource = await Promise.all(
+          item.appLinks.map(async (_links: any, index: number) => {
+            const filenameBase = `link${sizeLabel}_${index + 1}`;
+            const candidateFilenames = [
+              `${filenameBase}.png`,
+              `${filenameBase}.jpg`,
+              `${filenameBase}.jpeg`,
+            ];
+            let linkUpload: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+            for (const filename of candidateFilenames) {
+              linkUpload = await uploadMediaFromZip(filename, zip, exportIndex);
+              if (linkUpload) break;
+            }
+            if (!linkUpload) {
+              if (!silent) {
+                message.warning(
+                  `压缩包缺少 ${applyIndexSuffix(`${filenameBase}.png`, exportIndex)}`,
+                );
+              }
+              return {
+                ...(existingAppLinksSource[index] ?? {}),
+                source: existingAppLinksSource[index]?.source ?? '',
+              };
+            }
+            return {
+              ...(existingAppLinksSource[index] ?? {}),
+              source: linkUpload.url,
+            };
+          }),
+        );
+        item.appLinksSource = appLinksSource;
+      }
+      if (item.weekday) {
+        item.weekday.show = true;
+      }
+      if (item.AmAndPm) {
+        item.AmAndPm.show = true;
+      }
+
+      if (type === 5 && item.layoutType === 0) {
+        const batterSource = [
+          'battery_20',
+          'battery_40',
+          'battery_60',
+          'battery_80',
+          'battery_100',
+        ];
+        await Promise.all(
+          batterSource.map(async (key: any) => {
+            const filenameBase = `widgets_${sizeLabel}_${key}`;
+            const candidateFilenames = [
+              `${filenameBase}.png`,
+              `${filenameBase}.jpg`,
+              `${filenameBase}.jpeg`,
+            ];
+            let batteryUpload: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+            for (const filename of candidateFilenames) {
+              batteryUpload = await uploadMediaFromZip(filename, zip, exportIndex);
+              if (batteryUpload) break;
+            }
+            if (!batteryUpload && !silent) {
+              message.warning(
+                `压缩包缺少 ${applyIndexSuffix(`${filenameBase}.png`, exportIndex)}`,
+              );
+            }
+            item[key] = {
+              crop_props: {
+                ...DEFAULT_CROP_PROPS,
+              },
+              source: batteryUpload ? batteryUpload.url : '',
+            };
+          }),
+        );
+      }
+    }
+
+    const importConfig: Record<string, any> = {};
+    importConfig[system] = spec;
+    const rootId = addWidget(importConfig);
+    if (!rootId) return null;
+    return { rootId, config: importConfig, system };
   };
 
   const readWidgetsSpecFromZip = async (file: File) => {
@@ -106,278 +569,72 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       return false;
     }
 
-    try {
-      if (!projectId) {
-        message.error('项目未初始化，无法上传资源');
-        return false;
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+        const zip = await JSZip.loadAsync(file);
+        const result = await importWidgetFromZip(zip);
+        if (result) {
+          onClose();
+          message.success('导入成功');
+        }
+      } catch (error) {
+        console.error('[ImportModal] 读取 widgets_spec.json 失败:', error);
+        message.error('读取 widgets_spec.json 失败');
       }
-      const zip = await JSZip.loadAsync(file);
-      const specFile =
-        zip.file('widgets_spec.json') ??
-        zip.file(/(^|\/)widgets_spec\.json$/i)?.[0];
-      if (!specFile) {
-        message.error('压缩包内未找到 widgets_spec.json');
-        return false;
-      }
-
-      const specText = await specFile.async('string');
-      const spec = JSON.parse(specText);
-      const { sizes, isGif, type } = spec;
-      if (!Array.isArray(sizes)) {
-        message.error('widgets_spec.json 缺少 sizes 数组');
-        return false;
-      }
-
-      if (type === 12) {
-        const weatherImageEntries = [
-          { key: 'cloud', field: 'imageCloud' },
-          { key: 'rain', field: 'imageRain' },
-          { key: 'snow', field: 'imageSnow' },
-          { key: 'sun', field: 'imageSun' },
-          { key: 'thunder', field: 'imageThunder' },
-          { key: 'wind', field: 'imageWind' },
-        ];
-        for (let index = 0; index < weatherImageEntries.length; index += 1) {
-          const { key, field } = weatherImageEntries[index];
-          // if (!spec[field]) continue;
-          const filenameBase = `image_${key}`;
-          const candidateFilenames = [
-            `${filenameBase}.png`,
-            `${filenameBase}.jpg`,
-            `${filenameBase}.jpeg`,
-          ];
-          let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
-          for (const filename of candidateFilenames) {
-            uploadResult = await uploadMediaFromZip(filename, zip);
-            if (uploadResult) break;
-          }
-          if (!uploadResult) {
-            message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
-            spec[field] = {
-              source: '',
-              crop_props: {
-                ...DEFAULT_CROP_PROPS,
-              }
-            };
-            continue;
-          }
-          spec[field] = {
-            source: uploadResult.url,
-            crop_props: {
-              ...DEFAULT_CROP_PROPS,
-            }
-          };
-        }
-      }
-      if (type === 18) {
-        const clockImageEntries = [
-          { key: 'minute_clock', field: 'minuteClock'},
-          { key: 'hour_clock', field: 'hourClock' },
-          { key: 'dot_clock', field: 'dotClock' },
-          { key: 'dial_large_clock', field: 'dialLargeClock' },
-          { key: 'dial_small_clock', field: 'dialSmallClock' },
-        ]
-        for (let index = 0; index < clockImageEntries.length; index += 1) {
-          const { key, field } = clockImageEntries[index];
-          const filenameBase = `widgets_${key}`;
-          const candidateFilenames = [
-            `${filenameBase}.png`,
-            `${filenameBase}.jpg`,
-            `${filenameBase}.jpeg`,
-          ];
-          let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
-          for (const filename of candidateFilenames) {
-            uploadResult = await uploadMediaFromZip(filename, zip);
-            if (uploadResult) break;
-          }
-          if (!uploadResult) {
-            message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
-            continue;
-          }
-          spec[field] = {
-            source: uploadResult.url,
-            crop_props: {
-              ...DEFAULT_CROP_PROPS,
-            }
-          };
-        }
-      }
-
-      for (let i = 0; i < sizes.length; i += 1) {
-        const item = sizes[i] as Record<string, any>;
-        const sizeNumber = Number(item?.size);
-        const sizeLabel = SIZE_LABEL_MAP[sizeNumber];
-        if (!sizeLabel) continue;
-
-        // 处理背景资源
-        const ext = isGif ? 'gif' : 'jpg';
-        const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}.${ext}`;
-        const uploadResult = await uploadMediaFromZip(expectedFilename, zip);
-        if (uploadResult) {
-          const mediaSize = await getBlobImageSize(uploadResult.mediaBlob);
-          const targetSize =
-            (CONFIG_SIZE_MAP as Record<number, { width?: number; height?: number }>)[
-              sizeNumber
-            ] ?? {};
-          const targetWidth = Number(targetSize.width);
-          const targetHeight = Number(targetSize.height);
-          const scaleX =
-            Number.isFinite(targetWidth) && targetWidth > 0
-              ? targetWidth / mediaSize.width
-              : 1;
-          const scaleY =
-            Number.isFinite(targetHeight) && targetHeight > 0
-              ? targetHeight / mediaSize.height
-              : 1;
-          item.source = uploadResult.url;
-          item.crop_props = {
-            ...DEFAULT_CROP_PROPS,
-            ...(item.crop_props ?? {}),
-            scaleX,
-            scaleY,
-          };
-        }
-        if (typeof item.radius !== 'number') {
-          item.radius = DEFAULT_RADIUS;
-        }
-
-        // 处理动画资源
-        // widgets_medium_animation_first
-        // firstImageAnimation secondImageAnimation
-        if (item.firstImageAnimation) {
-          const filename = `widgets_${sizeLabel}_animation_first.png`;
-          const uploadResult = await uploadMediaFromZip(filename, zip);
-          if (!uploadResult) {
-            message.warning(`压缩包缺少 ${filename}`);
-            continue;
-          }
-          item.firstImageAnimation.source = uploadResult.url;
-          item.firstImageAnimation.crop_props = {
-            ...DEFAULT_CROP_PROPS,
-          };
-        }
-        if (item.secondImageAnimation) {
-          const filename = `widgets_${sizeLabel}_animation_second.png`;
-          const uploadResult = await uploadMediaFromZip(filename, zip);
-          if (!uploadResult) {
-            message.warning(`压缩包缺少 ${filename}`);
-            continue;
-          }
-          item.secondImageAnimation.source = uploadResult.url;
-          item.secondImageAnimation.crop_props = {
-            ...DEFAULT_CROP_PROPS,
-          };
-        }
-        if (item.thirdImageAnimation) {
-          const filename = `widgets_${sizeLabel}_animation_third.png`;
-          const uploadResult = await uploadMediaFromZip(filename, zip);
-          if (!uploadResult) {
-            message.warning(`压缩包缺少 ${filename}`);
-            continue;
-          }
-          item.thirdImageAnimation.source = uploadResult.url;
-          item.thirdImageAnimation.crop_props = {
-            ...DEFAULT_CROP_PROPS,
-          };
-        }
-        if (item.fourthImageAnimation) {
-          const filename = `widgets_${sizeLabel}_animation_fourth.png`;
-          const uploadResult = await uploadMediaFromZip(filename, zip);
-          if (!uploadResult) {
-            message.warning(`压缩包缺少 ${filename}`);
-            continue;
-          }
-          item.fourthImageAnimation.source = uploadResult.url;
-          item.fourthImageAnimation.crop_props = {
-            ...DEFAULT_CROP_PROPS,
-          };
-        }
-        // 处理appLinks 只有layoutType 小于6的时候才处理这个
-        if (item.appLinks && Array.isArray(item.appLinks) && item.layoutType < 6) {
-          const existingAppLinksSource = Array.isArray(item.appLinksSource)
-            ? item.appLinksSource
-            : [];
-          const appLinksSource = await Promise.all(
-            item.appLinks.map(async (_links: any, index: number) => {
-              const filenameBase = `link${sizeLabel}_${index + 1}`;
-              const candidateFilenames = [
-                `${filenameBase}.png`,
-                `${filenameBase}.jpg`,
-                `${filenameBase}.jpeg`,
-              ];
-              let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
-              for (const filename of candidateFilenames) {
-                uploadResult = await uploadMediaFromZip(filename, zip);
-                if (uploadResult) break;
-              }
-              if (!uploadResult) {
-                message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
-                return {
-                  ...(existingAppLinksSource[index] ?? {}),
-                  source: existingAppLinksSource[index]?.source ?? '',
-                };
-              }
-              return {
-                ...(existingAppLinksSource[index] ?? {}),
-                source: uploadResult.url,
-              };
-            }),
-          );
-          item.appLinksSource = appLinksSource;
-        }
-        if (item.weekday) {
-          item.weekday.show = true;
-        }
-        if (item.AmAndPm) {
-          item.AmAndPm.show = true;
-        }
-
-        // 电池组件 layoutType === 0
-        if (type === 5 && item.layoutType === 0) {
-          const batterSource = ['battery_20', 'battery_40', 'battery_60', 'battery_80', 'battery_100'];
-          await Promise.all(
-            batterSource.map(async (key: any) => {
-              const filenameBase = `widgets_${sizeLabel}_${key}`;
-              const candidateFilenames = [
-                `${filenameBase}.png`,
-                `${filenameBase}.jpg`,
-                `${filenameBase}.jpeg`,
-              ];
-              let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
-              for (const filename of candidateFilenames) {
-                uploadResult = await uploadMediaFromZip(filename, zip);
-                if (uploadResult) break;
-              }
-              if (!uploadResult) {
-                message.warning(`压缩包缺少 ${filenameBase}.png/.jpg/.jpeg`);
-              }
-              item[key] = {
-                crop_props: {
-                  ...DEFAULT_CROP_PROPS,
-                },
-                source: uploadResult ? uploadResult.url : '',
-              }
-            }),
-          );
-        }
-      }
-
-      const importConfig: Record<string, any> = {};
-      importConfig[importSystem] = spec;
-      addWidget(importConfig);
-      onClose();
-      message.success('导入成功');
-    } catch (error) {
-      console.error('[ImportModal] 读取 widgets_spec.json 失败:', error);
-      message.error('读取 widgets_spec.json 失败');
-    }
-    return false;
+      return false;
+    });
   };
 
   /**
    * 深拷贝 IconPackDefaultConfig，按 apps key 在 zip 里找 icon_{key}.jpg/png 上传填 url；
    * 找不到则 source 置空。preview 暂不处理。
    */
+  const importIconPackFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any>; uploadedCount: number } | null> => {
+    const silent = Boolean(options?.silent);
+    const config = structuredClone(IconPackDefaultConfig) as typeof IconPackDefaultConfig;
+    const apps = config.apps as Record<string, { source?: string; [key: string]: any }>;
+    let uploadedCount = 0;
+
+    for (const key of Object.keys(apps)) {
+      const app = apps[key];
+      if (!app || typeof app !== 'object') continue;
+
+      const candidates = [
+        `icon_${key}.jpg`,
+        `icon_${key}.jpeg`,
+        `icon_${key}.png`,
+      ];
+      let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+      for (const filename of candidates) {
+        uploadResult = await uploadMediaFromZip(filename, zip);
+        if (uploadResult) break;
+      }
+
+      if (uploadResult) {
+        app.source = uploadResult.url;
+        uploadedCount += 1;
+      } else {
+        app.source = '';
+      }
+    }
+
+    if (uploadedCount === 0) {
+      if (!silent) message.error('压缩包内未找到 icon 资源');
+      return null;
+    }
+
+    const rootId = addIconPack(config);
+    if (!rootId) return null;
+    return { rootId, config, uploadedCount };
+  };
+
   const readIconPackFromZip = async (file: File) => {
     const isZipFile =
       file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
@@ -386,54 +643,110 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       return false;
     }
 
-    try {
-      if (!projectId) {
-        message.error('项目未初始化，无法上传资源');
-        return false;
-      }
-
-      const zip = await JSZip.loadAsync(file);
-      const config = structuredClone(IconPackDefaultConfig) as typeof IconPackDefaultConfig;
-      const apps = config.apps as Record<string, { source?: string; [key: string]: any }>;
-      let uploadedCount = 0;
-
-      for (const key of Object.keys(apps)) {
-        const app = apps[key];
-        if (!app || typeof app !== 'object') continue;
-
-        const candidates = [
-          `icon_${key}.jpg`,
-          `icon_${key}.jpeg`,
-          `icon_${key}.png`,
-        ];
-        let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
-        for (const filename of candidates) {
-          uploadResult = await uploadMediaFromZip(filename, zip);
-          if (uploadResult) break;
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
         }
 
-        if (uploadResult) {
-          app.source = uploadResult.url;
-          uploadedCount += 1;
-        } else {
-          app.source = '';
+        const zip = await JSZip.loadAsync(file);
+        const result = await importIconPackFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(`IconPack 导入成功（上传 ${result.uploadedCount} 个）`);
         }
+      } catch (error) {
+        console.error('[ImportModal] iconpack 导入失败:', error);
+        message.error('iconpack 导入失败');
       }
-
-      addIconPack(config);
-      onClose();
-      message.success(`IconPack 导入成功（上传 ${uploadedCount} 个）`);
-    } catch (error) {
-      console.error('[ImportModal] iconpack 导入失败:', error);
-      message.error('iconpack 导入失败');
-    }
-    return false;
+      return false;
+    });
   };
 
   /**
    * 优先读 wallpaper_spec.json；没有则用 WallpaperDefaultConfig。
    * 按各尺寸 name/key 在 zip 里找 {name}.jpg/png 上传填 url。
    */
+  const importWallpaperFromZip = async (
+    zip: JSZip,
+    options?: { exportIndex?: ExportIndex; silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any>; uploadedCount: number } | null> => {
+    const exportIndex = options?.exportIndex ?? null;
+    const silent = Boolean(options?.silent);
+
+    const specFilename = applyIndexSuffix('wallpaper_spec.json', exportIndex);
+    const specFile =
+      zip.file(specFilename) ??
+      zip.file(new RegExp(`(^|\\/)${escapeRegExp(specFilename)}$`, 'i'))?.[0] ??
+      (exportIndex == null
+        ? zip.file(/(^|\/)wallpaper_spec\.json$/i)?.[0]
+        : undefined);
+
+    let config: Record<string, any> = structuredClone(
+      WallpaperDefaultConfig.Wallpaper,
+    ) as Record<string, any>;
+
+    if (specFile) {
+      try {
+        const specText = await specFile.async('string');
+        const parsed = JSON.parse(specText);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          config = parsed;
+        }
+      } catch (error) {
+        console.warn('[ImportModal] wallpaper_spec.json 解析失败，使用默认配置:', error);
+      }
+    }
+
+    let uploadedCount = 0;
+    for (const key of Object.keys(config)) {
+      const item = config[key];
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+
+      const nameToken = String(item.name || key || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_\-]/g, '');
+      const candidates = [
+        `${nameToken}.jpg`,
+        `${nameToken}.jpeg`,
+        `${nameToken}.png`,
+        `${key}.jpg`,
+        `${key}.jpeg`,
+        `${key}.png`,
+      ].filter(Boolean);
+
+      let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+      for (const filename of candidates) {
+        uploadResult = await uploadMediaFromZip(filename, zip, exportIndex);
+        if (uploadResult) break;
+      }
+
+      if (uploadResult) {
+        item.source = uploadResult.url;
+        item.crop_props = item.crop_props || DEFAULT_CROP_PROPS;
+        uploadedCount += 1;
+      } else {
+        item.source = '';
+      }
+
+      item.name = item.name || key;
+      item.width = Number(item.width) > 0 ? Number(item.width) : undefined;
+      item.height = Number(item.height) > 0 ? Number(item.height) : undefined;
+    }
+
+    if (uploadedCount === 0) {
+      if (!silent) message.warning('该套 wallpaper 未找到可用图片');
+      return null;
+    }
+
+    const rootId = addWallpaper(config);
+    if (!rootId) return null;
+    return { rootId, config, uploadedCount };
+  };
+
   const readWallpaperFromZip = async (file: File) => {
     const isZipFile =
       file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
@@ -442,79 +755,157 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       return false;
     }
 
-    try {
-      if (!projectId) {
-        message.error('项目未初始化，无法上传资源');
-        return false;
-      }
-
-      const zip = await JSZip.loadAsync(file);
-      const specFile =
-        zip.file('wallpaper_spec.json') ??
-        zip.file(/(^|\/)wallpaper_spec\.json$/i)?.[0];
-
-      let config: Record<string, any> = structuredClone(
-        WallpaperDefaultConfig.Wallpaper,
-      ) as Record<string, any>;
-
-      if (specFile) {
-        try {
-          const specText = await specFile.async('string');
-          const parsed = JSON.parse(specText);
-          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-            config = parsed;
-          }
-        } catch (error) {
-          console.warn('[ImportModal] wallpaper_spec.json 解析失败，使用默认配置:', error);
-        }
-      }
-
-      let uploadedCount = 0;
-      for (const key of Object.keys(config)) {
-        const item = config[key];
-        if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
-
-        const nameToken = String(item.name || key || '')
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, '_')
-          .replace(/[^a-z0-9_\-]/g, '');
-        const candidates = [
-          `${nameToken}.jpg`,
-          `${nameToken}.jpeg`,
-          `${nameToken}.png`,
-          `${key}.jpg`,
-          `${key}.jpeg`,
-          `${key}.png`,
-        ].filter(Boolean);
-
-        let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
-        for (const filename of candidates) {
-          uploadResult = await uploadMediaFromZip(filename, zip);
-          if (uploadResult) break;
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
         }
 
-        if (uploadResult) {
-          item.source = uploadResult.url;
-          item.crop_props = item.crop_props || DEFAULT_CROP_PROPS;
-          uploadedCount += 1;
-        } else {
-          item.source = '';
+        const zip = await JSZip.loadAsync(file);
+        const result = await importWallpaperFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(`Wallpaper 导入成功（上传 ${result.uploadedCount} 个）`);
         }
-
-        item.name = item.name || key;
-        item.width = Number(item.width) > 0 ? Number(item.width) : undefined;
-        item.height = Number(item.height) > 0 ? Number(item.height) : undefined;
+      } catch (error) {
+        console.error('[ImportModal] wallpaper 导入失败:', error);
+        message.error('wallpaper 导入失败');
       }
+      return false;
+    });
+  };
 
-      addWallpaper(config);
-      onClose();
-      message.success(`Wallpaper 导入成功（上传 ${uploadedCount} 个）`);
-    } catch (error) {
-      console.error('[ImportModal] wallpaper 导入失败:', error);
-      message.error('wallpaper 导入失败');
+  /** 选择 Theme zip 后先扫描，有 widget 则进入按套选平台 */
+  const prepareThemeImport = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
     }
-    return false;
+    if (!projectId) {
+      message.error('项目未初始化，无法上传资源');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        const zip = await JSZip.loadAsync(file);
+        const hasIconPack = hasIconPackAssets(zip);
+        if (!hasIconPack) {
+          message.error('Theme 压缩包必须包含 iconpack（icon_*.jpg/png）');
+          return false;
+        }
+
+        const wallpaperIndices = discoverWallpaperIndices(zip);
+        const widgetIndices = discoverWidgetIndices(zip);
+        setThemePending({
+          zip,
+          fileName: file.name,
+          hasIconPack,
+          wallpaperIndices,
+          widgetIndices,
+          widgetSystems: widgetIndices.map(() => 'common'),
+        });
+        message.success(
+          `已解析 Theme：IconPack 1，Wallpaper ${wallpaperIndices.length}，Widget ${widgetIndices.length}`,
+        );
+      } catch (error) {
+        console.error('[ImportModal] theme 解析失败:', error);
+        message.error('Theme 压缩包解析失败');
+      }
+      return false;
+    });
+  };
+
+  const confirmThemeImport = async () => {
+    if (!themePending || !projectId) return;
+    setThemeImporting(true);
+    await withImportLoading(async () => {
+      try {
+        const { zip, wallpaperIndices, widgetIndices, widgetSystems } = themePending;
+
+        const iconResult = await importIconPackFromZip(zip, { silent: true });
+        if (!iconResult) {
+          message.error('IconPack 导入失败');
+          return;
+        }
+
+        const wallpaperItems: Array<{ id: string; config: Record<string, any> }> = [];
+        for (const exportIndex of wallpaperIndices) {
+          const result = await importWallpaperFromZip(zip, {
+            exportIndex,
+            silent: true,
+          });
+          if (result) {
+            wallpaperItems.push({ id: result.rootId, config: result.config });
+          }
+        }
+
+        const widgetItems: Array<{
+          id: string;
+          system: ImportSystem;
+          config: Record<string, any>;
+        }> = [];
+        for (let i = 0; i < widgetIndices.length; i += 1) {
+          const system = widgetSystems[i] ?? 'common';
+          const result = await importWidgetFromZip(zip, {
+            exportIndex: widgetIndices[i],
+            system,
+            silent: true,
+          });
+          if (result) {
+            widgetItems.push({
+              id: result.rootId,
+              system: result.system,
+              config: result.config,
+            });
+          }
+        }
+
+        const selectElements = {
+          apps: [iconResult.rootId],
+          widgets: widgetItems.map((item) => `${item.id},${item.system}`),
+          wallpaper: wallpaperItems.map((item) => item.id),
+        };
+        const showElements = buildThemeShowElements({
+          iconPackId: iconResult.rootId,
+          iconPackConfig: iconResult.config,
+          wallpaperItems,
+          widgetItems,
+        });
+        const withShowElements = (surface: Record<string, any>) => ({
+          ...surface,
+          showElements: [...showElements],
+        });
+
+        addTheme({
+          ...DEFAULT_THEME_CONFIG,
+          preview_long: withShowElements({
+            ...DEFAULT_THEME_CONFIG.preview_long,
+            width: 887,
+            height: 1920,
+          }),
+          preview_short: withShowElements(DEFAULT_THEME_CONFIG.preview_short),
+          list_view: withShowElements(DEFAULT_THEME_CONFIG.list_view),
+          preview_long_ipad: withShowElements(DEFAULT_THEME_CONFIG.preview_long_ipad),
+          list_view_ipad: withShowElements(DEFAULT_THEME_CONFIG.list_view_ipad),
+          selectElements,
+        });
+
+        clearThemePending();
+        onClose();
+        message.success(
+          `Theme 导入完成：IconPack 1，Wallpaper ${wallpaperItems.length}/${wallpaperIndices.length}，Widget ${widgetItems.length}/${widgetIndices.length}`,
+        );
+      } catch (error) {
+        console.error('[ImportModal] theme 导入失败:', error);
+        message.error('Theme 导入失败');
+      } finally {
+        setThemeImporting(false);
+      }
+    });
   };
 
   const beforeUpload = async (file: File) => {
@@ -524,7 +915,19 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'wallpaper') {
       return readWallpaperFromZip(file);
     }
+    if (importKind === 'theme') {
+      return prepareThemeImport(file);
+    }
     return readWidgetsSpecFromZip(file);
+  };
+
+  const updateThemeWidgetSystem = (rowIndex: number, system: ImportSystem) => {
+    setThemePending((prev) => {
+      if (!prev) return prev;
+      const nextSystems = [...prev.widgetSystems];
+      nextSystems[rowIndex] = system;
+      return { ...prev, widgetSystems: nextSystems };
+    });
   };
 
   return (
@@ -535,38 +938,91 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         </Typography.Title>
         <Select
           value={importKind}
-          onChange={setImportKind}
+          onChange={handleImportKindChange}
           options={[
             { label: 'Widget', value: 'widget' },
             { label: 'IconPack', value: 'iconPack' },
-            { label: 'WallPaper', options: [{
-              label: 'wallpaper',
-              value: 'wallpaper',
-            }] },
+            {
+              label: 'WallPaper',
+              options: [
+                {
+                  label: 'wallpaper',
+                  value: 'wallpaper',
+                },
+              ],
+            },
+            { label: 'Theme', value: 'theme' },
           ]}
           style={{ width: '100%' }}
         />
-        <Segmented<ImportSystem>
-          block
-          value={importSystem}
-          onChange={(value) => setImportSystem(value)}
-          options={[
-            { label: 'Common', value: 'common' },
-            { label: 'iOS', value: 'ios' },
-            { label: 'Android', value: 'android' },
-          ]}
-        />
-        <Upload.Dragger
-          fileList={[]}
-          accept=".zip,application/zip"
-          maxCount={1}
-          beforeUpload={beforeUpload}
-        >
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined />
-          </p>
-          <p className="ant-upload-text">点击或拖拽 zip 压缩包到这里</p>
-        </Upload.Dragger>
+        {importKind === 'widget' ? (
+          <Segmented<ImportSystem>
+            block
+            value={importSystem}
+            onChange={(value) => setImportSystem(value)}
+            options={[
+              { label: 'Common', value: 'common' },
+              { label: 'iOS', value: 'ios' },
+              { label: 'Android', value: 'android' },
+            ]}
+          />
+        ) : null}
+        {importKind === 'theme' && themePending ? (
+          <>
+            <div className={styles.themeMeta}>
+              {themePending.fileName}
+              <br />
+              IconPack: 1 · Wallpaper: {themePending.wallpaperIndices.length} ·
+              Widget: {themePending.widgetIndices.length}
+            </div>
+            {themePending.widgetIndices.map((exportIndex, rowIndex) => (
+              <div className={styles.widgetRow} key={`widget-${exportIndex ?? 'plain'}-${rowIndex}`}>
+                <div className={styles.widgetRowTitle}>
+                  Widget #{exportIndex == null ? 1 : exportIndex}
+                  {exportIndex != null ? ` (_${exportIndex})` : ''}
+                </div>
+                <Segmented<ImportSystem>
+                  block
+                  size="small"
+                  value={themePending.widgetSystems[rowIndex] ?? 'common'}
+                  onChange={(value) => updateThemeWidgetSystem(rowIndex, value)}
+                  options={[
+                    { label: 'Common', value: 'common' },
+                    { label: 'iOS', value: 'ios' },
+                    { label: 'Android', value: 'android' },
+                  ]}
+                />
+              </div>
+            ))}
+            <Button
+              type="primary"
+              block
+              loading={themeImporting}
+              onClick={confirmThemeImport}
+            >
+              确认导入
+            </Button>
+            <Button block disabled={themeImporting} onClick={clearThemePending}>
+              重新选择文件
+            </Button>
+          </>
+        ) : (
+          <Upload.Dragger
+            fileList={[]}
+            accept=".zip,application/zip"
+            maxCount={1}
+            beforeUpload={beforeUpload}
+          >
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">
+              {importKind === 'theme'
+                ? '点击或拖拽 Theme zip 到这里'
+                : '点击或拖拽 zip 压缩包到这里'}
+            </p>
+          </Upload.Dragger>
+        )}
       </div>
     </>
   );
