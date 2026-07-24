@@ -7,6 +7,19 @@ export const defaultCropProps = {
     translateX: 0,
     translateY: 0,
 };
+
+export const DEFAULT_ICON_RADIUS = 39.96;
+
+const withDefaultIconRadius = <T extends Record<string, Record<string, any>>>(apps: T): T => {
+    const next = {} as T;
+    for (const key of Object.keys(apps) as Array<keyof T>) {
+        next[key] = {
+            ...apps[key],
+            radius: DEFAULT_ICON_RADIUS,
+        };
+    }
+    return next;
+};
 export const WidgetDefaultConfig = {
     Time_LayoutType_0: {
         ios: {
@@ -5613,7 +5626,7 @@ export const IconPackDefaultConfig1 = {
     }
 }
 export const IconPackDefaultConfig = {
-    apps: {
+    apps: withDefaultIconRadius({
         zoom: {
             name: 'zoom',
             "crop_props": defaultCropProps,
@@ -5671,7 +5684,7 @@ export const IconPackDefaultConfig = {
         weather: { name: 'Weather', crop_props: defaultCropProps, source: '' },
         whatsapp: { name: 'WhatsApp', crop_props: defaultCropProps, source: '' },
         youtube: { name: 'Youtube', crop_props: defaultCropProps, source: '' },
-    },
+    }),
     preview_long: {
         width: 887,
         height: 1920,

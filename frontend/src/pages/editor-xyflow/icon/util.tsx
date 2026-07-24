@@ -1,10 +1,10 @@
 import { nanoid } from 'nanoid';
+import { DEFAULT_ICON_RADIUS } from '@/editor-core/defaultConfig';
 import { DEFAULT_CROP_PROPS } from '../widget/base-config';
 
 const ICON_SIZE = 180;
 const ICON_GAP = 100;
 const ICON_COLUMNS = 8;
-const DEFAULT_ICON_RADIUS = 39.96;
 const SURFACE_GAP = 50;
 
 /** iconpack 预览面：带 width/height 的对象；排除 apps 等非预览字段 */
