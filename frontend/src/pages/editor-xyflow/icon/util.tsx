@@ -160,6 +160,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
       draggable: false,
       connectable: false,
       focusable: false,
+      selectable: false,
       zIndex: 10,
       style: {
         width: groupWidth,
@@ -187,7 +188,8 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
       parentId: surfaceGroupId,
       extent: 'parent',
       draggable: false,
-      selectable: false,
+      // selectable: false,
+      desktopeditable: true,
       connectable: false,
       focusable: false,
       style: {

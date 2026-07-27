@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -140,6 +141,8 @@ type EditorCoreCtxValue = {
   openDesktopEditor: (nodeId: string) => void;
   closeDesktopEditor: () => void;
   confirmDesktopEditor: () => void;
+  /** ThemeHome 编辑态注册/清理 Confirm 时读取 showElements 的 getter */
+  registerDesktopEditDraft: (getter: (() => any[] | null) | null) => void;
   generatePreviewImage: (rootId?: string) => Promise<string | null>;
   generateProjectPayload: () => Promise<Record<string, any> | null>;
   saveProjectPayload: () => Promise<Record<string, any> | null>;
@@ -217,6 +220,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   openDesktopEditor: (_nodeId: string) => {},
   closeDesktopEditor: () => {},
   confirmDesktopEditor: () => {},
+  registerDesktopEditDraft: (_getter: (() => any[] | null) | null) => {},
   generatePreviewImage: async () => null,
   generateProjectPayload: async () => null,
   saveProjectPayload: async () => null,
@@ -371,6 +375,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [cropEditingNodeId, setCropEditingNodeId] = useState<string>('');
   const [cropDraftProps, setCropDraftProps] = useState<CropProps | null>(null);
   const [desktopEditingNodeId, setDesktopEditingNodeId] = useState<string>('');
+  const desktopEditDraftGetterRef = useRef<(() => any[] | null) | null>(null);
   const previewSaveTimerRef = useRef<number | null>(null);
   const previewIdleHandleRef = useRef<number | null>(null);
   const previewSavingRef = useRef(false);
@@ -834,7 +839,15 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     setRightPanlOpen(false);
   };
 
+  const registerDesktopEditDraft = useCallback(
+    (getter: (() => any[] | null) | null) => {
+      desktopEditDraftGetterRef.current = getter;
+    },
+    [],
+  );
+
   const closeDesktopEditor = () => {
+    desktopEditDraftGetterRef.current = null;
     setDesktopEditOpen(false);
     setHideUI(false);
     setDesktopEditingNodeId('');
@@ -857,6 +870,24 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const confirmDesktopEditor = () => {
+    const nodeId = desktopEditingNodeId;
+    const nextShowElements = desktopEditDraftGetterRef.current?.() ?? null;
+    if (nodeId && Array.isArray(nextShowElements)) {
+      commitNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          if (node.id !== nodeId) return node;
+          const prevData =
+            (node.data as Record<string, unknown> | undefined) ?? {};
+          return {
+            ...node,
+            data: {
+              ...prevData,
+              showElements: nextShowElements,
+            },
+          };
+        }),
+      );
+    }
     closeDesktopEditor();
   };
 
@@ -1291,6 +1322,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       openDesktopEditor,
       closeDesktopEditor,
       confirmDesktopEditor,
+      registerDesktopEditDraft,
       generatePreviewImage,
       generateProjectPayload,
       saveProjectPayload,
@@ -1326,6 +1358,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       cropEditingNodeId,
       cropDraftProps,
       desktopEditingNodeId,
+      registerDesktopEditDraft,
       generatePreviewImage,
       generateProjectPayload,
       saveProjectPayload,
@@ -1444,6 +1477,8 @@ export const useEditorDesktopEditingNodeId = () => useContext(EditorCoreCtx).des
 export const useEditorOpenDesktopEditor = () => useContext(EditorCoreCtx).openDesktopEditor;
 export const useEditorCloseDesktopEditor = () => useContext(EditorCoreCtx).closeDesktopEditor;
 export const useEditorConfirmDesktopEditor = () => useContext(EditorCoreCtx).confirmDesktopEditor;
+export const useEditorRegisterDesktopEditDraft = () =>
+  useContext(EditorCoreCtx).registerDesktopEditDraft;
 export const useEditorGeneratePreviewImage = () => useContext(EditorCoreCtx).generatePreviewImage;
 export const useEditorGenerateProjectPayload = () => useContext(EditorCoreCtx).generateProjectPayload;
 export const useEditorSaveProjectPayload = () => useContext(EditorCoreCtx).saveProjectPayload;
