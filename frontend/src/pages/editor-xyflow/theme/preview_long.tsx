@@ -9,6 +9,7 @@ export default function PreviewLong(props: any) {
       defaultHeight={1920}
       cols={4}
       rows={6}
+      showIconName
     />
   );
 }

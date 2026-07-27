@@ -8,6 +8,7 @@ export default function PreviewLongIpad(props: any) {
       defaultHeight={2732}
       cols={4}
       rows={4}
+      nodeId={props.id}
     />
   );
 }

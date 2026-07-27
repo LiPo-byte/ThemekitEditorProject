@@ -9,6 +9,7 @@ export default function ListViewIpad(props: any) {
       cols={4}
       rows={4}
       chromeScale={0.5}
+      nodeId={props.id}
     />
   );
 }

@@ -32,6 +32,9 @@ import {
 } from './themeHomeDnd';
 import {
   buildThemeHomePlacements,
+  dockCellOf,
+  gridCellH,
+  gridCellW,
   placementPixelStyle,
   placementsToShowElements,
   resolveHomeFrameMetrics,
@@ -43,6 +46,8 @@ import {
   type ThemeHomeSpanResolver,
   type ThemeHomeZone,
 } from './themeHomeLayout';
+
+const IPAD_ICON_NAME_HEIGHT = 36;
 
 const DROP_PREVIEW_VALID = {
   border: '2px solid rgba(22, 119, 255, 0.95)',
@@ -67,6 +72,10 @@ export type ThemeHomeEditableProps = {
   resolveSpan?: ThemeHomeSpanResolver;
   /** 是否显示 Dock；list_view_short 传 false */
   withDock?: boolean;
+  /** 主网格 icon 是否显示名称（iPad） */
+  showIconName?: boolean;
+  /** iPad：fitScale 同步受 Dock 宽度约束 */
+  scaleWithDockWidth?: boolean;
 };
 
 const resolveWidgetXyflowType = (type: number, layoutType?: number) => {
@@ -75,19 +84,91 @@ const resolveWidgetXyflowType = (type: number, layoutType?: number) => {
   return `${wt}_${layoutType || 0}`;
 };
 
-const renderIconCell = (element: any) => (
-  <div
-    style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <AppIcon data={element.data} scale={1} />
-  </div>
-);
+const ICON_NAME_GAP = 6;
+
+const renderIconCell = (element: any, showIconName = false, layout?: ThemeHomeLayout) => {
+  if (!showIconName) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <AppIcon data={element.data} scale={1} showName={false} />
+      </div>
+    );
+  }
+
+  const name = String(element?.data?.name ?? element?.data?.key ?? '');
+  const cellW = layout ? gridCellW(layout) : 449;
+  const cellH = layout ? gridCellH(layout) : 465;
+  const iconSize = layout?.cell ?? 180;
+  const nameBlock = ICON_NAME_GAP + IPAD_ICON_NAME_HEIGHT;
+  // 手机方格：缩小 icon 以腾出名字；大格（iPad）保持 1:1
+  const iconScale = Math.min(1, Math.max(0.1, (cellH - nameBlock) / iconSize));
+  const iconDisplay = iconSize * iconScale;
+
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: Math.max(cellW - 16, iconDisplay),
+        }}
+      >
+        <div
+          style={{
+            width: iconDisplay,
+            height: iconDisplay,
+            overflow: 'hidden',
+            flexShrink: 0,
+          }}
+        >
+          <AppIcon data={element.data} scale={iconScale} showName={false} />
+        </div>
+        <div
+          style={{
+            marginTop: ICON_NAME_GAP,
+            height: IPAD_ICON_NAME_HEIGHT,
+            width: Math.max(cellW - 16, 0),
+            maxWidth: Math.max(cellW - 16, 0),
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            color: '#fff',
+            fontSize: 20,
+            fontWeight: 500,
+            textAlign: 'center',
+            lineHeight: 1.15,
+            textShadow: '0 1px 2px rgba(0,0,0,0.45)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+          title={name}
+        >
+          {name}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const renderWidgetCell = (
   element: any,
@@ -129,9 +210,18 @@ const renderWidgetCell = (
   );
 };
 
-const renderPlacementContent = (placement: ThemeHomePlacement, layout: ThemeHomeLayout) => {
+const renderPlacementContent = (
+  placement: ThemeHomePlacement,
+  layout: ThemeHomeLayout,
+  showIconName = false,
+) => {
   if (placement.element?.category === 'iconpack') {
-    return renderIconCell(placement.element);
+    // Dock 内不显示名称
+    return renderIconCell(
+      placement.element,
+      showIconName && placement.zone === 'grid',
+      layout,
+    );
   }
   return renderWidgetCell(
     placement.element,
@@ -153,15 +243,17 @@ function GridSlot({
   const { ref } = useDroppable({
     id: themeHomeGridSlotId(colStart, rowStart),
   });
+  const cellW = gridCellW(layout);
+  const cellH = gridCellH(layout);
   return (
     <div
       ref={ref}
       style={{
         position: 'absolute',
-        left: (colStart - 1) * (layout.cell + layout.gapX),
-        top: (rowStart - 1) * (layout.cell + layout.gapY),
-        width: layout.cell,
-        height: layout.cell,
+        left: (colStart - 1) * (cellW + layout.gapX),
+        top: (rowStart - 1) * (cellH + layout.gapY),
+        width: cellW,
+        height: cellH,
         boxSizing: 'border-box',
         borderRadius: 12,
         border: '2px dashed rgba(255,255,255,0.72)',
@@ -176,15 +268,16 @@ function DockSlot({ colStart, layout }: { colStart: number; layout: ThemeHomeLay
   const { ref } = useDroppable({
     id: themeHomeDockSlotId(colStart),
   });
+  const cell = dockCellOf(layout);
   return (
     <div
       ref={ref}
       style={{
         position: 'absolute',
-        left: (colStart - 1) * (layout.cell + layout.gapX),
+        left: (colStart - 1) * (cell + layout.gapX),
         top: 0,
-        width: layout.cell,
-        height: layout.cell,
+        width: cell,
+        height: cell,
         boxSizing: 'border-box',
         borderRadius: 12,
         border: '2px dashed rgba(255,255,255,0.72)',
@@ -231,12 +324,14 @@ function DropSpanPreview({
   const preview =
     hoverTarget.zone === 'dock'
       ? {
+          zone: 'dock' as const,
           colStart: hoverTarget.colStart,
           rowStart: 1,
           colSpan: 1,
           rowSpan: 1,
         }
       : {
+          zone: 'grid' as const,
           colStart: hoverTarget.colStart,
           rowStart: hoverTarget.rowStart,
           colSpan: item.colSpan,
@@ -494,9 +589,11 @@ function HomeDragOverlayPlaceholder({
 function DraggableHomeItem({
   placement,
   layout,
+  showIconName = false,
 }: {
   placement: ThemeHomePlacement;
   layout: ThemeHomeLayout;
+  showIconName?: boolean;
 }) {
   // isDropping：松手后反馈结束前仍为 true，避免先回到旧位再挂真实内容
   // 仅左上角把手可发起拖拽
@@ -507,7 +604,7 @@ function DraggableHomeItem({
 
   const content = inFlight
     ? <HomeItemPlaceholder placement={placement} layout={layout} />
-    : renderPlacementContent(placement, layout);
+    : renderPlacementContent(placement, layout, showIconName);
   if (!content) return null;
 
   const style: CSSProperties = {
@@ -566,12 +663,15 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
     defaultHeight,
     resolveSpan = resolveThemeHomeElementSpan,
     withDock = true,
+    showIconName = false,
+    scaleWithDockWidth = false,
   } = props;
 
   const { zoom } = useViewport();
   const registerDesktopEditDraft = useEditorRegisterDesktopEditDraft();
   const width = Number(data.width) > 0 ? Number(data.width) : (defaultWidth ?? 887);
   const height = Number(data.height) > 0 ? Number(data.height) : (defaultHeight ?? 1920);
+  const dockCell = dockCellOf(layout);
   const showElements = Array.isArray(data.showElements) ? data.showElements : [];
   const showElementsKey = useMemo(() => JSON.stringify(showElements), [showElements]);
 
@@ -632,8 +732,19 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
         layout,
         dockAlignWithGrid,
         withDock,
+        scaleWithDockWidth,
       }),
-    [width, height, cols, rows, dockCols, layout, dockAlignWithGrid, withDock],
+    [
+      width,
+      height,
+      cols,
+      rows,
+      dockCols,
+      layout,
+      dockAlignWithGrid,
+      withDock,
+      scaleWithDockWidth,
+    ],
   );
 
   const handleDragEnd = useCallback(
@@ -710,7 +821,7 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
         gridLogicalW={frame.gridW}
         gridLogicalH={frame.gridH}
         dockLogicalW={frame.dockInnerW}
-        dockLogicalH={layout.cell}
+        dockLogicalH={dockCell}
         onHoverChange={handleHoverChange}
       />
       <div
@@ -781,7 +892,12 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
                   layout={layout}
                 />
                 {gridItems.map((item) => (
-                  <DraggableHomeItem key={item.id} placement={item} layout={layout} />
+                  <DraggableHomeItem
+                    key={item.id}
+                    placement={item}
+                    layout={layout}
+                    showIconName={showIconName}
+                  />
                 ))}
               </div>
             </div>
@@ -816,7 +932,7 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
             >
               <div
                 ref={dockBoardRef}
-                style={{ position: 'relative', width: frame.dockInnerW, height: layout.cell }}
+                style={{ position: 'relative', width: frame.dockInnerW, height: dockCell }}
               >
                 {dockSlots}
                 <DropSpanPreview
@@ -830,7 +946,12 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
                   layout={layout}
                 />
                 {dockItems.map((item) => (
-                  <DraggableHomeItem key={item.id} placement={item} layout={layout} />
+                  <DraggableHomeItem
+                    key={item.id}
+                    placement={item}
+                    layout={layout}
+                    showIconName={showIconName}
+                  />
                 ))}
               </div>
             </div>

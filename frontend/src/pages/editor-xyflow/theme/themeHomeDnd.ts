@@ -2,6 +2,9 @@ import {
   buildDockOccupied,
   buildGridOccupied,
   canPlace,
+  dockCellOf,
+  gridCellH,
+  gridCellW,
   type ThemeHomeLayout,
   type ThemeHomePlacement,
   type ThemeHomeZone,
@@ -59,15 +62,16 @@ const mapPointToCell = (
   y: number,
   cols: number,
   rows: number,
-  cell: number,
+  cellW: number,
+  cellH: number,
   gapX: number,
   gapY: number,
 ): { colStart: number; rowStart: number } | null => {
-  const gridW = cols * cell + Math.max(0, cols - 1) * gapX;
-  const gridH = rows * cell + Math.max(0, rows - 1) * gapY;
+  const gridW = cols * cellW + Math.max(0, cols - 1) * gapX;
+  const gridH = rows * cellH + Math.max(0, rows - 1) * gapY;
   if (x < 0 || y < 0 || x >= gridW || y >= gridH) return null;
-  const strideX = cell + gapX;
-  const strideY = cell + gapY;
+  const strideX = cellW + gapX;
+  const strideY = cellH + gapY;
   const colStart = Math.min(cols, Math.floor(x / strideX) + 1);
   const rowStart = Math.min(rows, Math.floor(y / strideY) + 1);
   return { colStart, rowStart };
@@ -116,7 +120,8 @@ export const resolveThemeHomeDropTargetFromPointer = (params: {
       ((pointer.x - dockBoardRect.left) * dockLogicalW) / dockBoardRect.width;
     const y =
       ((pointer.y - dockBoardRect.top) * dockLogicalH) / dockBoardRect.height;
-    const cell = mapPointToCell(x, y, dockCols, 1, layout.cell, layout.gapX, 0);
+    const dCell = dockCellOf(layout);
+    const cell = mapPointToCell(x, y, dockCols, 1, dCell, dCell, layout.gapX, 0);
     if (!cell) return null;
     return { zone: 'dock', colStart: cell.colStart, rowStart: 1 };
   }
@@ -136,7 +141,8 @@ export const resolveThemeHomeDropTargetFromPointer = (params: {
       y,
       cols,
       rows,
-      layout.cell,
+      gridCellW(layout),
+      gridCellH(layout),
       layout.gapX,
       layout.gapY,
     );

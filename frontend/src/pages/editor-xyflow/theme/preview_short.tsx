@@ -9,6 +9,7 @@ export default function PreviewShort(props: any) {
       defaultHeight={1578}
       cols={4}
       rows={5}
+      showIconName
     />
   );
 }

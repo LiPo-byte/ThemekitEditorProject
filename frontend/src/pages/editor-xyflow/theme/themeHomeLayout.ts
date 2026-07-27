@@ -1,6 +1,13 @@
 /** 主屏预览布局尺度；list_view 可传更小 cell */
 export type ThemeHomeLayout = {
+  /** 默认正方形格子边长；未设 cellW/cellH/dockCell 时回退用它 */
   cell: number;
+  /** 主网格格宽；iPad 大格用 */
+  cellW?: number;
+  /** 主网格格高；iPad 大格用 */
+  cellH?: number;
+  /** Dock 格边长；iPad Dock 仍为手机小格 */
+  dockCell?: number;
   gapX: number;
   gapY: number;
   padTop: number;
@@ -11,6 +18,10 @@ export type ThemeHomeLayout = {
   dockPadding: number;
   dockRadius: number;
 };
+
+export const gridCellW = (layout: ThemeHomeLayout) => layout.cellW ?? layout.cell;
+export const gridCellH = (layout: ThemeHomeLayout) => layout.cellH ?? layout.cell;
+export const dockCellOf = (layout: ThemeHomeLayout) => layout.dockCell ?? layout.cell;
 
 export const PHONE_HOME_LAYOUT: ThemeHomeLayout = {
   cell: 180,
@@ -99,16 +110,74 @@ export const resolveListViewShortSpan: ThemeHomeSpanResolver = (element) => {
   return { colSpan: 999, rowSpan: 999 };
 };
 
-export const getGridSize = (cols: number, rows: number, layout: ThemeHomeLayout) => ({
-  width: cols * layout.cell + Math.max(0, cols - 1) * layout.gapX,
-  height: rows * layout.cell + Math.max(0, rows - 1) * layout.gapY,
-});
+/** icon=1×1；widget: 1→1×1 / 2→2×1 / 3→2×2（iPad 大格） */
+export const resolveIpadHomeElementSpan: ThemeHomeSpanResolver = (element) => {
+  if (element?.category === 'iconpack') {
+    return { colSpan: 1, rowSpan: 1 };
+  }
+  if (element?.category === 'widget') {
+    const size = Number(element?.data?.sizes?.[0]?.size) || 1;
+    if (size === 3) return { colSpan: 2, rowSpan: 2 };
+    if (size === 2) return { colSpan: 2, rowSpan: 1 };
+    return { colSpan: 1, rowSpan: 1 };
+  }
+  return { colSpan: 1, rowSpan: 1 };
+};
 
-export const spanPxX = (n: number, layout: ThemeHomeLayout) =>
-  n * layout.cell + Math.max(0, n - 1) * layout.gapX;
+const IPAD_PHONE_CELL = 180;
+const IPAD_GAP_X = 89;
+const IPAD_GAP_Y = 105;
+const IPAD_CELL_W = IPAD_PHONE_CELL * 2 + IPAD_GAP_X; // 449
+const IPAD_CELL_H = IPAD_PHONE_CELL * 2 + IPAD_GAP_Y; // 465
 
-export const spanPxY = (n: number, layout: ThemeHomeLayout) =>
-  n * layout.cell + Math.max(0, n - 1) * layout.gapY;
+/** iPad 主屏布局；chromeScale 用于 list_view_ipad 等比缩小边距 */
+export const createIpadHomeLayout = (chromeScale = 1): ThemeHomeLayout => {
+  const s = Number(chromeScale) > 0 ? Number(chromeScale) : 1;
+  return {
+    cell: IPAD_PHONE_CELL,
+    cellW: IPAD_CELL_W,
+    cellH: IPAD_CELL_H,
+    dockCell: IPAD_PHONE_CELL,
+    gapX: IPAD_GAP_X,
+    gapY: IPAD_GAP_Y,
+    padTop: 100 * s,
+    padX: 200 * s,
+    dockBottom: 20 * s,
+    dockSide: 10 * s,
+    dockGap: 48 * s,
+    dockPadding: 20 * s,
+    dockRadius: 48 * s,
+  };
+};
+
+export const DEFAULT_IPAD_DOCK_COLS = 8;
+
+export const getGridSize = (cols: number, rows: number, layout: ThemeHomeLayout) => {
+  const cellW = gridCellW(layout);
+  const cellH = gridCellH(layout);
+  return {
+    width: cols * cellW + Math.max(0, cols - 1) * layout.gapX,
+    height: rows * cellH + Math.max(0, rows - 1) * layout.gapY,
+  };
+};
+
+export const spanPxX = (n: number, layout: ThemeHomeLayout) => {
+  const cellW = gridCellW(layout);
+  return n * cellW + Math.max(0, n - 1) * layout.gapX;
+};
+
+export const spanPxY = (n: number, layout: ThemeHomeLayout) => {
+  const cellH = gridCellH(layout);
+  return n * cellH + Math.max(0, n - 1) * layout.gapY;
+};
+
+export const getDockInnerSize = (dockCols: number, layout: ThemeHomeLayout) => {
+  const cell = dockCellOf(layout);
+  return {
+    width: dockCols * cell + Math.max(0, dockCols - 1) * layout.gapX,
+    height: cell,
+  };
+};
 
 export const createOccupiedGrid = (cols: number, rows: number) =>
   Array.from({ length: rows }, () => Array.from({ length: cols }, () => false));
@@ -164,15 +233,32 @@ export const findNextSlot = (
 };
 
 export const placementPixelStyle = (
-  placement: Pick<ThemeHomePlacement, 'colStart' | 'rowStart' | 'colSpan' | 'rowSpan'>,
+  placement: Pick<
+    ThemeHomePlacement,
+    'zone' | 'colStart' | 'rowStart' | 'colSpan' | 'rowSpan'
+  >,
   layout: ThemeHomeLayout,
-) => ({
-  position: 'absolute' as const,
-  left: (placement.colStart - 1) * (layout.cell + layout.gapX),
-  top: (placement.rowStart - 1) * (layout.cell + layout.gapY),
-  width: spanPxX(placement.colSpan, layout),
-  height: spanPxY(placement.rowSpan, layout),
-});
+) => {
+  if (placement.zone === 'dock') {
+    const cell = dockCellOf(layout);
+    return {
+      position: 'absolute' as const,
+      left: (placement.colStart - 1) * (cell + layout.gapX),
+      top: 0,
+      width: placement.colSpan * cell + Math.max(0, placement.colSpan - 1) * layout.gapX,
+      height: cell,
+    };
+  }
+  const cellW = gridCellW(layout);
+  const cellH = gridCellH(layout);
+  return {
+    position: 'absolute' as const,
+    left: (placement.colStart - 1) * (cellW + layout.gapX),
+    top: (placement.rowStart - 1) * (cellH + layout.gapY),
+    width: spanPxX(placement.colSpan, layout),
+    height: spanPxY(placement.rowSpan, layout),
+  };
+};
 
 export const buildGridOccupied = (
   placements: ThemeHomePlacement[],
@@ -395,6 +481,10 @@ export const resolveHomeFrameMetrics = (params: {
   dockAlignWithGrid: boolean;
   /** false 时不预留/渲染 Dock（如 list_view_short） */
   withDock?: boolean;
+  /**
+   * true：fitScale 同时受 Dock 可用宽度约束，且 dockScale=fitScale（iPad 主屏）。
+   */
+  scaleWithDockWidth?: boolean;
 }) => {
   const {
     width,
@@ -405,11 +495,13 @@ export const resolveHomeFrameMetrics = (params: {
     layout,
     dockAlignWithGrid,
     withDock = true,
+    scaleWithDockWidth = false,
   } = params;
   const { width: gridW, height: gridH } = getGridSize(cols, rows, layout);
-  const dockInnerW = dockCols * layout.cell + Math.max(0, dockCols - 1) * layout.gapX;
+  const dockCell = dockCellOf(layout);
+  const dockInnerW = dockCols * dockCell + Math.max(0, dockCols - 1) * layout.gapX;
   const dockOuterW = dockInnerW + layout.dockPadding * 2;
-  const dockOuterH = layout.cell + layout.dockPadding * 2;
+  const dockOuterH = dockCell + layout.dockPadding * 2;
 
   const innerW = width - layout.padX * 2;
 
@@ -435,21 +527,36 @@ export const resolveHomeFrameMetrics = (params: {
   }
 
   const heightBudget = Math.max(height - layout.padTop - layout.dockBottom - layout.dockGap, 1);
-  const fitScale = dockAlignWithGrid
-    ? Math.min(innerW / gridW, heightBudget / (gridH + dockOuterH), 1)
-    : Math.min(innerW / gridW, Math.max(heightBudget - dockOuterH, 1) / gridH, 1);
-
   const dockAvailW = Math.max(width - layout.dockSide * 2, 1);
-  const dockScale = dockAlignWithGrid ? fitScale : Math.min(dockAvailW / dockOuterW, 1);
+
+  let fitScale: number;
+  let dockScale: number;
+  if (scaleWithDockWidth) {
+    fitScale = Math.min(
+      innerW / gridW,
+      dockAvailW / dockOuterW,
+      heightBudget / (gridH + dockOuterH),
+      1,
+    );
+    dockScale = fitScale;
+  } else if (dockAlignWithGrid) {
+    fitScale = Math.min(innerW / gridW, heightBudget / (gridH + dockOuterH), 1);
+    dockScale = fitScale;
+  } else {
+    fitScale = Math.min(innerW / gridW, Math.max(heightBudget - dockOuterH, 1) / gridH, 1);
+    dockScale = Math.min(dockAvailW / dockOuterW, 1);
+  }
+
   const dockDisplayW = dockOuterW * dockScale;
   const dockDisplayH = dockOuterH * dockScale;
   const contentBottom = layout.dockBottom + dockDisplayH + layout.dockGap;
 
   const gridDisplayW = gridW * fitScale;
   const gridLeft = layout.padX + Math.max(innerW - gridDisplayW, 0) / 2;
-  const dockLeft = dockAlignWithGrid
-    ? gridLeft - layout.dockPadding * dockScale
-    : (width - dockDisplayW) / 2;
+  const dockLeft =
+    dockAlignWithGrid && !scaleWithDockWidth
+      ? gridLeft - layout.dockPadding * dockScale
+      : (width - dockDisplayW) / 2;
 
   return {
     gridW,

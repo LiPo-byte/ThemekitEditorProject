@@ -16,6 +16,8 @@ import {
   LIST_HOME_LAYOUT,
   PHONE_HOME_LAYOUT,
   buildThemeHomePlacements,
+  gridCellH,
+  gridCellW,
   resolveHomeFrameMetrics,
   resolveThemeHomeElementSpan,
   spanPxX,
@@ -27,25 +29,102 @@ import {
 export type { ThemeHomeLayout };
 export { PHONE_HOME_LAYOUT, LIST_HOME_LAYOUT };
 
+const ICON_NAME_HEIGHT = 36;
+const ICON_NAME_GAP = 6;
+
 const resolveWidgetXyflowType = (type: number, layoutType?: number) => {
   const wt = TYPE_WIDGET_MAP[type];
   if (!wt) return '';
   return `${wt}_${layoutType || 0}`;
 };
 
-const renderIconCell = (element: any) => (
-  <div
-    style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <AppIcon data={element.data} scale={1} />
-  </div>
-);
+const renderIconCell = (
+  element: any,
+  showIconName = false,
+  layout?: ThemeHomeLayout,
+) => {
+  if (!showIconName) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <AppIcon data={element.data} scale={1} showName={false} />
+      </div>
+    );
+  }
+
+  const name = String(element?.data?.name ?? element?.data?.key ?? '');
+  const cellW = layout ? gridCellW(layout) : 180;
+  const cellH = layout ? gridCellH(layout) : 180;
+  const iconSize = layout?.cell ?? 180;
+  const nameBlock = ICON_NAME_GAP + ICON_NAME_HEIGHT;
+  // 手机方格：缩小 icon 以腾出名字；大格（iPad）保持 1:1
+  const iconScale = Math.min(1, Math.max(0.1, (cellH - nameBlock) / iconSize));
+  const iconDisplay = iconSize * iconScale;
+
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: Math.max(cellW - 16, iconDisplay),
+        }}
+      >
+        <div
+          style={{
+            width: iconDisplay,
+            height: iconDisplay,
+            overflow: 'hidden',
+            flexShrink: 0,
+          }}
+        >
+          <AppIcon data={element.data} scale={iconScale} showName={false} />
+        </div>
+        <div
+          style={{
+            marginTop: ICON_NAME_GAP,
+            height: ICON_NAME_HEIGHT,
+            width: Math.max(cellW - 16, 0),
+            maxWidth: Math.max(cellW - 16, 0),
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            color: '#fff',
+            fontSize: 20,
+            fontWeight: 500,
+            textAlign: 'center',
+            lineHeight: 1.15,
+            textShadow: '0 1px 2px rgba(0,0,0,0.45)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+          title={name}
+        >
+          {name}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const renderWidgetCell = (
   element: any,
@@ -116,6 +195,8 @@ export type ThemeHomePreviewProps = {
   resolveSpan?: ThemeHomeSpanResolver;
   /** 是否显示 Dock；list_view_short 传 false */
   withDock?: boolean;
+  /** 主网格 icon 是否显示名称；Dock 内始终不显示 */
+  showIconName?: boolean;
 };
 
 function useResolvedEditable(editable: boolean | undefined, nodeId?: string) {
@@ -148,6 +229,7 @@ export default function ThemeHomePreview(props: ThemeHomePreviewProps) {
         ? false
         : cols === dockCols;
   const resolveSpan = props.resolveSpan ?? resolveThemeHomeElementSpan;
+  const showIconName = props.showIconName === true;
 
   if (isEditable) {
     return (
@@ -162,6 +244,7 @@ export default function ThemeHomePreview(props: ThemeHomePreviewProps) {
         defaultHeight={props.defaultHeight}
         resolveSpan={resolveSpan}
         withDock={withDock}
+        showIconName={showIconName}
       />
     );
   }
@@ -181,7 +264,11 @@ export default function ThemeHomePreview(props: ThemeHomePreviewProps) {
   placements.forEach((placement) => {
     const content =
       placement.element?.category === 'iconpack'
-        ? renderIconCell(placement.element)
+        ? renderIconCell(
+            placement.element,
+            showIconName && placement.zone === 'grid',
+            layout,
+          )
         : renderWidgetCell(
             placement.element,
             placement.colSpan,
