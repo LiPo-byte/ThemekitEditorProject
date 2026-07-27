@@ -1094,17 +1094,39 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     config_json: buildWallpaperConfigJson(rootNode, nodes),
   });
 
-  const buildThemeElementPayload = (rootNode: FlowNode) => ({
-    element_key: rootNode.id,
-    category: 'theme',
-    subtype: 'theme',
-    x: rootNode.position?.x ?? 0,
-    y: rootNode.position?.y ?? 0,
-    visible: true,
-    locked: false,
-    schema_version: 1,
-    config_json: buildThemeConfigJson(rootNode, nodes),
-  });
+  const buildThemeElementPayload = (rootNode: FlowNode) => {
+    const sourceConfigMap: Record<string, any> = {};
+    nodes
+      .filter((node) => node.type === 'group' && !node.parentId && node.id !== rootNode.id)
+      .forEach((root) => {
+        const category =
+          ((root.data as Record<string, any> | undefined)?.category as string) ?? 'widget';
+        if (category === 'theme') return;
+        if (category === 'iconpack') {
+          sourceConfigMap[root.id] = buildIconPackConfigJson(root, nodes);
+          return;
+        }
+        if (category === 'wallpaper') {
+          sourceConfigMap[root.id] = buildWallpaperConfigJson(root, nodes);
+          return;
+        }
+        if (category === 'widget') {
+          sourceConfigMap[root.id] = buildWidgetElementPayload(root).config_json ?? {};
+        }
+      });
+
+    return {
+      element_key: rootNode.id,
+      category: 'theme',
+      subtype: 'theme',
+      x: rootNode.position?.x ?? 0,
+      y: rootNode.position?.y ?? 0,
+      visible: true,
+      locked: false,
+      schema_version: 1,
+      config_json: buildThemeConfigJson(rootNode, nodes, sourceConfigMap),
+    };
+  };
 
   const ELEMENT_BUILDERS: Record<
     string,

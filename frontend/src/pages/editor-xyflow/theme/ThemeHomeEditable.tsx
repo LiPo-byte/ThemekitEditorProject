@@ -18,7 +18,10 @@ import {
 } from '@dnd-kit/react';
 import { useViewport } from '@xyflow/react';
 import AppIcon from '../icon';
-import { useEditorRegisterDesktopEditDraft } from '../context';
+import {
+  useEditorGetElementsConfigMap,
+  useEditorRegisterDesktopEditDraft,
+} from '../context';
 import { CONFIG_SIZE_MAP, TYPE_WIDGET_MAP } from '../widget/base-config';
 import { xyFlowTypeNodeType } from '../xyFlowTypeNodeType';
 import {
@@ -30,6 +33,10 @@ import {
   type ThemeHomeDropTarget,
   type ThemeHomePoint,
 } from './themeHomeDnd';
+import {
+  resolveShowElementData,
+  resolveShowElements,
+} from './resolveShowElements';
 import {
   buildThemeHomePlacements,
   dockCellOf,
@@ -669,11 +676,13 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
 
   const { zoom } = useViewport();
   const registerDesktopEditDraft = useEditorRegisterDesktopEditDraft();
+  const getElementsConfigMap = useEditorGetElementsConfigMap();
   const width = Number(data.width) > 0 ? Number(data.width) : (defaultWidth ?? 887);
   const height = Number(data.height) > 0 ? Number(data.height) : (defaultHeight ?? 1920);
   const dockCell = dockCellOf(layout);
   const showElements = Array.isArray(data.showElements) ? data.showElements : [];
   const showElementsKey = useMemo(() => JSON.stringify(showElements), [showElements]);
+  const configMap = getElementsConfigMap();
 
   const [placements, setPlacements] = useState<ThemeHomePlacement[]>(() =>
     buildThemeHomePlacements(showElements, cols, rows, dockCols, resolveSpan).placements,
@@ -691,6 +700,28 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
   placementsRef.current = placements;
   showElementsRef.current = showElements;
 
+  // 编辑态布局用本地 placements；展示 data 实时回源，避免拖拽中因源更新重置布局
+  const livePlacements = useMemo(
+    () =>
+      placements.map((placement) => {
+        const nextData = resolveShowElementData(placement.element, configMap);
+        if (!nextData) return placement;
+        return {
+          ...placement,
+          element: {
+            ...placement.element,
+            data: nextData,
+          },
+        };
+      }),
+    [placements, configMap],
+  );
+  const liveWallpaper = useMemo(() => {
+    if (!wallpaper) return null;
+    const nextData = resolveShowElementData(wallpaper, configMap);
+    return nextData ? { ...wallpaper, data: nextData } : wallpaper;
+  }, [wallpaper, configMap]);
+
   useEffect(() => {
     const next = buildThemeHomePlacements(showElements, cols, rows, dockCols, resolveSpan);
     setPlacements(next.placements);
@@ -699,12 +730,15 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
 
   useEffect(() => {
     registerDesktopEditDraft(() =>
-      placementsToShowElements(placementsRef.current, showElementsRef.current),
+      resolveShowElements(
+        placementsToShowElements(placementsRef.current, showElementsRef.current),
+        getElementsConfigMap(),
+      ),
     );
     return () => {
       registerDesktopEditDraft(null);
     };
-  }, [registerDesktopEditDraft]);
+  }, [registerDesktopEditDraft, getElementsConfigMap]);
 
   const handleHoverChange = useCallback(
     (next: { draggingId: string | null; hoverTarget: ThemeHomeDropTarget | null }) => {
@@ -802,10 +836,10 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
     return nodes;
   }, [dockCols, layout]);
 
-  const gridItems = placements.filter((p) => p.zone === 'grid');
-  const dockItems = placements.filter((p) => p.zone === 'dock');
+  const gridItems = livePlacements.filter((p) => p.zone === 'grid');
+  const dockItems = livePlacements.filter((p) => p.zone === 'dock');
 
-  const wallpaperSource = String(wallpaper?.data?.source || '').trim();
+  const wallpaperSource = String(liveWallpaper?.data?.source || '').trim();
   const dataSource = String(data.source || '').trim();
   const backgroundSource = wallpaperSource || dataSource;
 
@@ -961,7 +995,7 @@ export default function ThemeHomeEditable(props: ThemeHomeEditableProps) {
       {/* 跟手层只用占位；关掉 drop 动画，避免松手先弹回旧位 */}
       <DragOverlay dropAnimation={null}>
         {(source) => {
-          const item = placements.find((p) => p.id === String(source.id));
+          const item = livePlacements.find((p) => p.id === String(source.id));
           if (!item) return null;
           const boardScale = item.zone === 'dock' ? frame.dockScale : frame.fitScale;
           return (

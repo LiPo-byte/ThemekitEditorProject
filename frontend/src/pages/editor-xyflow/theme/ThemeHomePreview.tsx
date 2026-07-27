@@ -6,8 +6,10 @@ import { xyFlowTypeNodeType } from '../xyFlowTypeNodeType';
 import {
   useEditorDesktopEditOpen,
   useEditorDesktopEditingNodeId,
+  useEditorGetElementsConfigMap,
 } from '../context';
 import ThemeHomeEditable from './ThemeHomeEditable';
+import { resolveShowElements } from './resolveShowElements';
 import {
   DEFAULT_DOCK_COLS,
   DEFAULT_HOME_COLS,
@@ -210,6 +212,7 @@ function useResolvedEditable(editable: boolean | undefined, nodeId?: string) {
 export default function ThemeHomePreview(props: ThemeHomePreviewProps) {
   const data = props.data;
   const isEditable = useResolvedEditable(props.editable, props.nodeId);
+  const getElementsConfigMap = useEditorGetElementsConfigMap();
 
   if (!data) return null;
 
@@ -249,7 +252,11 @@ export default function ThemeHomePreview(props: ThemeHomePreviewProps) {
     );
   }
 
-  const showElements = Array.isArray(data.showElements) ? data.showElements : [];
+  // 预览态按源组件实时 resolve，不改本地 showElements 快照
+  const showElements = resolveShowElements(
+    Array.isArray(data.showElements) ? data.showElements : [],
+    getElementsConfigMap(),
+  );
   const { placements, wallpaper } = buildThemeHomePlacements(
     showElements,
     cols,

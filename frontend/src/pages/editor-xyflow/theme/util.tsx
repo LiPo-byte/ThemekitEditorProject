@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import type { Node as FlowNode } from '@xyflow/react';
 import { DEFAULT_THEME_CONFIG } from '@/editor-core/defaultConfig';
+import { resolveShowElements } from './resolveShowElements';
 
 const GAP = 50;
 
@@ -127,8 +128,8 @@ export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
 export const buildThemeConfigJson = (
   rootNode: FlowNode,
   nodes: FlowNode[],
+  sourceConfigMap?: Record<string, any> | null,
 ): Record<string, any> => {
-  const rootData = getNodeData(rootNode);
   const platformNodes = nodes
     .filter(
       (node) =>
@@ -165,6 +166,7 @@ export const buildThemeConfigJson = (
     if (data.selectElements) {
         selectElements = data.selectElements
     }
+    const rawShowElements = Array.isArray(data.showElements) ? data.showElements : [];
     config[key] = {
       ...defaults,
       ...rest,
@@ -172,7 +174,8 @@ export const buildThemeConfigJson = (
       width: Number(data.width) > 0 ? Number(data.width) : Number(defaults.width) || 887,
       height:
         Number(data.height) > 0 ? Number(data.height) : Number(defaults.height) || 1920,
-      showElements: Array.isArray(data.showElements) ? data.showElements : [],
+      // 保存时按源组件写回最新 data
+      showElements: resolveShowElements(rawShowElements, sourceConfigMap),
     };
   });
   config.selectElements = selectElements;

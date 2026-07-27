@@ -6,8 +6,10 @@ import { xyFlowTypeNodeType } from '../xyFlowTypeNodeType';
 import {
   useEditorDesktopEditOpen,
   useEditorDesktopEditingNodeId,
+  useEditorGetElementsConfigMap,
 } from '../context';
 import ThemeHomeEditable from './ThemeHomeEditable';
+import { resolveShowElements } from './resolveShowElements';
 import {
   DEFAULT_IPAD_DOCK_COLS,
   DOCK_ROWS,
@@ -171,6 +173,7 @@ export type ThemeIpadHomePreviewProps = {
 export default function ThemeIpadHomePreview(props: ThemeIpadHomePreviewProps) {
   const data = props.data;
   const isEditable = useResolvedEditable(props.editable, props.nodeId);
+  const getElementsConfigMap = useEditorGetElementsConfigMap();
 
   if (!data) return null;
 
@@ -205,7 +208,10 @@ export default function ThemeIpadHomePreview(props: ThemeIpadHomePreviewProps) {
     );
   }
 
-  const showElements = Array.isArray(data.showElements) ? data.showElements : [];
+  const showElements = resolveShowElements(
+    Array.isArray(data.showElements) ? data.showElements : [],
+    getElementsConfigMap(),
+  );
   const { placements, wallpaper } = buildThemeHomePlacements(
     showElements,
     cols,
