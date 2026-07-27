@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Position, NodeToolbar } from '@xyflow/react';
-import { useEditorDeleteSelectedNodes, useEditorOpenCropEditor } from '../context';
+import {
+  useEditorDeleteSelectedNodes,
+  useEditorOpenCropEditor,
+  useEditorOpenDesktopEditor,
+} from '../context';
 import { App, Button, Modal, Typography } from 'antd';
 import { ExportOutlined, DeleteTwoTone, TableOutlined } from '@ant-design/icons';
-import { CropSvg } from '@/icons';
+import { CropSvg, DragSvg } from '@/icons';
 import { useExportBundle } from '../hooks/useExportBundle';
 import type { ExportProgressLine } from '../hooks/exportBundleShared';
 
@@ -16,6 +20,7 @@ const ActionPopover: React.FC = (props: any) => {
   } = props;
   const { message } = App.useApp();
   const openCropEditor = useEditorOpenCropEditor();
+  const openDesktopEditor = useEditorOpenDesktopEditor();
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
   const { exporting, exportBundle } = useExportBundle(nodeId);
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -44,6 +49,9 @@ const ActionPopover: React.FC = (props: any) => {
 
   const onCrop = () => {
     openCropEditor(nodeId);
+  };
+  const onDesktopEdit = () => {
+    openDesktopEditor(nodeId);
   };
   const onDelete = () => {
     deleteSelectedNodes();
@@ -84,7 +92,7 @@ const ActionPopover: React.FC = (props: any) => {
           <Button onClick={onDelete} icon={<DeleteTwoTone />} shape="circle" />
         )}
         {actionList.includes('desktopeditable') && (
-          <Button onClick={() => {}} icon={<TableOutlined />} shape="circle" />
+          <Button onClick={onDesktopEdit} icon={<DragSvg />} shape="circle" />
         )}
       </NodeToolbar>
       <Modal

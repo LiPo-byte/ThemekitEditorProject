@@ -54,6 +54,7 @@ export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
       extent: 'parent',
       draggable: false,
     //   selectable: false,
+      desktopeditable: true,
       connectable: false,
       focusable: false,
       zIndex: 10,

@@ -28,6 +28,7 @@ import {
   useEditorCanDeleteSelected,
   useEditorActionPropNode,
   useEditorCropToolOpen,
+  useEditorDesktopEditOpen,
   useEditorShowAxis,
   useEditorBackgroundVariant,
   useEditorBackgroundColor,
@@ -77,6 +78,8 @@ export default function EditorStage() {
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
   const canDeleteSelected = useEditorCanDeleteSelected();
   const cropToolOpen = useEditorCropToolOpen();
+  const desktopEditOpen = useEditorDesktopEditOpen();
+  const interactionLocked = cropToolOpen || desktopEditOpen;
   const showAxis = useEditorShowAxis();
   const backgroundVariant = useEditorBackgroundVariant();
   const backgroundColor = useEditorBackgroundColor();
@@ -93,12 +96,12 @@ export default function EditorStage() {
     const isRisingEdge = deleteKeyPressed && !deleteKeyPressedRef.current;
     deleteKeyPressedRef.current = deleteKeyPressed;
     if (!isRisingEdge) return;
-    if (cropToolOpen) return;
+    if (interactionLocked) return;
     if (!canDeleteSelected) return;
     const activeTagName = document.activeElement?.tagName?.toLowerCase();
     if (activeTagName === 'input' || activeTagName === 'textarea') return;
     deleteSelectedNodes();
-  }, [cropToolOpen, deleteKeyPressed, canDeleteSelected, deleteSelectedNodes]);
+  }, [interactionLocked, deleteKeyPressed, canDeleteSelected, deleteSelectedNodes]);
 
   return (
     <div
@@ -150,24 +153,24 @@ export default function EditorStage() {
           // preview: Preview,
         }}
         nodesDraggable={false}
-        elementsSelectable={!cropToolOpen}
+        elementsSelectable={!interactionLocked}
         nodesConnectable={false}
         nodesFocusable={false}
         selectionOnDrag={false}
         onNodeClick={(event, node) => {
-          if (cropToolOpen) return;
+          if (interactionLocked) return;
           const target = resolveSelectableTarget(node, nodes);
           if (!target) return;
           seletNode(target, Boolean(event.shiftKey));
         }}
         onPaneClick={(_) => {
-          if (cropToolOpen) return;
+          if (interactionLocked) return;
           deselectedNode()
         }}
-        panOnDrag={!cropToolOpen}
-        zoomOnScroll={!cropToolOpen}
-        zoomOnPinch={!cropToolOpen}
-        zoomOnDoubleClick={!cropToolOpen}
+        panOnDrag={!interactionLocked}
+        zoomOnScroll={!interactionLocked}
+        zoomOnPinch={!interactionLocked}
+        zoomOnDoubleClick={!interactionLocked}
         selectionKeyCode={null}
         fitView
         maxZoom={1.5}
@@ -187,8 +190,8 @@ export default function EditorStage() {
         />
         <Controls
             showInteractive={false}
-            showZoom={!cropToolOpen}
-            showFitView={!cropToolOpen}
+            showZoom={!interactionLocked}
+            showFitView={!interactionLocked}
             position="bottom-right"
             orientation="horizontal"
             style={{

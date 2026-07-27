@@ -1,5 +1,6 @@
 import React from 'react';
 import CropTool from './components/CropTool';
+import DesktopEditTool from './components/DesktopEditTool';
 import EditorBottomToolBar from './components/EditorBottomToolBar';
 // import EditorCanvas from './components/EditorCanvas';
 import EditorStage from './editor-stage';
@@ -28,6 +29,7 @@ const EditorPageContent: React.FC = () => {
         <EditorBottomToolBar />
         <HeaderControls />
         <CropTool />
+        <DesktopEditTool />
         {globalLoading ? (
           <div className={styles.loadingMask}>
             <div className={styles.loadingCard}>

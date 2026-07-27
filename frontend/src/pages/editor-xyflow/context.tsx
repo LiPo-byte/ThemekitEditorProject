@@ -117,6 +117,7 @@ type EditorCoreCtxValue = {
   setRightPanlOpen: (bool: boolean) => void;
   cropToolOpen: boolean;
   setCropToolOpen: (bool: boolean) => void;
+  desktopEditOpen: boolean;
   hideUI: boolean;
   setHideUI: (bool: boolean) => void;
   importModalOpen: boolean;
@@ -135,6 +136,10 @@ type EditorCoreCtxValue = {
   openCropEditor: (nodeId: string) => void;
   closeCropEditor: () => void;
   confirmCropEditor: () => void;
+  desktopEditingNodeId: string;
+  openDesktopEditor: (nodeId: string) => void;
+  closeDesktopEditor: () => void;
+  confirmDesktopEditor: () => void;
   generatePreviewImage: (rootId?: string) => Promise<string | null>;
   generateProjectPayload: () => Promise<Record<string, any> | null>;
   saveProjectPayload: () => Promise<Record<string, any> | null>;
@@ -189,6 +194,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   setRightPanlOpen: (bool: boolean) => {},
   cropToolOpen: false,
   setCropToolOpen: (_bool: boolean) => {},
+  desktopEditOpen: false,
   hideUI: false,
   setHideUI: (_bool: boolean) => {},
   importModalOpen: false,
@@ -207,6 +213,10 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   openCropEditor: (_nodeId: string) => {},
   closeCropEditor: () => {},
   confirmCropEditor: () => {},
+  desktopEditingNodeId: '',
+  openDesktopEditor: (_nodeId: string) => {},
+  closeDesktopEditor: () => {},
+  confirmDesktopEditor: () => {},
   generatePreviewImage: async () => null,
   generateProjectPayload: async () => null,
   saveProjectPayload: async () => null,
@@ -351,6 +361,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [leftPanlContent, setLeftPanlContent] = useState<LeftPanlContent>('widget');
   const [rightPanlOpen, setRightPanlOpen] = useState<boolean>(false);
   const [cropToolOpen, setCropToolOpen] = useState<boolean>(false);
+  const [desktopEditOpen, setDesktopEditOpen] = useState<boolean>(false);
   const [hideUI, setHideUI] = useState<boolean>(false);
   const [importModalOpen, setImportModalOpen] = useState<boolean>(false);
   const [showAxis, setShowAxis] = useState<boolean>(true);
@@ -359,6 +370,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [globalLoading, setGlobalLoading] = useState<boolean>(false);
   const [cropEditingNodeId, setCropEditingNodeId] = useState<string>('');
   const [cropDraftProps, setCropDraftProps] = useState<CropProps | null>(null);
+  const [desktopEditingNodeId, setDesktopEditingNodeId] = useState<string>('');
   const previewSaveTimerRef = useRef<number | null>(null);
   const previewIdleHandleRef = useRef<number | null>(null);
   const previewSavingRef = useRef(false);
@@ -822,8 +834,38 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     setRightPanlOpen(false);
   };
 
+  const closeDesktopEditor = () => {
+    setDesktopEditOpen(false);
+    setHideUI(false);
+    setDesktopEditingNodeId('');
+  };
+
+  const openDesktopEditor = (nodeId: string) => {
+    if (!nodeId) return;
+    const targetNode = nodes.find((node) => node.id === nodeId) as
+      | (FlowNode & { desktopeditable?: boolean })
+      | undefined;
+    if (!targetNode?.desktopeditable) return;
+    if (cropToolOpen) {
+      setCropToolOpen(false);
+      setCropEditingNodeId('');
+      setCropDraftProps(null);
+    }
+    setDesktopEditingNodeId(nodeId);
+    setHideUI(true);
+    setDesktopEditOpen(true);
+  };
+
+  const confirmDesktopEditor = () => {
+    closeDesktopEditor();
+  };
+
   const openCropEditor = (nodeId: string) => {
     if (!nodeId) return;
+    if (desktopEditOpen) {
+      setDesktopEditOpen(false);
+      setDesktopEditingNodeId('');
+    }
     const targetNode = nodes.find((node) => node.id === nodeId);
     const nextCropProps = toCropProps((targetNode?.data as Record<string, unknown> | undefined)?.crop_props);
     setCropEditingNodeId(nodeId);
@@ -1226,6 +1268,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       setRightPanlOpen,
       cropToolOpen,
       setCropToolOpen,
+      desktopEditOpen,
       hideUI,
       setHideUI,
       importModalOpen,
@@ -1244,6 +1287,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       openCropEditor,
       closeCropEditor,
       confirmCropEditor,
+      desktopEditingNodeId,
+      openDesktopEditor,
+      closeDesktopEditor,
+      confirmDesktopEditor,
       generatePreviewImage,
       generateProjectPayload,
       saveProjectPayload,
@@ -1269,6 +1316,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       leftPanlContent,
       rightPanlOpen,
       cropToolOpen,
+      desktopEditOpen,
       hideUI,
       importModalOpen,
       showAxis,
@@ -1277,6 +1325,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       globalLoading,
       cropEditingNodeId,
       cropDraftProps,
+      desktopEditingNodeId,
       generatePreviewImage,
       generateProjectPayload,
       saveProjectPayload,
@@ -1390,6 +1439,11 @@ export const useEditorCropDraftPropsSetter = () => useContext(EditorCoreCtx).set
 export const useEditorOpenCropEditor = () => useContext(EditorCoreCtx).openCropEditor;
 export const useEditorCloseCropEditor = () => useContext(EditorCoreCtx).closeCropEditor;
 export const useEditorConfirmCropEditor = () => useContext(EditorCoreCtx).confirmCropEditor;
+export const useEditorDesktopEditOpen = () => useContext(EditorCoreCtx).desktopEditOpen;
+export const useEditorDesktopEditingNodeId = () => useContext(EditorCoreCtx).desktopEditingNodeId;
+export const useEditorOpenDesktopEditor = () => useContext(EditorCoreCtx).openDesktopEditor;
+export const useEditorCloseDesktopEditor = () => useContext(EditorCoreCtx).closeDesktopEditor;
+export const useEditorConfirmDesktopEditor = () => useContext(EditorCoreCtx).confirmDesktopEditor;
 export const useEditorGeneratePreviewImage = () => useContext(EditorCoreCtx).generatePreviewImage;
 export const useEditorGenerateProjectPayload = () => useContext(EditorCoreCtx).generateProjectPayload;
 export const useEditorSaveProjectPayload = () => useContext(EditorCoreCtx).saveProjectPayload;

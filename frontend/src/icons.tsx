@@ -69,5 +69,21 @@ export const CropSvg = React.memo(
     </svg>
   ),
 );
+export const DragSvg = React.memo(
+  ({ color = 'currentColor', size = 16, className }: IconProps) => (
+    <svg
+      className={className}
+      viewBox="0 0 1024 1024"
+      width={size}
+      height={size}
+      fill={color}
+      aria-hidden
+    >
+      <title>Crop icon</title>
+      <path d="M544.384 0c33.152 0 60.032 25.344 60.032 56.576v339.328c0 31.232-26.88 56.576-60.032 56.576H60.096C26.88 452.48 0 427.136 0 395.904V56.576C0 25.344 26.88 0 60.096 0h484.288z m-48.128 101.76H108.16v248.832h388.096V101.824z" fill="#000000" p-id="47939"></path><path d="M0 565.568h302.208v452.48H0z" fill="#000000" p-id="47940"></path><path d="M967.488 565.568c33.152 0 60.096 25.344 60.096 56.576v339.328c0 31.232-26.88 56.512-60.16 56.512H483.2c-33.216 0-60.096-25.28-60.096-56.512V622.08c0-31.232 26.88-56.576 60.096-56.576h484.288z m-48.128 101.76H531.2v248.896h388.096v-248.896z" fill="#000000" p-id="47941"></path><path d="M725.312 0h302.208v452.48h-302.208z" fill="#000000" p-id="47942"></path>
+    </svg>
+  ),
+);
+
 
 
