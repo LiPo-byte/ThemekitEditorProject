@@ -11,13 +11,13 @@ export default function LauncherLayout_5(props: any) {
   if (!data) return null;
   const size = data.size;
   const gapSize: any = {1: 16, 2: 16, 3: 10 };
-  const heightSize: any = {1: 128, 2: 135, 3: 240 };
-  const widthSize: any = {1: 48, 2: 64, 3: 96 };
+  const heightSize: any = {1: 80, 2: 135, 3: 240 };
+  const widthSize: any = {1: 80, 2: 64, 3: 96 };
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
-  // const appLinks = Array.isArray(data.appLinks) ? data.appLinks : [];
-  const appLinksSource = Array.isArray(data.appLinksSource) ? data.appLinksSource : [];
+  const appLinks = Array.isArray(data.appLinks) ? data.appLinks : [];
+  // const appLinksSource = Array.isArray(data.appLinksSource) ? data.appLinksSource : [];
 
 
   // const layoutTemplate = layoutTemplateMap[data.size ?? 1] || layoutTemplateMap[1];
@@ -26,21 +26,20 @@ export default function LauncherLayout_5(props: any) {
 
   const box: any = (displayIndex: number) => {
     const index = displayIndex - 1;
-    const appsource = appLinksSource[index];
+    const appLink = appLinks[index];
+    if (appLink !== '') return null;
     return (
       <div style={{
         width: '100%',
         height: '100%',
         borderRadius: '10px',
-        background: appsource?.source ? 'none' : '#f6efe9',
+        background: '#f6efe9',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
       }}>
-        {appsource?.source ? <>
-        <img style={{ width: '100%', height: '100%' }} src={appsource.source} alt="" />
-        </> : displayIndex}
+        {displayIndex}
       </div>
     )
   }
@@ -73,15 +72,27 @@ export default function LauncherLayout_5(props: any) {
         position: 'relative',
         zIndex: 2,
       }}>
-        {appLinksSource.map((_: any, index: number) => {
+        { size === 1 ? (
+          <div style={{
+            borderRadius: 10,
+            width: widthSize[size],
+            height: heightSize[size],
+            flex: 'none',
+            position: 'absolute',
+            top: 16,
+            left: 16,
+          }}>
+            {box(1)}
+          </div>
+        ) : appLinks.map((_: any, index: number) => {
           return (
-            <div style={{
+            <div key={index} style={{
               borderRadius: 10,
               width: widthSize[size],
               height: heightSize[size],
               flex: 'none',
             }}>
-              {box(index)}
+              {box(index + 1)}
             </div>
           )
         })}

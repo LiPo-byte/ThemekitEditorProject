@@ -76,7 +76,7 @@ export const widgetConfig2Nodes: any = (config: any, element_key?: any) => {
         id: nanoid(),
         type: themekitType,
         metaable: true,
-        data: { ...item },
+        data: { ...item, themekitSizewithTypes: themekitType+"_"+item.size, },
         cropable: true,
         position: { x: gap, y: startY },
         parentId: groupId,

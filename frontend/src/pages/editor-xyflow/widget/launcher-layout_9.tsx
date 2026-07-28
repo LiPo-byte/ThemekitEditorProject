@@ -18,7 +18,7 @@ export default function LauncherLayout_9(props: any) {
   const box: any = (displayIndex: number) => {
     const index = displayIndex;
     const appLink = appLinks[index];
-    if (appLink) return null;
+    if (appLink !== '') return null;
     return (
       <div style={{
         width: '100%',
@@ -65,8 +65,8 @@ export default function LauncherLayout_9(props: any) {
         <>
           <div style={{
             position: 'absolute',
-            left: 16,
-            top: 16,
+            right: 16,
+            bottom: 16,
             zIndex: 2,
           }}>
             {renderCell(0, 64, 64)}
@@ -94,7 +94,7 @@ export default function LauncherLayout_9(props: any) {
             {renderCell(0, 80, 80)}
             {renderCell(1, 64, 64)}
             {renderCell(2, 48, 48)}
-            {renderCell(3, 32, 32)}
+            {renderCell(3, 32, 32, { 'borderRadius': '100%', overflow: 'hidden' })}
           </div>
           <div style={{
             position: 'absolute',
@@ -105,7 +105,7 @@ export default function LauncherLayout_9(props: any) {
             alignItems: 'flex-end',
             gap: 10,
           }}>
-            {renderCell(4, 32, 32)}
+            {renderCell(4, 32, 32, { 'borderRadius': '100%', overflow: 'hidden' })}
             {renderCell(5, 48, 48)}
             {renderCell(6, 64, 64)}
             {renderCell(7, 80, 80)}

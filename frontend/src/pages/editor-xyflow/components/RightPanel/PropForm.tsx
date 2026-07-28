@@ -43,7 +43,7 @@ import SelectElements from './SelectElements';
 // import type { ColorPickerProps } from 'antd';
 
 import { createStyles } from 'antd-style';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { APP_LINK_OPTIONS } from '../../widget/base-config';
 import {
   useEditorBackgroundColor,
@@ -340,7 +340,11 @@ const TextAlignment: React.FC<{
   value?: number;
   onChange?: (value: number) => void;
   title?: string,
+  themekitSizewithTypes?: string[],
 }> = ({ value, onChange, title }) => {
+  let rightDisabled = false;
+  let centerDisabled = false;
+  let leftDisabled = false;
   return (
     <>
       <Row style={{ marginBottom: '5px' }}>
@@ -353,7 +357,7 @@ const TextAlignment: React.FC<{
             onChange={onChange}
             options={[
               { value: 1, label: <AlignLeftOutlined /> },
-              { value: 2, label: <AlignCenterOutlined /> },
+              { value: 2, label: <AlignCenterOutlined />, disabled: true },
               { value: 3, label: <AlignRightOutlined /> },
             ]}
           />
@@ -658,6 +662,48 @@ export const PropInput: React.FC<{
   );
 };
 
+const ContentTextAreaInput: React.FC<{
+  value?: any;
+  onChange?: (value: string) => void;
+}> = ({ value, onChange }) => {
+  const isMixed = value === MIXED_VALUE;
+  const committed = isMixed ? '' : String(value ?? '');
+  const [draft, setDraft] = useState(committed);
+  const focusedRef = useRef(false);
+
+  useEffect(() => {
+    if (focusedRef.current) return;
+    setDraft(committed);
+  }, [committed]);
+
+  return (
+    <Row style={{ marginBottom: '5px' }}>
+      <Col span={24}>
+        <Flex vertical gap={4}>
+          <InputTitle label="Content" />
+          <Input.TextArea
+            size="small"
+            value={draft}
+            placeholder={isMixed ? 'Multiple values' : 'Filled'}
+            variant="filled"
+            autoSize={{ minRows: 3, maxRows: 8 }}
+            onFocus={() => {
+              focusedRef.current = true;
+            }}
+            onChange={(event) => setDraft(event.target.value)}
+            onBlur={() => {
+              focusedRef.current = false;
+              if (draft !== committed) {
+                onChange?.(draft);
+              }
+            }}
+          />
+        </Flex>
+      </Col>
+    </Row>
+  );
+};
+
 export const BaseSelectedNodePropForm: React.FC<{
   editProps: Record<string, any>;
   onChange?: (key: string, value: any) => void;
@@ -784,6 +830,7 @@ export const BaseSelectedNodePropForm: React.FC<{
         <>
           <TextAlignment
             value={editProps.textAlignment}
+            themekitSizewithTypes={editProps.themekitSizewithTypes}
             onChange={(nextValue) => onChange?.('textAlignment', nextValue)}
           />
         </>
@@ -1035,13 +1082,10 @@ export const BaseSelectedNodePropForm: React.FC<{
         </>
       )}
       {hasKey('content') && (
-        <>
-          <PropInput
-            LabelName="Content"
-            value={editProps.content}
-            onChange={(nextValue) => onChange?.('content', nextValue)}
-          />
-        </>
+        <ContentTextAreaInput
+          value={editProps.content}
+          onChange={(nextValue) => onChange?.('content', nextValue)}
+        />
       )}
       {hasKey('backgroundColor') && (
         <>

@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import CropEditableImage from '../components/CropEditableImage';
 import {
   useEditorCropEditingNodeId,
@@ -15,64 +16,69 @@ const getTextStyle = (parentId?: string, textData?: any) => ({
   height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
   whiteSpace: 'nowrap' as const,
 });
+
+const rowStyle = (extra?: CSSProperties): CSSProperties => ({
+  position: 'absolute',
+  zIndex: 2,
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  ...extra,
+});
+
+const circleStyle = (
+  width: number,
+  height: number,
+  background: string,
+  extra?: CSSProperties,
+): CSSProperties => ({
+  width,
+  height,
+  borderRadius: '100%',
+  background,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 2,
+  boxShadow: '0 2px 4px rgba(187, 187, 187, 0.5)',
+  ...extra,
+});
+
 export default function LauncherLayout_0(props: any) {
   const data = props.data;
   const scale = props.scale || 1;
   if (!data) return null;
+  const size = data.size;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
   const appLinks = Array.isArray(data.appLinks) ? data.appLinks : [];
   const title = data.title;
   const appLinksSource = Array.isArray(data.appLinksSource) ? data.appLinksSource : []
-  const buildHexPoints = (
-    rows: number[],
-    xSpacing: number,
-    yStart: number,
-    yGap: number,
-    diameter: number,
+
+  const circle = (
+    displayIndex: number,
+    width: number,
+    height: number,
+    background: string,
+    extra?: CSSProperties,
   ) => {
-    const points: Array<{ x: number; y: number; d: number }> = [];
-    rows.forEach((count, rowIndex) => {
-      const rowStartX = 50 - ((count - 1) * xSpacing) / 2;
-      const y = yStart + rowIndex * yGap;
-      for (let i = 0; i < count; i += 1) {
-        points.push({
-          x: rowStartX + i * xSpacing,
-          y,
-          d: diameter,
-        });
-      }
-    });
-    return points;
+    const source = appLinksSource[displayIndex - 1]?.source;
+    return (
+      <div style={circleStyle(width, height, source ? 'transparent' : background, extra)}>
+        {source ? (
+          <img
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '100%' }}
+            src={source}
+            alt=""
+          />
+        ) : (
+          displayIndex
+        )}
+      </div>
+    );
   };
 
-  const layoutTemplateMap: Record<number, Array<{ x: number; y: number; d: number }>> = {
-    1: [{ x: 40, y: 40, d: 56 }],
-    2: buildHexPoints([4, 5, 4], 18, 31, 22, 36),
-    3: buildHexPoints([3, 4, 5, 4, 3], 15, 22, 14, 36),
-  };
-
-  const layoutTemplate = layoutTemplateMap[data.size ?? 1] || layoutTemplateMap[1];
-  const cellCount = Math.max(1, appLinks.length);
-  const points = layoutTemplate.slice(0, cellCount);
-
-  const getSize = (index: number, size: number) => {
-    if (size === 3 && [1, 4, 5, 8, 10, 13, 14, 17].includes(index)) {
-      return 36;
-    }
-    if (size === 3 && index === 9) {
-      return 46;
-    }
-    if (size === 2 && [1, 2, 5, 7, 10, 11].includes(index)) {
-      return 36;
-    }
-    if (size === 2 && index === 6) {
-      return 46;
-    }
-    if (size === 1) return 46;
-    return 30;
-  }
   return (
     <div
       className={`size_${data?.size}`}
@@ -93,41 +99,73 @@ export default function LauncherLayout_0(props: any) {
         radius={data.radius}
         cropProps={data.crop_props}
       />
-      {points.map((point, index) => (
-        <div
-          key={`cell-${index}`}
-          style={{
-            position: 'absolute',
-            zIndex: 2,
-            left: `${point.x}%`,
-            top: `${point.y}%`,
-            width: getSize(index, data.size),
-            height: getSize(index, data.size),
-            borderRadius: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: '#f6efe9',
-            // border: '1px solid #eadfd5',
-            overflow: 'hidden',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          {appLinksSource[index] && appLinksSource[index].source ? (
-            <img src={appLinksSource[index].source} />
-          ) : index + 1 }
-        </div>
-      ))}
-      {title && title.content ? (
-        <div style={{
-          zIndex: 2,
-          ...getTextStyle(props.parentId, data?.title),
-          position: 'absolute',
-          transform: 'translate(-23px, 0%)',
-          left: '40%',
-          bottom: '20px',
-        }} >{title.content}</div>
-      ) : null}
+      {size === 1 && (
+        circle(1, 67, 67, '#f6efe9', { position: 'absolute', top: 25, left: 20 })
+      )}
+      {size === 2 && (
+        <>
+          {/* 顶部 */}
+          <div style={rowStyle({ top: 10, height: 42, alignItems: 'flex-start' })}>
+            {circle(1, 32, 32, '#989694', { marginTop: 8 })}
+            {circle(2, 42, 42, '#f6efe9', { margin: '0 9px 0 12px' })}
+            {circle(3, 42, 42, '#f6efe9', { margin: '0 12px 0 9px' })}
+            {circle(4, 32, 32, '#989694', { marginTop: 8 })}
+          </div>
+          {/* 中间 */}
+          <div style={rowStyle({ top: 0, bottom: 0, height: 42, alignItems: 'center', margin: 'auto' })}>
+            {circle(5, 32, 32, '#989694')}
+            {circle(6, 42, 42, '#f6efe9', { margin: '0 11px' })}
+            {circle(7, 50, 50, '#f7f5f4')}
+            {circle(8, 42, 42, '#f6efe9', { margin: '0 11px' })}
+            {circle(9, 32, 32, '#989694')}
+          </div>
+          {/* 底部 */}
+          <div style={rowStyle({ bottom: 10, height: 42, alignItems: 'flex-start' })}>
+            {circle(10, 32, 32, '#989694', { marginBottom: 8 })}
+            {circle(11, 42, 42, '#f6efe9', { margin: '0 9px 0 12px' })}
+            {circle(12, 42, 42, '#f6efe9', { margin: '0 12px 0 9px' })}
+            {circle(13, 32, 32, '#989694', { marginBottom: 8 })}
+          </div>
+        </>
+      )}
+      {size === 3 && (
+        <>
+          {/* 一层 */}
+          <div style={rowStyle({ top: 41, alignItems: 'flex-start' })}>
+            {circle(1, 36, 36, '#989694', { marginTop: 8 })}
+            {circle(2, 48, 47, '#e5b993', { margin: '0 18px' })}
+            {circle(3, 36, 36, '#989694', { marginTop: 8 })}
+          </div>
+          {/* 二层 */}
+          <div style={rowStyle({ top: 88, alignItems: 'flex-start' })}>
+            {circle(4, 40, 40, '#ebd1b7', { marginTop: 11 })}
+            {circle(5, 56, 56, '#f6efe9', { margin: '0 17px 0 11px' })}
+            {circle(6, 56, 56, '#f6efe9', { margin: '0 11px 0 0' })}
+            {circle(7, 40, 40, '#ebd1b7', { marginTop: 11 })}
+          </div>
+          {/* 三层 */}
+          <div style={rowStyle({ top: 0, bottom: 0, alignItems: 'center', margin: 'auto' })}>
+            {circle(8, 42, 42, '#e88e34')}
+            {circle(9, 56, 56, '#f6efe9', { margin: '0 11px' })}
+            {circle(10, 60, 60, '#f7f5f4')}
+            {circle(11, 56, 56, '#f6efe9', { margin: '0 11px' })}
+            {circle(12, 42, 42, '#e88e34')}
+          </div>
+          {/* 四层 */}
+          <div style={rowStyle({ bottom: 88, alignItems: 'flex-start' })}>
+            {circle(13, 40, 40, '#ebd1b7', { marginBottom: 11 })}
+            {circle(14, 56, 56, '#f6efe9', { margin: '0 17px 0 11px' })}
+            {circle(15, 56, 56, '#f6efe9', { margin: '0 11px 0 0' })}
+            {circle(16, 40, 40, '#ebd1b7', { marginBottom: 11 })}
+          </div>
+          {/* 五层 */}
+          <div style={rowStyle({ bottom: 41, height: 42, alignItems: 'flex-start' })}>
+            {circle(17, 36, 36, '#989694', { marginBottom: 8 })}
+            {circle(18, 48, 47, '#e5b993', { margin: '0 18px' })}
+            {circle(19, 36, 36, '#989694', { marginBottom: 8 })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

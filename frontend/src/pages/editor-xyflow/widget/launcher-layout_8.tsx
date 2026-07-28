@@ -20,7 +20,7 @@ export default function LauncherLayout_8(props: any) {
   const box: any = (displayIndex: number) => {
     const index = displayIndex;
     const appLink = appLinks[index];
-    if (appLink) return null;
+    if (appLink !== '') return null;
     return (
       <div style={{
         width: '100%',

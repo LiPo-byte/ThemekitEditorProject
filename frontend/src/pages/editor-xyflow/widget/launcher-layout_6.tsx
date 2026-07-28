@@ -11,7 +11,7 @@ export default function LauncherLayout_6(props: any) {
   if (!data) return null;
   const size = data.size;
   // const gapSize: any = {1: 16, 2: 16, 3: 10 };
-  const heightSize: any = {1: 48, 2: 64, 3: 48 };
+  const heightSize: any = {1: 96, 2: 64, 3: 48 };
   const widthSize: any = {1: 96, 2: 240, 3: 240 };
   const gapSize: any = {1: 16, 2: 5, 3: 16};
   const cropToolOpen = useEditorCropToolOpen();
@@ -23,7 +23,7 @@ export default function LauncherLayout_6(props: any) {
   const box: any = (displayIndex: number) => {
     const index = displayIndex;
     const appLink = appLinks[index];
-    if (appLink) return null;
+    if (appLink !== '') return null;
     return (
       <div style={{
         width: '100%',
@@ -78,7 +78,7 @@ export default function LauncherLayout_6(props: any) {
               borderRadius: 10,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: justifyContentsize[index % 3],
+              justifyContent: size === 1 ? 'center' : justifyContentsize[index % 3],
             }}>
               <div style={{
                 width: widthSize[size],

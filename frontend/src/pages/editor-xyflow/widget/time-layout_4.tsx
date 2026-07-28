@@ -139,7 +139,7 @@ export default function TimeLayout_1(props: any) {
       />
       { data.time && (
         <span style={getTextStyle(data.time)}>
-          10:29
+          10:09
         </span>
       )}
       {renderAnimatedBlock(firstImageAnimation, firstAnimationBlockStyle)}

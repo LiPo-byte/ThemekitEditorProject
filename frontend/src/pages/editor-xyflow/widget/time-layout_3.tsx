@@ -21,6 +21,7 @@ const dividerStyle = {
   height: 1,
   backgroundColor: '#cfd5e2',
   transform: 'translateY(-0.5px)',
+  zIndex: 99,
 };
 
 const getEdgeDotStyle = (side: 'left' | 'right') => ({

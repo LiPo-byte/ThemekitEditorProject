@@ -4,7 +4,7 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
-import { resolveWidgetFontFamily } from './util';
+import { resolveWidgetFontFamily, isAndroidWidgetNode } from './util';
 
 const WEEK_LABELS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTH_NAME = 'October';
@@ -22,6 +22,7 @@ export default function CalendarLayout_0(props: any) {
   const monthTop = { 1: 35, 2: 23, 3: 100 };
   const weekMarginBottom = { 1: 0, 2: 0, 3: 31 };
   if (!data) return null;
+  const isAndroid = isAndroidWidgetNode(props.parentId);
   // 28天
   const days = [];
   for (let index = -1; index <= 28; index++) {
@@ -90,6 +91,8 @@ export default function CalendarLayout_0(props: any) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: data.calendar.textSize,
+                // color: '#ffffff' ,
+                color: data.calendar.textColor_capital_day,
                 fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
               }}>{i}</div>
             })}
@@ -102,25 +105,107 @@ export default function CalendarLayout_0(props: any) {
           }}
         >
           {days.map(i => {
+            const cellSize = daySize[size];
+            const fontSize = data.calendar.textSize;
+            const fontFamily = resolveWidgetFontFamily(props.parentId, data.calendar.font);
             const color = i === 17 ? data.calendar.textColor_now : (
               i < 17 ? data.calendar.textColor_past : data.calendar.textColor_future
-            )
-            return <div
+            );
+
+            if (i <= 0) {
+              return (
+                <div
+                  key={i}
+                  style={{
+                    width: cellSize,
+                    height: cellSize,
+                  }}
+                />
+              );
+            }
+
+            // 当天：Android 按原色填充；非 Android 用 SVG mask 镂空透出背景图
+            if (i === 17) {
+              if (isAndroid) {
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      width: cellSize,
+                      height: cellSize,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize,
+                      fontFamily,
+                      backgroundColor: data.calendar.bgColor_now,
+                      borderRadius: '100%',
+                      color,
+                    }}
+                  >
+                    {i}
+                  </div>
+                );
+              }
+
+              const maskId = `cal1-day-mask-${props.id}-${i}`;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    width: cellSize,
+                    height: cellSize,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <svg width={cellSize} height={cellSize} style={{ display: 'block' }}>
+                    <defs>
+                      <mask id={maskId}>
+                        <rect width="100%" height="100%" fill="white" />
+                        <text
+                          x="50%"
+                          y="50%"
+                          dominantBaseline="central"
+                          textAnchor="middle"
+                          fill="black"
+                          fontSize={fontSize}
+                          fontFamily={fontFamily}
+                        >
+                          {i}
+                        </text>
+                      </mask>
+                    </defs>
+                    <circle
+                      cx="50%"
+                      cy="50%"
+                      r="50%"
+                      fill={data.calendar.bgColor_now}
+                      mask={`url(#${maskId})`}
+                    />
+                  </svg>
+                </div>
+              );
+            }
+
+            return (
+              <div
                 key={i}
                 style={{
-                  width: daySize[size],
-                  height: daySize[size],
+                  width: cellSize,
+                  height: cellSize,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: data.calendar.textSize,
-                  fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
-                  backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
-                  borderRadius: i === 17 ? '100%' : '0',
-                  color: color,
-                }}>
-                  {i <= 0 ? '' : i}
-                </div>
+                  fontSize,
+                  fontFamily,
+                  color,
+                }}
+              >
+                {i}
+              </div>
+            );
           })}
         </div>
       </div>

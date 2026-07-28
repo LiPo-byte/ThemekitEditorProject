@@ -64,6 +64,7 @@ export default function CalendarLayout_0(props: any) {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: data.calendar.textSize,
+            color: data.calendar.textColor_capital_day,
             fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
           }}>{i}</div>
         }) : null}

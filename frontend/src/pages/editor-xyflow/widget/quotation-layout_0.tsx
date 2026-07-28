@@ -29,6 +29,10 @@ export default function QuotationLayout_0(props: any) {
     2: 20,
     3: 24,
   }
+  // \ / \n 强制换行；其余在容器宽度内自动换行
+  const quoteText = String(data.quote?.content ?? '')
+    .replace(/\\n/g, '\n')
+    .replace(/\\/g, '\n');
   return (
     <div
       className={`size_${data?.size ?? 1}`}
@@ -54,13 +58,18 @@ export default function QuotationLayout_0(props: any) {
       <div style={{
         position: 'relative',
         zIndex: 2,
+        width: '100%',
+        boxSizing: 'border-box',
         fontFamily: resolveWidgetFontFamily(props.parentId, data.quote.font),
         fontSize: data.quote.textSize,
         color: data.quote.textColor,
         lineHeight: 1,
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'break-word',
+        wordBreak: 'break-word',
         textAlign: (data.quote.textAlignment === 1 ? 'left' : (data.quote.textAlignment === 2) ? 'center' : 'right'),
       }}>
-        { data.quote.content }
+        {quoteText}
       </div>
     </div>
   );

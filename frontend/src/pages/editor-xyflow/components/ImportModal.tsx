@@ -474,7 +474,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           ...DEFAULT_CROP_PROPS,
         };
       }
-      if (item.appLinks && Array.isArray(item.appLinks) && item.layoutType < 6) {
+      if (item.appLinks && Array.isArray(item.appLinks) && item.layoutType < 5) {
         const existingAppLinksSource = Array.isArray(item.appLinksSource)
           ? item.appLinksSource
           : [];

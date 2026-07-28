@@ -1948,7 +1948,8 @@ export const WidgetDefaultConfig = {
                             "textColor_past":"#6D6C6A",
                             "textColor_future":"#000000",
                             "textColor_now":"#000000",
-                            "bgColor_now":"#979797"
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
                          }
                },
                {
@@ -1971,7 +1972,8 @@ export const WidgetDefaultConfig = {
                             "textColor_past":"#6D6C6A",
                             "textColor_future":"#000000",
                             "textColor_now":"#000000",
-                            "bgColor_now":"#979797"
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
                          }
                },
                {
@@ -1994,7 +1996,8 @@ export const WidgetDefaultConfig = {
                             "textColor_past":"#6D6C6A",
                             "textColor_future":"#000000",
                             "textColor_now":"#000000",
-                            "bgColor_now":"#979797"
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
                          }
                }
             ]
@@ -2025,7 +2028,8 @@ export const WidgetDefaultConfig = {
                             "textColor_past":"#6D6C6A",
                             "textColor_future":"#000000",
                             "textColor_now":"#000000",
-                            "bgColor_now":"#979797"
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
                          }
                },
                {
@@ -2048,7 +2052,8 @@ export const WidgetDefaultConfig = {
                             "textColor_past":"#6D6C6A",
                             "textColor_future":"#000000",
                             "textColor_now":"#000000",
-                            "bgColor_now":"#979797"
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
                          }
                },
                {
@@ -2071,7 +2076,8 @@ export const WidgetDefaultConfig = {
                             "textColor_past":"#6D6C6A",
                             "textColor_future":"#000000",
                             "textColor_now":"#000000",
-                            "bgColor_now":"#979797"
+                            "bgColor_now":"#979797",
+                            "textColor_capital_day": "#000000",
                          }
                }
             ]
@@ -3151,7 +3157,7 @@ export const WidgetDefaultConfig = {
                      "textColor": "#BD1E2C"
                  },
                  "title": {
-                     "content":"Halloween",
+                    //  "content":"Halloween",
                      "font":"HelveticaNeue-Bold",
                      "textSize":16,
                      "textHeight":19,
@@ -3179,7 +3185,7 @@ export const WidgetDefaultConfig = {
                      "textColor": "#BD1E2C"
                  },
                  "title": {
-                     "content":"Halloween",
+                    //  "content":"Halloween",
                      "font":"HelveticaNeue-Bold",
                      "textSize":24,
                      "textHeight":28,
@@ -3207,7 +3213,7 @@ export const WidgetDefaultConfig = {
                      "textColor": "#BD1E2C"
                  },
                  "title": {
-                     "content":"Halloween",
+                    //  "content":"Halloween",
                      "font":"HelveticaNeue-Bold",
                      "textSize":34,
                      "textHeight":40,
@@ -3243,7 +3249,7 @@ export const WidgetDefaultConfig = {
                      "textColor": "#BD1E2C"
                  },
                  "title": {
-                     "content":"Halloween",
+                    //  "content":"Halloween",
                      "font":"HelveticaNeue-Bold",
                      "textSize":16,
                      "textHeight":19,
@@ -3271,7 +3277,7 @@ export const WidgetDefaultConfig = {
                      "textColor": "#BD1E2C"
                  },
                  "title": {
-                     "content":"Halloween",
+                    //  "content":"Halloween",
                      "font":"HelveticaNeue-Bold",
                      "textSize":24,
                      "textHeight":28,
@@ -3299,7 +3305,7 @@ export const WidgetDefaultConfig = {
                      "textColor": "#BD1E2C"
                  },
                  "title": {
-                     "content":"Halloween",
+                    //  "content":"Halloween",
                      "font":"HelveticaNeue-Bold",
                      "textSize":34,
                      "textHeight":40,
@@ -3420,8 +3426,8 @@ export const WidgetDefaultConfig = {
                         "textSize":24,
                          "textColor":"#FFFFFF"
                         },
-                  "appLinks":["", ""],
-                  "appLinksSource": Array.from({ length: 2 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+                  "appLinks":[""],
+                //   "appLinksSource": Array.from({ length: 1 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
                },
                {
                   "size":2,
@@ -3431,7 +3437,7 @@ export const WidgetDefaultConfig = {
                   radius: 28,
                   "crop_props": defaultCropProps,
                   "appLinks":["","","",""],
-                  "appLinksSource": Array.from({ length: 4 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+                //   "appLinksSource": Array.from({ length: 4 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
                },
                {
                   "size":3,
@@ -3441,7 +3447,7 @@ export const WidgetDefaultConfig = {
                   radius: 28,
                   "crop_props": defaultCropProps,
                   "appLinks":["","",""],
-                  "appLinksSource": Array.from({ length: 3 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
+                //   "appLinksSource": Array.from({ length: 3 }, () => ({ source: '', "crop_props": DEFAULT_CROP_PROPS, }))
                }
             ]
         }
@@ -3460,7 +3466,7 @@ export const WidgetDefaultConfig = {
                   "source": "",
                   radius: 28,
                   "crop_props": defaultCropProps,
-                  "appLinks":["", ""],
+                  "appLinks":[""],
                },
                {
                   "size":2,

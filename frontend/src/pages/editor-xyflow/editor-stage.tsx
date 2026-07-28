@@ -158,8 +158,11 @@ export default function EditorStage() {
         nodesFocusable={false}
         selectionOnDrag={false}
         onNodeClick={(event, node) => {
+          console.log(interactionLocked)
           if (interactionLocked) return;
           const target = resolveSelectableTarget(node, nodes);
+          console.log(target, 'trget', Boolean(event.shiftKey));
+          console.log('=========================')
           if (!target) return;
           seletNode(target, Boolean(event.shiftKey));
         }}

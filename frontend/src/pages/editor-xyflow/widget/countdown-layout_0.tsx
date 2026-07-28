@@ -84,7 +84,7 @@ export default function CountdownLayout_0(props: any) {
         >
           <div style={titleStyle}>Days Left</div>
           <div style={dayStyle}>{dayValue}</div>
-          {titleText ? <div style={titleStyle}>{festivalName}'s Day</div> : null}
+          <div style={titleStyle}>{festivalName}</div>
         </div>
       ) : null}
 
@@ -118,7 +118,7 @@ export default function CountdownLayout_0(props: any) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-          }}>{festivalName}'s Day</div>
+          }}>{festivalName}</div>
         </div>
       ) : null}
 
@@ -146,7 +146,7 @@ export default function CountdownLayout_0(props: any) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-          }}>{festivalName}'s Day</div>
+          }}>{festivalName}</div>
         </div>
       ) : null}
 

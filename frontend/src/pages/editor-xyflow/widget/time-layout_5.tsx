@@ -195,6 +195,7 @@ export default function TimeLayout_5(props: any) {
       />
       {hasAnimationFields
         ? animationConfigs.map((item: any, index: number) => {
+            if (data?.size === 2 ) return null
             return renderAnimationLayer(item, index);
           })
         : null}
@@ -324,6 +325,19 @@ export default function TimeLayout_5(props: any) {
                 </div>
               ))}
             </div>
+          </div>
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: '50%',
+            right: 0,
+            bottom: 0,
+          }}>
+            {hasAnimationFields
+            ? animationConfigs.map((item: any, index: number) => {
+                return renderAnimationLayer(item, index);
+              })
+            : null}
           </div>
         </>
       )}

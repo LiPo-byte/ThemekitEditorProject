@@ -50,7 +50,7 @@ export default function LauncherLayout_1(props: any) {
         overflow: 'hidden',
       }}>
         {appsource?.source ? <>
-        <img style={{ width: '100%', height: '100%' }} src={appsource.source} alt="" />
+        <img style={{ width: '100%', height: '100%', objectFit: 'cover' }} src={appsource.source} alt="" />
         </> : displayIndex}
       </div>
     )
