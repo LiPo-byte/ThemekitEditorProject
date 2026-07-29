@@ -1936,7 +1936,7 @@ export const WidgetDefaultConfig = {
                   "crop_props": defaultCropProps,
                   "radius": 28,
                   "month":{
-                            "textAlignment":3,
+                            "textAlignment":2,
                             "font":"Helvetica",
                             "textSize":10,
                             "textColor":"#000000",
@@ -1984,7 +1984,7 @@ export const WidgetDefaultConfig = {
                   "radius": 28,
                   "layoutType": 1,
                   "month":{
-                            "textAlignment":3,
+                            "textAlignment":2,
                             "font":"Helvetica",
                             "textSize":30,
                             "textColor":"#000000",
@@ -2016,7 +2016,7 @@ export const WidgetDefaultConfig = {
                   "layoutType": 1,
                   "radius": 28,
                   "month":{
-                            "textAlignment":3,
+                            "textAlignment":2,
                             "font":"Helvetica",
                             "textSize":10,
                             "textColor":"#000000",
@@ -2064,7 +2064,7 @@ export const WidgetDefaultConfig = {
                   "layoutType": 1,
                   "radius": 28,
                   "month":{
-                            "textAlignment":3,
+                            "textAlignment":2,
                             "font":"Helvetica",
                             "textSize":30,
                             "textColor":"#000000",
@@ -2179,7 +2179,8 @@ export const WidgetDefaultConfig = {
                      "textColor_past": "#333333",
                      "textColor_future": "#333333",
                      "bgColor_now": "#333333",
-                     "textSize": 10
+                     "textSize": 10,
+                     "textColor_now":"#000000",
                  }
              },
              {
@@ -2237,7 +2238,8 @@ export const WidgetDefaultConfig = {
                      "textColor_past": "#333333",
                      "textColor_future": "#333333",
                      "bgColor_now": "#333333",
-                     "textSize": 16
+                     "textSize": 16,
+                     "textColor_now":"#000000",
                  }
              }
             ]

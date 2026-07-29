@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -32,6 +32,7 @@ import {
   useEditorShowAxis,
   useEditorBackgroundVariant,
   useEditorBackgroundColor,
+  useEditorSelectedNodesMap,
 } from './context';
 
 export const xyFlowTypeNodeType = {
@@ -73,6 +74,7 @@ const resolveSelectableTarget = (
 export default function EditorStage() {
   const actionNode = useEditorActionPropNode();
   const nodes = useEditorNodes();
+  const selectedNodesMap = useEditorSelectedNodesMap();
   const seletNode = useEditorSelectNode();
   const deselectedNode = useEditorDeselectedNode();
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
@@ -85,6 +87,18 @@ export default function EditorStage() {
   const backgroundColor = useEditorBackgroundColor();
   const deleteKeyPressed = useKeyPress(['Delete', 'Backspace']);
   const deleteKeyPressedRef = useRef(false);
+
+  // selected 以 selectedNodesMap 为准，避免 React Flow 默认单选覆盖多选状态
+  const flowNodes = useMemo(
+    () => [
+      actionNode,
+      ...nodes.map((node) => ({
+        ...node,
+        selected: selectedNodesMap.has(node.id),
+      })),
+    ],
+    [actionNode, nodes, selectedNodesMap],
+  );
 
   const backgroundVariantMap: Record<'lines' | 'dots' | 'cross', BackgroundVariant> = {
     lines: BackgroundVariant.Lines,
@@ -109,7 +123,7 @@ export default function EditorStage() {
       style={{ height: '100%', width: '100%', background: backgroundColor }}
     >
       <ReactFlow
-        nodes={[actionNode, ...nodes]}
+        nodes={flowNodes}
         nodeTypes={{
           'node-with-toolbar': ActionPopover,
           ...xyFlowTypeNodeType,
@@ -161,8 +175,6 @@ export default function EditorStage() {
           console.log(interactionLocked)
           if (interactionLocked) return;
           const target = resolveSelectableTarget(node, nodes);
-          console.log(target, 'trget', Boolean(event.shiftKey));
-          console.log('=========================')
           if (!target) return;
           seletNode(target, Boolean(event.shiftKey));
         }}
@@ -175,6 +187,7 @@ export default function EditorStage() {
         zoomOnPinch={!interactionLocked}
         zoomOnDoubleClick={!interactionLocked}
         selectionKeyCode={null}
+        multiSelectionKeyCode="Shift"
         fitView
         maxZoom={1.5}
         minZoom={0.1}

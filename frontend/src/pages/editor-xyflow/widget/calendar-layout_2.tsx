@@ -181,9 +181,9 @@ export default function CalendarLayout_0(props: any) {
               right: 19,
               fontFamily: resolveWidgetFontFamily(props.parentId, data?.month?.font),
               fontSize: data?.month?.textSize,
-              opacity: data?.month?.alpha,
+              opacity: data?.month?.alpha || 0.6,
               height: data?.month?.textHeight,
-              color: data?.year?.textColor,
+              color: data?.month?.textColor,
               zIndex: 2,
             }}
           >
@@ -236,7 +236,7 @@ export default function CalendarLayout_0(props: any) {
             style={{
               fontFamily: resolveWidgetFontFamily(props.parentId, data?.day?.font),
               fontSize: data?.day?.textSize,
-              opacity: data?.day?.alpha ?? 1,
+              opacity: 0.6,
               height: data?.day?.textHeight,
               color: data?.day?.textColor,
               position: 'relative',
@@ -294,6 +294,7 @@ export default function CalendarLayout_0(props: any) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: data.calendar.textSize,
+                    color: data.calendar.textColor_capital_day || '#000000',
                     fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
                   }}>{i}</div>
                 })}
@@ -361,6 +362,7 @@ export default function CalendarLayout_0(props: any) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: data.calendar.textSize,
+                    color: data.calendar.textColor_capital_day || '#000000',
                     fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
                   }}>{i}</div>
                 })}

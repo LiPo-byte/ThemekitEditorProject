@@ -4,7 +4,7 @@ import {
   useEditorCropToolOpen,
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
-import { resolveWidgetFontFamily } from './util';
+import { resolveWidgetFontFamily, isAndroidWidgetNode } from './util';
 import './style.css';
 
 export default function TimeLayout_5(props: any) {
@@ -14,6 +14,7 @@ export default function TimeLayout_5(props: any) {
   const secondImageAnimation = data?.secondImageAnimation;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
+  const isAndroid = isAndroidWidgetNode(props.parentId);
 
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
 
@@ -30,7 +31,7 @@ export default function TimeLayout_5(props: any) {
   const animationConfigs = [firstImageAnimation, secondImageAnimation].filter(Boolean);
 
   const getOtherBackgroundColor = (otherData?: any) => {
-    const rawColor = String(otherData?.backgroundColor ?? '#000000');
+    const rawColor = String(otherData?.backgroundColor ?? otherData?.textColor ?? '#000000');
     const baseColor =
       rawColor.startsWith('#') && rawColor.length === 9 ? rawColor.slice(0, 7) : rawColor;
     const alpha = Number(otherData?.alpha);
@@ -168,6 +169,7 @@ export default function TimeLayout_5(props: any) {
     textColor = '#ffffff',
     fillColor?: string,
     borderRadius?: number,
+    opacity?: number,
   ): CSSProperties => ({
     width,
     textAlign: 'center',
@@ -179,6 +181,7 @@ export default function TimeLayout_5(props: any) {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: borderRadius,
+    opacity: opacity || 1,
   });
 
   return (
@@ -240,7 +243,7 @@ export default function TimeLayout_5(props: any) {
                 justifyContent: 'center',
                 borderRadius: '9px',
                 ...getTextStyle({
-                  ...data.month,
+                  ...data.time,
                 }),
               }}
             >
@@ -310,20 +313,64 @@ export default function TimeLayout_5(props: any) {
               ))}
             </div>
             <div style={{ display: 'flex', width: 147, height: 17, marginTop: 4, justifyContent: 'space-between' }}>
-              {weekDates.map((item, index) => (
-                <div
-                  key={`d-${item}-${data.size}`}
-                  style={calendarCellStyle(
-                    17,
-                    11,
-                    index === 4 ? data?.calendar?.textColor : '#000000',
-                    index === 4 ? getOtherBackgroundColor(data?.other) : undefined,
-                    index === 4 ? 8.5 : 0,
-                  )}
-                >
-                  {item}
-                </div>
-              ))}
+              {weekDates.map((item, i) => {
+                const maskId = `cal1-day-mask-${props.id}-${i}`;
+                if (i === 4 && !isAndroid) {
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        width: 17,
+                        height: 17,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <svg width={17} height={17} style={{ display: 'block' }}>
+                        <defs>
+                          <mask id={maskId}>
+                            <rect width="100%" height="100%" fill="white" />
+                            <text
+                              x="50%"
+                              y="50%"
+                              dominantBaseline="central"
+                              textAnchor="middle"
+                              fill="black"
+                              fontSize={11}
+                              fontFamily={data?.calendar?.font}
+                            >
+                              17
+                            </text>
+                          </mask>
+                        </defs>
+                        <circle
+                          cx="50%"
+                          cy="50%"
+                          r="50%"
+                          fill={data.time.textColor}
+                          mask={`url(#${maskId})`}
+                        />
+                      </svg>
+                    </div>
+                  )
+                }
+                return (
+                  <div
+                    key={`d-${item}-${data.size}`}
+                    style={calendarCellStyle(
+                      17,
+                      11,
+                      i === 4 ? '#ffffff' : data?.calendar?.textColor,
+                      i === 4 ? getOtherBackgroundColor(data?.time) : undefined,
+                      i === 4 ? 8.5 : 0,
+                      i < 4 ? 0.6 : 1,
+                    )}
+                  >
+                    {item}
+                  </div>
+                )
+              })}
             </div>
           </div>
           <div style={{
@@ -377,7 +424,8 @@ export default function TimeLayout_5(props: any) {
               top: 104,
               width: 40,
               height: 4,
-              backgroundColor: '#000',
+              // backgroundColor: '#000',
+              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
               zIndex: 9,
               borderRadius: 2,
             }}
@@ -395,12 +443,13 @@ export default function TimeLayout_5(props: any) {
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: '18px',
+            }}
+          >
+            <span style={{
               ...getTextStyle({
                 ...data.month,
               }),
-            }}
-          >
-            {monthText}
+            }}>{monthText}</span>
           </div>
 
           <div style={{ position: 'absolute', left: 18, top: 244, width: 294, zIndex: 9 }}>
@@ -419,20 +468,62 @@ export default function TimeLayout_5(props: any) {
               ))}
             </div>
             <div style={{ display: 'flex', width: 294, height: 36, marginTop: 12, justifyContent: 'space-between' }}>
-              {weekDates.map((item, index) => (
-                <div
+              {weekDates.map((item, i) => {
+                const maskId = `cal1-day-mask-${props.id}-${i}`;
+                if(i === 4 && !isAndroid) {
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        width: 36,
+                        height: 36,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <svg width={36} height={36} style={{ display: 'block' }}>
+                        <defs>
+                          <mask id={maskId}>
+                            <rect width="100%" height="100%" fill="white" />
+                            <text
+                              x="50%"
+                              y="50%"
+                              dominantBaseline="central"
+                              textAnchor="middle"
+                              fill="black"
+                              fontSize={16}
+                              fontFamily={data?.calendar?.font}
+                            >
+                              17
+                            </text>
+                          </mask>
+                        </defs>
+                        <circle
+                          cx="50%"
+                          cy="50%"
+                          r="50%"
+                          fill={data.time.textColor}
+                          mask={`url(#${maskId})`}
+                        />
+                      </svg>
+                    </div>
+                  )
+                }
+                return  <div
                   key={`d-lg-${item}`}
                   style={calendarCellStyle(
                     36,
                     16,
-                    index === 4 ? '#fff' : '#111',
-                    index === 4 ? getOtherBackgroundColor(data?.other) : undefined,
-                    index === 4 ? 18 : 0,
+                    i === 4 ? '#fff' : '#111',
+                    i === 4 ? getOtherBackgroundColor(data?.time) : undefined,
+                    i === 4 ? 18 : 0,
+                    i < 4 ? 0.6 : 1,
                   )}
                 >
                   {item}
                 </div>
-              ))}
+              })}
             </div>
           </div>
         </>

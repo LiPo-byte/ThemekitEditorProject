@@ -131,6 +131,16 @@ const RightPanel: React.FC = () => {
         setValueByPath(output, nextPath, prevList);
         return;
       }
+      if (key === 'themekitSizewithTypes') {
+        const prevList = (getValueByPath(output, nextPath) ?? []) as string[];
+        const values = Array.isArray(current) ? current : [current];
+        values.forEach((item) => {
+          if (item == null || item === '' || prevList.includes(item)) return;
+          prevList.push(item);
+        });
+        setValueByPath(output, nextPath, prevList);
+        return;
+      }
       if (current && typeof current === 'object' && !Array.isArray(current)) {
         walkNodeData(current, { ...ctx, pathPrefix: nextPath }, output);
         return;

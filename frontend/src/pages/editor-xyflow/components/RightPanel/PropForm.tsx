@@ -336,15 +336,18 @@ const BackgroundColorInput: React.FC<{
   );
 };
 
+const CALENDAR_CENTER_ONLY = new Set(['calendar_1_1', 'calendar_1_2', 'calendar_1_3']);
+const TIME_NO_CENTER = new Set(['time_1_1', 'time_1_3']);
+
 const TextAlignment: React.FC<{
   value?: number;
   onChange?: (value: number) => void;
   title?: string,
   themekitSizewithTypes?: string[],
-}> = ({ value, onChange, title }) => {
-  let rightDisabled = false;
-  let centerDisabled = false;
-  let leftDisabled = false;
+}> = ({ value, onChange, title, themekitSizewithTypes }) => {
+  const types = themekitSizewithTypes ?? [];
+  const centerOnly = types.some((t) => CALENDAR_CENTER_ONLY.has(t));
+  const noCenter = types.some((t) => TIME_NO_CENTER.has(t));
   return (
     <>
       <Row style={{ marginBottom: '5px' }}>
@@ -356,9 +359,9 @@ const TextAlignment: React.FC<{
             block
             onChange={onChange}
             options={[
-              { value: 1, label: <AlignLeftOutlined /> },
-              { value: 2, label: <AlignCenterOutlined />, disabled: true },
-              { value: 3, label: <AlignRightOutlined /> },
+              { value: 1, label: <AlignLeftOutlined />, disabled: centerOnly },
+              { value: 2, label: <AlignCenterOutlined />, disabled: noCenter },
+              { value: 3, label: <AlignRightOutlined />, disabled: centerOnly },
             ]}
           />
         </Flex>
@@ -830,7 +833,7 @@ export const BaseSelectedNodePropForm: React.FC<{
         <>
           <TextAlignment
             value={editProps.textAlignment}
-            themekitSizewithTypes={editProps.themekitSizewithTypes}
+            themekitSizewithTypes={editProps.themekitSizewithTypes || []}
             onChange={(nextValue) => onChange?.('textAlignment', nextValue)}
           />
         </>
@@ -1241,7 +1244,7 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('time') && (
         <>
-          <BaseSelectedNodePropForm editProps={editProps.time} onChange={(key: string, value: any) => {
+          <BaseSelectedNodePropForm editProps={{...editProps.time, themekitSizewithTypes: editProps.themekitSizewithTypes || [] }} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'time');
           }} title="Time"/>
         </>
@@ -1269,7 +1272,7 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {hasKey('month') && (
         <>
-          <BaseSelectedNodePropForm editProps={editProps.month} onChange={(key: string, value: any) => {
+          <BaseSelectedNodePropForm editProps={{...editProps.month, themekitSizewithTypes: editProps.themekitSizewithTypes || [] }} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'month');
           }} title="Month"/>
         </>
