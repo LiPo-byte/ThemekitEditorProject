@@ -994,16 +994,22 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       rootEl.offsetHeight;
     if (!rootW || !rootH) return null;
 
+    // 列表卡片只需缩略图：限制输出边长，避免 pixelRatio=3 的巨图导致列表 hover/点击卡顿
+    const previewMax = 320;
+    const scale = Math.min(1, previewMax / rootW, previewMax / rootH);
+    const outW = Math.max(1, Math.round(rootW * scale));
+    const outH = Math.max(1, Math.round(rootH * scale));
+
     try {
       return await toJpeg(viewportEl, {
-        pixelRatio: 3,
-        quality: 0.92,
+        pixelRatio: 1,
+        quality: 0.82,
         backgroundColor: '#ffffff',
         cacheBust: true,
-        width: rootW,
-        height: rootH,
+        width: outW,
+        height: outH,
         style: {
-          transform: `translate(${-rootX}px, ${-rootY}px)`,
+          transform: `scale(${scale}) translate(${-rootX}px, ${-rootY}px)`,
           transformOrigin: '0 0',
         },
       });

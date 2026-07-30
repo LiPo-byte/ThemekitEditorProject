@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   deleteProject,
   getProjectList,
@@ -12,7 +12,203 @@ import { InitialAvatar } from '@/components';
 const { Meta } = Card;
 import dayjs from 'dayjs';
 
-const fullImage = "data:image/png;base64,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";
+/** 轻量占位图，避免大 base64 打进包体积 */
+const PLACEHOLDER_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect fill='%23f0f0f0' width='100%25' height='100%25'/%3E%3C/svg%3E";
+
+/** 展示用缩略图最大边，覆盖 200px 封面 @2x */
+const PREVIEW_DISPLAY_MAX = 480;
+
+const coverImgStyle: React.CSSProperties = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  display: 'block',
+};
+
+/** 将过大的预览图缩到展示尺寸，降低 hover/点击时的重绘成本 */
+const ProjectCardCover: React.FC<{ src: string | null }> = ({ src }) => {
+  const [thumbSrc, setThumbSrc] = useState(PLACEHOLDER_IMAGE);
+
+  useEffect(() => {
+    if (!src) {
+      setThumbSrc(PLACEHOLDER_IMAGE);
+      return;
+    }
+
+    let cancelled = false;
+    let objectUrl: string | null = null;
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      if (cancelled) return;
+      const { naturalWidth: w, naturalHeight: h } = img;
+      if (!w || !h || (w <= PREVIEW_DISPLAY_MAX && h <= PREVIEW_DISPLAY_MAX)) {
+        setThumbSrc(src);
+        return;
+      }
+      const scale = Math.min(PREVIEW_DISPLAY_MAX / w, PREVIEW_DISPLAY_MAX / h);
+      const dw = Math.max(1, Math.round(w * scale));
+      const dh = Math.max(1, Math.round(h * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = dw;
+      canvas.height = dh;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        setThumbSrc(src);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, dw, dh);
+      canvas.toBlob(
+        (blob) => {
+          if (cancelled) return;
+          if (!blob) {
+            setThumbSrc(src);
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          if (cancelled) {
+            URL.revokeObjectURL(url);
+            return;
+          }
+          objectUrl = url;
+          setThumbSrc(url);
+        },
+        'image/webp',
+        0.8,
+      );
+    };
+    img.onerror = () => {
+      if (!cancelled) setThumbSrc(PLACEHOLDER_IMAGE);
+    };
+    img.src = src;
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src]);
+
+  return (
+    <img
+      draggable={false}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      style={coverImgStyle}
+      src={thumbSrc}
+    />
+  );
+};
+
+type ProjectCardProps = {
+  item: ProjectListItem;
+  focused: boolean;
+  deleting: boolean;
+  onFocus: (projectId: string) => void;
+  onDelete: (projectId: string) => void;
+};
+
+const ProjectCard = React.memo<ProjectCardProps>(
+  ({ item, focused, deleting, onFocus, onDelete }) => {
+    const ownerName = item.owner.full_name || item.owner.username;
+    return (
+      <Dropdown
+        trigger={['contextMenu']}
+        menu={{
+          items: [
+            {
+              key: 'delete-project',
+              label: '删除项目',
+              danger: true,
+              disabled: deleting,
+            },
+          ] as MenuProps['items'],
+          onClick: ({ key, domEvent }) => {
+            domEvent.stopPropagation();
+            if (key === 'delete-project') {
+              onDelete(item.project_id);
+            }
+          },
+        }}
+      >
+        <div>
+          <Card
+            onClick={() => {
+              onFocus(item.project_id);
+            }}
+            onContextMenu={() => {
+              onFocus(item.project_id);
+            }}
+            onDoubleClick={() => {
+              history.push('/editor-xyflow/' + item.project_id);
+            }}
+            cover={<ProjectCardCover src={item.preview_image} />}
+            hoverable
+            style={{
+              width: '100%',
+              contain: 'layout paint style',
+            }}
+            styles={{
+              cover: {
+                borderBottom: '1px solid #f0f0f0',
+                margin: 'auto',
+                height: '200px',
+                overflow: 'hidden',
+                contain: 'paint',
+              },
+              root: focused
+                ? {
+                    borderColor: '#696FC7',
+                    boxShadow: '0 2px 8px #A7AAE1',
+                    borderRadius: 8,
+                  }
+                : undefined,
+            }}
+          >
+            <Meta
+              title={item.name}
+              styles={
+                focused
+                  ? {
+                      title: {
+                        color: '#A7AAE1',
+                      },
+                      description: {
+                        color: '#A7AAE1',
+                      },
+                    }
+                  : undefined
+              }
+              description={
+                <Flex align="center" justify="space-between">
+                  <Flex vertical>
+                    <span>
+                      更新时间：
+                      {dayjs(item.updated_at).format('YYYY-MM-DD HH:mm')}
+                    </span>
+                    <span>创建人：{ownerName}</span>
+                  </Flex>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                    }}
+                  >
+                    <InitialAvatar
+                      style={{ width: '32px', height: '32px' }}
+                      name={ownerName}
+                    />
+                  </div>
+                </Flex>
+              }
+            />
+          </Card>
+        </div>
+      </Dropdown>
+    );
+  },
+);
 
 const ProjectList: React.FC = () => {
   const [data, setData] = useState<ProjectListItem[]>([]);
@@ -20,6 +216,10 @@ const ProjectList: React.FC = () => {
   const [current, setCurrent] = useState(1);
   const [focusCard, setFocuseCard] = useState<string | null>(null);
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
+  const focusCardRef = useRef(focusCard);
+  const currentRef = useRef(current);
+  focusCardRef.current = focusCard;
+  currentRef.current = current;
 
   const loadProjects = async (page = current) => {
     const res = await getProjectList({ skip: (page - 1) * 12, limit: 12 });
@@ -32,130 +232,56 @@ const ProjectList: React.FC = () => {
     loadProjects(current);
   }, [current]);
 
-  const handleDeleteProject = async (projectId: string) => {
-    try {
-      setDeletingProjectId(projectId);
-      await deleteProject(projectId);
-      if (focusCard === projectId) {
-        setFocuseCard(null);
-      }
-      message.success('项目已删除');
-      const refreshed = await loadProjects(current);
-      if (refreshed.data.length === 0 && current > 1) {
-        setCurrent(current - 1);
-      }
-    } catch(error: any) {
-      message.error('删除失败！请稍后再试')
-    } finally {
-      setDeletingProjectId(null);
-    }
-  };
-
-  const openDeleteConfirm = (projectId: string) => {
+  const openDeleteConfirm = useCallback((projectId: string) => {
     Modal.confirm({
       title: '确定删除该项目？',
       content: '删除后不可恢复。',
       okText: '删除',
       cancelText: '取消',
       okButtonProps: { danger: true },
-      onOk: () => handleDeleteProject(projectId),
+      onOk: async () => {
+        try {
+          setDeletingProjectId(projectId);
+          await deleteProject(projectId);
+          if (focusCardRef.current === projectId) {
+            setFocuseCard(null);
+          }
+          message.success('项目已删除');
+          const page = currentRef.current;
+          const refreshed = await getProjectList({
+            skip: (page - 1) * 12,
+            limit: 12,
+          });
+          setData(refreshed.data);
+          setTotal(refreshed.count);
+          if (refreshed.data.length === 0 && page > 1) {
+            setCurrent(page - 1);
+          }
+        } catch (error: any) {
+          message.error('删除失败！请稍后再试');
+        } finally {
+          setDeletingProjectId(null);
+        }
+      },
     });
-  };
+  }, []);
+
+  const handleFocusCard = useCallback((projectId: string) => {
+    setFocuseCard(projectId);
+  }, []);
 
   return (
     <PageContainer>
       <Row gutter={[20, 20]} style={{ paddingBottom: 72 }}>
-        {data.map((i: any, index: number) => (
-          <Col key={index} xs={24} sm={12} lg={6}>
-            <Dropdown
-              trigger={['contextMenu']}
-              menu={{
-                items: [
-                  {
-                    key: 'delete-project',
-                    label: '删除项目',
-                    danger: true,
-                    disabled: deletingProjectId === i.project_id,
-                  },
-                ] as MenuProps['items'],
-                onClick: ({ key, domEvent }) => {
-                  domEvent.stopPropagation();
-                  if (key === 'delete-project') {
-                    openDeleteConfirm(i.project_id);
-                  }
-                },
-              }}
-            >
-              <div>
-                <Card
-                  onClick={() => {
-                    setFocuseCard(i.project_id);
-                  }}
-                  onContextMenu={() => {
-                    setFocuseCard(i.project_id);
-                  }}
-                  onDoubleClick={() => {
-                    history.push('/editor-xyflow/' + i.project_id);
-                  }}
-                  cover={
-                    <img
-                      draggable={false}
-                      alt="example"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
-                      }}
-                      src={i.preview_image || fullImage}
-                    />
-                  }
-                  hoverable
-                  style={{ width: '100%' }}
-                  styles={{
-                    cover: {
-                      borderBottom: '1px solid #f0f0f0',
-                      margin: 'auto',
-                      height: "200px",
-                      overflow: 'hidden'
-                    },
-                    root: focusCard === i.project_id ? {
-                        borderColor: '#696FC7',
-                        boxShadow: '0 2px 8px #A7AAE1',
-                        borderRadius: 8,
-                    } : undefined,
-                  }}
-                >
-                  <Meta
-                    title={i.name}
-                    styles={focusCard === i.project_id ? {
-                        title: {
-                          color: '#A7AAE1',
-                        },
-                        description: {
-                          color: '#A7AAE1',
-                        },
-                    } : undefined}
-                    description={
-                      <Flex align='center' justify='space-between'>
-                        <Flex vertical>
-                          <span>更新时间：{dayjs(i.updated_at).format('YYYY-MM-DD HH:mm')}</span>
-                          <span>创建人：{i.owner.full_name || i.owner.username}</span>
-                        </Flex>
-                        <div style={{
-                            width: '32px',
-                            height: '32px'
-                        }}>
-                            <InitialAvatar
-                              style={{ width: '32px', height: '32px' }}
-                              name={i.owner.full_name || i.owner.username}
-                            />
-                        </div>
-                      </Flex>
-                    }
-                  />
-                </Card>
-              </div>
-            </Dropdown>
+        {data.map((item) => (
+          <Col key={item.project_id} xs={24} sm={12} lg={6}>
+            <ProjectCard
+              item={item}
+              focused={focusCard === item.project_id}
+              deleting={deletingProjectId === item.project_id}
+              onFocus={handleFocusCard}
+              onDelete={openDeleteConfirm}
+            />
           </Col>
         ))}
       </Row>

@@ -88,6 +88,9 @@ services:
         restart: true
       prestart:
         condition: service_completed_successfully
+    volumes:
+      # 持久化预览图 / 上传资源，避免重建容器后丢失
+      - app-backend-data:/app/backend/data
     env_file:
       - .env
     environment:
@@ -151,6 +154,7 @@ services:
       - backend
 volumes:
   app-db-data:
+  app-backend-data:
 
 networks:
   traefik-public:

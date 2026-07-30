@@ -111,6 +111,7 @@ export const useProjectAutoSave = (params: {
           body.preview_image = activeCore.captureCanvas({
             mimeType: 'image/webp',
             quality: 0.82,
+            pixelRatio: 1,
             outputWidth: 320,
             outputHeight: 320,
             fit: 'contain',
