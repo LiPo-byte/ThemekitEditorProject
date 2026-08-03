@@ -60,6 +60,79 @@ const sanitizeFileToken = (value: string) =>
     .replace(/\s+/g, '_')
     .replace(/[^a-z0-9_\-]/g, '');
 
+/** 读取导出后缀；未配置时默认 jpg */
+const resolveExportExt = (value: unknown, fallback = 'jpg') => {
+  const ext = String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/^\./, '');
+  if (!ext || !/^[a-z0-9]+$/.test(ext)) return fallback;
+  return ext === 'jpeg' ? 'jpg' : ext;
+};
+
+const mimeTypeByExt = (ext: string) => {
+  if (ext === 'png') return 'image/png';
+  if (ext === 'webp') return 'image/webp';
+  return 'image/jpeg';
+};
+
+/** 将裁剪结果按目标后缀重新编码（jpg 可直接复用） */
+const encodeBlobByExt = async (
+  blob: Blob,
+  ext: string,
+  quality = EXPORT_JPEG_QUALITY,
+): Promise<Blob | null> => {
+  const mimeType = mimeTypeByExt(ext);
+  if (ext === 'jpg' || ext === 'jpeg') return blob;
+  if (blob.type === mimeType) return blob;
+
+  const drawToCanvas = async (source: CanvasImageSource, width: number, height: number) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, width);
+    canvas.height = Math.max(1, height);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+    return new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(
+        (nextBlob) => resolve(nextBlob),
+        mimeType,
+        mimeType === 'image/jpeg' ? quality : undefined,
+      );
+    });
+  };
+
+  if ('createImageBitmap' in window) {
+    try {
+      const bitmap = await createImageBitmap(blob);
+      const encoded = await drawToCanvas(bitmap, bitmap.width, bitmap.height);
+      bitmap.close();
+      if (encoded) return encoded;
+    } catch {
+      // createImageBitmap 失败时回退 <img>
+    }
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Failed to decode image.'));
+      img.src = objectUrl;
+    });
+    return await drawToCanvas(
+      image,
+      image.naturalWidth || image.width || 1,
+      image.naturalHeight || image.height || 1,
+    );
+  } catch {
+    return null;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+};
+
 export type WallpaperExportFile = {
   filename: string;
   blob: Blob;
@@ -115,7 +188,8 @@ export const collectWallpaperExportFiles = async (
     const name = sanitizeFileToken(
       String(data.name ?? wallpaperNode.id ?? `wallpaper_${index}`),
     );
-    const filename = `${name || 'wallpaper'}.jpg`;
+    const ext = resolveExportExt(data.ext, 'jpg');
+    const filename = `${name || 'wallpaper'}.${ext}`;
     const outputWidth =
       Number(data.width) > 0 ? Number(data.width) : DEFAULT_WALLPAPER_WIDTH;
     const outputHeight =
@@ -143,7 +217,12 @@ export const collectWallpaperExportFiles = async (
           pushLine('warning', `跳过 ${filename}（裁剪失败）`);
           continue;
         }
-        files.push({ filename, blob: jpegBlob });
+        const exportBlob = await encodeBlobByExt(jpegBlob, ext);
+        if (!exportBlob) {
+          pushLine('warning', `跳过 ${filename}（转码失败）`);
+          continue;
+        }
+        files.push({ filename, blob: exportBlob });
         pushLine('success', `生成 ${filename}`);
         continue;
       } catch {

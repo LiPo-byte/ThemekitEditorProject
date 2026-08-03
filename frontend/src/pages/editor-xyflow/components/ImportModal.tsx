@@ -71,7 +71,7 @@ type Props = {
   onClose: () => void;
 };
 type ImportSystem = 'ios' | 'android' | 'common';
-type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'theme';
+type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'photo_shuffles' | 'theme';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -665,15 +665,21 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   };
 
   /**
-   * 优先读 wallpaper_spec.json；没有则用 WallpaperDefaultConfig。
-   * 按各尺寸 name/key 在 zip 里找 {name}.jpg/png 上传填 url。
+   * 优先读 wallpaper_spec.json；没有则用 defaultConfig。
+   * 按各尺寸 name/key 在 zip 里找 {name}.{ext|jpg|png} 上传填 url。
    */
   const importWallpaperFromZip = async (
     zip: JSZip,
-    options?: { exportIndex?: ExportIndex; silent?: boolean },
+    options?: {
+      exportIndex?: ExportIndex;
+      silent?: boolean;
+      defaultConfig?: Record<string, any>;
+      emptyWarning?: string;
+    },
   ): Promise<{ rootId: string; config: Record<string, any>; uploadedCount: number } | null> => {
     const exportIndex = options?.exportIndex ?? null;
     const silent = Boolean(options?.silent);
+    const emptyWarning = options?.emptyWarning || '该套 wallpaper 未找到可用图片';
 
     const specFilename = applyIndexSuffix('wallpaper_spec.json', exportIndex);
     const specFile =
@@ -684,7 +690,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         : undefined);
 
     let config: Record<string, any> = structuredClone(
-      WallpaperDefaultConfig.Wallpaper,
+      options?.defaultConfig ?? WallpaperDefaultConfig.Wallpaper,
     ) as Record<string, any>;
 
     if (specFile) {
@@ -709,7 +715,14 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         .toLowerCase()
         .replace(/\s+/g, '_')
         .replace(/[^a-z0-9_\-]/g, '');
+      const preferredExt = String(item.ext ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/^\./, '');
       const candidates = [
+        ...(preferredExt
+          ? [`${nameToken}.${preferredExt}`, `${key}.${preferredExt}`]
+          : []),
         `${nameToken}.jpg`,
         `${nameToken}.jpeg`,
         `${nameToken}.png`,
@@ -738,7 +751,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     }
 
     if (uploadedCount === 0) {
-      if (!silent) message.warning('该套 wallpaper 未找到可用图片');
+      if (!silent) message.warning(emptyWarning);
       return null;
     }
 
@@ -746,6 +759,21 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (!rootId) return null;
     return { rootId, config, uploadedCount };
   };
+
+  /**
+   * Photo Shuffles：默认用 WallpaperDefaultConfig['Photo Shuffles']
+   * 期望 zip 内含 wallpaper_1~5 / wallpaper_ipad_1~5，以及可选 preview png。
+   */
+  const importPhotoShufflesFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any>; uploadedCount: number } | null> =>
+    importWallpaperFromZip(zip, {
+      silent: options?.silent,
+      defaultConfig: WallpaperDefaultConfig['Photo Shuffles'] as Record<string, any>,
+      emptyWarning:
+        '该套 Photo Shuffles 未找到可用图片（需 wallpaper_1~5 / wallpaper_ipad_1~5 等）',
+    });
 
   const readWallpaperFromZip = async (file: File) => {
     const isZipFile =
@@ -771,6 +799,37 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       } catch (error) {
         console.error('[ImportModal] wallpaper 导入失败:', error);
         message.error('wallpaper 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readPhotoShufflesFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importPhotoShufflesFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(
+            `Photo Shuffles 导入成功（上传 ${result.uploadedCount} 个）`,
+          );
+        }
+      } catch (error) {
+        console.error('[ImportModal] Photo Shuffles 导入失败:', error);
+        message.error('Photo Shuffles 导入失败');
       }
       return false;
     });
@@ -915,6 +974,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'wallpaper') {
       return readWallpaperFromZip(file);
     }
+    if (importKind === 'photo_shuffles') {
+      return readPhotoShufflesFromZip(file);
+    }
     if (importKind === 'theme') {
       return prepareThemeImport(file);
     }
@@ -949,6 +1011,10 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
                   label: 'wallpaper',
                   value: 'wallpaper',
                 },
+                {
+                  label: 'photo shuffles',
+                  value: 'photo_shuffles',
+                }
               ],
             },
             { label: 'Theme', value: 'theme' },
@@ -1017,9 +1083,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
               <InboxOutlined />
             </p>
             <p className="ant-upload-text">
-              {importKind === 'theme'
-                ? '点击或拖拽 Theme zip 到这里'
-                : '点击或拖拽 zip 压缩包到这里'}
+              点击或拖拽 zip 压缩包到这里
             </p>
           </Upload.Dragger>
         )}

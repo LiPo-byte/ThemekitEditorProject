@@ -5674,7 +5674,7 @@ const withPhotoShufflesHandler = (n: number) => {
     const ipadobj:any = {};
     for (let i = 1; i <= n; i++) {
         const wallpaper_name = 'wallpaper_' + i;
-        const wallpaper_ipad_name = 'wallpaper_ipad' + i;
+        const wallpaper_ipad_name = 'wallpaper_ipad_' + i;
         obj[wallpaper_name] = {
             source: '',
             name: wallpaper_name,
@@ -5689,15 +5689,29 @@ const withPhotoShufflesHandler = (n: number) => {
         }
     }
     return {
-        type: 1,
+        wallpaperType: 1,
         ...obj,
         ...ipadobj,
+        wallpaper_preview: {
+            source: '',
+            name: 'wallpaper_preview',
+            width: 344,
+            height: 658,
+            ext: 'png',
+        },
+        wallpaper_preview_ipad: {
+            source: '',
+            name: 'wallpaper_preview_ipad',
+            width: 516,
+            height: 987,
+            ext: 'png',
+        }
     };
 
 }
 export const WallpaperDefaultConfig = {
     Wallpaper: {
-        type: 0,
+        wallpaperType: 0,
         wallpaper: {
             source: '',
             name: 'wallpaper',

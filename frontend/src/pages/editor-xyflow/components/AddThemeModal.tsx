@@ -273,17 +273,28 @@ const AddThemeModal: React.FC<Props> = ({ open, onClose }) => {
     return nodes
       .filter((node) => node.type === 'group' && !node.parentId)
       .map((rootNode) => {
-        const category = ((rootNode.data as Record<string, any> | undefined)?.category ??
-          'widget') as string;
+        const rootData =
+          (rootNode.data as Record<string, any> | undefined) ?? {};
+        const category = (rootData.category ?? 'widget') as string;
+        const config = configMap[rootNode.id] ?? {};
         return {
           elementKey: rootNode.id,
           category,
-          config: configMap[rootNode.id] ?? {},
+          config,
         } as ElementItem;
       })
-      .filter(
-        (element) => element.category !== 'theme' && element.category === targetCategory,
-      );
+      .filter((element) => {
+        if (element.category === 'theme' || element.category !== targetCategory) {
+          return false;
+        }
+        // Theme 当前只允许普通壁纸（wallpaperType === 0）
+        if (targetCategory === 'wallpaper') {
+          const wallpaperType =
+            Number(element.config?.wallpaperType ?? 0) || 0;
+          return wallpaperType === 0;
+        }
+        return true;
+      });
   }, [nodes, getElementsConfigMap, singleSelected]);
 
   const widgetPreviewItems = React.useMemo(

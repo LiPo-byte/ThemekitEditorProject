@@ -5,6 +5,10 @@ import { DEFAULT_CROP_PROPS } from '../widget/base-config';
 const GAP = 50;
 const DEFAULT_WALLPAPER_WIDTH = 887;
 const DEFAULT_WALLPAPER_HEIGHT = 1920;
+const WALLPAPERTYPE_SYSTEM:any = {
+    "0": 'common',
+    "1": "ios",
+};
 
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
@@ -32,6 +36,7 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
   const childNodes: any[] = [];
   let cursorX = GAP;
   let maxPlatformHeight = 0;
+  const wallpaperType:any = Number(config?.wallpaperType ?? 0) || 0;
 
   entries.forEach(({ key, item }) => {
     const width = Number(item.width) || DEFAULT_WALLPAPER_WIDTH;
@@ -47,7 +52,7 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
       className: 'widget-group-node',
       position: { x: cursorX, y: GAP },
       data: {
-        label: 'common',
+        label: WALLPAPERTYPE_SYSTEM[wallpaperType],
         themekitType: key,
       },
       parentId: rootGroupId,
@@ -104,7 +109,7 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
     position: { x: 0, y: 0 },
     data: {
       category: 'wallpaper',
-      wallpaperType: Number(config?.type ?? 0) || 0,
+      wallpaperType: wallpaperType,
     },
     packable: true,
     draggable: false,
@@ -158,6 +163,7 @@ export const buildWallpaperConfigJson = (
       width,
       height,
       crop_props: data.crop_props || DEFAULT_CROP_PROPS,
+      ...(data.ext ? { ext: data.ext } : {}),
     };
   });
 
