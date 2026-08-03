@@ -13,12 +13,20 @@ type SectionSerializer = (ctx: SerializeCtx) => Record<string, any> | undefined;
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 
-const findPlatformGroup = (groups: FlowNode[], label: string) =>
-  groups.find((node) => getNodeData(node).label === label);
+/** apps 组：themekitType=iconpack；兼容旧数据 label=iconpack */
+const isIconpackAppsGroup = (data: Record<string, any>) =>
+  data.themekitType === 'iconpack' || data.label === 'iconpack';
+
+const findIconpackAppsGroup = (groups: FlowNode[]) =>
+  groups.find((node) => isIconpackAppsGroup(getNodeData(node)));
+
+/** platform 业务 key：优先 themekitType（label 表示 common 等系统） */
+const getPlatformThemekitType = (data: Record<string, any>) =>
+  String(data.themekitType || data.label || '');
 
 /** apps：icon 节点 → Record<key, appItem> */
 const serializeApps: SectionSerializer = ({ rootNode, nodes, platformGroups }) => {
-  const group = findPlatformGroup(platformGroups, 'iconpack');
+  const group = findIconpackAppsGroup(platformGroups);
   const parentId = group?.id ?? rootNode.id;
   const iconNodes = nodes.filter(
     (node) => node.type === 'icon' && node.parentId === parentId,
@@ -41,18 +49,18 @@ const serializeApps: SectionSerializer = ({ rootNode, nodes, platformGroups }) =
 
 /**
  * 预览面：preview_long / preview_short / list_view 等
- * platform_group.label === key，子节点 type === key
+ * platform_group.themekitType === key，子节点 type === key
  */
 const serializeSurfaces: SectionSerializer = ({ nodes, platformGroups }) => {
   const defaults = IconPackDefaultConfig as Record<string, any>;
   const groups = [...platformGroups]
-    .filter((node) => getNodeData(node).label !== 'iconpack')
+    .filter((node) => !isIconpackAppsGroup(getNodeData(node)))
     .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
 
   const surfaces: Record<string, any> = {};
   groups.forEach((platformNode) => {
     const platformData = getNodeData(platformNode);
-    const key = String(platformData.label || platformData.themekitType || '');
+    const key = getPlatformThemekitType(platformData);
     if (!key) return;
 
     const surfaceNode = nodes.find(

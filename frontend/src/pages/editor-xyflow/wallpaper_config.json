@@ -2,5 +2,9 @@
   {
     "key": "Wallpaper",
     "label": "Wallpaper"
+  },
+  {
+    "key": "Photo Shuffles",
+    "label": "Photo Shuffles"
   }
 ]

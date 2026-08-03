@@ -78,7 +78,8 @@ const collectThemeSurfaceNodes = (
   const surfaces: ThemeSurfaceExportItem[] = [];
   platformNodes.forEach((platformNode) => {
     const platformData = getNodeData(platformNode);
-    const key = String(platformData.label || platformData.themekitType || '');
+    // label 表示 common 等系统，业务 key 优先 themekitType
+    const key = String(platformData.themekitType || platformData.label || '');
     if (!key) return;
 
     const surfaceNode = nodes.find(
@@ -118,7 +119,7 @@ const resolveThemeSelectElements = (
   let selectElements: Record<string, any> = {};
   platformNodes.forEach((platformNode) => {
     const platformData = getNodeData(platformNode);
-    const key = String(platformData.label || platformData.themekitType || '');
+    const key = String(platformData.themekitType || platformData.label || '');
     if (!key) return;
     const surfaceNode = nodes.find(
       (node) =>

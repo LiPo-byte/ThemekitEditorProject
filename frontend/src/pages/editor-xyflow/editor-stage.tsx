@@ -127,44 +127,6 @@ export default function EditorStage() {
         nodeTypes={{
           'node-with-toolbar': ActionPopover,
           ...xyFlowTypeNodeType,
-          // platform_group: PlatformGroupNode,
-          // time_0: TimeLayout_0,
-          // time_1: TimeLayout_1,
-          // time_2: TimeLayout_2,
-          // time_3: TimeLayout_3,
-          // time_4: TimeLayout_4,
-          // time_5: TimeLayout_5,
-          // time_6: TimeLayout_6,
-          // pureimage_0: pureimageLayout_0,
-          // quotation_0: quotationLayout_0,
-          // calendar_0: calendarLayout_0,
-          // calendar_1: calendarLayout_1,
-          // calendar_2: calendarLayout_2,
-          // countdown_0: countdownLayout_0,
-          // launcher_0: launcherLayout_0,
-          // launcher_1: launcherLayout_1,
-          // launcher_5: launcherLayout_5,
-          // launcher_6: launcherLayout_6,
-          // launcher_7: launcherLayout_7,
-          // launcher_8: launcherLayout_8,
-          // launcher_9: launcherLayout_9,
-          // dynamic_0: dynamicLayout_0,
-          // battery_0: batteryLayout_0,
-          // battery_1: batteryLayout_1,
-          // battery_2: batteryLayout_2,
-          // digital_0: DigitalLayout_0,
-          // weather_0: WeatherLayout_0,
-          // weather_1: WeatherLayout_1,
-          // weather_2: WeatherLayout_2,
-          // clock_0: ClockLayout_0,
-          // clock_1: ClockLayout_1,
-          // music_0: MusicLayout_0,
-          // timemixbattery_0: TimeMixBatteryLayout_0,
-          // timemixcalendarmixbattery_0: TimeMixCalendarMixBatteryLayout_0,
-          // timemixcalendarmixbattery_1: TimeMixCalendarMixBatteryLayout_1,
-          // clockmixbattery_0: ClockMixBatteryLayout_0,
-          // icon: Icon,
-          // preview: Preview,
         }}
         nodesDraggable={false}
         elementsSelectable={!interactionLocked}
@@ -172,7 +134,6 @@ export default function EditorStage() {
         nodesFocusable={false}
         selectionOnDrag={false}
         onNodeClick={(event, node) => {
-          console.log(interactionLocked)
           if (interactionLocked) return;
           const target = resolveSelectableTarget(node, nodes);
           if (!target) return;

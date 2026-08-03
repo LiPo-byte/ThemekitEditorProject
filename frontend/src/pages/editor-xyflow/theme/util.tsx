@@ -48,7 +48,7 @@ export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
       className: 'widget-group-node',
       position: { x: cursorX, y: GAP },
       data: {
-        label: key,
+        label: 'common',
         themekitType: key,
       },
       parentId: rootGroupId,
@@ -137,17 +137,12 @@ export const buildThemeConfigJson = (
     )
     .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
 
-  const config: Record<string, any> = {
-    // selectElements: Array.isArray(rootData.selectElements)
-    //   ? rootData.selectElements
-    //   : [],
-  };
-  
+  const config: Record<string, any> = {};
   let selectElements = {};
 
   platformNodes.forEach((platformNode) => {
     const platformData = getNodeData(platformNode);
-    const key = String(platformData.label || platformData.themekitType || '');
+    const key = String(platformData.themekitType || platformData.label || '');
     if (!key) return;
 
     const surfaceNode = nodes.find(

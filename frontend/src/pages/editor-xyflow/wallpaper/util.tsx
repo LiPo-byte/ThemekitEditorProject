@@ -47,8 +47,8 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
       className: 'widget-group-node',
       position: { x: cursorX, y: GAP },
       data: {
-        label: key,
-        themekitType: 'wallpaper',
+        label: 'common',
+        themekitType: key,
       },
       parentId: rootGroupId,
       extent: 'parent',
@@ -104,6 +104,7 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
     position: { x: 0, y: 0 },
     data: {
       category: 'wallpaper',
+      wallpaperType: Number(config?.type ?? 0) || 0,
     },
     packable: true,
     draggable: false,
@@ -137,10 +138,13 @@ export const buildWallpaperConfigJson = (
     )
     .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
 
-  const config: Record<string, any> = {};
+  const rootData = getNodeData(rootNode);
+  const config: Record<string, any> = {
+    ...rootData,
+  };
   platformNodes.forEach((platformNode) => {
     const platformData = getNodeData(platformNode);
-    const key = String(platformData.label || platformData.themekitType || 'wallpaper');
+    const key = String(platformData.themekitType || platformData.label || 'wallpaper');
     const wallpaperNode = nodes.find(
       (node) => node.type === 'wallpaper' && node.parentId === platformNode.id,
     );

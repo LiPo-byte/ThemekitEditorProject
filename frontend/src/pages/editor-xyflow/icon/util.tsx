@@ -113,8 +113,8 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
     type: 'platform_group',
     position: { x: ICON_GAP, y: ICON_GAP },
     data: {
-      label: 'iconpack',
-      themekitType: 'common',
+      label: 'common',
+      themekitType: 'iconpack',
     },
     parentId: rootGroupId,
     extent: 'parent',
@@ -152,7 +152,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
       className: 'widget-group-node',
       position: { x: cursorX, y: ICON_GAP },
       data: {
-        label: key,
+        label: 'common',
         themekitType: key,
       },
       parentId: rootGroupId,

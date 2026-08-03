@@ -142,9 +142,11 @@ export const collectIconPackExportFiles = async (
     (node) =>
       node.type === 'platform_group' && node.parentId === rootNode.id,
   );
-  const appsGroup = platformGroups.find(
-    (node) => getNodeData(node).label === 'iconpack',
-  );
+  // apps 组：themekitType=iconpack；兼容旧数据 label=iconpack
+  const appsGroup = platformGroups.find((node) => {
+    const data = getNodeData(node);
+    return data.themekitType === 'iconpack' || data.label === 'iconpack';
+  });
 
   // apps → icon_{key}.jpg
   const iconNodes = appsGroup
@@ -194,15 +196,19 @@ export const collectIconPackExportFiles = async (
 
   // preview_long / preview_short / list_view → icons_{key}.jpg|png
   const surfaceGroups = platformGroups
-    .filter((node) => getNodeData(node).label !== 'iconpack')
+    .filter((node) => {
+      const data = getNodeData(node);
+      return data.themekitType !== 'iconpack' && data.label !== 'iconpack';
+    })
     .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
   for (let index = 0; index < surfaceGroups.length; index += 1) {
     const platformNode = surfaceGroups[index];
     const platformData = getNodeData(platformNode);
+    // label 表示 common 等系统，业务 key 优先 themekitType
     const key = String(
-      platformData.label || platformData.themekitType || '',
+      platformData.themekitType || platformData.label || '',
     );
-    if (!key) continue;
+    if (!key || key === 'common') continue;
 
     const surfaceNode = nodes.find(
       (node) =>
