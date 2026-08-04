@@ -33,6 +33,7 @@ import {
   useEditorBackgroundVariant,
   useEditorBackgroundColor,
   useEditorSelectedNodesMap,
+  useEditorFitView,
 } from './context';
 
 export const xyFlowTypeNodeType = {
@@ -85,6 +86,7 @@ export default function EditorStage() {
   const showAxis = useEditorShowAxis();
   const backgroundVariant = useEditorBackgroundVariant();
   const backgroundColor = useEditorBackgroundColor();
+  const fitView = useEditorFitView();
   const deleteKeyPressed = useKeyPress(['Delete', 'Backspace']);
   const deleteKeyPressedRef = useRef(false);
 
@@ -151,7 +153,7 @@ export default function EditorStage() {
         multiSelectionKeyCode="Shift"
         fitView
         maxZoom={1.5}
-        minZoom={0.1}
+        minZoom={0.01}
       >
         {showAxis && (
           <ViewportPortal>
@@ -168,14 +170,18 @@ export default function EditorStage() {
         <Controls
             showInteractive={false}
             showZoom={!interactionLocked}
-            showFitView={!interactionLocked}
+            showFitView={!false}
+            onFitView={() => {
+              fitView()
+            }}
             position="bottom-right"
             orientation="horizontal"
             style={{
               margin: 3,
               zIndex: 9,
             }}
-        />
+        >
+        </Controls>
       </ReactFlow>
     </div>
   );

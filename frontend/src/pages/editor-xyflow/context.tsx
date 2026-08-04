@@ -8,6 +8,7 @@ import React, {
   useState,
   type ReactNode
 } from 'react';
+import { useReactFlow } from '@xyflow/react';
 import type { Node as FlowNode } from '@xyflow/react';
 import type { EditorCore } from '@/editor-core';
 import { history, useLocation, useParams } from '@umijs/max';
@@ -83,6 +84,13 @@ const toCropProps = (value: unknown): CropProps => {
 };
 
 
+export type ViewFitOptions = {
+  /** 留白比例，默认 0.1 */
+  padding?: number;
+  /** 动画时长(ms)，默认 300 */
+  duration?: number;
+};
+
 type EditorCoreCtxValue = {
   projectId: string | null;
   projectName: string;
@@ -104,6 +112,10 @@ type EditorCoreCtxValue = {
   addIconPack: (config: any) => string | undefined;
   addWallpaper: (config: any) => string | undefined;
   addTheme: (config: any) => string | undefined;
+  /** 全览：把画布缩放平移到刚好容纳所有根元素 */
+  fitView: (options?: ViewFitOptions) => void;
+  /** 聚焦：把视角移到指定根元素；元素尚未落到 nodes 时会等它出现后再执行 */
+  focusElement: (rootId: string, options?: ViewFitOptions) => void;
   deleteSelectedNodes: () => void;
   undo: () => void;
   redo: () => void;
@@ -183,6 +195,8 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   addIconPack: noopAddNodeGroup,
   addWallpaper: noopAddNodeGroup,
   addTheme: noopAddNodeGroup,
+  fitView: (_options?: ViewFitOptions) => {},
+  focusElement: (_rootId: string, _options?: ViewFitOptions) => {},
   deleteSelectedNodes: noopDeleteSelectedNodes,
   undo: () => {},
   redo: () => {},
@@ -226,6 +240,37 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   saveProjectPayload: async () => null,
   getElementsConfigMap: () => ({}),
 });
+
+const VIEW_FIT_PADDING = 0.1;
+const VIEW_FIT_DURATION = 300;
+
+// React Flow 内置 fitView 只统计 store 里 measured 尺寸非零的节点，而本项目 nodes 是受控
+// 且没有接 onNodesChange，measured 恒为空，内置 fitView 因此永远算不出包围盒。这里改用
+// root group 自身的 position + style 尺寸直接算，绕开 measured。
+const getRootNodesBounds = (items: FlowNode[], rootIds?: Set<string>) => {
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  items.forEach((node) => {
+    if (node.type !== 'group' || node.parentId) return;
+    if (rootIds && !rootIds.has(node.id)) return;
+    const style = (node.style ?? {}) as { width?: number | string; height?: number | string };
+    const width = Number(style.width);
+    const height = Number(style.height);
+    if (!(width > 0) || !(height > 0)) return;
+    const x = Number(node.position?.x) || 0;
+    const y = Number(node.position?.y) || 0;
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + width);
+    maxY = Math.max(maxY, y + height);
+  });
+
+  if (!Number.isFinite(minX) || !Number.isFinite(minY)) return null;
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+};
 
 const cloneNodes = (items: FlowNode[]): FlowNode[] => {
   if (typeof structuredClone === 'function') {
@@ -567,6 +612,58 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const canRedo = future.length > 0;
   // 撤销回退
 
+  const { fitBounds } = useReactFlow();
+  const nodesRef = useRef<FlowNode[]>(nodes);
+  const pendingFocusRef = useRef<{ rootId: string; options?: ViewFitOptions } | null>(null);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  const applyBounds = useCallback(
+    (
+      bounds: { x: number; y: number; width: number; height: number },
+      options?: ViewFitOptions,
+    ) => {
+      fitBounds(bounds, {
+        padding: options?.padding ?? VIEW_FIT_PADDING,
+        duration: options?.duration ?? VIEW_FIT_DURATION,
+      });
+    },
+    [fitBounds],
+  );
+
+  const fitView = useCallback(
+    (options?: ViewFitOptions) => {
+      const bounds = getRootNodesBounds(nodesRef.current);
+      if (!bounds) return;
+      applyBounds(bounds, options);
+    },
+    [applyBounds],
+  );
+
+  const focusElement = useCallback(
+    (rootId: string, options?: ViewFitOptions) => {
+      if (!rootId) return;
+      const bounds = getRootNodesBounds(nodesRef.current, new Set([rootId]));
+      // 新增元素后 nodes 是异步提交的，此时算不出包围盒，先挂起等节点入场
+      if (!bounds) {
+        pendingFocusRef.current = { rootId, options };
+        return;
+      }
+      applyBounds(bounds, options);
+    },
+    [applyBounds],
+  );
+
+  useEffect(() => {
+    const pending = pendingFocusRef.current;
+    if (!pending) return;
+    const bounds = getRootNodesBounds(nodes, new Set([pending.rootId]));
+    if (!bounds) return;
+    pendingFocusRef.current = null;
+    applyBounds(bounds, pending.options);
+  }, [nodes, applyBounds]);
 
   const appendNodesBySlot = (newNodes: FlowNode[], rootNode: FlowNode) => {
     const COLUMN_COUNT = 6;
@@ -686,6 +783,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
       return [...prev, ...patchedNodes];
     });
+
+    // nodes 提交后才算得出包围盒，focusElement 内部会挂起等节点入场
+    focusElement(String(rootNode.id));
   };
 
   const addIconPack = (config: any) => {
@@ -1313,6 +1413,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       addIconPack,
       addWallpaper,
       addTheme,
+      fitView,
+      focusElement,
       deleteSelectedNodes,
       undo,
       redo,
@@ -1368,6 +1470,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       selectedBranchNodeIdsKey,
       selectedDirectNodes,
       getParentNodeData,
+      fitView,
+      focusElement,
       deleteSelectedNodes,
       canDeleteSelected,
       canUndo,
@@ -1414,6 +1518,8 @@ export const useEditorAddWidget = () => useContext(EditorCoreCtx).addWidget;
 export const useEditorAddIconPack = () => useContext(EditorCoreCtx).addIconPack;
 export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpaper;
 export const useEditorAddTheme = () => useContext(EditorCoreCtx).addTheme;
+export const useEditorFitView = () => useContext(EditorCoreCtx).fitView;
+export const useEditorFocusElement = () => useContext(EditorCoreCtx).focusElement;
 export const useEditorDeleteSelectedNodes = () => useContext(EditorCoreCtx).deleteSelectedNodes;
 export const useEditorUndo = () => useContext(EditorCoreCtx).undo;
 export const useEditorRedo = () => useContext(EditorCoreCtx).redo;

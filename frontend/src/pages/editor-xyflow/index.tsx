@@ -1,4 +1,5 @@
 import React from 'react';
+import { ReactFlowProvider } from '@xyflow/react';
 import CropTool from './components/CropTool';
 import DesktopEditTool from './components/DesktopEditTool';
 import EditorBottomToolBar from './components/EditorBottomToolBar';
@@ -43,11 +44,14 @@ const EditorPageContent: React.FC = () => {
   );
 };
 
+// ReactFlowProvider 提到 EditorCoreProvider 之外，context 内才能拿到画布实例做视角控制
 const EditorPage: React.FC = () => {
   return (
-    <EditorCoreProvider>
-      <EditorPageContent />
-    </EditorCoreProvider>
+    <ReactFlowProvider>
+      <EditorCoreProvider>
+        <EditorPageContent />
+      </EditorCoreProvider>
+    </ReactFlowProvider>
   );
 };
 
