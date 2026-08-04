@@ -71,7 +71,7 @@ type Props = {
   onClose: () => void;
 };
 type ImportSystem = 'ios' | 'android' | 'common';
-type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'photo_shuffles' | 'theme';
+type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'photo_shuffles' | 'theme' | 'wallpaper_depth';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -131,6 +131,9 @@ const discoverWallpaperIndices = (zip: JSZip): ExportIndex[] => {
   if (hasPlain) return [null];
   return [];
 };
+
+/** Wallpaper Depth 压缩包必须包含的图片（不含扩展名） */
+const WALLPAPER_DEPTH_REQUIRED = ['wallpaper', 'wallpaper_depth_preview'];
 
 const hasIconPackAssets = (zip: JSZip): boolean =>
   listZipBasenames(zip).some((name) => /^icon_.+\.(?:jpg|jpeg|png)$/i.test(name));
@@ -775,6 +778,21 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         '该套 Photo Shuffles 未找到可用图片（需 wallpaper_1~5 / wallpaper_ipad_1~5 等）',
     });
 
+  /**
+   * Wallpaper Depth：默认用 WallpaperDefaultConfig['Wallpaper Depth']
+   * 期望 zip 内含 wallpaper 与 wallpaper_depth_preview 两张图。
+   */
+  const importWallpaperDepthFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any>; uploadedCount: number } | null> =>
+    importWallpaperFromZip(zip, {
+      silent: options?.silent,
+      defaultConfig: WallpaperDefaultConfig['Wallpaper Depth'] as Record<string, any>,
+      emptyWarning:
+        '该套 Wallpaper Depth 未找到可用图片（需 wallpaper / wallpaper_depth_preview）',
+    });
+
   const readWallpaperFromZip = async (file: File) => {
     const isZipFile =
       file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
@@ -830,6 +848,51 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       } catch (error) {
         console.error('[ImportModal] Photo Shuffles 导入失败:', error);
         message.error('Photo Shuffles 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readWallpaperDepthFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const basenames = listZipBasenames(zip);
+        const missing = WALLPAPER_DEPTH_REQUIRED.filter(
+          (required) =>
+            !basenames.some((name) =>
+              new RegExp(`^${escapeRegExp(required)}\\.(?:jpg|jpeg|png)$`, 'i').test(name),
+            ),
+        );
+        if (missing.length) {
+          message.error(
+            `Wallpaper Depth 压缩包缺少：${missing.map((name) => `${name}.jpg`).join('、')}`,
+          );
+          return false;
+        }
+
+        const result = await importWallpaperDepthFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(
+            `Wallpaper Depth 导入成功（上传 ${result.uploadedCount} 个）`,
+          );
+        }
+      } catch (error) {
+        console.error('[ImportModal] Wallpaper Depth 导入失败:', error);
+        message.error('Wallpaper Depth 导入失败');
       }
       return false;
     });
@@ -977,6 +1040,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'photo_shuffles') {
       return readPhotoShufflesFromZip(file);
     }
+    if (importKind === 'wallpaper_depth') {
+      return readWallpaperDepthFromZip(file);
+    }
     if (importKind === 'theme') {
       return prepareThemeImport(file);
     }
@@ -1014,6 +1080,10 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
                 {
                   label: 'photo shuffles',
                   value: 'photo_shuffles',
+                },
+                {
+                  label: 'wallpaper depth',
+                  value: 'wallpaper_depth',
                 }
               ],
             },

@@ -8,6 +8,7 @@ const DEFAULT_WALLPAPER_HEIGHT = 1920;
 const WALLPAPERTYPE_SYSTEM:any = {
     "0": 'common',
     "1": "ios",
+    "2": "ios",
 };
 
 const getNodeData = (node?: FlowNode | null) =>

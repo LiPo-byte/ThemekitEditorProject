@@ -98,13 +98,13 @@ const LeftPanel: React.FC<any> = () => {
   const handleAddWidget = (param: { key: keyof typeof WidgetDefaultConfig }) => {
     const { key } = param;
     if (WidgetDefaultConfig[key]) {
-      addWidget(WidgetDefaultConfig[key]);
+      addWidget(structuredClone(WidgetDefaultConfig[key]));
     }
   };
   const handleAddWallpaper = (param: { key: keyof typeof WallpaperDefaultConfig }) => {
     const { key } = param;
     if (WallpaperDefaultConfig[key]) {
-      addWallpaper(WallpaperDefaultConfig[key]);
+      addWallpaper(structuredClone(WallpaperDefaultConfig[key]));
     }
   };
   const LEFT_PANL_ADD_HANDLER_MAP: Partial<Record<LeftPanlContent, (param: any) => void>> = {

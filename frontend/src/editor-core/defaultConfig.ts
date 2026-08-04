@@ -5725,7 +5725,22 @@ export const WallpaperDefaultConfig = {
             height: 2732,
         }
     },
-    "Photo Shuffles": withPhotoShufflesHandler(5)
+    "Photo Shuffles": withPhotoShufflesHandler(5),
+    "Wallpaper Depth": {
+        wallpaperType: 2,
+        wallpaper: {
+            source: '',
+            name: 'wallpaper',
+            width: 887,
+            height: 1920,
+        },
+        wallpaper_depth_preview: {
+            source: '',
+            name: 'wallpaper_depth_preview',
+            width: 887,
+            height: 1920,
+        }
+    }
 }
 export const DEFAULT_THEME_CONFIG = {
   selectElements: {
