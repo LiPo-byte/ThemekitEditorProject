@@ -667,6 +667,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const appendNodesBySlot = (newNodes: FlowNode[], rootNode: FlowNode) => {
     const COLUMN_COUNT = 6;
+    // 各类元素根宽度差一个数量级（widget 几百，iconpack 上万），只按个数封顶会让某些行
+    // 被拉得极长，这里再加一道行宽上限
+    const ROW_MAX_WIDTH = 10000;
     const DEFAULT_GAP = 100;
     const ROW_TOLERANCE = 4;
 
@@ -751,7 +754,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         }
       }
 
-      const rowWithSpace = rows.find((row) => row.nodes.length < COLUMN_COUNT);
+      // 放不下时一律换行；单个超宽元素换行后独占一行，不会陷入死循环
+      const targetWidth = getNodeSize(targetNode).width;
+      const rowWithSpace = rows.find((row) => {
+        if (row.nodes.length >= COLUMN_COUNT) return false;
+        return row.maxRight + gapX + targetWidth - row.minX <= ROW_MAX_WIDTH;
+      });
       if (rowWithSpace) {
         return {
           x: rowWithSpace.maxRight + gapX,
