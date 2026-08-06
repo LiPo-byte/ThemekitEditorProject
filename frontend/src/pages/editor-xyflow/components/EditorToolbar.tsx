@@ -11,11 +11,11 @@ import {
   useEditorUndo,
   useEditorRedo,
   useEditorGenerateProjectPayload,
-  useEditorSaveProjectPayload,
 } from '../context';
 import { patchProjectName } from '../service';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
-import { App, Dropdown, type MenuProps, Button, Tooltip, Input } from 'antd';
+import { useSaveProject } from '../hooks/useSaveProject';
+import { Dropdown, type MenuProps, Button, Tooltip, Input } from 'antd';
 import type { InputRef } from 'antd';
 import { DownOutlined, UnorderedListOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 
@@ -179,9 +179,7 @@ const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, 
 
 const EditorToolbar: React.FC = () => {
   const { styles } = useStyles();
-  const { message } = App.useApp();
   // const generateProjectPayload = useEditorGenerateProjectPayload();
-  const saveProjectPayload = useEditorSaveProjectPayload();
   const canUndo = useEditorCanUndo();
   const canRedo = useEditorCanRedo();
   const undo = useEditorUndo();
@@ -194,46 +192,7 @@ const EditorToolbar: React.FC = () => {
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    if (saving) return;
-    const toastKey = 'editor-save-toast';
-    setSaving(true);
-    message.open({
-      key: toastKey,
-      type: 'loading',
-      content: '保存中...',
-      duration: 0,
-    });
-    try {
-      const result = await saveProjectPayload();
-      if (result) {
-        message.open({
-          key: toastKey,
-          type: 'success',
-          content: '保存成功',
-          duration: 1.5,
-        });
-      } else {
-        message.open({
-          key: toastKey,
-          type: 'error',
-          content: '保存失败，请重试',
-          duration: 2,
-        });
-      }
-    } catch (error) {
-      message.open({
-        key: toastKey,
-        type: 'error',
-        content: '保存失败，请重试',
-        duration: 2,
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
+  const { saving, save: handleSave } = useSaveProject();
 
   if (!visible) return null;
 
@@ -259,10 +218,10 @@ const EditorToolbar: React.FC = () => {
                 </Button>
               </Tooltip>
           </Dropdown> */}
-          <Tooltip title="Save">
+          <Tooltip title="Save Cmd/Ctrl+S">
               <Button type='text' loading={saving} onClick={handleSave} icon={<SaveOutlined />} />
           </Tooltip>
-          <Tooltip title="Undo">
+          <Tooltip title="Undo Cmd/Ctrl+Z">
               <Button
                 type='text'
                 icon={<UndoOutlined />}
@@ -272,7 +231,7 @@ const EditorToolbar: React.FC = () => {
                 }}
               />
           </Tooltip>
-          <Tooltip title="Redo">
+          <Tooltip title="Redo Cmd/Ctrl+Shift+Z">
               <Button
                 type='text'
                 icon={<RedoOutlined />}

@@ -15,11 +15,13 @@ import {
   EditorCoreProvider,
   useEditorGlobalLoading,
 } from './context';
+import { useEditorShortcuts } from './hooks/useEditorShortcuts';
 import { useStyles } from './style';
 
 const EditorPageContent: React.FC = () => {
   const { styles } = useStyles();
   const globalLoading = useEditorGlobalLoading();
+  useEditorShortcuts();
   return (
     <div className={styles.root}>
       <div className={styles.body}>

@@ -1,10 +1,9 @@
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import {
   ReactFlow,
   Background,
   BackgroundVariant,
-  useKeyPress,
   Controls,
   ViewportPortal,
   type Node as FlowNode,
@@ -24,8 +23,6 @@ import {
   useEditorNodes,
   useEditorSelectNode,
   useEditorDeselectedNode,
-  useEditorDeleteSelectedNodes,
-  useEditorCanDeleteSelected,
   useEditorActionPropNode,
   useEditorCropToolOpen,
   useEditorDesktopEditOpen,
@@ -78,8 +75,6 @@ export default function EditorStage() {
   const selectedNodesMap = useEditorSelectedNodesMap();
   const seletNode = useEditorSelectNode();
   const deselectedNode = useEditorDeselectedNode();
-  const deleteSelectedNodes = useEditorDeleteSelectedNodes();
-  const canDeleteSelected = useEditorCanDeleteSelected();
   const cropToolOpen = useEditorCropToolOpen();
   const desktopEditOpen = useEditorDesktopEditOpen();
   const interactionLocked = cropToolOpen || desktopEditOpen;
@@ -87,8 +82,6 @@ export default function EditorStage() {
   const backgroundVariant = useEditorBackgroundVariant();
   const backgroundColor = useEditorBackgroundColor();
   const fitView = useEditorFitView();
-  const deleteKeyPressed = useKeyPress(['Delete', 'Backspace']);
-  const deleteKeyPressedRef = useRef(false);
 
   // selected 以 selectedNodesMap 为准，避免 React Flow 默认单选覆盖多选状态
   const flowNodes = useMemo(
@@ -107,17 +100,6 @@ export default function EditorStage() {
     dots: BackgroundVariant.Dots,
     cross: BackgroundVariant.Cross,
   };
-
-  useEffect(() => {
-    const isRisingEdge = deleteKeyPressed && !deleteKeyPressedRef.current;
-    deleteKeyPressedRef.current = deleteKeyPressed;
-    if (!isRisingEdge) return;
-    if (interactionLocked) return;
-    if (!canDeleteSelected) return;
-    const activeTagName = document.activeElement?.tagName?.toLowerCase();
-    if (activeTagName === 'input' || activeTagName === 'textarea') return;
-    deleteSelectedNodes();
-  }, [interactionLocked, deleteKeyPressed, canDeleteSelected, deleteSelectedNodes]);
 
   return (
     <div
@@ -149,6 +131,8 @@ export default function EditorStage() {
         zoomOnScroll={!interactionLocked}
         zoomOnPinch={!interactionLocked}
         zoomOnDoubleClick={!interactionLocked}
+        // 删除统一走 useEditorShortcuts，关掉内建删除避免它绕过 canDeleteSelected 直接改内部节点
+        deleteKeyCode={null}
         selectionKeyCode={null}
         multiSelectionKeyCode="Shift"
         fitView
