@@ -27,7 +27,7 @@ import { DEFAULT_CROP_PROPS } from './widget/base-config';
 
 import { nanoid } from 'nanoid';
 import { getProjectDetail, postApiV1Project, putApiV1ProjectElementsBatch } from './service';
-import { toJpeg } from 'html-to-image';
+import { toCanvas } from 'html-to-image';
 
 const FONT_FACE_STYLE_ID = 'editor-xyflow-font-face-manifest';
 const FONT_LOAD_TIMEOUT_MS = 4000;
@@ -1102,16 +1102,18 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       rootEl.offsetHeight;
     if (!rootW || !rootH) return null;
 
-    // 列表卡片只需缩略图：限制输出边长，避免 pixelRatio=3 的巨图导致列表 hover/点击卡顿
+    // 列表卡片封面是 200px 高 + objectFit cover，@2x 屏需要 600px 以上物理像素才不糊。
+    // 逻辑边长仍限制在 previewMax（决定 DOM 缩放后的布局），靠 pixelRatio 放大实际像素，
+    // 这样 SVG 会按放大后的尺寸重新光栅化，文字和图标能拿回细节。
     const previewMax = 320;
+    const previewPixelRatio = 4;
     const scale = Math.min(1, previewMax / rootW, previewMax / rootH);
     const outW = Math.max(1, Math.round(rootW * scale));
     const outH = Math.max(1, Math.round(rootH * scale));
 
     try {
-      return await toJpeg(viewportEl, {
-        pixelRatio: 1,
-        quality: 0.82,
+      const canvas = await toCanvas(viewportEl, {
+        pixelRatio: previewPixelRatio,
         backgroundColor: '#ffffff',
         cacheBust: true,
         width: outW,
@@ -1121,6 +1123,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
           transformOrigin: '0 0',
         },
       });
+      // WebP 同画质比 JPEG 小 30% 左右，1280px + q0.88 实测落在 60~100KB
+      return canvas.toDataURL('image/webp', 0.88);
     } catch (error) {
       console.warn('[EditorCoreProvider] generate preview image failed:', error);
       return null;

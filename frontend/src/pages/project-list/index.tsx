@@ -16,8 +16,8 @@ import dayjs from 'dayjs';
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect fill='%23f0f0f0' width='100%25' height='100%25'/%3E%3C/svg%3E";
 
-/** 展示用缩略图最大边，覆盖 200px 封面 @2x */
-const PREVIEW_DISPLAY_MAX = 480;
+/** 展示用缩略图最大边；封面 200px 高 + objectFit cover，@2x 屏约需 660px，留一点余量 */
+const PREVIEW_DISPLAY_MAX = 720;
 
 const coverImgStyle: React.CSSProperties = {
   width: '100%',
@@ -75,7 +75,7 @@ const ProjectCardCover: React.FC<{ src: string | null }> = ({ src }) => {
           setThumbSrc(url);
         },
         'image/webp',
-        0.8,
+        0.9,
       );
     };
     img.onerror = () => {
