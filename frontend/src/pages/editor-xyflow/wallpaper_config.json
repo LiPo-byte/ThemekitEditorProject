@@ -10,5 +10,13 @@
   {
     "key": "Wallpaper Depth",
     "label": "Wallpaper Depth"
+  },
+  {
+    "key": "Live Wallpaper IOS",
+    "label": "Live Wallpaper IOS"
+  },
+  {
+    "key": "Live Wallpaper Android",
+    "label": "Live Wallpaper Android"
   }
 ]

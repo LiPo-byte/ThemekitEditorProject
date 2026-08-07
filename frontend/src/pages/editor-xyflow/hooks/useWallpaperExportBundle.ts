@@ -181,6 +181,13 @@ export const collectWallpaperExportFiles = async (
       Boolean(node.parentId) &&
       platformIds.has(node.parentId as string),
   );
+  
+  const liveWallpaperNodes = nodes.filter(
+    (node) =>
+      node.type === 'live_wallpaper' &&
+      Boolean(node.parentId) &&
+      platformIds.has(node.parentId as string),
+  );
 
   for (let index = 0; index < wallpaperNodes.length; index += 1) {
     const wallpaperNode = wallpaperNodes[index];
@@ -228,6 +235,32 @@ export const collectWallpaperExportFiles = async (
       } catch {
         pushLine('warning', `${filename} 裁剪失败，尝试截图导出...`);
       }
+    }
+  }
+  for (let index = 0; index < liveWallpaperNodes.length; index += 1) {
+    const liveWallpaperNode = liveWallpaperNodes[index];
+    const data = getNodeData(liveWallpaperNode);
+    const name = sanitizeFileToken(
+      String(data.name ?? liveWallpaperNode.id ?? `live_wallpaper_${index}`),
+    );
+    // movsource 与 mp4source 互斥，优先级要和下面的 ext 保持一致
+    const source = data.movsource || data.mp4source;
+    if (!source || typeof source !== 'string') {
+      pushLine('warning', `跳过 ${name || 'live_wallpaper'}（未上传文件）`);
+      continue;
+    }
+    const ext = data.movsource ? 'mov' : 'mp4';
+    const filename = `live_wallpaper.${ext}`;
+
+    pushLine('info', `开始处理 ${filename}...`);
+    try {
+      // 视频不做转码，原样取回二进制打包
+      const response = await fetch(source);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      files.push({ filename, blob: await response.blob() });
+      pushLine('success', `生成 ${filename}`);
+    } catch {
+      pushLine('warning', `跳过 ${filename}（下载失败）`);
     }
   }
 

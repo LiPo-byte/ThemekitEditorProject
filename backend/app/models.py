@@ -240,6 +240,13 @@ class ProjectUploadImageResponse(SQLModel):
     size: int
 
 
+class ProjectUploadFileResponse(SQLModel):
+    url: str
+    path: str
+    content_type: str
+    size: int
+
+
 class ProjectDeleteImageResponse(SQLModel):
     path: str
     deleted: bool

@@ -9,6 +9,15 @@ const WALLPAPERTYPE_SYSTEM:any = {
     "0": 'common',
     "1": "ios",
     "2": "ios",
+    "3": "ios",
+    "4": "android",
+};
+const WALLPAPERTYPE_COMPONENTS:any = {
+    "0": 'wallpaper',
+    "1": "wallpaper",
+    "2": "wallpaper",
+    "3": "live_wallpaper",
+    "4": "live_wallpaper",
 };
 
 const getNodeData = (node?: FlowNode | null) =>
@@ -75,15 +84,10 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
 
     childNodes.push({
       id: nanoid(),
-      type: 'wallpaper',
+      type: WALLPAPERTYPE_COMPONENTS[wallpaperType],
       data: {
         ...item,
         key,
-        name: item.name || key,
-        source: item.source || '',
-        width,
-        height,
-        crop_props: item.crop_props || DEFAULT_CROP_PROPS,
       },
       position: { x: GAP, y: GAP },
       parentId: platformGroupId,
@@ -154,17 +158,14 @@ export const buildWallpaperConfigJson = (
     const wallpaperNode = nodes.find(
       (node) => node.type === 'wallpaper' && node.parentId === platformNode.id,
     );
+    const liveWallpaperNode = nodes.find(
+      (node) => node.type === 'live_wallpaper' && node.parentId === platformNode.id,
+    );
+    const liveWallpaperData = getNodeData(liveWallpaperNode);
     const data = getNodeData(wallpaperNode);
-    const width = Number(data.width) || DEFAULT_WALLPAPER_WIDTH;
-    const height = Number(data.height) || DEFAULT_WALLPAPER_HEIGHT;
-
     config[key] = {
-      source: data.source ?? '',
-      name: data.name || key,
-      width,
-      height,
-      crop_props: data.crop_props || DEFAULT_CROP_PROPS,
-      ...(data.ext ? { ext: data.ext } : {}),
+      ...data,
+      ...liveWallpaperData,
     };
   });
 

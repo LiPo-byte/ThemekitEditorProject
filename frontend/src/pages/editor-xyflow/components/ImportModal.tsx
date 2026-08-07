@@ -12,7 +12,7 @@ import { Button, message, Segmented, Select, Upload, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import { CONFIG_SIZE_MAP, DEFAULT_CROP_PROPS, DEFAULT_RADIUS, SIZE_LABEL_MAP, SOURCENAME_TYPE_WIDGET_MAP, TYPE_WIDGET_MAP } from '../widget/base-config';
 import JSZip from 'jszip';
-import { uploadProjectImage } from '../service';
+import { uploadProjectFile, uploadProjectImage } from '../service';
 import {
   DEFAULT_THEME_CONFIG,
   IconPackDefaultConfig,
@@ -71,7 +71,7 @@ type Props = {
   onClose: () => void;
 };
 type ImportSystem = 'ios' | 'android' | 'common';
-type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'photo_shuffles' | 'theme' | 'wallpaper_depth';
+type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'photo_shuffles' | 'theme' | 'wallpaper_depth' | 'live_wallpaper';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -134,6 +134,12 @@ const discoverWallpaperIndices = (zip: JSZip): ExportIndex[] => {
 
 /** Wallpaper Depth 压缩包必须包含的图片（不含扩展名） */
 const WALLPAPER_DEPTH_REQUIRED = ['wallpaper', 'wallpaper_depth_preview'];
+
+/** 与后端 upload-file 的 MIME 白名单对齐 */
+const LIVE_WALLPAPER_MIME_MAP: Record<string, string> = {
+  mov: 'video/quicktime',
+  mp4: 'video/mp4',
+};
 
 const hasIconPackAssets = (zip: JSZip): boolean =>
   listZipBasenames(zip).some((name) => /^icon_.+\.(?:jpg|jpeg|png)$/i.test(name));
@@ -264,6 +270,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
 
   const handleImportKindChange = (value: ImportKind) => {
     setImportKind(value);
+    if (value === 'live_wallpaper') {
+      setImportSystem('ios');
+    }
     clearThemePending();
   };
 
@@ -286,6 +295,24 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     const uploadFile = new File([mediaBlob], resolvedFilename, { type: mimeType });
     const { url } = await uploadProjectImage(projectId, uploadFile);
     return { url, mediaBlob };
+  };
+
+  /** 视频单独走 upload-file，upload-image 的白名单不接受 mov/mp4 */
+  const uploadVideoFromZip = async (filename: string, zip: JSZip) => {
+    if (!projectId) {
+      throw new Error('项目未初始化，无法上传资源');
+    }
+    const videoFile =
+      zip.file(filename) ??
+      zip.file(new RegExp(`(^|\\/)${escapeRegExp(filename)}$`, 'i'))?.[0];
+    if (!videoFile) return null;
+    const videoBlob = await videoFile.async('blob');
+    const fileExt = filename.split('.').pop()?.toLowerCase() || '';
+    const mimeType =
+      LIVE_WALLPAPER_MIME_MAP[fileExt] || 'application/octet-stream';
+    const uploadFile = new File([videoBlob], filename, { type: mimeType });
+    const { url } = await uploadProjectFile(projectId, uploadFile);
+    return { url };
   };
 
   /** 从已加载 zip 解析一套 widget；成功返回节点 id + config */
@@ -793,6 +820,60 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         '该套 Wallpaper Depth 未找到可用图片（需 wallpaper / wallpaper_depth_preview）',
     });
 
+  /**
+   * Live Wallpaper：按平台取 mov(iOS) / mp4(Android) 默认配置，
+   * 在 zip 里找导出时写入的 live_wallpaper.{mov|mp4}，上传后填 movsource / mp4source。
+   */
+  const importLiveWallpaperFromZip = async (
+    zip: JSZip,
+    options?: { system?: ImportSystem; silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any> } | null> => {
+    const system = options?.system ?? importSystem;
+    const silent = Boolean(options?.silent);
+    const isAndroid = system === 'android';
+    const ext = isAndroid ? 'mp4' : 'mov';
+    const sourceField = isAndroid ? 'mp4source' : 'movsource';
+    const config = structuredClone(
+      isAndroid
+        ? WallpaperDefaultConfig['Live Wallpaper Android']
+        : WallpaperDefaultConfig['Live Wallpaper IOS'],
+    ) as Record<string, any>;
+
+    let uploaded = false;
+    for (const key of Object.keys(config)) {
+      const item = config[key];
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+
+      // 导出固定写 live_wallpaper.{ext}，另外兼容按 config name / key 命名的包
+      const candidates = [
+        `live_wallpaper.${ext}`,
+        ...(item.name ? [`${item.name}.${ext}`] : []),
+        `${key}.${ext}`,
+      ];
+      let uploadResult: Awaited<ReturnType<typeof uploadVideoFromZip>> = null;
+      for (const filename of candidates) {
+        uploadResult = await uploadVideoFromZip(filename, zip);
+        if (uploadResult) break;
+      }
+
+      if (uploadResult) {
+        item[sourceField] = uploadResult.url;
+        uploaded = true;
+      } else {
+        item[sourceField] = '';
+      }
+    }
+
+    if (!uploaded) {
+      if (!silent) message.error(`压缩包内未找到 live_wallpaper.${ext}`);
+      return null;
+    }
+
+    const rootId = addWallpaper(config);
+    if (!rootId) return null;
+    return { rootId, config };
+  };
+
   const readWallpaperFromZip = async (file: File) => {
     const isZipFile =
       file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
@@ -893,6 +974,35 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       } catch (error) {
         console.error('[ImportModal] Wallpaper Depth 导入失败:', error);
         message.error('Wallpaper Depth 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readLiveWallpaperFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importLiveWallpaperFromZip(zip);
+        if (result) {
+          onClose();
+          message.success('Live Wallpaper 导入成功');
+        }
+      } catch (error) {
+        console.error('[ImportModal] Live Wallpaper 导入失败:', error);
+        message.error('Live Wallpaper 导入失败');
       }
       return false;
     });
@@ -1043,6 +1153,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'wallpaper_depth') {
       return readWallpaperDepthFromZip(file);
     }
+    if (importKind === 'live_wallpaper') {
+      return readLiveWallpaperFromZip(file);
+    }
     if (importKind === 'theme') {
       return prepareThemeImport(file);
     }
@@ -1084,6 +1197,10 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
                 {
                   label: 'wallpaper depth',
                   value: 'wallpaper_depth',
+                },
+                {
+                  label: 'live wallpaper',
+                  value: 'live_wallpaper',
                 }
               ],
             },
@@ -1091,13 +1208,13 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           ]}
           style={{ width: '100%' }}
         />
-        {importKind === 'widget' ? (
+        {importKind === 'widget' || importKind === 'live_wallpaper' ? (
           <Segmented<ImportSystem>
             block
             value={importSystem}
             onChange={(value) => setImportSystem(value)}
             options={[
-              { label: 'Common', value: 'common' },
+              { label: 'Common', value: 'common', disabled: importKind === 'live_wallpaper' },
               { label: 'iOS', value: 'ios' },
               { label: 'Android', value: 'android' },
             ]}

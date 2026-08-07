@@ -86,6 +86,13 @@ export type ProjectUploadImageResponse = {
   size: number;
 };
 
+export type ProjectUploadFileResponse = {
+  url: string;
+  path: string;
+  content_type: string;
+  size: number;
+};
+
 export type ProjectDeleteImageResponse = {
   path: string;
   deleted: boolean;
@@ -174,6 +181,24 @@ export async function uploadProjectImage(
   formData.append('file', file);
   return request<ProjectUploadImageResponse>(
     `/api/v1/project/${projectId}/upload-image`,
+    {
+      method: 'POST',
+      data: formData,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 上传项目视频/音频 POST /api/v1/project/{project_id}/upload-file */
+export async function uploadProjectFile(
+  projectId: string,
+  file: File,
+  options?: { [key: string]: any },
+) {
+  const formData = new FormData();
+  formData.append('file', file);
+  return request<ProjectUploadFileResponse>(
+    `/api/v1/project/${projectId}/upload-file`,
     {
       method: 'POST',
       data: formData,

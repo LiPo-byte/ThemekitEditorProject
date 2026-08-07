@@ -18,6 +18,7 @@ import {
   // <SyncOutlined />
 } from '@ant-design/icons';
 import {
+  App,
   Col,
   ColorPicker,
   Divider,
@@ -53,7 +54,9 @@ import {
   useEditorShowAxis,
   useEditorShowAxisSetter,
   useEditorGetElementsConfigMap,
+  useEditorProjectId,
 } from '../../context';
+import { uploadProjectFile } from '../../service';
 import FontSelect from '../FontSelect';
 
 const MIXED_VALUE = '__MIXED__';
@@ -530,6 +533,91 @@ export const ImageUpload: React.FC<{
     </>
   );
 };
+
+export const FileUpload: React.FC<{
+  value?: any;
+  onChange?: (value: any) => void;
+  title?: string;
+}> = ({ value, onChange, title }) => {
+  const { message } = App.useApp();
+  const projectId = useEditorProjectId();
+  const [uploading, setUploading] = useState(false);
+
+  // 后端存的是 assets/{uuid}.{ext}，拿不到原始文件名，只能用路径末段展示
+  const uploadedName =
+    typeof value === 'string' && value && value !== MIXED_VALUE
+      ? decodeURIComponent(value.split('/').pop() || '')
+      : '';
+
+  const onFileChangeHandler: UploadProps['onChange'] = async ({ fileList }) => {
+    const rawFile = fileList.slice(-1)[0]?.originFileObj;
+    if (!rawFile) return;
+    if (!projectId) {
+      message.error('项目未初始化，无法上传');
+      return;
+    }
+    setUploading(true);
+    try {
+      const { url } = await uploadProjectFile(projectId, rawFile as File);
+      onChange?.(url);
+    } catch {
+      message.error('上传失败，请重试');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <>
+      <Row>
+        {title !== null ? (
+          <Col span={24}>
+              <InputTitle label={title || 'File'} />
+          </Col>
+        ) : null}
+      </Row>
+      <Row>
+        <Col span={24}>
+          {uploadedName ? (
+            <Flex align="center" justify="space-between">
+              <Button variant="filled" color="default" style={{ width: '80%' }}>
+                <Typography.Text
+                  style={{ width: 200 }}
+                  ellipsis={{ tooltip: value }}
+                >
+                  {uploadedName}
+                </Typography.Text>
+              </Button>
+              <Button
+                type="text"
+                onClick={() => onChange?.('')}
+                icon={<DeleteOutlined />}
+              />
+            </Flex>
+          ) : (
+            <Upload
+              accept=".mov,.mp4,.mp3,.m4a,.wav"
+              maxCount={1}
+              fileList={[]}
+              beforeUpload={() => false}
+              onChange={onFileChangeHandler}
+            >
+                <Button variant="filled" color="default" loading={uploading}>
+                    <UploadOutlined />
+                    <Typography.Text
+                      style={{ width: 200 }}
+                      ellipsis={{ tooltip: title }}
+                    >
+                      {title}
+                    </Typography.Text>
+                </Button>
+            </Upload>
+          )}
+        </Col>
+      </Row>
+    </>
+  )
+}
 
 export const AlphaSlider:React.FC<{
   value?: any;
@@ -1170,6 +1258,24 @@ export const BaseSelectedNodePropForm: React.FC<{
             value={editProps.source}
             onChange={(nextValue) => onChange?.('source', nextValue)}
             title="Source"
+          />
+        </>
+      )}
+      {hasKey('movsource') && (
+        <>
+          <FileUpload
+            value={editProps.movsource}
+            onChange={(nextValue) => onChange?.('movsource', nextValue)}
+            title="MovSource"
+          />
+        </>
+      )}
+      {hasKey('mp4source') && (
+        <>
+          <FileUpload
+            value={editProps.mp4source}
+            onChange={(nextValue) => onChange?.('mp4source', nextValue)}
+            title="Mp4Source"
           />
         </>
       )}

@@ -5740,6 +5740,24 @@ export const WallpaperDefaultConfig = {
             width: 887,
             height: 1920,
         }
+    },
+    "Live Wallpaper IOS": {
+        wallpaperType: 3,
+        mov: {
+            name: 'live_wallpaper_mov',
+            movsource: '',
+            width: 886,
+            height: 1920,
+        },
+    },
+    "Live Wallpaper Android": {
+        wallpaperType: 4,
+        mp4: {
+            name: 'live_wallpaper_mp4',
+            mp4source: '',
+            width: 886,
+            height: 1920,
+        }
     }
 }
 export const DEFAULT_THEME_CONFIG = {

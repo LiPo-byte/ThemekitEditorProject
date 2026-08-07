@@ -439,6 +439,59 @@ def test_upload_project_image(
     assert static_response.status_code == 200
 
 
+def test_upload_project_file(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Upload File Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    upload_response = client.post(
+        f"{settings.API_V1_STR}/project/{project_id}/upload-file",
+        headers=normal_user_token_headers,
+        files={"file": ("live.mov", b"fake_mov_binary", "video/quicktime")},
+    )
+    assert upload_response.status_code == 200
+    content = upload_response.json()
+    assert content["path"].startswith(f"data/project/{project_id}/assets/")
+    assert content["path"].endswith(".mov")
+    assert content["content_type"] == "video/quicktime"
+    assert content["size"] > 0
+
+    backend_root = Path(__file__).resolve().parents[3]
+    uploaded_file = backend_root / content["path"]
+    assert uploaded_file.exists()
+
+    static_response = client.get(content["url"])
+    assert static_response.status_code == 200
+
+
+def test_upload_project_file_rejects_non_media(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Upload File Reject Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    upload_response = client.post(
+        f"{settings.API_V1_STR}/project/{project_id}/upload-file",
+        headers=normal_user_token_headers,
+        files={"file": ("sample.png", b"\x89PNG\r\n\x1a\n", "image/png")},
+    )
+    assert upload_response.status_code == 400
+    assert (
+        upload_response.json()["detail"] == "Only video and audio files are supported"
+    )
+
+
 def test_get_project_assets(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:

@@ -28,6 +28,7 @@ from app.models import (
     ProjectSaveResponse,
     ProjectUpdateNameRequest,
     ProjectUpdateNameResponse,
+    ProjectUploadFileResponse,
     ProjectUploadImageResponse,
     User,
 )
@@ -43,6 +44,17 @@ _MIME_TO_EXT = {
 }
 _ASSET_DIR = _PREVIEW_DIR
 _MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+# 动态壁纸的 mov/mp4 远超图片体积，单独给上限，不影响图片上传
+_MEDIA_MIME_TO_EXT = {
+    "video/quicktime": "mov",
+    "video/mp4": "mp4",
+    "audio/mpeg": "mp3",
+    "audio/mp4": "m4a",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+}
+_MAX_MEDIA_UPLOAD_BYTES = 100 * 1024 * 1024
+_MEDIA_CHUNK_BYTES = 1024 * 1024
 
 
 def _save_preview_image(project_id: uuid.UUID, preview_data_url: str) -> str:
@@ -70,6 +82,15 @@ def _guess_extension(content_type: str | None, filename: str | None) -> str:
         ext_from_mime = _MIME_TO_EXT.get(content_type.lower())
         if ext_from_mime:
             return ext_from_mime
+    if filename and "." in filename:
+        return filename.rsplit(".", maxsplit=1)[-1].lower()
+    return "bin"
+
+
+def _guess_media_extension(content_type: str, filename: str | None) -> str:
+    ext_from_mime = _MEDIA_MIME_TO_EXT.get(content_type.lower())
+    if ext_from_mime:
+        return ext_from_mime
     if filename and "." in filename:
         return filename.rsplit(".", maxsplit=1)[-1].lower()
     return "bin"
@@ -389,6 +410,64 @@ async def upload_project_image(
         path=relative_path,
         content_type=file.content_type,
         size=len(content),
+    )
+
+
+@router.post("/{project_id}/upload-file", response_model=ProjectUploadFileResponse)
+async def upload_project_file(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    project_id: uuid.UUID,
+    file: UploadFile = File(...),
+) -> Any:
+    """
+    Upload a video/audio asset (live wallpaper mov/mp4 etc).
+    """
+    project = session.get(Project, project_id)
+    if not project or project.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if not current_user.is_superuser and project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    content_type = (file.content_type or "").lower()
+    if content_type not in _MEDIA_MIME_TO_EXT:
+        raise HTTPException(
+            status_code=400, detail="Only video and audio files are supported"
+        )
+
+    ext = _guess_media_extension(content_type, file.filename)
+    target_dir = _ASSET_DIR / str(project_id) / "assets"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    file_id = uuid.uuid4()
+    relative_path = f"data/project/{project_id}/assets/{file_id}.{ext}"
+    target_file = _BACKEND_ROOT / relative_path
+
+    # 视频体积大，边读边写避免整体进内存；中途失败要清掉写了一半的文件
+    size = 0
+    try:
+        with target_file.open("wb") as buffer:
+            while chunk := await file.read(_MEDIA_CHUNK_BYTES):
+                size += len(chunk)
+                if size > _MAX_MEDIA_UPLOAD_BYTES:
+                    raise HTTPException(status_code=413, detail="File too large")
+                buffer.write(chunk)
+        if not size:
+            raise HTTPException(status_code=400, detail="Empty upload file")
+    except HTTPException:
+        target_file.unlink(missing_ok=True)
+        raise
+    except OSError as error:
+        target_file.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=500, detail="Failed to save upload file"
+        ) from error
+
+    return ProjectUploadFileResponse(
+        url=f"/{relative_path}",
+        path=relative_path,
+        content_type=content_type,
+        size=size,
     )
 
 
