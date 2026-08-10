@@ -7,10 +7,11 @@ const getTextStyle = (parentId?: string, textData?: any) => ({
   fontFamily: resolveWidgetFontFamily(parentId, textData?.font),
   opacity: textData?.alpha ?? 1,
   color: textData?.textColor ?? '#111827',
-  lineHeight: 1,
+  // lineHeight: 1,
   height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
   whiteSpace: 'nowrap' as const,
 });
+
 export default function BatteryLayout_0(props: any) {
   const data = props.data;
   const scale = props.scale || 1;
@@ -47,22 +48,22 @@ export default function BatteryLayout_0(props: any) {
   }, [batterySources]);
 
   const activeBattery = batterySources[activeIndex];
-  const textpos = (textAlign: number): any => {
+  const textpos = (textAlign: number, padding: number): any => {
+    let key1 = data.size === 2 ? 'top' : 'left';
+    let key2 = data.size === 2 ? 'bottom' : 'right';
     if (textAlign === 1) {
       return {
-        left: 0,
-        right: '50%',
+        [key1]: padding,
       }
     }
     if (textAlign === 3) {
       return {
-        left: '50%',
-        right: 0,
+        [key2]: padding,
       }
     }
     return {
-      left: 0,
-      right: 0,
+      [key1]: 0,
+      [key2]: 0,
     }
   }
 
@@ -92,18 +93,44 @@ export default function BatteryLayout_0(props: any) {
           }}
         />
       ))}
-      <div
-        style={{
-          ...getTextStyle(props.parentId, data.battery),
-          position: 'absolute',
-          ...textpos(data.textAlignment),
-          bottom: 20,
-          textAlign: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        {resolveBatteryPercent(activeBattery?.key)}%
-      </div>
+      {
+        data.size === 2 ? (
+          // size 2：数字固定贴右边，textAlignment 控制的是上/中/下
+          <div
+            style={{
+              position: 'absolute',
+              ...textpos(data.textAlignment, 0),
+              right: 20,
+              display: 'flex',
+              alignItems: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                ...getTextStyle(props.parentId, data.battery),
+                color: activeBattery?.key !== 'battery_20' ? data.battery.textColor : '#ff0000',
+              }}
+            >
+              {resolveBatteryPercent(activeBattery?.key)}%
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              ...getTextStyle(props.parentId, data.battery),
+              position: 'absolute',
+              ...textpos(data.textAlignment, data.battery.padding),
+              bottom: 20,
+              textAlign: 'center',
+              pointerEvents: 'none',
+              color: activeBattery?.key !== 'battery_20' ? data.battery.textColor : "#ff0000",
+            }}
+          >
+            {resolveBatteryPercent(activeBattery?.key)}%
+          </div>
+        )
+      }
     </div>
   );
 }

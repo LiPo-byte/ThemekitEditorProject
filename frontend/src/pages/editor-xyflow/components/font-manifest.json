@@ -175,6 +175,13 @@
     "postscriptName": "HFBone"
   },
   {
+    "file": "HFBonBon.ttf",
+    "family": "HFBonBon",
+    "subfamily": "Regular",
+    "fullName": "HFBonBon",
+    "postscriptName": "HFBonBon"
+  },
+  {
     "file": "HFBronte.ttf",
     "family": "HFBronte",
     "subfamily": "Regular",
