@@ -5,7 +5,7 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
-import { resolveWidgetFontFamily } from './util';
+import { resolveWidgetFontFamily, isAndroidWidgetNode } from './util';
 
 const WEEK_LABELS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTH_NAME = 'October';
@@ -26,6 +26,7 @@ export default function CalendarLayout_0(props: any) {
   // const weekMarginBottom = { 1: 0, 2: 0, 3: 31 };
   // const dayPos = { 1: [15, 0, 0], 2: [], 3: [28, 0, 19] }
   if (!data) return null;
+  const isAndroid = isAndroidWidgetNode(props.parentId);
   // 28天
   const days = [];
   for (let index = -1; index <= 28; index++) {
@@ -47,6 +48,78 @@ export default function CalendarLayout_0(props: any) {
       .padStart(2, '0')
       .toUpperCase();
     return `${baseColor}${alphaHex}`;
+  };
+
+  const renderDayCell = (i: number, cellSize: number) => {
+    const fontSize = data.calendar.textSize;
+    const fontFamily = resolveWidgetFontFamily(props.parentId, data.calendar.font);
+    const color = i === 17 ? data.calendar.textColor_now : (
+      i < 17 ? data.calendar.textColor_past : data.calendar.textColor_future
+    );
+
+    // 当天：Android 按原色填充；非 Android 用 SVG mask 把数字镂空，透出背景图
+    if (i === 17 && !isAndroid) {
+      const maskId = `cal2-day-mask-${props.id}-${cellSize}-${i}`;
+      return (
+        <div
+          key={i}
+          style={{
+            width: cellSize,
+            height: cellSize,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <svg width={cellSize} height={cellSize} style={{ display: 'block' }}>
+            <defs>
+              <mask id={maskId}>
+                <rect width="100%" height="100%" fill="white" />
+                <text
+                  x="50%"
+                  y="50%"
+                  dominantBaseline="central"
+                  textAnchor="middle"
+                  fill="black"
+                  fontSize={fontSize}
+                  fontFamily={fontFamily}
+                >
+                  {i}
+                </text>
+              </mask>
+            </defs>
+            <circle
+              cx="50%"
+              cy="50%"
+              r="50%"
+              fill={data.calendar.bgColor_now}
+              mask={`url(#${maskId})`}
+            />
+          </svg>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={i}
+        style={{
+          width: cellSize,
+          height: cellSize,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize,
+          fontFamily,
+          backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
+          borderRadius: i === 17 ? '100%' : '0',
+          color: color,
+          opacity: i < 17 ? 0.6 : 1,
+        }}
+      >
+        {i <= 0 ? '' : i}
+      </div>
+    );
   };
 
   const resolveAnimationCategory = (animationConfig: any, index: number) => {
@@ -226,7 +299,7 @@ export default function CalendarLayout_0(props: any) {
               opacity: data?.month?.alpha ?? 1,
               height: data?.month?.textHeight,
               color: data?.month?.textColor,
-              zIndex: 2,
+              zIndex: 3,
               transform: 'translate(10px, 10px)',
             }}
           >
@@ -236,9 +309,9 @@ export default function CalendarLayout_0(props: any) {
             style={{
               fontFamily: resolveWidgetFontFamily(props.parentId, data?.day?.font),
               fontSize: data?.day?.textSize,
-              opacity: 0.6,
               height: data?.day?.textHeight,
-              color: data?.day?.textColor,
+              color: data?.other?.backgroundColor,
+              opacity: data?.other?.alpha ?? 1,
               position: 'relative',
               zIndex: 2,
               marginLeft: '-8px',
@@ -307,27 +380,7 @@ export default function CalendarLayout_0(props: any) {
                 zIndex: 2,
               }}
             >
-              {days.map(i => {
-                const color = i === 17 ? data.calendar.textColor_now : (
-                  i < 17 ? data.calendar.textColor_past : data.calendar.textColor_future
-                )
-                return <div
-                    key={i}
-                    style={{
-                      width: 17,
-                      height: 17,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: data.calendar.textSize,
-                      fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
-                      backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
-                      borderRadius: i === 17 ? '100%' : '0',
-                      color: color,
-                    }}>
-                      {i <= 0 ? '' : i}
-                    </div>
-              })}
+              {days.map(i => renderDayCell(i, 17))}
             </div>
           </div>
         ) : null
@@ -375,27 +428,7 @@ export default function CalendarLayout_0(props: any) {
                 zIndex: 2,
               }}
             >
-              {days.map(i => {
-                const color = i === 17 ? data.calendar.textColor_now : (
-                  i < 17 ? data.calendar.textColor_past : data.calendar.textColor_future
-                )
-                return <div
-                    key={i}
-                    style={{
-                      width: 31,
-                      height: 31,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: data.calendar.textSize,
-                      fontFamily: resolveWidgetFontFamily(props.parentId, data.calendar.font),
-                      backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
-                      borderRadius: i === 17 ? '100%' : '0',
-                      color: color,
-                    }}>
-                      {i <= 0 ? '' : i}
-                    </div>
-              })}
+              {days.map(i => renderDayCell(i, 31))}
             </div>
           </div>
         ) : null
