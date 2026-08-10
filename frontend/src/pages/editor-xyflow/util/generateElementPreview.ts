@@ -142,6 +142,8 @@ const normalizeCanvasSize = (
   normalizedCanvas.height = Math.max(1, Math.round(targetHeight));
   const ctx = normalizedCanvas.getContext('2d');
   if (ctx) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(sourceCanvas, 0, 0, normalizedCanvas.width, normalizedCanvas.height);
   }
   return normalizedCanvas;
@@ -306,6 +308,26 @@ const applyImageSources = async (
   );
 };
 
+/**
+ * 输出尺寸普遍大于节点在画布上的 DOM 尺寸（如 small widget 155 -> 269），
+ * 按 1 倍截图会被 normalizeCanvasSize 放大导致发虚。这里与静态图一致按 scale 超采样，
+ * 并保证倍率不低于输出/布局的比值，避免任何放大。
+ */
+const getGifCaptureScale = (
+  element: HTMLElement,
+  safeScale: number,
+  outputWidth?: number,
+  outputHeight?: number,
+) => {
+  const layoutSize = getElementLayoutSize(element);
+  const requiredScale = Math.max(
+    (outputWidth ?? layoutSize.width) / layoutSize.width,
+    (outputHeight ?? layoutSize.height) / layoutSize.height,
+    1,
+  );
+  return Math.max(safeScale, requiredScale);
+};
+
 export const generateElementPreview = async (
   element: HTMLElement,
   options: GenerateElementPreviewOptions = {},
@@ -321,9 +343,11 @@ export const generateElementPreview = async (
     outputWidth,
     outputHeight,
   } = options;
-  // GIF 最终会落到 output/layout 尺寸，过高 scale 只增加截图成本，不提升体积收益
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
-  const captureScale = isGif ? Math.min(safeScale, 1) : safeScale;
+  // GIF 帧最后一定会归一到 output/layout 尺寸，提高截图倍率只改变采样精度、不改变输出像素数
+  const captureScale = isGif
+    ? getGifCaptureScale(element, safeScale, outputWidth, outputHeight)
+    : safeScale;
 
   if (!isGif) {
     const canvas = await captureElementPreviewCanvas(element, captureScale);
@@ -482,8 +506,16 @@ export const generateElementPreview = async (
     Math.max(2, Math.round((durationMs / 1000) * Math.max(1, fps))),
   );
   const frames: Array<{ canvas: HTMLCanvasElement; delay: number }> = [];
-  const fallbackTargetWidth = outputWidth ? Math.max(1, Math.round(outputWidth)) : null;
-  const fallbackTargetHeight = outputHeight ? Math.max(1, Math.round(outputHeight)) : null;
+  // 未指定输出尺寸时回落到布局尺寸，保证超采样只提升清晰度、不放大导出动图的像素数
+  const fallbackLayoutSize = getElementLayoutSize(element);
+  const fallbackTargetWidth = Math.max(
+    1,
+    Math.round(outputWidth ?? fallbackLayoutSize.width),
+  );
+  const fallbackTargetHeight = Math.max(
+    1,
+    Math.round(outputHeight ?? fallbackLayoutSize.height),
+  );
   for (let index = 0; index < frameCount; index += 1) {
     if (index > 0) {
       await wait(delay);
@@ -493,9 +525,14 @@ export const generateElementPreview = async (
     const frameCanvas = await captureElementPreviewCanvas(element, captureScale);
     if (!frameCanvas) continue;
     const normalizedCanvas =
-      fallbackTargetWidth && fallbackTargetHeight
-        ? normalizeCanvasSize(frameCanvas, fallbackTargetWidth, fallbackTargetHeight)
-        : frameCanvas;
+      frameCanvas.width === fallbackTargetWidth &&
+      frameCanvas.height === fallbackTargetHeight
+        ? frameCanvas
+        : normalizeCanvasSize(
+            frameCanvas,
+            fallbackTargetWidth,
+            fallbackTargetHeight,
+          );
     frames.push({ canvas: normalizedCanvas, delay });
   }
   if (!frames.length) {
