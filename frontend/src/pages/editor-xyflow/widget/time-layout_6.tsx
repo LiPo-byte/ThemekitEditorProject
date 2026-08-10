@@ -162,7 +162,10 @@ export default function TimeLayout_6(props: any) {
         transformOrigin: '0 0',
       }}>
         {hasAnimationFields
-          ? animationConfigs.map((item: any, index: number) => renderAnimationLayer(item, index))
+          ? animationConfigs.map((item: any, index: number) => {
+            if (data?.size === 2 ) return null;
+            return renderAnimationLayer(item, index);
+          })
           : null}
 
         {data?.size === 1 && (
@@ -251,6 +254,19 @@ export default function TimeLayout_6(props: any) {
             <div style={{ ...monthTagBase, left: 38, width: 34, ...getTextStyle({ ...data.month }) }}>12/25</div>
             <div style={{ ...monthTagBase, left: 134, width: 26, ...getTextStyle({ ...data.month }) }}>{dayText}</div>
             <div style={{ position: 'absolute', left: 16, top: 76, width: 3, height: 15, backgroundColor: data?.other?.backgroundColor, zIndex: 9, borderRadius: 2 }} />
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: '50%',
+              right: 0,
+              bottom: 0,
+            }}>
+              {hasAnimationFields
+              ? animationConfigs.map((item: any, index: number) => {
+                  return renderAnimationLayer(item, index);
+                })
+              : null}
+            </div>
           </>
         )}
 

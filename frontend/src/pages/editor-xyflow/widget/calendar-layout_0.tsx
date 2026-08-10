@@ -93,6 +93,7 @@ export default function CalendarLayout_0(props: any) {
               backgroundColor: i === 17 ? data.calendar.bgColor_now : 'none',
               borderRadius: i === 17 ? '100%' : '0',
               color: color,
+              opacity: i < 17 ? 0.6 : 1,
             }}>
               {i <= 0 ? '' : i}
             </div>

@@ -361,7 +361,7 @@ export default function TimeLayout_5(props: any) {
                     style={calendarCellStyle(
                       17,
                       11,
-                      i === 4 ? '#ffffff' : data?.calendar?.textColor,
+                      data?.calendar?.textColor,
                       i === 4 ? getOtherBackgroundColor(data?.time) : undefined,
                       i === 4 ? 8.5 : 0,
                       i < 4 ? 0.6 : 1,
@@ -462,7 +462,7 @@ export default function TimeLayout_5(props: any) {
               backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
             }}>
               {weekLabels.map((label, index) => (
-                <div key={`w-lg-${label}-${index}`} style={calendarCellStyle(36, 18, '#000000')}>
+                <div key={`w-lg-${label}-${index}`} style={calendarCellStyle(36, 18, data?.calendar?.textColor)}>
                   {label}
                 </div>
               ))}
@@ -515,7 +515,7 @@ export default function TimeLayout_5(props: any) {
                   style={calendarCellStyle(
                     36,
                     16,
-                    i === 4 ? '#fff' : '#111',
+                    data?.calendar?.textColor,
                     i === 4 ? getOtherBackgroundColor(data?.time) : undefined,
                     i === 4 ? 18 : 0,
                     i < 4 ? 0.6 : 1,
