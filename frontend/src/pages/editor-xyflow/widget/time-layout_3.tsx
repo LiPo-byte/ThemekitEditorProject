@@ -13,16 +13,9 @@ const CARD_SIZE_MAP: Record<number, { w: number; h: number }> = {
   3: { w: 144, h: 136 },
 };
 
-const dividerStyle = {
-  position: 'absolute' as const,
-  top: '50%',
-  left: 0,
-  right: 0,
-  height: 1,
-  backgroundColor: '#cfd5e2',
-  transform: 'translateY(-0.5px)',
-  zIndex: 99,
-};
+// 用遮罩在卡片中线挖掉 1px，透出底层背景（背景图或纯色），而不是盖一条实色分割线
+const DIVIDER_MASK =
+  'linear-gradient(to bottom, #000 calc(50% - 0.5px), transparent calc(50% - 0.5px), transparent calc(50% + 0.5px), #000 calc(50% + 0.5px))';
 
 const getEdgeDotStyle = (side: 'left' | 'right') => ({
   position: 'absolute' as const,
@@ -96,15 +89,27 @@ export default function TimeLayout_3(props: any) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      WebkitMaskImage: DIVIDER_MASK,
+      maskImage: DIVIDER_MASK,
     };
   }, [cardSize.h, cardSize.w, data.time.backgroundColor]);
 
+  // 圆点超出卡片边界，会被卡片上的遮罩（mask-clip 默认 border-box）裁掉，所以放在遮罩层外面
+  const flipCardWrapperStyle = useMemo(() => {
+    return {
+      width: cardSize.w,
+      height: cardSize.h,
+      position: 'relative' as const,
+    };
+  }, [cardSize.h, cardSize.w]);
+
   const renderFlipCard = (text: string) => (
-    <div style={flipNumberStyle}>
-      <div style={dividerStyle} />
+    <div style={flipCardWrapperStyle}>
+      <div style={flipNumberStyle}>
+        <span style={timeTextStyle}>{text}</span>
+      </div>
       <div style={getEdgeDotStyle('left')} />
       <div style={getEdgeDotStyle('right')} />
-      <span style={timeTextStyle}>{text}</span>
     </div>
   );
 
