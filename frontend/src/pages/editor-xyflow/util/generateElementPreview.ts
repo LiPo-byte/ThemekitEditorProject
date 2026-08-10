@@ -15,6 +15,10 @@ export type GenerateElementPreviewOptions = {
   cropTransform?: CropTransform;
   outputWidth?: number;
   outputHeight?: number;
+  /** 兜底分支的帧数，配合 onFrame 由调用方决定采样多少帧 */
+  frameCount?: number;
+  /** 由调用方驱动每帧画面；传入后不再靠等待真实动画自行推进，避免采样漂移漏帧 */
+  onFrame?: (frameIndex: number) => void | Promise<void>;
 };
 
 /** 预览 GIF 硬上限，避免多源采样把体积打爆 */
@@ -23,6 +27,14 @@ const GIF_MAX_FRAMES = 16;
 const wait = (ms: number) =>
   new Promise<void>((resolve) => {
     window.setTimeout(resolve, ms);
+  });
+
+/** 等到 React 提交并完成一次绘制，保证截图读到的是刚指定的那一帧 */
+const waitForNextPaint = () =>
+  new Promise<void>((resolve) => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => resolve());
+    });
   });
 
 const getCaptureElement = (element: HTMLElement) => {
@@ -342,6 +354,8 @@ export const generateElementPreview = async (
     sourceUrl,
     outputWidth,
     outputHeight,
+    frameCount: externalFrameCount,
+    onFrame,
   } = options;
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
   // GIF 帧最后一定会归一到 output/layout 尺寸，提高截图倍率只改变采样精度、不改变输出像素数
@@ -503,7 +517,10 @@ export const generateElementPreview = async (
   const delay = Math.max(40, Math.round(1000 / Math.max(1, fps)));
   const frameCount = Math.min(
     GIF_MAX_FRAMES,
-    Math.max(2, Math.round((durationMs / 1000) * Math.max(1, fps))),
+    Math.max(
+      2,
+      Math.round(externalFrameCount ?? (durationMs / 1000) * Math.max(1, fps)),
+    ),
   );
   const frames: Array<{ canvas: HTMLCanvasElement; delay: number }> = [];
   // 未指定输出尺寸时回落到布局尺寸，保证超采样只提升清晰度、不放大导出动图的像素数
@@ -517,7 +534,10 @@ export const generateElementPreview = async (
     Math.round(outputHeight ?? fallbackLayoutSize.height),
   );
   for (let index = 0; index < frameCount; index += 1) {
-    if (index > 0) {
+    if (onFrame) {
+      await onFrame(index);
+      await waitForNextPaint();
+    } else if (index > 0) {
       await wait(delay);
     } else {
       await wait(16);

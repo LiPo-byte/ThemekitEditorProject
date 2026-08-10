@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { resolveWidgetFontFamily } from './util';
+import { useWidgetCaptureFrameIndex } from '../util/widgetCaptureFrame';
 import './style.css';
 
 const getTextStyle = (parentId?: string, textData?: any) => ({
@@ -28,6 +29,7 @@ export default function BatteryLayout_0(props: any) {
   }, [data]);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const captureFrameIndex = useWidgetCaptureFrameIndex();
 
   const resolveBatteryPercent = (key?: string) => {
     const match = key?.match(/(\d+)/);
@@ -40,14 +42,20 @@ export default function BatteryLayout_0(props: any) {
   }, [batterySources]);
 
   useEffect(() => {
+    // 导出截图期间由导出流程逐帧指定，停掉自身轮播避免两个节奏互相干扰
+    if (captureFrameIndex !== null) return undefined;
     if (batterySources.length <= 1) return undefined;
     const timer = window.setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % batterySources.length);
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [batterySources]);
+  }, [batterySources, captureFrameIndex]);
 
-  const activeBattery = batterySources[activeIndex];
+  const effectiveIndex =
+    captureFrameIndex !== null && batterySources.length
+      ? captureFrameIndex % batterySources.length
+      : activeIndex;
+  const activeBattery = batterySources[effectiveIndex];
   const textpos = (textAlign: number, padding: number): any => {
     let key1 = data.size === 2 ? 'top' : 'left';
     let key2 = data.size === 2 ? 'bottom' : 'right';
@@ -89,7 +97,7 @@ export default function BatteryLayout_0(props: any) {
             height: '100%',
             objectFit: 'cover',
             display: 'block',
-            opacity: index === activeIndex ? 1 : 0,
+            opacity: index === effectiveIndex ? 1 : 0,
           }}
         />
       ))}

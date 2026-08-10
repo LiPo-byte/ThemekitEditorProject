@@ -8,6 +8,7 @@ import {
   generateElementPreview,
   isGifSource,
 } from '../util/generateElementPreview';
+import { setWidgetCaptureFrameIndex } from '../util/widgetCaptureFrame';
 import {
   CONFIG_SIZE_MAP,
   SOURCENAME_TYPE_WIDGET_MAP,
@@ -431,14 +432,22 @@ export const collectWidgetExportFiles = async (
     }
 
     if (batterySources.length) {
-      const previewBlob = await generateElementPreview(targetElement, {
-        isGif: true,
-        fps: 1,
-        durationMs: batterySources.length * 1000,
-        scale: EXPORT_PREVIEW_SCALE,
-        outputWidth: previewWidth,
-        outputHeight: previewHeight,
-      });
+      // 逐帧指定电量档位再截图，避免依赖组件自身定时器导致漏帧、重复帧
+      let previewBlob: Blob | null = null;
+      try {
+        previewBlob = await generateElementPreview(targetElement, {
+          isGif: true,
+          fps: 1,
+          durationMs: batterySources.length * 1000,
+          frameCount: batterySources.length,
+          onFrame: (frameIndex) => setWidgetCaptureFrameIndex(frameIndex),
+          scale: EXPORT_PREVIEW_SCALE,
+          outputWidth: previewWidth,
+          outputHeight: previewHeight,
+        });
+      } finally {
+        setWidgetCaptureFrameIndex(null);
+      }
       if (previewBlob) {
         pushFile(`widgets_${sizeLabel}_preview.gif`, previewBlob);
         pushLine(
