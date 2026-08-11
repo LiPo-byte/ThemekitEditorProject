@@ -1,10 +1,10 @@
-import { type CSSProperties } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
 import CropEditableImage from '../components/CropEditableImage';
 import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
-import { resolveWidgetFontFamily } from './util';
+import { resolveAnimationHoldMs, resolveWidgetFontFamily } from './util';
 import './style.css';
 
 const getTextStyle = (parentId?: string, textData?: any) => ({
@@ -22,6 +22,40 @@ export default function BatteryLayout_2(props: any) {
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
   const data = props.data;
   const scale = props.scale || 1;
+
+  // 第三、第四个动画都配了图时交替显示，各自按自己的 duration 停留
+  const shouldAlternateAnimation =
+    Boolean(data?.thirdImageAnimation?.source) &&
+    Boolean(data?.fourthImageAnimation?.source);
+  const thirdHoldMs = resolveAnimationHoldMs(data?.thirdImageAnimation?.duration);
+  const fourthHoldMs = resolveAnimationHoldMs(
+    data?.fourthImageAnimation?.duration,
+  );
+  const [alternateIndex, setAlternateIndex] = useState(0);
+
+  useEffect(() => {
+    if (!shouldAlternateAnimation) return undefined;
+    // 两段停留时长可能不同，用链式 timeout 而非固定间隔
+    const holdMs = [thirdHoldMs, fourthHoldMs];
+    let cancelled = false;
+    let timer = 0;
+    let current = 0;
+    setAlternateIndex(0);
+    const schedule = () => {
+      timer = window.setTimeout(() => {
+        if (cancelled) return;
+        current = (current + 1) % holdMs.length;
+        setAlternateIndex(current);
+        schedule();
+      }, holdMs[current]);
+    };
+    schedule();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [shouldAlternateAnimation, thirdHoldMs, fourthHoldMs]);
+
   if (!data) return null;
   const size = data.size;
 
@@ -40,6 +74,13 @@ export default function BatteryLayout_2(props: any) {
     thirdImageAnimation,
     fourthImageAnimation,
   ].filter(Boolean);
+
+  // 交替期间被隐藏的那一层，按对象引用比对，不依赖过滤后的下标
+  const hiddenAnimationConfig = shouldAlternateAnimation
+    ? alternateIndex === 0
+      ? fourthImageAnimation
+      : thirdImageAnimation
+    : null;
 
   const resolveAnimationCategory = (animationConfig: any, index: number) => {
     const categoryValue = Number(animationConfig?.animationCategory);
@@ -111,8 +152,13 @@ export default function BatteryLayout_2(props: any) {
     const style = getAnimationLayerStyle(animationConfig, category);
     if (!style) return null;
     const source = animationConfig?.source;
+    const isAlternateHidden =
+      hiddenAnimationConfig != null && animationConfig === hiddenAnimationConfig;
     return (
-      <div key={`anim-layer-${index}`} style={style}>
+      <div
+        key={`anim-layer-${index}`}
+        style={isAlternateHidden ? { ...style, opacity: 0 } : style}
+      >
         {source ? (
           <img
             src={source}

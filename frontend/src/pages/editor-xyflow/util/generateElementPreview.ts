@@ -19,10 +19,25 @@ export type GenerateElementPreviewOptions = {
   frameCount?: number;
   /** 由调用方驱动每帧画面；传入后不再靠等待真实动画自行推进，避免采样漂移漏帧 */
   onFrame?: (frameIndex: number) => void | Promise<void>;
+  /**
+   * 把采样点对齐到固定时间表，使整体覆盖的真实时间等于 durationMs。
+   * 默认逻辑是「截完一帧再等固定间隔」，覆盖多长时间取决于截图快慢、不可控；
+   * 需要保证动画完整走完一个周期时开启。
+   */
+  paceSampling?: boolean;
 };
 
 /** 预览 GIF 硬上限，避免多源采样把体积打爆 */
 const GIF_MAX_FRAMES = 16;
+/** 实测帧间隔的取值范围：下限贴合 GIF 格式精度，上限避免切到后台被节流时出现长时间卡帧 */
+const GIF_MIN_FRAME_DELAY_MS = 20;
+const GIF_MAX_FRAME_DELAY_MS = 2000;
+
+const clampFrameDelay = (delayMs: number) =>
+  Math.min(
+    GIF_MAX_FRAME_DELAY_MS,
+    Math.max(GIF_MIN_FRAME_DELAY_MS, Math.round(delayMs)),
+  );
 
 const wait = (ms: number) =>
   new Promise<void>((resolve) => {
@@ -356,6 +371,7 @@ export const generateElementPreview = async (
     outputHeight,
     frameCount: externalFrameCount,
     onFrame,
+    paceSampling = false,
   } = options;
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
   // GIF 帧最后一定会归一到 output/layout 尺寸，提高截图倍率只改变采样精度、不改变输出像素数
@@ -533,17 +549,37 @@ export const generateElementPreview = async (
     1,
     Math.round(outputHeight ?? fallbackLayoutSize.height),
   );
+  const paceIntervalMs =
+    paceSampling && !onFrame && frameCount > 0 ? durationMs / frameCount : 0;
+  const sampleStartedAt = performance.now();
+  let previousSampledAt = 0;
   for (let index = 0; index < frameCount; index += 1) {
     if (onFrame) {
       await onFrame(index);
       await waitForNextPaint();
+    } else if (paceIntervalMs) {
+      // 采样点对齐到时间表，保证整体覆盖 durationMs 这段真实时间。
+      // 截图慢于节拍时不再额外等待，此时覆盖时间只会更长、不会更短。
+      const remainMs =
+        sampleStartedAt + index * paceIntervalMs - performance.now();
+      if (remainMs > 0) await wait(remainMs);
     } else if (index > 0) {
       await wait(delay);
     } else {
       await wait(16);
     }
+    // 画面对应的是克隆 DOM 的这一刻，用它做时间基准
+    const sampledAt = performance.now();
     const frameCanvas = await captureElementPreviewCanvas(element, captureScale);
     if (!frameCanvas) continue;
+    // 单帧截图本身要几百毫秒，实际采样间隔远大于标称的 delay，用实测值才能保证播放速度一致。
+    // 外部驱动帧时画面由调用方指定、与真实耗时无关，仍按标称间隔播放。
+    if (!onFrame && frames.length && previousSampledAt) {
+      frames[frames.length - 1].delay = clampFrameDelay(
+        sampledAt - previousSampledAt,
+      );
+    }
+    previousSampledAt = sampledAt;
     const normalizedCanvas =
       frameCanvas.width === fallbackTargetWidth &&
       frameCanvas.height === fallbackTargetHeight
@@ -557,6 +593,10 @@ export const generateElementPreview = async (
   }
   if (!frames.length) {
     throw new Error('Element is not visible.');
+  }
+  // 末帧没有下一次采样可参照，沿用前一帧的实测间隔
+  if (!onFrame && frames.length > 1) {
+    frames[frames.length - 1].delay = frames[frames.length - 2].delay;
   }
   return await encodeGifFromCanvases(frames, gifQuality);
 };

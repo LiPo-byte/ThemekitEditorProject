@@ -9,6 +9,7 @@ import {
   isGifSource,
 } from '../util/generateElementPreview';
 import { setWidgetCaptureFrameIndex } from '../util/widgetCaptureFrame';
+import { resolveAlternateAnimationCycleMs } from '../widget/util';
 import {
   CONFIG_SIZE_MAP,
   SOURCENAME_TYPE_WIDGET_MAP,
@@ -358,6 +359,17 @@ export const collectWidgetExportFiles = async (
       Boolean(data?.firstImageAnimation) ||
       Boolean(data?.secondImageAnimation) ||
       isGifSource(source);
+    // 存在交替动画时，preview 必须完整覆盖一轮交替，否则采样窗口由截图快慢决定、可能只拍到一层。
+    // 但背景或任一动画层是 GIF 时会走「按源 GIF 时间轴采样」的分支，那条分支的节奏由源 GIF 决定，不能覆盖。
+    const alternateCycleMs = resolveAlternateAnimationCycleMs(data);
+    const hasGifLayer = [
+      source,
+      data?.firstImageAnimation?.source,
+      data?.secondImageAnimation?.source,
+      data?.thirdImageAnimation?.source,
+      data?.fourthImageAnimation?.source,
+    ].some((item) => isGifSource(String(item ?? '')));
+    const shouldPaceToAlternateCycle = alternateCycleMs > 0 && !hasGifLayer;
 
     const sizeNumber = Number(data?.size ?? 0);
     const sizeLabel =
@@ -420,6 +432,9 @@ export const collectWidgetExportFiles = async (
         jpegQuality: EXPORT_JPEG_QUALITY,
         outputWidth: previewWidth,
         outputHeight: previewHeight,
+        ...(shouldPaceToAlternateCycle
+          ? { durationMs: alternateCycleMs, paceSampling: true }
+          : {}),
       });
       if (previewBlob) {
         const previewName = `widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'}`;

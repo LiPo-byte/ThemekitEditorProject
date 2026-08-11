@@ -15,6 +15,27 @@ export const resolveWidgetFontFamily = (
 ): string | undefined => (isAndroidWidgetNode(parentId) ? 'Roboto-Regular' : fontFamily);
 
 /**
+ * 动画层的停留时长。duration 为负时表示反向播放，这里只关心长度所以取绝对值，
+ * 并兜底一个最小值避免填 0 造成定时器空转。
+ */
+export const resolveAnimationHoldMs = (duration: unknown): number =>
+  Math.max(Math.abs(Number(duration)) || 0, 0.1) * 1000;
+
+/**
+ * 第三、第四个动画都配了图时两者交替显示，一轮周期为各自停留时长之和。
+ * 不满足交替条件时返回 0。
+ */
+export const resolveAlternateAnimationCycleMs = (data: any): number => {
+  const third = data?.thirdImageAnimation;
+  const fourth = data?.fourthImageAnimation;
+  if (!third?.source || !fourth?.source) return 0;
+  return (
+    resolveAnimationHoldMs(third.duration) +
+    resolveAnimationHoldMs(fourth.duration)
+  );
+};
+
+/**
  * 通过图片地址获取原始尺寸（naturalWidth / naturalHeight）。
  */
 export const getImageSize = (src: string): Promise<ImageSize> =>
