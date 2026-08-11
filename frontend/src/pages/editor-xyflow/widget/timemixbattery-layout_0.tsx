@@ -124,6 +124,7 @@ export default function TimeMixBatteryLayout0(props: any) {
             <div style={{
                 width: '100%',
                 ...getTextStyle(data.time),
+                opacity: 1,
                 textAlign: data.time.topTextAlignment === 1 ? 'left' : (data.time.topTextAlignment === 2 ? 'center' : 'right')
             }}>
                 10

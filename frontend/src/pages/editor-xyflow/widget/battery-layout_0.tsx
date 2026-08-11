@@ -9,7 +9,8 @@ const getTextStyle = (parentId?: string, textData?: any) => ({
   opacity: textData?.alpha ?? 1,
   color: textData?.textColor ?? '#111827',
   // lineHeight: 1,
-  height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
+  // height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
+  height: 'auto',
   whiteSpace: 'nowrap' as const,
 });
 

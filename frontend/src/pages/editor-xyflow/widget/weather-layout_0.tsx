@@ -134,7 +134,10 @@ export default function WeatherLayout0(props: any) {
       />
       { size === 1 && (
         <div style={contentStyle}>
-          <div style={headerRowStyle}>
+          <div style={{
+            ...headerRowStyle,
+            color: weatherSubStyle?.color ?? '#111827',
+          }}>
             {localicon} Berkely
           </div>
           <div style={getMainRowStyle(data.weatherMain.textSize, 10)}>
@@ -154,7 +157,10 @@ export default function WeatherLayout0(props: any) {
       ) }
       { size === 2 && (
         <div style={contentStyle}>
-          <div style={headerRowStyle}>
+          <div style={{
+              ...headerRowStyle,
+              color: weatherSubStyle?.color ?? '#111827',
+          }}>
             {localicon} Berkely
           </div>
           <div style={getMainRowStyle(data.weatherMain.textSize, 10)}>
@@ -189,7 +195,10 @@ export default function WeatherLayout0(props: any) {
       ) }
       { size === 3 && (
         <div style={contentStyle}>
-          <div style={headerRowStyle}>
+          <div style={{
+            ...headerRowStyle,
+            color: weatherSubStyle?.color ?? '#111827',
+          }}>
             {localicon} Berkely
           </div>
           <div style={getMainRowStyle(data.weatherMain.textSize, 18)}>

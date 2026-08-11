@@ -50,7 +50,8 @@ export default function BatteryLayout_1(props: any) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: data.textAlignment === 1 ? 'flex-start' : ( data.textAlignment === 2 ? 'center' : 'flex-end' ),
+          // justifyContent: data.textAlignment === 1 ? 'flex-start' : ( data.textAlignment === 2 ? 'center' : 'flex-end' ),
+          justifyContent: 'center',
           zIndex: 2,
         }}
       >

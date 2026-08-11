@@ -2514,7 +2514,8 @@ export const WidgetDefaultConfig = {
                     "textSize":20,
                     "textColor":"#000000",
                     "alpha":1.0,
-                    "textHeight": 26
+                    "textHeight": 26,
+                    "padding": 0,
                  },
                 "battery_20": {
                    "source": "",
@@ -2548,7 +2549,8 @@ export const WidgetDefaultConfig = {
                     "textSize":40,
                     "textColor":"#000000",
                     "alpha":1.0,
-                    "textHeight": 26
+                    "textHeight": 26,
+                    "padding": 0,
                 },
                 "battery_20": {
                    "source": "",
@@ -2582,7 +2584,8 @@ export const WidgetDefaultConfig = {
                     "textSize":20,
                     "textColor":"#000000",
                     "alpha":1.0,
-                    "textHeight": 26
+                    "textHeight": 26,
+                    "padding": 0,
                 },
                 "battery_20": {
                    "source": "",
@@ -2624,7 +2627,8 @@ export const WidgetDefaultConfig = {
                     "textSize":20,
                     "textColor":"#000000",
                     "alpha":1.0,
-                    "textHeight": 26
+                    "textHeight": 26,
+                    "padding": 0,
                 },
                 "battery_20": {
                     "source": "",
@@ -2658,7 +2662,8 @@ export const WidgetDefaultConfig = {
                     "textSize":40,
                     "textColor":"#000000",
                     "alpha":1.0,
-                    "textHeight": 26
+                    "textHeight": 26,
+                    "padding": 0,
                 },
                 "battery_20": {
                    "source": "",
@@ -2692,7 +2697,8 @@ export const WidgetDefaultConfig = {
                     "textSize":20,
                     "textColor":"#000000",
                     "alpha":1.0,
-                    "textHeight": 26
+                    "textHeight": 26,
+                    "padding": 0,
                 },
                 "battery_20": {
                    "source": "",
