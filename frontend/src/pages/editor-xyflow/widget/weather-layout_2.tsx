@@ -5,6 +5,7 @@ import {
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
 import { resolveWidgetFontFamily } from './util';
+import { CloudySvg } from '@/icons';
 import './style.css';
 
 const baseContainerStyle = {
@@ -61,7 +62,7 @@ export default function WeatherLayout2(props: any) {
   const mainText = '23°';
   const subText = 'Cloudy';
   const gap = size === 3 ? 12 : size === 2 ? 10 : 8;
-  const paddingSize: any = { 1: 5, 2: 12, 3: 30 }
+  const paddingSize: any = { 1: 15, 2: 22, 3: 55 }
 
   return (
     <div
@@ -82,10 +83,10 @@ export default function WeatherLayout2(props: any) {
         cropProps={data.crop_props}
       />
       <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', justifyContent: 'space-between', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, ...alignmentStyle }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: size === 3 ? 16 : size === 2 ? 23 : 13, ...alignmentStyle }}>
           <div style={{
             ...getTextStyle(props.parentId, data.weatherSub),
-            fontSize: size === 3 ? '21px' : '5px',
+            fontSize: size === 3 ? '21px' : '12px',
             display: 'flex',
           }}>
             { iconSource ? <img src={iconSource} style={{ width: size === 3 ? 16 : 5, marginRight: '5px' }} /> : <div></div> }
@@ -98,7 +99,7 @@ export default function WeatherLayout2(props: any) {
             {mainText}
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, ...alignmentStyle }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: size === 3 ? 17 : size === 2 ? 9 : 11, ...alignmentStyle }}>
           <div style={getTextStyle(props.parentId, data.weatherWeekday)}>
             {weekdayText}
           </div>
