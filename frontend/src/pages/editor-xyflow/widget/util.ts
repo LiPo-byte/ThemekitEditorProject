@@ -15,6 +15,31 @@ export const resolveWidgetFontFamily = (
 ): string | undefined => (isAndroidWidgetNode(parentId) ? 'Roboto-Regular' : fontFamily);
 
 /**
+ * 把十六进制颜色和 0~1 的透明度合成 8 位十六进制色值（#RRGGBBAA）。
+ * 传入色值已经带 alpha（9 位）时先截回 6 位再重新拼接，避免叠加两次；
+ * 透明度不是有效数字时按不透明处理，超出范围会被夹到 0~1。
+ */
+export const resolveHexColorWithAlpha = (
+  hexColor?: unknown,
+  alpha?: unknown,
+): string => {
+  const rawColor = String(hexColor ?? '#000000');
+  const baseColor =
+    rawColor.startsWith('#') && rawColor.length === 9
+      ? rawColor.slice(0, 7)
+      : rawColor;
+  const numericAlpha = Number(alpha);
+  const normalizedAlpha = Number.isFinite(numericAlpha)
+    ? Math.max(0, Math.min(1, numericAlpha))
+    : 1;
+  const alphaHex = Math.round(normalizedAlpha * 255)
+    .toString(16)
+    .padStart(2, '0')
+    .toUpperCase();
+  return `${baseColor}${alphaHex}`;
+};
+
+/**
  * 动画层的停留时长。duration 为负时表示反向播放，这里只关心长度所以取绝对值，
  * 并兜底一个最小值避免填 0 造成定时器空转。
  */

@@ -4,7 +4,11 @@ import {
   useEditorCropToolOpen,
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
-import { resolveWidgetFontFamily, isAndroidWidgetNode } from './util';
+import {
+  resolveWidgetFontFamily,
+  isAndroidWidgetNode,
+  resolveHexColorWithAlpha,
+} from './util';
 import './style.css';
 
 export default function TimeLayout_5(props: any) {
@@ -30,18 +34,6 @@ export default function TimeLayout_5(props: any) {
     || Object.prototype.hasOwnProperty.call(data, 'secondImageAnimation');
   const animationConfigs = [firstImageAnimation, secondImageAnimation].filter(Boolean);
 
-  const getOtherBackgroundColor = (otherData?: any) => {
-    const rawColor = String(otherData?.backgroundColor ?? otherData?.textColor ?? '#000000');
-    const baseColor =
-      rawColor.startsWith('#') && rawColor.length === 9 ? rawColor.slice(0, 7) : rawColor;
-    const alpha = Number(otherData?.alpha);
-    const normalizedAlpha = Number.isFinite(alpha) ? Math.max(0, Math.min(1, alpha)) : 1;
-    const alphaHex = Math.round(normalizedAlpha * 255)
-      .toString(16)
-      .padStart(2, '0')
-      .toUpperCase();
-    return `${baseColor}${alphaHex}`;
-  };
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
     fontFamily: resolveWidgetFontFamily(props.parentId, textData?.font),
@@ -220,7 +212,7 @@ export default function TimeLayout_5(props: any) {
               style={{
                 width: 40,
                 height: 18,
-                backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
+                backgroundColor: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -237,7 +229,7 @@ export default function TimeLayout_5(props: any) {
               style={{
                 width: 72,
                 height: 18,
-                backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
+                backgroundColor: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -283,7 +275,7 @@ export default function TimeLayout_5(props: any) {
             <div style={{
               width: 120,
               height: 1,
-              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
+              backgroundColor: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
             }} />
             <div
               style={{
@@ -291,7 +283,7 @@ export default function TimeLayout_5(props: any) {
                 ...getTextStyle({
                   ...data.month,
                 }),
-                color: getOtherBackgroundColor(data?.other) || '#000000',
+                color: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
               }}
             >
               {monthText}
@@ -302,7 +294,7 @@ export default function TimeLayout_5(props: any) {
               display: 'flex',
               width: 147,
               height: 17,
-              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
+              backgroundColor: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
               borderRadius: '8.5px',
               justifyContent: 'space-between',
             }}>
@@ -362,7 +354,10 @@ export default function TimeLayout_5(props: any) {
                       17,
                       11,
                       data?.calendar?.textColor,
-                      i === 4 ? getOtherBackgroundColor(data?.time) : undefined,
+                      i === 4 ? resolveHexColorWithAlpha(
+                        data?.time?.backgroundColor ?? data?.time?.textColor,
+                        data?.time?.alpha,
+                      ) : undefined,
                       i === 4 ? 8.5 : 0,
                       i < 4 ? 0.6 : 1,
                     )}
@@ -425,7 +420,7 @@ export default function TimeLayout_5(props: any) {
               width: 40,
               height: 4,
               // backgroundColor: '#000',
-              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
+              backgroundColor: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
               zIndex: 9,
               borderRadius: 2,
             }}
@@ -437,7 +432,7 @@ export default function TimeLayout_5(props: any) {
               top: 196,
               width: 80,
               height: 28,
-              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
+              backgroundColor: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
               zIndex: 9,
               display: 'flex',
               alignItems: 'center',
@@ -459,7 +454,7 @@ export default function TimeLayout_5(props: any) {
               height: 36,
               borderRadius: 18,
               justifyContent: 'space-between',
-              backgroundColor: getOtherBackgroundColor(data?.other) || '#000000',
+              backgroundColor: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
             }}>
               {weekLabels.map((label, index) => (
                 <div key={`w-lg-${label}-${index}`} style={calendarCellStyle(36, 18, data?.calendar?.textColor)}>
@@ -516,7 +511,10 @@ export default function TimeLayout_5(props: any) {
                     36,
                     16,
                     data?.calendar?.textColor,
-                    i === 4 ? getOtherBackgroundColor(data?.time) : undefined,
+                    i === 4 ? resolveHexColorWithAlpha(
+                        data?.time?.backgroundColor ?? data?.time?.textColor,
+                        data?.time?.alpha,
+                      ) : undefined,
                     i === 4 ? 18 : 0,
                     i < 4 ? 0.6 : 1,
                   )}

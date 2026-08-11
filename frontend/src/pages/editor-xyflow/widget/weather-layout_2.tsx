@@ -5,7 +5,6 @@ import {
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
 import { resolveWidgetFontFamily } from './util';
-import { CloudySvg } from '@/icons';
 import './style.css';
 
 const baseContainerStyle = {

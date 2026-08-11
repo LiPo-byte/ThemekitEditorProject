@@ -3,8 +3,8 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
-import { resolveWidgetFontFamily } from './util';
-import { PauseOutlined, CaretRightOutlined } from '@ant-design/icons';
+import { resolveWidgetFontFamily, resolveHexColorWithAlpha } from './util';
+import { PauseOutlined, CaretRightOutlined, StepForwardOutlined } from '@ant-design/icons';
 import thriller from '../../../assets/thriller.png';
 import './style.css';
 
@@ -26,6 +26,39 @@ const getCommonStyle = (parentId?: string, textData?: any) => ({
   height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
   // whiteSpace: 'nowrap' as const,
 });
+/** thriller.png 的原始尺寸，模糊背景按倍数放大，换素材时需同步 */
+const PLAYER_BLUR_BG_NATURAL_SIZE = 270;
+const PLAYER_BLUR_BG_SCALE = 3;
+const PLAYER_BLUR_BG_BLUR_PX = 15;
+
+// 单独一层裁剪容器，避免给播放器框加 overflow 影响到原有内容的溢出表现。
+// inset 定位基于 padding box，所以 3px 边框仍然完整显示在模糊层之上。
+const playerBlurBgLayerStyle = {
+  position: 'absolute' as const,
+  inset: 0,
+  overflow: 'hidden' as const,
+  // borderRadius: '5px',
+  pointerEvents: 'none' as const,
+  // 负层级让它落在播放器框自身背景之上、内容之下
+  zIndex: -1,
+};
+
+const playerBlurBgImageStyle = {
+  position: 'absolute' as const,
+  top: '50%',
+  left: '50%',
+  width: PLAYER_BLUR_BG_NATURAL_SIZE * PLAYER_BLUR_BG_SCALE,
+  height: PLAYER_BLUR_BG_NATURAL_SIZE * PLAYER_BLUR_BG_SCALE,
+  transform: 'translate(-50%, -50%)',
+  filter: `blur(${PLAYER_BLUR_BG_BLUR_PX}px)`,
+};
+
+const renderPlayerBlurBackground = () => (
+  <div style={playerBlurBgLayerStyle}>
+    <img src={thriller} alt="" style={playerBlurBgImageStyle} />
+  </div>
+);
+
 export default function MusicLayout_0(props: any) {
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
@@ -65,7 +98,9 @@ export default function MusicLayout_0(props: any) {
           border: `3px solid ${data.player.borderColor}`,
           borderRadius: '5px',
         }}>
+          {renderPlayerBlurBackground()}
           <img src={thriller} alt="" />
+          <StepForwardOutlined style={{ position: 'absolute', right: 7, bottom: 7, color: '#ef9f9f' }} />
         </div>
       ) }
       { size === 2 && (
@@ -83,7 +118,11 @@ export default function MusicLayout_0(props: any) {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-around',
+            // position + zIndex 让模糊背景层的负层级被限制在这个框内
+            position: 'relative',
+            zIndex: 0,
           }}>
+            {renderPlayerBlurBackground()}
             <div style={{
               margin: '0 4px 0 6px',
               display: 'flex',
@@ -99,8 +138,8 @@ export default function MusicLayout_0(props: any) {
                 flexDirection: 'column',
                 gap: 5,
               }}>
-                <span style={{ ...getTextStyle(props.parentId, data.player) }}>Billie Jean</span>
-                <span style={{ ...getCommonStyle(props.parentId, data.player) }}>Michael Jackson</span>
+                <span style={{ ...getTextStyle(props.parentId, data.player), fontSize: 11 * scale }}>Billie Jean</span>
+                <span style={{ ...getCommonStyle(props.parentId, data.player), fontSize: 8 * scale }}>Michael Jackson</span>
               </div>
             </div>
             <div style={{
@@ -115,14 +154,14 @@ export default function MusicLayout_0(props: any) {
                 width: '100px',
                 flex: 'none',
                 height: '6px',
-                background: '#d1d5db',
+                background: resolveHexColorWithAlpha(data.player.textColor, 0.5),
                 borderRadius: '999px',
                 overflow: 'hidden',
               }}>
                 <div style={{
                   width: '50%',
                   height: '100%',
-                  background: '#ffffff',
+                  background: data.player.textColor,
                 }}></div>
               </div>
               <span style={{ ...getCommonStyle(props.parentId, data.player) }}>2:10</span>
@@ -154,7 +193,11 @@ export default function MusicLayout_0(props: any) {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-around',
+            // position + zIndex 让模糊背景层的负层级被限制在这个框内
+            position: 'relative',
+            zIndex: 0,
           }}>
+            {renderPlayerBlurBackground()}
             <div style={{
               margin: '0 9px 0 9px',
               display: 'flex',
@@ -170,8 +213,10 @@ export default function MusicLayout_0(props: any) {
                 flexDirection: 'column',
                 gap: 5,
               }}>
-                <span style={{ ...getTextStyle(props.parentId, data.player) }}>Billie Jean</span>
-                <span style={{ ...getCommonStyle(props.parentId, data.player) }}>Michael Jackson</span>
+                {/* <span style={{ ...getTextStyle(props.parentId, data.player) }}>Billie Jean</span>
+                <span style={{ ...getCommonStyle(props.parentId, data.player) }}>Michael Jackson</span> */}
+                <span style={{ ...getTextStyle(props.parentId, data.player), fontSize: 18 * scale }}>Billie Jean</span>
+                <span style={{ ...getCommonStyle(props.parentId, data.player), fontSize: 12 * scale }}>Michael Jackson</span>
               </div>
             </div>
             <div style={{
@@ -186,14 +231,14 @@ export default function MusicLayout_0(props: any) {
                 width: '200px',
                 flex: 'none',
                 height: '6px',
-                background: '#d1d5db',
+                background: resolveHexColorWithAlpha(data.player.textColor, 0.5),
                 borderRadius: '999px',
                 overflow: 'hidden',
               }}>
                 <div style={{
                   width: '50%',
                   height: '100%',
-                  background: '#ffffff',
+                  background: data.player.textColor,
                 }}></div>
               </div>
               <span style={{ ...getCommonStyle(props.parentId, data.player) }}>2:10</span>

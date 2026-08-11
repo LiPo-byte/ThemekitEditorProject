@@ -5,7 +5,11 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
-import { resolveWidgetFontFamily, isAndroidWidgetNode } from './util';
+import {
+  resolveWidgetFontFamily,
+  isAndroidWidgetNode,
+  resolveHexColorWithAlpha,
+} from './util';
 
 const WEEK_LABELS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTH_NAME = 'October';
@@ -36,19 +40,6 @@ export default function CalendarLayout_0(props: any) {
     Object.prototype.hasOwnProperty.call(data, 'firstImageAnimation')
     || Object.prototype.hasOwnProperty.call(data, 'secondImageAnimation');
   const animationConfigs = [firstImageAnimation, secondImageAnimation].filter(Boolean);
-
-  const getOtherBackgroundColor = (otherData?: any) => {
-    const rawColor = String(otherData?.backgroundColor ?? '#000000');
-    const baseColor =
-      rawColor.startsWith('#') && rawColor.length === 9 ? rawColor.slice(0, 7) : rawColor;
-    const alpha = Number(otherData?.alpha);
-    const normalizedAlpha = Number.isFinite(alpha) ? Math.max(0, Math.min(1, alpha)) : 1;
-    const alphaHex = Math.round(normalizedAlpha * 255)
-      .toString(16)
-      .padStart(2, '0')
-      .toUpperCase();
-    return `${baseColor}${alphaHex}`;
-  };
 
   const renderDayCell = (i: number, cellSize: number) => {
     const fontSize = data.calendar.textSize;
@@ -353,7 +344,7 @@ export default function CalendarLayout_0(props: any) {
                 flexWrap: 'wrap',
                 gap: 0,
                 marginBottom: 12,
-                background: getOtherBackgroundColor(data?.other) || '#000000',
+                background: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
                 borderRadius: 10,
               }}
             >
@@ -400,7 +391,7 @@ export default function CalendarLayout_0(props: any) {
                 display: 'flex',
                 flexWrap: 'wrap',
                 marginBottom: 12,
-                background: getOtherBackgroundColor(data?.other) || '#000000',
+                background: resolveHexColorWithAlpha(data?.other?.backgroundColor, data?.other?.alpha) || '#000000',
                 borderRadius: 16,
                 gap: '0 12px',
               }}
