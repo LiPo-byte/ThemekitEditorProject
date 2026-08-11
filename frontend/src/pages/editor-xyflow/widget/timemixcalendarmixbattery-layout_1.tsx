@@ -38,6 +38,7 @@ export default function TimeMixBatteryLayout0(props: any) {
   //     textData.textAlignment === 1 ? 'left' : (data.textAlignment === 2 ? 'center' : 'right')
   // });
   const batteryHeightSize: any = {1:100, 2: 120, 3: 200};
+  const batteryWidthSize: any = {1:10, 2: 16, 3: 26};
   const batteryStyle = useMemo(() => {
     const batteryColor = data?.battery?.textColor ?? '#111827';
     const batteryFillColor = data?.battery?.backgroundColor ?? batteryColor;
@@ -57,10 +58,10 @@ export default function TimeMixBatteryLayout0(props: any) {
         zIndex: 9,
       },
       body: {
-        width: '12px',
+        width: batteryWidthSize[size],
         height: batteryHeightSize[size],
         borderRadius: '999px',
-        backgroundColor: '#d1d5db',
+        backgroundColor: batteryFillColor,
         position: 'relative' as const,
         boxSizing: 'border-box' as const,
         overflow: 'hidden' as const,
@@ -69,15 +70,19 @@ export default function TimeMixBatteryLayout0(props: any) {
         position: 'absolute' as const,
         bottom: 0,
         width: '100%',
-        height: `${batteryPercent}%`,
+        height: '90%',
         borderRadius: '999px',
-        backgroundColor: batteryFillColor,
+        backgroundColor: '#000000',
         opacity: 1,
       },
       text: {
         position: 'absolute' as const,
-        inset: 0,
+        left: 0,
+        right: 0,
+        bottom: 10,
         display: 'flex',
+        // 电池是竖向细条，百分比数字逐位竖排
+        flexDirection: 'column' as const,
         alignItems: 'center',
         justifyContent: 'center',
         color: batteryColor,
@@ -150,7 +155,10 @@ export default function TimeMixBatteryLayout0(props: any) {
       <div style={batteryStyle.wrap}>
         <div style={batteryStyle.body}>
           <div style={batteryStyle.fill} />
-          <span style={batteryStyle.text}>{batteryStyle.percentText}</span>
+          <span style={batteryStyle.text}>
+            <span style={{ marginBottom: 5 }}>9</span>
+            <span>8</span>
+          </span>
         </div>
       </div>
       {(size === 2 || size === 3) && (
