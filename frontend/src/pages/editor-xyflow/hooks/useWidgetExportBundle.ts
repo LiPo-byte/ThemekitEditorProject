@@ -517,7 +517,6 @@ export const collectWidgetExportFiles = async (
       const musicPlayerBlob = await toPngBlobFromUrl(musicPlayerSource);
       pushFile(`widgets_${sizeLabel}_player.png`, musicPlayerBlob);
     }
-
     if (Array.isArray(data?.appLinks) && data?.appLinksSource) {
       const appLinksSource = Array.isArray(data?.appLinksSource)
         ? data.appLinksSource

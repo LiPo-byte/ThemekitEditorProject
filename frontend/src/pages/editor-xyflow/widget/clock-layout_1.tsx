@@ -1,7 +1,7 @@
 import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
-  // useEditorGetParentNodeData,
+  useEditorGetParentNodeData,
 } from '../context';
 import CropEditableImage from '../components/CropEditableImage';
 // import { resolveWidgetFontFamily } from './util';
@@ -17,15 +17,22 @@ export default function ClockLayout1(props: any) {
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
+  const getParentNodeData = useEditorGetParentNodeData();
+  // 三个指针图挂在 platform 层，三个尺寸共用一套
+  const parentData = getParentNodeData(props.id) ?? props.parentData ?? {};
+  const { dotClock, hourClock, minuteClock } = parentData;
 
   if (!data) return null;
+  const hourHandSource = hourClock?.source || clockHourHand;
+  const minuteHandSource = minuteClock?.source || clockMinuteHand;
+  const dotSource = dotClock?.source || clockCenter;
   const renderClock = (<div style={{
     height: '100%',
     aspectRatio: '1 / 1',
     position: 'relative',
   }}>
     <img
-      src={clockHourHand}
+      src={hourHandSource}
       style={{
         position: 'absolute',
         inset: 0,
@@ -38,7 +45,7 @@ export default function ClockLayout1(props: any) {
       }}
     />
     <img
-      src={clockMinuteHand}
+      src={minuteHandSource}
       style={{
         position: 'absolute',
         inset: 0,
@@ -49,7 +56,7 @@ export default function ClockLayout1(props: any) {
       }}
     />
     <img
-      src={clockCenter}
+      src={dotSource}
       style={{
         position: 'absolute',
         inset: 0,

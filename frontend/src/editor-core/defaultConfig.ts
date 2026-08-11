@@ -4566,6 +4566,18 @@ export const WidgetDefaultConfig = {
             "isGif": false,
             "type":3,
             "textAlignment":2,
+            minuteClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            hourClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            dotClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
             "sizes":[
                {
                   "size":1,
@@ -4636,6 +4648,18 @@ export const WidgetDefaultConfig = {
             "isGif": false,
             "type":3,
             "textAlignment":2,
+            minuteClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            hourClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            dotClock: {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
             "sizes":[
                {
                   "size":1,

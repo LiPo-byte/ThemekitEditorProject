@@ -5,9 +5,8 @@ import {
   useEditorCropToolOpen,
   useEditorGetParentNodeData,
 } from '../context';
-
+import { resolveHexColorWithAlpha } from './util';
 import './style.css';
-import { Position } from '@xyflow/react';
 
 export default function ClockMixBatteryLayout_0(props: any) {
   const cropToolOpen = useEditorCropToolOpen();
@@ -21,7 +20,8 @@ export default function ClockMixBatteryLayout_0(props: any) {
 
   if (!data) return null;
   const size = data.size;
-  const batteryHeightSize: any = {1: 100, 2: 120, 3: 200};
+  const batteryHeightSize: any = {1:100, 2: 120, 3: 200};
+  const batteryWidthSize: any = {1:10, 2: 16, 3: 26};
   const batteryStyle = useMemo(() => {
     const batteryColor = data?.battery?.textColor ?? '#111827';
     const batteryFillColor = data?.battery?.backgroundColor ?? batteryColor;
@@ -41,10 +41,10 @@ export default function ClockMixBatteryLayout_0(props: any) {
         zIndex: 9,
       },
       body: {
-        width: '12px',
+        width: batteryWidthSize[size],
         height: batteryHeightSize[size],
         borderRadius: '999px',
-        backgroundColor: '#d1d5db',
+        backgroundColor: resolveHexColorWithAlpha(data?.battery?.backgroundColor, data?.battery?.alpha),
         position: 'relative' as const,
         boxSizing: 'border-box' as const,
         overflow: 'hidden' as const,
@@ -53,22 +53,27 @@ export default function ClockMixBatteryLayout_0(props: any) {
         position: 'absolute' as const,
         bottom: 0,
         width: '100%',
-        height: `${batteryPercent}%`,
+        height: '90%',
         borderRadius: '999px',
         backgroundColor: batteryFillColor,
         opacity: 1,
       },
       text: {
         position: 'absolute' as const,
-        inset: 0,
+        left: 0,
+        right: 0,
+        bottom: 10,
         display: 'flex',
+        // 电池是竖向细条，百分比数字逐位竖排
+        flexDirection: 'column' as const,
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#ffffff',
+        color: batteryColor,
         fontSize: '7px',
         lineHeight: 1,
         fontWeight: 700,
         letterSpacing: '0.1px',
+        textShadow: '0 1px 1px rgba(0, 0, 0, 0.35)',
         pointerEvents: 'none' as const,
       },
       percentText: `${batteryPercent}`,
@@ -86,6 +91,9 @@ export default function ClockMixBatteryLayout_0(props: any) {
     right: '0',
     bottom: '0',
   }
+  // 空 src 会被浏览器解析成当前页面地址并重新拉一次整页，所以没上传图时直接不渲染
+  const renderClockImage = (source: string, style: any) =>
+    source ? <img style={style} src={source} alt="" /> : null;
   return (
     <div
       className={`size_${data?.size ?? 1}`}
@@ -108,12 +116,14 @@ export default function ClockMixBatteryLayout_0(props: any) {
         radius={data.radius}
         cropProps={data.crop_props}
       />
-      <div style={batteryStyle.wrap}>
-        <div style={batteryStyle.body}>
-          <div style={batteryStyle.fill} />
-          <span style={batteryStyle.text}>{batteryStyle.percentText}</span>
+      {size !== 1 && (
+        <div style={batteryStyle.wrap}>
+          <div style={batteryStyle.body}>
+            <div style={batteryStyle.fill} />
+            <span style={batteryStyle.text}>{batteryStyle.percentText}</span>
+          </div>
         </div>
-      </div>
+      )}
       { size === 1 && (
         <div style={{
           width: '100%',
@@ -121,18 +131,18 @@ export default function ClockMixBatteryLayout_0(props: any) {
           position: 'relative',
           zIndex: 2,
         }}>
-          <img style={clockStyle} src={dialSmallClockSource} alt="" />
-          <img style={clockStyle} src={dotClockSource} alt="" />
-          <img style={{
+          {renderClockImage(dialSmallClockSource, clockStyle)}
+          {renderClockImage(dotClockSource, clockStyle)}
+          {renderClockImage(hourClockSource, {
             ...clockStyle, 
             transform: 'rotate(30deg)',
             transformOrigin: 'center'
-          }} src={hourClockSource} alt="" />
-          <img style={{
+          })}
+          {renderClockImage(minuteClockSource, {
             ...clockStyle,
             transform: 'rotate(-30deg)',
             transformOrigin: 'center'
-          }} src={minuteClockSource} alt="" />
+          })}
         </div>
       )}
       { size === 2 && (
@@ -142,26 +152,26 @@ export default function ClockMixBatteryLayout_0(props: any) {
           position: 'relative',
           zIndex: 2,
         }}>
-          <img style={{
+          {renderClockImage(dialLargeClockSource, {
             ...clockStyle,
             height: 120,
-          }} src={dialLargeClockSource} alt="" />
-          <img style={{
+          })}
+          {renderClockImage(dotClockSource, {
             ...clockStyle,
             height: 120,
-          }} src={dotClockSource} alt="" />
-          <img style={{
+          })}
+          {renderClockImage(hourClockSource, {
             ...clockStyle,
             transform: 'rotate(30deg)',
             transformOrigin: 'center',
             height: 120,
-          }} src={hourClockSource} alt="" />
-          <img style={{
+          })}
+          {renderClockImage(minuteClockSource, {
             ...clockStyle,
             transform: 'rotate(-30deg)',
             transformOrigin: 'center',
             height: 120,
-          }} src={minuteClockSource} alt="" />
+          })}
         </div>
       )}
       { size === 3 && (
@@ -171,26 +181,26 @@ export default function ClockMixBatteryLayout_0(props: any) {
           position: 'relative',
           zIndex: 2,
         }}>
-          <img style={{
+          {renderClockImage(dialLargeClockSource, {
             ...clockStyle,
             height: 200,
-          }} src={dialLargeClockSource} alt="" />
-          <img style={{
+          })}
+          {renderClockImage(dotClockSource, {
             ...clockStyle,
             height: 200,
-          }} src={dotClockSource} alt="" />
-          <img style={{
+          })}
+          {renderClockImage(hourClockSource, {
             ...clockStyle,
             transform: 'rotate(30deg)',
             transformOrigin: 'center',
             height: 200,
-          }} src={hourClockSource} alt="" />
-          <img style={{
+          })}
+          {renderClockImage(minuteClockSource, {
             ...clockStyle,
             transform: 'rotate(-30deg)',
             transformOrigin: 'center',
             height: 200,
-          }} src={minuteClockSource} alt="" />
+          })}
         </div>
       )}
     </div>

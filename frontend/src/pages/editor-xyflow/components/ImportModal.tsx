@@ -385,13 +385,19 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         };
       }
     }
-    if (type === 18) {
+    // Clock layout 1 与 type 18 共用同一套指针字段，但没有大小刻度盘
+    const isPointerClock = type === 3 && Number(sizes?.[0]?.layoutType) === 1;
+    if (type === 18 || isPointerClock) {
       const clockImageEntries = [
         { key: 'minute_clock', field: 'minuteClock' },
         { key: 'hour_clock', field: 'hourClock' },
         { key: 'dot_clock', field: 'dotClock' },
-        { key: 'dial_large_clock', field: 'dialLargeClock' },
-        { key: 'dial_small_clock', field: 'dialSmallClock' },
+        ...(isPointerClock
+          ? []
+          : [
+              { key: 'dial_large_clock', field: 'dialLargeClock' },
+              { key: 'dial_small_clock', field: 'dialSmallClock' },
+            ]),
       ];
       for (let index = 0; index < clockImageEntries.length; index += 1) {
         const { key, field } = clockImageEntries[index];
@@ -407,6 +413,16 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           if (uploadResult) break;
         }
         if (!uploadResult) {
+          // 指针图缺失对 layout 1 是正常情况（组件会回退到内置素材），补空字段让右侧面板仍能上传
+          if (isPointerClock) {
+            spec[field] = {
+              source: '',
+              crop_props: {
+                ...DEFAULT_CROP_PROPS,
+              },
+            };
+            continue;
+          }
           if (!silent) message.warning(`压缩包缺少 ${applyIndexSuffix(`${filenameBase}.png`, exportIndex)}`);
           continue;
         }
