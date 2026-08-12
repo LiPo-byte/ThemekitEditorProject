@@ -716,7 +716,32 @@ export const PropInput: React.FC<{
   onChange?: (value: any) => void;
 }> = ({ LabelName, value, onChange, type }) => {
   const isMixed = value === MIXED_VALUE;
-  const inputValue = isMixed ? undefined : value;
+  const committed = isMixed ? undefined : value;
+  const [draft, setDraft] = useState(committed);
+  const focusedRef = useRef(false);
+
+  useEffect(() => {
+    if (focusedRef.current) return;
+    setDraft(committed);
+  }, [committed]);
+
+  // 输入中只更新本地 draft，失焦/回车才向上提交：commitNodes 每次调用都会全量 clone
+  // nodes 并压入撤销栈，逐字符提交会让一次编辑产生几十条历史。
+  const commitDraft = () => {
+    if (draft !== committed) {
+      onChange?.(draft);
+    }
+  };
+
+  const handleFocus = () => {
+    focusedRef.current = true;
+  };
+
+  const handleBlur = () => {
+    focusedRef.current = false;
+    commitDraft();
+  };
+
   return (
     <>
       <Row style={{ marginBottom: '5px' }}>
@@ -726,8 +751,11 @@ export const PropInput: React.FC<{
             {type === 'number' ? (
               <InputNumber
                 size="small"
-                onChange={onChange}
-                value={inputValue}
+                onChange={setDraft}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                onPressEnter={commitDraft}
+                value={draft}
                 placeholder={isMixed ? 'Multiple values' : 'Filled'}
                 variant="filled"
                 style={{
@@ -737,8 +765,11 @@ export const PropInput: React.FC<{
             ) : (
               <Input
                 size="small"
-                onChange={(event) => onChange?.(event.target.value)}
-                value={inputValue}
+                onChange={(event) => setDraft(event.target.value)}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                onPressEnter={commitDraft}
+                value={draft}
                 placeholder={isMixed ? 'Multiple values' : 'Filled'}
                 variant="filled"
                 style={{
@@ -981,6 +1012,26 @@ export const BaseSelectedNodePropForm: React.FC<{
             value={editProps.lineSpacing}
             type="number"
             onChange={(nextValue) => onChange?.('lineSpacing', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('singer') && (
+        <>
+          <PropInput
+            LabelName="Singer"
+            value={editProps.singer}
+            type="text"
+            onChange={(nextValue) => onChange?.('singer', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('songName') && (
+        <>
+          <PropInput
+            LabelName="SongName"
+            value={editProps.songName}
+            type="text"
+            onChange={(nextValue) => onChange?.('songName', nextValue)}
           />
         </>
       )}
@@ -1645,6 +1696,13 @@ export const SelectedNodePropForm: React.FC<{
           <Space orientation="vertical" size="medium" style={{ display: 'flex' }}>
             <SelectElements selectElements={editProps.selectElements} showElements={editProps.showElements} onChange={onChange} />
           </Space>
+        </>
+      )}
+      {hasKey('music') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.music} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'music');
+          }} title="Music"/>
         </>
       )}
     </>

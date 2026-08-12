@@ -4731,6 +4731,12 @@ export const WidgetDefaultConfig = {
             "isLockScreen": false,
             "isGif": false,
             "type": 17,
+            "music": {
+              "source": "",
+              "singer": "Michael Jackson",
+              "songName": "Billie Jean",
+              "crop_props": defaultCropProps,
+            },
             "sizes": [
               {
                 "size": 1,
@@ -4794,6 +4800,12 @@ export const WidgetDefaultConfig = {
             "isLockScreen": false,
             "isGif": false,
             "type": 17,
+            "music": {
+                "source": "",
+                "singer": "Michael Jackson",
+                "songName": "Billie Jean",
+                "crop_props": defaultCropProps,
+            },
             "sizes": [
               {
                 "size": 1,

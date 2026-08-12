@@ -2,10 +2,11 @@ import CropEditableImage from '../components/CropEditableImage';
 import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
+  useEditorGetParentNodeData,
 } from '../context';
 import { resolveWidgetFontFamily, resolveHexColorWithAlpha } from './util';
-import { PauseOutlined, CaretRightOutlined, StepForwardOutlined } from '@ant-design/icons';
-import thriller from '../../../assets/thriller.png';
+import { StepForwardOutlined } from '@ant-design/icons';
+import thrillerdefault from '../../../assets/thriller.png';
 import './style.css';
 
 const getTextStyle = (parentId?: string, textData?: any) => ({
@@ -26,6 +27,10 @@ const getCommonStyle = (parentId?: string, textData?: any) => ({
   height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
   // whiteSpace: 'nowrap' as const,
 });
+// 老数据里没有 music 字段，兜底成占位文案，避免画布上显示空白
+const DEFAULT_SONG_NAME = 'Billie Jean';
+const DEFAULT_SINGER = 'Michael Jackson';
+
 /** thriller.png 的原始尺寸，模糊背景按倍数放大，换素材时需同步 */
 const PLAYER_BLUR_BG_NATURAL_SIZE = 270;
 const PLAYER_BLUR_BG_SCALE = 3;
@@ -53,9 +58,9 @@ const playerBlurBgImageStyle = {
   filter: `blur(${PLAYER_BLUR_BG_BLUR_PX}px)`,
 };
 
-const renderPlayerBlurBackground = () => (
+const renderPlayerBlurBackground = (thrillerSource?: string) => (
   <div style={playerBlurBgLayerStyle}>
-    <img src={thriller} alt="" style={playerBlurBgImageStyle} />
+    <img src={thrillerSource || thrillerdefault} alt="" style={playerBlurBgImageStyle} />
   </div>
 );
 
@@ -67,6 +72,12 @@ export default function MusicLayout_0(props: any) {
   const scale = props.scale || 1;
 
   if (!data) return null;
+  const getParentNodeData = useEditorGetParentNodeData();
+  const parentData = getParentNodeData(props.id) ?? props.parentData ?? {};
+  const { singer, songName, source } = parentData.music ?? {};
+  const displaySongName = songName ?? DEFAULT_SONG_NAME;
+  const displaySinger = singer ?? DEFAULT_SINGER;
+  let thriller = source || thrillerdefault;
   const size = data.size;
   const playerSource = data?.player?.source;
 
@@ -98,8 +109,8 @@ export default function MusicLayout_0(props: any) {
           border: `3px solid ${data.player.borderColor}`,
           borderRadius: '5px',
         }}>
-          {renderPlayerBlurBackground()}
-          <img src={thriller} alt="" />
+          {renderPlayerBlurBackground(thriller)}
+          <img src={thriller} alt="" style={{ width: '100%', height: '100%' }} />
           <StepForwardOutlined style={{ position: 'absolute', right: 7, bottom: 7, color: '#ef9f9f' }} />
         </div>
       ) }
@@ -122,7 +133,7 @@ export default function MusicLayout_0(props: any) {
             position: 'relative',
             zIndex: 0,
           }}>
-            {renderPlayerBlurBackground()}
+            {renderPlayerBlurBackground(thriller)}
             <div style={{
               margin: '0 4px 0 6px',
               display: 'flex',
@@ -136,10 +147,11 @@ export default function MusicLayout_0(props: any) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexDirection: 'column',
+                flex: '1 1 auto',
                 gap: 5,
               }}>
-                <span style={{ ...getTextStyle(props.parentId, data.player), fontSize: 11 * scale }}>Billie Jean</span>
-                <span style={{ ...getCommonStyle(props.parentId, data.player), fontSize: 8 * scale }}>Michael Jackson</span>
+                <span style={{ ...getTextStyle(props.parentId, data.player), fontSize: 11 * scale }}>{displaySongName}</span>
+                <span style={{ ...getCommonStyle(props.parentId, data.player), fontSize: 8 * scale }}>{displaySinger}</span>
               </div>
             </div>
             <div style={{
@@ -197,7 +209,7 @@ export default function MusicLayout_0(props: any) {
             position: 'relative',
             zIndex: 0,
           }}>
-            {renderPlayerBlurBackground()}
+            {renderPlayerBlurBackground(thriller)}
             <div style={{
               margin: '0 9px 0 9px',
               display: 'flex',
@@ -211,12 +223,13 @@ export default function MusicLayout_0(props: any) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexDirection: 'column',
+                flex: '1 1 auto',
                 gap: 5,
               }}>
                 {/* <span style={{ ...getTextStyle(props.parentId, data.player) }}>Billie Jean</span>
                 <span style={{ ...getCommonStyle(props.parentId, data.player) }}>Michael Jackson</span> */}
-                <span style={{ ...getTextStyle(props.parentId, data.player), fontSize: 18 * scale }}>Billie Jean</span>
-                <span style={{ ...getCommonStyle(props.parentId, data.player), fontSize: 12 * scale }}>Michael Jackson</span>
+                <span style={{ ...getTextStyle(props.parentId, data.player), fontSize: 18 * scale }}>{displaySongName}</span>
+                <span style={{ ...getCommonStyle(props.parentId, data.player), fontSize: 12 * scale }}>{displaySinger}</span>
               </div>
             </div>
             <div style={{
