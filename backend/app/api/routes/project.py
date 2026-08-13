@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from sqlmodel import col, func, select
+from sqlmodel import col, func, or_, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
@@ -28,6 +28,8 @@ from app.models import (
     ProjectSaveResponse,
     ProjectUpdateNameRequest,
     ProjectUpdateNameResponse,
+    ProjectUpdateVisibilityRequest,
+    ProjectUpdateVisibilityResponse,
     ProjectUploadFileResponse,
     ProjectUploadImageResponse,
     User,
@@ -96,6 +98,11 @@ def _guess_media_extension(content_type: str, filename: str | None) -> str:
     return "bin"
 
 
+def _can_edit_project(project: Project, current_user: User) -> bool:
+    """公开项目对他人只读，写操作始终只放给 owner 和超管。"""
+    return current_user.is_superuser or project.owner_id == current_user.id
+
+
 @router.post("/", response_model=ProjectCreateResponse)
 def create_project(
     *,
@@ -114,6 +121,7 @@ def create_project(
         owner_id=current_user.id,
         status="draft",
         current_version=0,
+        visibility="private",
     )
     session.add(project)
     session.commit()
@@ -143,15 +151,20 @@ def get_project_list(
             .limit(limit)
         )
     else:
+        # 自己的项目全都能看到，别人的只看得到公开的
+        visible_condition = or_(
+            Project.owner_id == current_user.id,
+            Project.visibility == "public",
+        )
         count_statement = (
             select(func.count())
             .select_from(Project)
-            .where(base_condition, Project.owner_id == current_user.id)
+            .where(base_condition, visible_condition)
         )
         statement = (
             select(Project, User)
             .join(User, User.id == Project.owner_id)
-            .where(base_condition, Project.owner_id == current_user.id)
+            .where(base_condition, visible_condition)
             .order_by(col(Project.updated_at).desc())
             .offset(skip)
             .limit(limit)
@@ -165,6 +178,8 @@ def get_project_list(
             name=project.name,
             status=project.status,
             current_version=project.current_version,
+            visibility=project.visibility,
+            can_edit=_can_edit_project(project, current_user),
             preview_image=project.preview_image,
             created_at=project.created_at,
             updated_at=project.updated_at,
@@ -282,7 +297,8 @@ def get_project_detail(
     project = session.get(Project, project_id)
     if not project or project.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Project not found")
-    if not current_user.is_superuser and project.owner_id != current_user.id:
+    can_edit = _can_edit_project(project, current_user)
+    if not can_edit and project.visibility != "public":
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     element_rows = session.exec(
@@ -316,6 +332,8 @@ def get_project_detail(
         name=project.name,
         status=project.status,
         current_version=project.current_version,
+        visibility=project.visibility,
+        can_edit=can_edit,
         preview_image=project.preview_image,
         created_at=project.created_at,
         updated_at=project.updated_at,
@@ -346,6 +364,36 @@ def update_project_name(
         project_id=project.id,
         name=project.name,
         updated_at=project.updated_at or datetime.now(timezone.utc),
+    )
+
+
+@router.patch("/{project_id}/visibility", response_model=ProjectUpdateVisibilityResponse)
+def update_project_visibility(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    project_id: uuid.UUID,
+    visibility_in: ProjectUpdateVisibilityRequest,
+) -> Any:
+    """
+    Switch a project between private and public.
+    """
+    project = session.get(Project, project_id)
+    if not project or project.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if not _can_edit_project(project, current_user):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    now_utc = datetime.now(timezone.utc)
+    project.visibility = visibility_in.visibility
+    project.updated_at = now_utc
+    session.add(project)
+    session.commit()
+    session.refresh(project)
+    return ProjectUpdateVisibilityResponse(
+        project_id=project.id,
+        visibility=project.visibility,
+        updated_at=project.updated_at or now_utc,
     )
 
 

@@ -13,6 +13,7 @@ import RightPanel from './components/RightPanel';
 // import ZoomToolBar from './components/ZoomToolBar';
 import {
   EditorCoreProvider,
+  useEditorCanEdit,
   useEditorGlobalLoading,
 } from './context';
 import { useEditorShortcuts } from './hooks/useEditorShortcuts';
@@ -21,15 +22,22 @@ import { useStyles } from './style';
 const EditorPageContent: React.FC = () => {
   const { styles } = useStyles();
   const globalLoading = useEditorGlobalLoading();
+  const canEdit = useEditorCanEdit();
   useEditorShortcuts();
   return (
     <div className={styles.root}>
       <div className={styles.body}>
         <EditorStage />
         <EditorToolbar />
-        <LeftPanel />
-        <RightPanel />
-        <EditorBottomToolBar />
+        {/* 只读预览就是纯看：属性表单、添加元素的底部栏都不出现，
+            左侧面板只能由底部栏打开，跟着一起收掉 */}
+        {canEdit ? (
+          <>
+            <LeftPanel />
+            <RightPanel />
+            <EditorBottomToolBar />
+          </>
+        ) : null}
         <HeaderControls />
         <CropTool />
         <DesktopEditTool />

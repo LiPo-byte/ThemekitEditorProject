@@ -11,6 +11,7 @@ import {
   useEditorUndo,
   useEditorRedo,
   useEditorGenerateProjectPayload,
+  useEditorCanEdit,
 } from '../context';
 import { patchProjectName } from '../service';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
@@ -134,9 +135,10 @@ const formatSavedAt = (timestamp: number) =>
 type EditableFileNameButtonProps = {
   value: string;
   onChange: (nextName: string) => void;
+  readOnly?: boolean;
 };
 
-const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, onChange }) => {
+const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, onChange, readOnly }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const inputRef = useRef<InputRef>(null);
@@ -162,6 +164,14 @@ const EditableFileNameButton: React.FC<EditableFileNameButtonProps> = ({ value, 
     setDraft(value);
     setEditing(false);
   };
+
+  if (readOnly) {
+    return (
+      <Button type="text" style={{ cursor: 'default' }}>
+        {value}
+      </Button>
+    );
+  }
 
   if (editing) {
     return (
@@ -203,6 +213,7 @@ const EditorToolbar: React.FC = () => {
   const projectName = useEditorProjectName();
   const setProjectName = useEditorProjectNameSetter();
   const projectId = useEditorProjectId();
+  const canEdit = useEditorCanEdit();
   const visible = useEditorToolbarVisible();
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
@@ -210,7 +221,7 @@ const EditorToolbar: React.FC = () => {
   const { saving, status, lastSavedAt, willRetry, save: handleSave } = useSaveProject();
 
   // 自动保存不弹 toast（几秒一次太吵），只在这里给一行轻提示
-  const saveStatusText = saving
+  const autoSaveStatusText = saving
     ? '保存中...'
     : status === 'error'
       ? willRetry
@@ -221,6 +232,9 @@ const EditorToolbar: React.FC = () => {
         : status === 'saved' && lastSavedAt
           ? `已保存 ${formatSavedAt(lastSavedAt)}`
           : '';
+
+  // 只读项目根本不会触发保存，保存状态没有意义，直接换成身份提示
+  const saveStatusText = canEdit ? autoSaveStatusText : '只读预览';
 
   if (!visible) return null;
 
@@ -246,8 +260,8 @@ const EditorToolbar: React.FC = () => {
                 </Button>
               </Tooltip>
           </Dropdown> */}
-          <Tooltip title="Save Cmd/Ctrl+S">
-              <Button type='text' loading={saving} onClick={handleSave} icon={<SaveOutlined />} />
+          <Tooltip title={canEdit ? 'Save Cmd/Ctrl+S' : '只读预览，无法保存'}>
+              <Button type='text' loading={saving} disabled={!canEdit} onClick={handleSave} icon={<SaveOutlined />} />
           </Tooltip>
           <Tooltip title="Undo Cmd/Ctrl+Z">
               <Button
@@ -269,7 +283,7 @@ const EditorToolbar: React.FC = () => {
                 }}
               />
           </Tooltip>
-          <EditableFileNameButton value={projectName} onChange={(name: string) => {
+          <EditableFileNameButton value={projectName} readOnly={!canEdit} onChange={(name: string) => {
             if (projectId) {
               patchProjectName(projectId, { name: name }).then(() => {
                 setProjectName(name);

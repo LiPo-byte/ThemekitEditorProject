@@ -63,6 +63,9 @@ export type ProjectDetailResponse = {
   name: string;
   status: string;
   current_version: number;
+  visibility: 'private' | 'public';
+  /** 后端算好的写权限：打开别人的公开项目时为 false，此时编辑器只读 */
+  can_edit: boolean;
   preview_image: string | null;
   created_at: string | null;
   updated_at: string | null;

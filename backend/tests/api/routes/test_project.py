@@ -554,3 +554,231 @@ def test_delete_project_asset(
     backend_root = Path(__file__).resolve().parents[3]
     deleted_file = backend_root / uploaded["path"]
     assert not deleted_file.exists()
+
+
+def _create_public_project(
+    client: TestClient, owner_token_headers: dict[str, str], name: str
+) -> str:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=owner_token_headers,
+        json={"name": name},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    publish_response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}/visibility",
+        headers=owner_token_headers,
+        json={"visibility": "public"},
+    )
+    assert publish_response.status_code == 200
+    return project_id
+
+
+def test_create_project_defaults_to_private(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Default Visibility Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    created_project = db.get(Project, uuid.UUID(project_id))
+    assert created_project is not None
+    assert created_project.visibility == "private"
+
+
+def test_update_project_visibility(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Visibility Switch Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+    project_uuid = uuid.UUID(project_id)
+
+    publish_response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}/visibility",
+        headers=normal_user_token_headers,
+        json={"visibility": "public"},
+    )
+    assert publish_response.status_code == 200
+    publish_content = publish_response.json()
+    assert publish_content["project_id"] == project_id
+    assert publish_content["visibility"] == "public"
+    assert "updated_at" in publish_content
+    db.expire_all()
+    assert db.get(Project, project_uuid).visibility == "public"
+
+    revert_response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}/visibility",
+        headers=normal_user_token_headers,
+        json={"visibility": "private"},
+    )
+    assert revert_response.status_code == 200
+    assert revert_response.json()["visibility"] == "private"
+    db.expire_all()
+    assert db.get(Project, project_uuid).visibility == "private"
+
+
+def test_update_project_visibility_rejects_invalid_value(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Invalid Visibility Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}/visibility",
+        headers=normal_user_token_headers,
+        json={"visibility": "everyone"},
+    )
+    assert response.status_code == 422
+
+
+def test_update_project_visibility_not_enough_permissions(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    project_id = _create_public_project(
+        client, superuser_token_headers, "Public Visibility Guard Project"
+    )
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}/visibility",
+        headers=normal_user_token_headers,
+        json={"visibility": "private"},
+    )
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Not enough permissions"
+
+
+def test_public_project_listed_for_other_users(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    project_id = _create_public_project(
+        client, superuser_token_headers, "Public Listed Project"
+    )
+
+    list_response = client.get(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+    )
+    assert list_response.status_code == 200
+    items = list_response.json()["data"]
+    listed = next(item for item in items if item["project_id"] == project_id)
+    assert listed["visibility"] == "public"
+    # 别人的公开项目只能看，前端据此隐藏删除/改可见性入口
+    assert listed["can_edit"] is False
+
+    owner_list_response = client.get(
+        f"{settings.API_V1_STR}/project/",
+        headers=superuser_token_headers,
+    )
+    assert owner_list_response.status_code == 200
+    owner_items = owner_list_response.json()["data"]
+    owner_listed = next(
+        item for item in owner_items if item["project_id"] == project_id
+    )
+    assert owner_listed["can_edit"] is True
+
+
+def test_private_project_hidden_after_revert(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    project_id = _create_public_project(
+        client, superuser_token_headers, "Revert To Private Project"
+    )
+
+    revert_response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}/visibility",
+        headers=superuser_token_headers,
+        json={"visibility": "private"},
+    )
+    assert revert_response.status_code == 200
+
+    list_response = client.get(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+    )
+    assert list_response.status_code == 200
+    ids = {item["project_id"] for item in list_response.json()["data"]}
+    assert project_id not in ids
+
+    detail_response = client.get(
+        f"{settings.API_V1_STR}/project/{project_id}",
+        headers=normal_user_token_headers,
+    )
+    assert detail_response.status_code == 403
+
+
+def test_get_public_project_detail_is_readonly(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    project_id = _create_public_project(
+        client, superuser_token_headers, "Public Detail Project"
+    )
+
+    detail_response = client.get(
+        f"{settings.API_V1_STR}/project/{project_id}",
+        headers=normal_user_token_headers,
+    )
+    assert detail_response.status_code == 200
+    detail = detail_response.json()
+    assert detail["visibility"] == "public"
+    assert detail["can_edit"] is False
+
+
+def test_public_project_rejects_writes_from_other_users(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    project_id = _create_public_project(
+        client, superuser_token_headers, "Public Write Guard Project"
+    )
+
+    save_response = client.put(
+        f"{settings.API_V1_STR}/project/{project_id}/elements/batch",
+        headers=normal_user_token_headers,
+        json={"elements": []},
+    )
+    assert save_response.status_code == 403
+
+    rename_response = client.patch(
+        f"{settings.API_V1_STR}/project/{project_id}",
+        headers=normal_user_token_headers,
+        json={"name": "Hijacked Name"},
+    )
+    assert rename_response.status_code == 403
+
+    delete_response = client.delete(
+        f"{settings.API_V1_STR}/project/{project_id}",
+        headers=normal_user_token_headers,
+    )
+    assert delete_response.status_code == 403
+
+    upload_response = client.post(
+        f"{settings.API_V1_STR}/project/{project_id}/upload-image",
+        headers=normal_user_token_headers,
+        files={"file": ("sample.png", b"\x89PNG\r\n\x1a\n", "image/png")},
+    )
+    assert upload_response.status_code == 403

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import EmailStr
 from sqlalchemy import JSON, DateTime, UniqueConstraint
@@ -134,10 +134,15 @@ class ItemsPublic(SQLModel):
     count: int
 
 
+ProjectVisibility = Literal["private", "public"]
+
+
 class ProjectBase(SQLModel):
     name: str = Field(min_length=1, max_length=128)
     status: str = Field(default="draft", max_length=20)
     current_version: int = Field(default=0, ge=0)
+    # private 只有 owner 和超管可见；public 所有登录用户可见，但仍只有 owner 和超管能改
+    visibility: str = Field(default="private", max_length=20)
 
 
 class ProjectCreate(SQLModel):
@@ -188,6 +193,9 @@ class ProjectDetailResponse(SQLModel):
     name: str
     status: str
     current_version: int
+    visibility: str = "private"
+    # 由后端算好，前端据此决定是否开放保存/改名，避免各处自己比对 owner_id
+    can_edit: bool = True
     preview_image: str | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -206,6 +214,8 @@ class ProjectListItem(SQLModel):
     name: str
     status: str
     current_version: int
+    visibility: str = "private"
+    can_edit: bool = True
     preview_image: str | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -224,6 +234,16 @@ class ProjectUpdateNameRequest(SQLModel):
 class ProjectUpdateNameResponse(SQLModel):
     project_id: uuid.UUID
     name: str
+    updated_at: datetime
+
+
+class ProjectUpdateVisibilityRequest(SQLModel):
+    visibility: ProjectVisibility
+
+
+class ProjectUpdateVisibilityResponse(SQLModel):
+    project_id: uuid.UUID
+    visibility: str
     updated_at: datetime
 
 

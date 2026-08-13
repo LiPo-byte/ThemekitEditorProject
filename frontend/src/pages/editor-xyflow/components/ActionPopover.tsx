@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Position, NodeToolbar } from '@xyflow/react';
 import {
+  useEditorCanEdit,
   useEditorDeleteSelectedNodes,
   useEditorOpenCropEditor,
   useEditorOpenDesktopEditor,
@@ -19,6 +20,7 @@ const ActionPopover: React.FC = (props: any) => {
     data: { isVisible, actionList, nodeId },
   } = props;
   const { message } = App.useApp();
+  const canEdit = useEditorCanEdit();
   const openCropEditor = useEditorOpenCropEditor();
   const openDesktopEditor = useEditorOpenDesktopEditor();
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
@@ -77,7 +79,8 @@ const ActionPopover: React.FC = (props: any) => {
         position={Position.Top}
         align="end"
       >
-        {actionList.includes('cropable') && (
+        {/* 只读预览保留导出（导出只读不写），裁剪/删除/桌面编辑都是改内容的操作 */}
+        {canEdit && actionList.includes('cropable') && (
           <Button onClick={onCrop} icon={<CropSvg />} shape="circle" />
         )}
         {actionList.includes('packable') && !exporting && (
@@ -88,10 +91,10 @@ const ActionPopover: React.FC = (props: any) => {
             loading={exporting}
           />
         )}
-        {actionList.includes('deleteable') && (
+        {canEdit && actionList.includes('deleteable') && (
           <Button onClick={onDelete} icon={<DeleteTwoTone />} shape="circle" />
         )}
-        {actionList.includes('desktopeditable') && (
+        {canEdit && actionList.includes('desktopeditable') && (
           <Button onClick={onDesktopEdit} icon={<DragSvg />} shape="circle" />
         )}
       </NodeToolbar>

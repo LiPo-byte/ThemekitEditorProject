@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import {
   useEditorCanDeleteSelected,
+  useEditorCanEdit,
   useEditorCanRedo,
   useEditorCanUndo,
   useEditorCropToolOpen,
@@ -16,6 +17,7 @@ import { useSaveProjectAction } from './useSaveProject';
 
 type ShortcutState = {
   locked: boolean;
+  canEdit: boolean;
   canUndo: boolean;
   canRedo: boolean;
   canDeleteSelected: boolean;
@@ -50,6 +52,7 @@ export const useEditorShortcuts = () => {
   const canDeleteSelected = useEditorCanDeleteSelected();
   const fitView = useEditorFitView();
   const save = useSaveProjectAction();
+  const canEdit = useEditorCanEdit();
   const cropToolOpen = useEditorCropToolOpen();
   const desktopEditOpen = useEditorDesktopEditOpen();
   const importModalOpen = useEditorImportModalOpen();
@@ -62,6 +65,7 @@ export const useEditorShortcuts = () => {
   // 回调和开关走 ref，keydown 只绑一次，避免 nodes 每次变化都解绑重绑
   const stateRef = useRef<ShortcutState>({
     locked,
+    canEdit,
     canUndo,
     canRedo,
     canDeleteSelected,
@@ -75,6 +79,7 @@ export const useEditorShortcuts = () => {
   useEffect(() => {
     stateRef.current = {
       locked,
+      canEdit,
       canUndo,
       canRedo,
       canDeleteSelected,
@@ -98,6 +103,8 @@ export const useEditorShortcuts = () => {
       if (withModifier && key === 's') {
         event.preventDefault();
         if (state.locked) return;
+        // 只读项目没有注册 saver，真跑一遍只会弹一个「保存失败」误导用户
+        if (!state.canEdit) return;
         void state.save();
         return;
       }
@@ -123,6 +130,7 @@ export const useEditorShortcuts = () => {
       }
 
       if (key === 'delete' || key === 'backspace') {
+        if (!state.canEdit) return;
         if (!state.canDeleteSelected) return;
         event.preventDefault();
         state.deleteSelectedNodes();

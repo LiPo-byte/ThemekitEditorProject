@@ -102,6 +102,8 @@ type EditorCoreCtxValue = {
   projectId: string | null;
   projectName: string;
   setProjectName: (name: string) => void;
+  /** 打开别人的公开项目时为 false：编辑器只读，不保存也不允许改名 */
+  canEdit: boolean;
   fontsReady: boolean;
   nodes: FlowNode[];
   setNodes: React.Dispatch<React.SetStateAction<FlowNode[]>>;
@@ -180,6 +182,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   projectId: null,
   projectName: '',
   setProjectName: () => {},
+  canEdit: true,
   fontsReady: false,
   nodes: [],
   setNodes: noopSetNodes,
@@ -440,6 +443,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const lastChangedRootIdRef = useRef<string | null>(null);
   /** 详情已加载完成的那个 projectId，切项目时天然失配，避免拿旧 nodes 往新项目写 */
   const [readyProjectId, setReadyProjectId] = useState<string | null>(null);
+  /** 新建项目时还没有详情，先按可编辑处理，详情回来再按 can_edit 修正 */
+  const [canEdit, setCanEdit] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -510,6 +515,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       try {
         const detail = await getProjectDetail(projectId);
         if (disposed) return;
+        setCanEdit(detail?.can_edit !== false);
         if (detail?.name) {
           setProjectName(detail.name);
         }
@@ -1451,6 +1457,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
 
   useEffect(() => {
     if (!projectId || readyProjectId !== projectId) return;
+    // 只读项目不注册 saver：写接口会 403，注册了会被自动保存反复重试刷成错误态
+    if (!canEdit) return;
     const unregister = registerProjectSaver(() => saveProjectPayloadRef.current());
     return () => {
       // 内部路由跳转会走到这里，请求同步发出后即使组件卸载也会继续跑完。
@@ -1466,7 +1474,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         }
       })();
     };
-  }, [projectId, readyProjectId]);
+  }, [projectId, readyProjectId, canEdit]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -1487,6 +1495,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       projectId,
       projectName,
       setProjectName,
+      canEdit,
       fontsReady,
       nodes,
       setNodes,
@@ -1553,6 +1562,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       nodes,
       projectId,
       projectName,
+      canEdit,
       fontsReady,
       selectedNodesMap,
       actionPropNode,
@@ -1654,6 +1664,7 @@ export const useEditorCore = () => null as EditorCore | null;
 export const useEditorProjectId = () => useContext(EditorCoreCtx).projectId;
 export const useEditorProjectName = () => useContext(EditorCoreCtx).projectName;
 export const useEditorProjectNameSetter = () => useContext(EditorCoreCtx).setProjectName;
+export const useEditorCanEdit = () => useContext(EditorCoreCtx).canEdit;
 export const useEditorSaveStatus = () => 'idle' as ProjectAutoSaveStatus;
 export const useEditorLastSavedAt = () => null as string | null;
 export const useEditorSaveAllNow = () => noop;
