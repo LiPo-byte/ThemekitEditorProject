@@ -68,10 +68,6 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
     key: 'designer-list',
     icon: <TeamOutlined />,
     label: '设计师',
-  }, {
-    key: 'project-list',
-    icon: <AppstoreOutlined />,
-    label: '项目',
   }] : [];
 
   const menuItems: MenuProps['items'] = [
@@ -79,6 +75,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
       key: 'center',
       icon: <UserOutlined />,
       label: '个人中心',
+    },
+    {
+      key: 'project-list',
+      icon: <AppstoreOutlined />,
+      label: '项目',
     },
     ...accessItems,
     {
