@@ -38,6 +38,15 @@ const useStyles = createStyles(({ token, css }) => ({
     padding: 6px;
     user-select: none;
   `,
+  saveStatus: css`
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+    color: ${token.colorTextTertiary};
+  `,
+  saveStatusError: css`
+    color: ${token.colorError};
+  `,
   barEnter: css`
     animation: toolbar-slide-down 260ms ease-out;
     @keyframes toolbar-slide-down {
@@ -116,6 +125,12 @@ const items: MenuProps['items'] = [
   },
 ];
 
+const formatSavedAt = (timestamp: number) =>
+  new Date(timestamp).toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
 type EditableFileNameButtonProps = {
   value: string;
   onChange: (nextName: string) => void;
@@ -192,7 +207,20 @@ const EditorToolbar: React.FC = () => {
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { saving, save: handleSave } = useSaveProject();
+  const { saving, status, lastSavedAt, willRetry, save: handleSave } = useSaveProject();
+
+  // 自动保存不弹 toast（几秒一次太吵），只在这里给一行轻提示
+  const saveStatusText = saving
+    ? '保存中...'
+    : status === 'error'
+      ? willRetry
+        ? '保存失败，重试中'
+        : '保存失败，请手动保存'
+      : status === 'dirty'
+        ? '未保存'
+        : status === 'saved' && lastSavedAt
+          ? `已保存 ${formatSavedAt(lastSavedAt)}`
+          : '';
 
   if (!visible) return null;
 
@@ -248,6 +276,13 @@ const EditorToolbar: React.FC = () => {
               })
             }
           }} />
+          {saveStatusText ? (
+            <span
+              className={`${styles.saveStatus} ${status === 'error' ? styles.saveStatusError : ''}`}
+            >
+              {saveStatusText}
+            </span>
+          ) : null}
     </div>
   );
 };

@@ -28,6 +28,13 @@ import { DEFAULT_CROP_PROPS } from './widget/base-config';
 import { nanoid } from 'nanoid';
 import { getProjectDetail, postApiV1Project, putApiV1ProjectElementsBatch } from './service';
 import { toCanvas } from 'html-to-image';
+import {
+  hasUnsavedProjectChanges,
+  markProjectDirty,
+  registerProjectSaver,
+  resetProjectSaveState,
+  saveProjectNow,
+} from './hooks/saveController';
 
 const FONT_FACE_STYLE_ID = 'editor-xyflow-font-face-manifest';
 const FONT_LOAD_TIMEOUT_MS = 4000;
@@ -426,7 +433,13 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const previewSavingRef = useRef(false);
   const previewSaveTaskIdRef = useRef(0);
   const PREVIEW_CAPTURE_DELAY_MS = 1500;
+  // 截图走 html-to-image + pixelRatio 4，开销不小，自动保存频率上来后必须单独限流，
+  // 元素配置该存存，封面图慢慢跟上即可
+  const PREVIEW_MIN_INTERVAL_MS = 30000;
+  const lastPreviewSavedAtRef = useRef(0);
   const lastChangedRootIdRef = useRef<string | null>(null);
+  /** 详情已加载完成的那个 projectId，切项目时天然失配，避免拿旧 nodes 往新项目写 */
+  const [readyProjectId, setReadyProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -503,6 +516,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         if (Array.isArray(detail?.elements)) {
           setNodes(mapProjectElementsToNodes(detail.elements));
         }
+        // 详情拉成功才允许保存：batch 接口是全量覆盖式的，
+        // 加载失败时 nodes 还是空的，这时候存下去会把服务端已有元素全软删掉
+        setReadyProjectId(projectId);
       } catch (error) {
         console.warn('[EditorCoreProvider] fetch project detail failed:', error);
       }
@@ -510,6 +526,9 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     void loadProjectName();
     return () => {
       disposed = true;
+      // 换项目就作废上一个的就绪标记，否则详情加载失败时它会停在旧 id 上，
+      // 让「已就绪」判断永远失配、保存静默失效
+      setReadyProjectId(null);
     };
   }, [projectId]);
 
@@ -571,6 +590,8 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   }, [selectedNodesMap]);
 
   // 撤销回退
+  // commitNodes 是所有真实编辑的唯一入口，自动保存的脏标记打在这里；
+  // 选中态同步和项目加载走的是裸 setNodes，不会误触发保存。
   const commitNodes = (updater: (prev: FlowNode[]) => FlowNode[]) => {
     setNodes((prev) => {
       const next = updater(prev);
@@ -582,9 +603,11 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       setFuture([]);
       return cloneNodes(next);
     });
+    markProjectDirty();
   };
 
   const undo = () => {
+    if (!past.length) return;
     setPast((prevPast) => {
       if (!prevPast.length) return prevPast;
       const target = prevPast[prevPast.length - 1];
@@ -594,9 +617,11 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       });
       return prevPast.slice(0, -1);
     });
+    markProjectDirty();
   };
 
   const redo = () => {
+    if (!future.length) return;
     setFuture((prevFuture) => {
       if (!prevFuture.length) return prevFuture;
       const target = prevFuture[prevFuture.length - 1];
@@ -606,6 +631,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       });
       return prevFuture.slice(0, -1);
     });
+    markProjectDirty();
   };
 
   const canUndo = past.length > 0;
@@ -1307,6 +1333,72 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     };
   };
 
+  const schedulePreviewSave = () => {
+    if (!projectId) return;
+    previewSaveTaskIdRef.current += 1;
+    const currentTaskId = previewSaveTaskIdRef.current;
+    if (previewSaveTimerRef.current !== null) {
+      window.clearTimeout(previewSaveTimerRef.current);
+    }
+    if (
+      previewIdleHandleRef.current !== null
+      && typeof window !== 'undefined'
+      && 'cancelIdleCallback' in window
+    ) {
+      (window as any).cancelIdleCallback(previewIdleHandleRef.current);
+      previewIdleHandleRef.current = null;
+    }
+    // 距上次截图不足 PREVIEW_MIN_INTERVAL_MS 就把这次推迟到间隔满足为止，
+    // 中途再有保存只会刷新 taskId，最终仍然只跑最后一次
+    const sinceLastSaved = Date.now() - lastPreviewSavedAtRef.current;
+    const delay = Math.max(
+      PREVIEW_CAPTURE_DELAY_MS,
+      PREVIEW_MIN_INTERVAL_MS - sinceLastSaved,
+    );
+    previewSaveTimerRef.current = window.setTimeout(() => {
+      previewSaveTimerRef.current = null;
+      const doSavePreview = async () => {
+        if (currentTaskId !== previewSaveTaskIdRef.current) return;
+        if (previewSavingRef.current) return;
+        previewSavingRef.current = true;
+        try {
+          const previewImage = await generatePreviewImage();
+          if (currentTaskId !== previewSaveTaskIdRef.current) return;
+          if (!previewImage) return;
+          await putApiV1ProjectElementsBatch(projectId, {
+            preview_image: previewImage,
+          });
+          lastPreviewSavedAtRef.current = Date.now();
+        } catch (error) {
+          console.warn('[EditorCoreProvider] async save preview image failed:', error);
+        } finally {
+          previewSavingRef.current = false;
+        }
+      };
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const runWhenIdle = () => {
+          previewIdleHandleRef.current = (window as any).requestIdleCallback(
+            (deadline: IdleDeadline) => {
+              previewIdleHandleRef.current = null;
+              if (currentTaskId !== previewSaveTaskIdRef.current) return;
+              const isInputPending =
+                (navigator as any)?.scheduling?.isInputPending?.() ?? false;
+              if (isInputPending || deadline.timeRemaining() < 8) {
+                runWhenIdle();
+                return;
+              }
+              void doSavePreview();
+            },
+            { timeout: 10000 },
+          );
+        };
+        runWhenIdle();
+        return;
+      }
+      void doSavePreview();
+    }, delay);
+  };
+
   const saveProjectPayload = async () => {
     if (!projectId) return null;
     const payload = {
@@ -1318,60 +1410,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       const response = await putApiV1ProjectElementsBatch(projectId, {
         elements: payload.elements ?? [],
       });
-      previewSaveTaskIdRef.current += 1;
-      const currentTaskId = previewSaveTaskIdRef.current;
-      if (previewSaveTimerRef.current !== null) {
-        window.clearTimeout(previewSaveTimerRef.current);
-      }
-      if (
-        previewIdleHandleRef.current !== null
-        && typeof window !== 'undefined'
-        && 'cancelIdleCallback' in window
-      ) {
-        (window as any).cancelIdleCallback(previewIdleHandleRef.current);
-        previewIdleHandleRef.current = null;
-      }
-      previewSaveTimerRef.current = window.setTimeout(() => {
-        previewSaveTimerRef.current = null;
-        const doSavePreview = async () => {
-          if (currentTaskId !== previewSaveTaskIdRef.current) return;
-          if (previewSavingRef.current) return;
-          previewSavingRef.current = true;
-          try {
-            const previewImage = await generatePreviewImage();
-            if (currentTaskId !== previewSaveTaskIdRef.current) return;
-            if (!previewImage) return;
-            await putApiV1ProjectElementsBatch(projectId, {
-              preview_image: previewImage,
-            });
-          } catch (error) {
-            console.warn('[EditorCoreProvider] async save preview image failed:', error);
-          } finally {
-            previewSavingRef.current = false;
-          }
-        };
-        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-          const runWhenIdle = () => {
-            previewIdleHandleRef.current = (window as any).requestIdleCallback(
-              (deadline: IdleDeadline) => {
-                previewIdleHandleRef.current = null;
-                if (currentTaskId !== previewSaveTaskIdRef.current) return;
-                const isInputPending =
-                  (navigator as any)?.scheduling?.isInputPending?.() ?? false;
-                if (isInputPending || deadline.timeRemaining() < 8) {
-                  runWhenIdle();
-                  return;
-                }
-                void doSavePreview();
-              },
-              { timeout: 10000 },
-            );
-          };
-          runWhenIdle();
-          return;
-        }
-        void doSavePreview();
-      }, PREVIEW_CAPTURE_DELAY_MS);
+      schedulePreviewSave();
       return { payload, response };
     } catch (error) {
       console.warn('[EditorCoreProvider] save project payload failed:', error);
@@ -1402,6 +1441,46 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     },
     [],
   );
+
+  // saveProjectPayload 每次渲染重建，定时器里必须取最新的那份，
+  // 否则自动保存落盘的是几秒前的 nodes
+  const saveProjectPayloadRef = useRef(saveProjectPayload);
+  useEffect(() => {
+    saveProjectPayloadRef.current = saveProjectPayload;
+  });
+
+  useEffect(() => {
+    if (!projectId || readyProjectId !== projectId) return;
+    const unregister = registerProjectSaver(() => saveProjectPayloadRef.current());
+    return () => {
+      // 内部路由跳转会走到这里，请求同步发出后即使组件卸载也会继续跑完。
+      // 注销和清场必须等 flush 落地：提前清掉 dirty 会让 saveProjectNow
+      // 在等待前一个请求时误判「没有新改动」，跳过最后一轮补存。
+      void (async () => {
+        if (hasUnsavedProjectChanges()) {
+          await saveProjectNow();
+        }
+        // 期间若新项目已经注册了自己的 saver，这里就不该再清它的状态
+        if (unregister()) {
+          resetProjectSaveState();
+        }
+      })();
+    };
+  }, [projectId, readyProjectId]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedProjectChanges()) return;
+      // debounce 未到期时这一下能把请求先发出去，能不能跑完取决于浏览器
+      void saveProjectNow();
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   const value = useMemo<EditorCoreCtxValue>(
     () => ({
