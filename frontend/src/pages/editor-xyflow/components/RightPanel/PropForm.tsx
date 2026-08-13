@@ -17,6 +17,7 @@ import {
   // <LineOutlined />
   // <SyncOutlined />
 } from '@ant-design/icons';
+import { MovSvg, Mp4Svg } from '@/icons';
 import {
   App,
   Col,
@@ -548,6 +549,10 @@ export const FileUpload: React.FC<{
     typeof value === 'string' && value && value !== MIXED_VALUE
       ? decodeURIComponent(value.split('/').pop() || '')
       : '';
+  const isMp4 = uploadedName.toLowerCase().endsWith('.mp4');
+
+  // 多选时各节点的文件不一样，没法合并成一个上传态，直接不展示
+  if (value === MIXED_VALUE) return null;
 
   const onFileChangeHandler: UploadProps['onChange'] = async ({ fileList }) => {
     const rawFile = fileList.slice(-1)[0]?.originFileObj;
@@ -581,12 +586,8 @@ export const FileUpload: React.FC<{
           {uploadedName ? (
             <Flex align="center" justify="space-between">
               <Button variant="filled" color="default" style={{ width: '80%' }}>
-                <Typography.Text
-                  style={{ width: 200 }}
-                  ellipsis={{ tooltip: value }}
-                >
-                  {uploadedName}
-                </Typography.Text>
+                {isMp4 ? <Mp4Svg /> : <MovSvg />}
+                {isMp4 ? 'Mp4' : 'Mov'}
               </Button>
               <Button
                 type="text"
