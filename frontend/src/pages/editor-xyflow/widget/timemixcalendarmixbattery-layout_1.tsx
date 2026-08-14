@@ -50,8 +50,8 @@ export default function TimeMixBatteryLayout0(props: any) {
       wrap: {
         position: 'absolute' as const,
         top: '50%',
-        left: 20,
-        transform: 'translate(-50%, -50%)',
+        left: 16,
+        transform: 'translate(0, -50%)',
         // left: `${data.padding ?? 0}px`,
         display: 'flex',
         alignItems: 'center',
@@ -61,7 +61,7 @@ export default function TimeMixBatteryLayout0(props: any) {
         width: batteryWidthSize[size],
         height: batteryHeightSize[size],
         borderRadius: '999px',
-        backgroundColor: batteryFillColor,
+        backgroundColor: '#d8d8d8',
         position: 'relative' as const,
         boxSizing: 'border-box' as const,
         overflow: 'hidden' as const,
@@ -72,7 +72,7 @@ export default function TimeMixBatteryLayout0(props: any) {
         width: '100%',
         height: '90%',
         borderRadius: '999px',
-        backgroundColor: '#000000',
+        backgroundColor: batteryFillColor,
         opacity: 1,
       },
       text: {

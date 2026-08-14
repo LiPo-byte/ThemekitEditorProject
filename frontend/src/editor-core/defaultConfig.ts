@@ -2516,6 +2516,7 @@ export const WidgetDefaultConfig = {
                     "alpha":1.0,
                     "textHeight": 26,
                     "padding": 0,
+                    "intCommonField": 0,
                  },
                 "battery_20": {
                    "source": "",
@@ -2551,6 +2552,7 @@ export const WidgetDefaultConfig = {
                     "alpha":1.0,
                     "textHeight": 26,
                     "padding": 0,
+                    "intCommonField": 0,
                 },
                 "battery_20": {
                    "source": "",
@@ -2586,6 +2588,7 @@ export const WidgetDefaultConfig = {
                     "alpha":1.0,
                     "textHeight": 26,
                     "padding": 0,
+                    "intCommonField": 0,
                 },
                 "battery_20": {
                    "source": "",
@@ -2629,6 +2632,7 @@ export const WidgetDefaultConfig = {
                     "alpha":1.0,
                     "textHeight": 26,
                     "padding": 0,
+                    "intCommonField": 0,
                 },
                 "battery_20": {
                     "source": "",
@@ -2664,6 +2668,7 @@ export const WidgetDefaultConfig = {
                     "alpha":1.0,
                     "textHeight": 26,
                     "padding": 0,
+                    "intCommonField": 0,
                 },
                 "battery_20": {
                    "source": "",
@@ -2699,6 +2704,7 @@ export const WidgetDefaultConfig = {
                     "alpha":1.0,
                     "textHeight": 26,
                     "padding": 0,
+                    "intCommonField": 0,
                 },
                 "battery_20": {
                    "source": "",
@@ -4350,6 +4356,30 @@ export const WidgetDefaultConfig = {
             "isLockScreen": false,
             "isGif": false,
             "type": 12,
+            "imageCloud": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageRain": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSnow": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageSun": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageThunder": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
+            "imageWind": {
+                "source": "",
+                "crop_props": defaultCropProps,
+            },
             "sizes": [
                 {
                     "size": 1,

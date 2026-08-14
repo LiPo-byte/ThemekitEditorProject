@@ -63,6 +63,11 @@ export default function WeatherLayout2(props: any) {
   const gap = size === 3 ? 12 : size === 2 ? 10 : 8;
   const paddingSize: any = { 1: 15, 2: 22, 3: 55 }
 
+  const iconSourceSize: any = {
+    1: { width: 22, height: 22 },
+    2: { width: 20, height: 20 },
+    3: { width: 21, height: 21 },
+  }
   return (
     <div
       className={`size_${data?.size}`}
@@ -87,8 +92,9 @@ export default function WeatherLayout2(props: any) {
             ...getTextStyle(props.parentId, data.weatherSub),
             fontSize: size === 3 ? '21px' : '12px',
             display: 'flex',
+            alignItems: 'center',
           }}>
-            { iconSource ? <img src={iconSource} style={{ width: size === 3 ? 16 : 5, marginRight: '5px' }} /> : <div></div> }
+            { iconSource ? <img src={iconSource} style={{ ...iconSourceSize[size], marginRight: '5px' }} /> : <div></div> }
             {subText}
           </div>
           <div style={{

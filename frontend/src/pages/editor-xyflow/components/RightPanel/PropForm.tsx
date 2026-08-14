@@ -1238,6 +1238,15 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('containerColor') && (
+        <>
+          <FontColorInput
+            title="ContainerColor"
+            value={editProps.containerColor}
+            onChange={(nextValue) => onChange?.('containerColor', nextValue)}
+          />
+        </>
+      )}
       {hasKey('animationCategory') && (
         <>
           <AnimationCategory

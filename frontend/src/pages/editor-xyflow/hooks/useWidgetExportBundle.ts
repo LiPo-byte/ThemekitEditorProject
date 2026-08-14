@@ -84,6 +84,7 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
     'dialSmallClock',
     'themekitSizewithTypes',
     'music',
+    'show',
   ];
   const showKey = ['weekday', 'AmAndPm']
   if (Array.isArray(value)) {

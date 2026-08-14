@@ -7,26 +7,33 @@ import CropEditableImage from '../components/CropEditableImage';
 import { resolveWidgetFontFamily } from './util';
 import './style.css';
 
-const CARD_SIZE_MAP: Record<number, { w: number; h: number }> = {
-  1: { w: 60, h: 56 },
-  2: { w: 126, h: 120 },
-  3: { w: 144, h: 136 },
+const CARD_SIZE_MAP: Record<number, { w: number; h: number, dotw: number,  doth: number }> = {
+  1: { w: 60, h: 56, dotw: 5, doth: 10 },
+  2: { w: 126, h: 120, dotw: 8, doth: 18 },
+  3: { w: 144, h: 136, dotw: 8, doth: 20 },
 };
 
-// 用遮罩在卡片中线挖掉 1px，透出底层背景（背景图或纯色），而不是盖一条实色分割线
-const DIVIDER_MASK =
-  'linear-gradient(to bottom, #000 calc(50% - 0.5px), transparent calc(50% - 0.5px), transparent calc(50% + 0.5px), #000 calc(50% + 0.5px))';
+// 左右两侧圆点的尺寸与外偏移，保持和原来 5x10 / -3px 的视觉一致
+// const DOT_W = 8;
+// const DOT_H = 20;
+const DOT_OFFSET = 3;
 
-const getEdgeDotStyle = (side: 'left' | 'right') => ({
-  position: 'absolute' as const,
-  top: '50%',
-  [side]: '-3px',
-  width: '5px',
-  height: '10px',
-  backgroundColor: '#cfd5e2',
-  transform: 'translateY(-50%)',
-  borderRadius: '4px',
-});
+// 用遮罩在卡片中线挖掉 1px，同时把左右两侧圆点也一起挖掉，
+// 透出底层背景（背景图或纯色），而不是盖一条实色分割线和两个实色圆点
+const buildCardMask = (w: number, h: number, dotw: number, doth: number) => {
+  const dotY = h / 2 - doth / 2;
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+    `<mask id="time-card-cutout">` +
+    `<rect width="${w}" height="${h}" fill="#fff"/>` +
+    `<rect y="${h / 2 - 0.5}" width="${w}" height="1" fill="#000"/>` +
+    `<rect x="${-DOT_OFFSET}" y="${dotY}" width="${dotw}" height="${doth}" rx="${dotw / 2}" fill="#000"/>` +
+    `<rect x="${w - dotw + DOT_OFFSET}" y="${dotY}" width="${dotw}" height="${doth}" rx="${dotw / 2}" fill="#000"/>` +
+    `</mask>` +
+    `<rect width="${w}" height="${h}" fill="#fff" mask="url(#time-card-cutout)"/>` +
+    `</svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+};
 
 export default function TimeLayout_3(props: any) {
   const data = props.data;
@@ -67,7 +74,7 @@ export default function TimeLayout_3(props: any) {
     return {
       display: 'flex',
       alignItems: 'center',
-      gap: data.size === 1 ? '3px' : '10px',
+      gap: data.size === 1 ? '8px' : '10px',
       justifyContent:
         data?.time?.textAlignment === 1
           ? 'flex-start'
@@ -79,7 +86,18 @@ export default function TimeLayout_3(props: any) {
     };
   }, [data]);
 
+  const getEdgeDotStyle = (side: 'left' | 'right') => ({
+    position: 'absolute' as const,
+    top: '50%',
+    [side]: '-2px',
+    width: cardSize.dotw - 2,
+    height: cardSize.doth - 2,
+    background: data.time.backgroundColor,
+    transform: 'translateY(-50%)',
+    borderRadius: '4px',
+  });
   const flipNumberStyle = useMemo(() => {
+    const cardMask = buildCardMask(cardSize.w, cardSize.h, cardSize.dotw, cardSize.doth);
     return {
       width: cardSize.w,
       height: cardSize.h,
@@ -89,12 +107,15 @@ export default function TimeLayout_3(props: any) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      WebkitMaskImage: DIVIDER_MASK,
-      maskImage: DIVIDER_MASK,
+      WebkitMaskImage: cardMask,
+      maskImage: cardMask,
+      WebkitMaskSize: '100% 100%',
+      maskSize: '100% 100%',
+      WebkitMaskRepeat: 'no-repeat',
+      maskRepeat: 'no-repeat',
     };
   }, [cardSize.h, cardSize.w, data.time.backgroundColor]);
 
-  // 圆点超出卡片边界，会被卡片上的遮罩（mask-clip 默认 border-box）裁掉，所以放在遮罩层外面
   const flipCardWrapperStyle = useMemo(() => {
     return {
       width: cardSize.w,
@@ -108,8 +129,8 @@ export default function TimeLayout_3(props: any) {
       <div style={flipNumberStyle}>
         <span style={timeTextStyle}>{text}</span>
       </div>
-      <div style={getEdgeDotStyle('left')} />
-      <div style={getEdgeDotStyle('right')} />
+      <div style={getEdgeDotStyle('left')} ></div>
+      <div style={getEdgeDotStyle('right')} ></div>
     </div>
   );
 

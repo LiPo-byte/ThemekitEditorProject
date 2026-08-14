@@ -6,6 +6,7 @@ import {
 } from '../context';
 import { resolveWidgetFontFamily, resolveHexColorWithAlpha } from './util';
 import { StepForwardOutlined } from '@ant-design/icons';
+import { StartPauseSvg } from '@/icons';
 import thrillerdefault from '../../../assets/thriller.png';
 import './style.css';
 
@@ -111,7 +112,11 @@ export default function MusicLayout_0(props: any) {
         }}>
           {renderPlayerBlurBackground(thriller)}
           <img src={thriller} alt="" style={{ width: '100%', height: '100%' }} />
-          <StepForwardOutlined style={{ position: 'absolute', right: 7, bottom: 7, color: '#ef9f9f' }} />
+          <div style={{
+            position: 'absolute', right: 7, bottom: 7
+          }}>
+            <StartPauseSvg />
+          </div>
         </div>
       ) }
       { size === 2 && (

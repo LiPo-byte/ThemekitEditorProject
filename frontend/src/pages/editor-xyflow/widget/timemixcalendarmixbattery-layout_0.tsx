@@ -79,7 +79,7 @@ export default function TimeMixCalendarMixBatteryLayout_0(props: any) {
         lineHeight: 1,
         fontWeight: 700,
         letterSpacing: '0.1px',
-        textShadow: '0 1px 1px rgba(0, 0, 0, 0.35)',
+        // textShadow: '0 1px 1px rgba(0, 0, 0, 0.35)',
         pointerEvents: 'none' as const,
       },
       cap: {
@@ -115,9 +115,16 @@ export default function TimeMixCalendarMixBatteryLayout_0(props: any) {
             <div style={{
                 ...getTextStyle(data.time),
                 ...getTimeStyle(data.time),
+                position: 'absolute',
+                right: '16px',
+                top: 0,
+                bottom: data.size === 2 ? 16 : 0,
+                left: 0,
+                display: 'flex',
+                alignItems: data.size === 2 ? 'flex-end' : 'center',
+                justifyContent: 'flex-end',
             }}>
-                10 <br />
-                09
+                10{data.size === 2 ? ':' : <br />}09
             </div>
         </>
     )
@@ -143,16 +150,26 @@ export default function TimeMixCalendarMixBatteryLayout_0(props: any) {
         </div>
       </div>
       { data.time && timeElement}
-      {data.day && (
-        <div style={{ ...getTextStyle(data.day) }}>
-          Wednesday
-        </div>
-      )}
-      {data.date && (
-        <div style={getTextStyle(data.date)}>
-          March 23
-        </div>
-      )}
+      <div style={{
+        position: 'absolute',
+        left: 16,
+        bottom: data.size === 3 ? 32 : 16,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {data.day && (
+          <div style={{
+            ...getTextStyle(data.day)
+          }}>
+            Wednesday
+          </div>
+        )}
+        {data.date && (
+          <div style={getTextStyle(data.date)}>
+            March 23
+          </div>
+        )}
+      </div>
     </div>
   );
 }

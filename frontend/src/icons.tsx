@@ -116,6 +116,22 @@ export const Mp4Svg = React.memo(
   ),
 );
 
+export const StartPauseSvg = React.memo(
+  ({ color = 'currentColor', size = 16, className }: IconProps) => (
+    <svg
+      className={className}
+      viewBox="0 0 1702 1024"
+      width={size}
+      height={size}
+      fill={color}
+      aria-hidden
+      // p-id="23971"
+    >
+      <title>StartPauseSvg icon</title>
+      <path d="M0 1024V0l682.666667 512.043862z m0 0M964.961878 1023.912276V0H825.130129v1023.912276H964.961878zM1243.309518 1023.912276V0h-139.831749v1023.912276h139.831749z" p-id="23763" fill="#777777"></path>
+    </svg>
+  ),
+);
 
 
 

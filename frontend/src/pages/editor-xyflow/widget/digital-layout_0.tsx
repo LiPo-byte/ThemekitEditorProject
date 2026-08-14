@@ -13,7 +13,7 @@ const getTextStyle = (parentId?: string, textData?: any) => ({
   opacity: textData?.alpha ?? 1,
   color: textData?.textColor ?? '#111827',
   lineHeight: 1,
-  height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
+  // height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
   whiteSpace: 'nowrap' as const,
 });
 export default function DigitalLayout_0(props: any) {
@@ -71,12 +71,17 @@ export default function DigitalLayout_0(props: any) {
       flex: '1 1 auto',
       display: 'flex',
       alignItems: 'center',
-      ...getTextStyle(props.parentId, data?.time),
       ...getTextJustifyContent(data?.time?.textAlignment),
     }}>
-      <div>
-        10:09
-        { showAmAndPm && <span style={{ ...getTextStyle(props.parentId, data?.AmAndPm), }}>AM</span> }
+      <div style={{
+        display: 'flex',
+        alignItems: showWeekday ? 'flex-end' : 'center',
+      }}>
+        { showAmAndPm && !showWeekday && <span style={{ ...getTextStyle(props.parentId, data?.AmAndPm), }}>AM</span> }
+        <div style={{
+          ...getTextStyle(props.parentId, data?.time),
+        }} >10:09</div>
+        { showAmAndPm && showWeekday && <span style={{ ...getTextStyle(props.parentId, data?.AmAndPm), }}>AM</span> }
       </div>
     </div>
   }

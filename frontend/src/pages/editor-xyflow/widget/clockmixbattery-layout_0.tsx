@@ -29,6 +29,22 @@ export default function ClockMixBatteryLayout_0(props: any) {
       ? Number(data.battery.percent)
       : 98;
     const batteryPercent = Math.max(0, Math.min(100, Math.round(batteryPercentValue)));
+    const batteryWidth = batteryWidthSize[size];
+    const batteryHeight = batteryHeightSize[size];
+    // 竖向细条电池，百分比逐位竖排；数字从 mask 里扣掉，让电池整体镂空透出底图
+    const digits = `${batteryPercent}`.split('');
+    const digitFontSize = Math.max(6, Math.round(batteryWidth * 0.44));
+    const digitStep = digitFontSize * 1.05;
+    const digitBottom = 10;
+    const digitNodes = digits
+      .map((digit, index) => {
+        const baseline =
+          batteryHeight - digitBottom - (digits.length - 1 - index) * digitStep;
+        return `<text x="${batteryWidth / 2}" y="${baseline}" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="${digitFontSize}" font-weight="700" fill="#000">${digit}</text>`;
+      })
+      .join('');
+    const cutoutSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${batteryWidth}" height="${batteryHeight}" viewBox="0 0 ${batteryWidth} ${batteryHeight}"><mask id="battery-percent-cutout"><rect width="${batteryWidth}" height="${batteryHeight}" fill="#fff"/>${digitNodes}</mask><rect width="${batteryWidth}" height="${batteryHeight}" fill="#fff" mask="url(#battery-percent-cutout)"/></svg>`;
+    const cutoutMask = `url("data:image/svg+xml;utf8,${encodeURIComponent(cutoutSvg)}")`;
     return {
       wrap: {
         position: 'absolute' as const,
@@ -41,13 +57,19 @@ export default function ClockMixBatteryLayout_0(props: any) {
         zIndex: 9,
       },
       body: {
-        width: batteryWidthSize[size],
-        height: batteryHeightSize[size],
+        width: batteryWidth,
+        height: batteryHeight,
         borderRadius: '999px',
-        backgroundColor: resolveHexColorWithAlpha(data?.battery?.backgroundColor, data?.battery?.alpha),
+        backgroundColor: resolveHexColorWithAlpha(data?.battery?.containerColor, data?.battery?.alpha),
         position: 'relative' as const,
         boxSizing: 'border-box' as const,
         overflow: 'hidden' as const,
+        WebkitMaskImage: cutoutMask,
+        maskImage: cutoutMask,
+        WebkitMaskSize: '100% 100%',
+        maskSize: '100% 100%',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
       },
       fill: {
         position: 'absolute' as const,
@@ -58,25 +80,6 @@ export default function ClockMixBatteryLayout_0(props: any) {
         backgroundColor: batteryFillColor,
         opacity: 1,
       },
-      text: {
-        position: 'absolute' as const,
-        left: 0,
-        right: 0,
-        bottom: 10,
-        display: 'flex',
-        // 电池是竖向细条，百分比数字逐位竖排
-        flexDirection: 'column' as const,
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: batteryColor,
-        fontSize: '7px',
-        lineHeight: 1,
-        fontWeight: 700,
-        letterSpacing: '0.1px',
-        textShadow: '0 1px 1px rgba(0, 0, 0, 0.35)',
-        pointerEvents: 'none' as const,
-      },
-      percentText: `${batteryPercent}`,
     };
   }, [data]);
   const dialLargeClockSource = dialLargeClock?.source ?? '';
@@ -120,7 +123,6 @@ export default function ClockMixBatteryLayout_0(props: any) {
         <div style={batteryStyle.wrap}>
           <div style={batteryStyle.body}>
             <div style={batteryStyle.fill} />
-            <span style={batteryStyle.text}>{batteryStyle.percentText}</span>
           </div>
         </div>
       )}

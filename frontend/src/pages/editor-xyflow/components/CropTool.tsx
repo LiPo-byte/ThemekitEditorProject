@@ -1,4 +1,4 @@
-import { Button, Flex, Slider, Typography } from 'antd';
+import { Button, Flex, InputNumber, Slider, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import React from 'react';
 import {
@@ -161,6 +161,15 @@ const CropTool: React.FC = () => {
     });
   };
 
+  const applyScale = (nextScale: number) => {
+    const nextScaleXSign = activeCropProps.scaleX < 0 ? -1 : 1;
+    const nextScaleYSign = activeCropProps.scaleY < 0 ? -1 : 1;
+    patchCropDraft({
+      scaleX: nextScale * nextScaleXSign,
+      scaleY: nextScale * nextScaleYSign,
+    });
+  };
+
   if (!open) return null;
   return (
     <div
@@ -180,15 +189,21 @@ const CropTool: React.FC = () => {
             step={0.01}
             value={activeScale}
             onChange={(value) => {
-              const nextScale = Array.isArray(value) ? value[0] : value;
-              const nextScaleXSign = activeCropProps.scaleX < 0 ? -1 : 1;
-              const nextScaleYSign = activeCropProps.scaleY < 0 ? -1 : 1;
-              patchCropDraft({
-                scaleX: nextScale * nextScaleXSign,
-                scaleY: nextScale * nextScaleYSign,
-              });
+              applyScale(Array.isArray(value) ? value[0] : value);
             }}
             style={{ width: 180, margin: 0 }}
+          />
+          <InputNumber
+            min={0.2}
+            max={3}
+            step={0.01}
+            precision={2}
+            value={activeScale}
+            onChange={(value) => {
+              if (typeof value !== 'number' || Number.isNaN(value)) return;
+              applyScale(value);
+            }}
+            style={{ width: 80 }}
           />
         </Flex>
         <Flex align="center" gap={8} style={{ minWidth: 260 }}>
@@ -202,6 +217,18 @@ const CropTool: React.FC = () => {
               patchCropDraft({ rotation: value });
             }}
             style={{ width: 200, margin: 0 }}
+          />
+          <InputNumber
+            min={-180}
+            max={180}
+            step={1}
+            precision={0}
+            value={activeCropProps.rotation}
+            onChange={(value) => {
+              if (typeof value !== 'number' || Number.isNaN(value)) return;
+              patchCropDraft({ rotation: value });
+            }}
+            style={{ width: 80 }}
           />
         </Flex>
         <Button
