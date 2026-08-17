@@ -119,6 +119,7 @@ export default function BatteryLayout_0(props: any) {
               style={{
                 ...getTextStyle(props.parentId, data.battery),
                 margin: `${data.battery.intCommonField}px 0`,
+                marginRight: `${data.battery.padding}px`,
                 color: activeBattery?.key !== 'battery_20' ? data.battery.textColor : '#ff0000',
               }}
             >
