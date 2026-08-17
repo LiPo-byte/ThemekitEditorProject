@@ -86,7 +86,7 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
     'music',
     'show',
   ];
-  const showKey = ['weekday', 'AmAndPm']
+  const showKey = ['weekday']
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeWidgetsSpec(item));
   }
