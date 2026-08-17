@@ -127,9 +127,9 @@ const discoverWallpaperIndices = (zip: JSZip): ExportIndex[] => {
     if (match[2]) indices.add(Number(match[2]));
     else hasPlain = true;
   }
-  if (indices.size > 0) return [...indices].sort((a, b) => a - b);
-  if (hasPlain) return [null];
-  return [];
+  const sorted = [...indices].sort((a, b) => a - b);
+  // 无后缀的自成一套：与 _N 同时存在时不能被顶掉，否则这套会被静默丢弃
+  return hasPlain ? [null, ...sorted] : sorted;
 };
 
 /** Wallpaper Depth 压缩包必须包含的图片（不含扩展名） */
@@ -143,6 +143,23 @@ const LIVE_WALLPAPER_MIME_MAP: Record<string, string> = {
 
 const hasIconPackAssets = (zip: JSZip): boolean =>
   listZipBasenames(zip).some((name) => /^icon_.+\.(?:jpg|jpeg|png)$/i.test(name));
+
+/** iconpack 预览面图：导出为 icons_{key}.{ext}，外部包扩展名不固定，按顺序试 */
+const ICONPACK_SURFACE_IMAGES: Array<{ key: string; exts: string[] }> = [
+  { key: 'list_view', exts: ['png', 'jpg', 'jpeg'] },
+  { key: 'preview_long', exts: ['jpg', 'jpeg', 'png'] },
+  { key: 'preview_short', exts: ['jpg', 'jpeg', 'png'] },
+];
+
+/** theme 预览面图：zip 内直接以 config key 命名，无 icons_ 前缀 */
+const THEME_SURFACE_KEYS = [
+  'preview_long',
+  'preview_short',
+  'list_view',
+  'preview_long_ipad',
+  'list_view_ipad',
+];
+const THEME_SURFACE_EXTS = ['jpg', 'jpeg', 'png'];
 
 const resolveAmazonApp = (apps: any): Record<string, any> | null => {
   if (Array.isArray(apps)) {
@@ -694,7 +711,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
 
   /**
    * 深拷贝 IconPackDefaultConfig，按 apps key 在 zip 里找 icon_{key}.jpg/png 上传填 url；
-   * 找不到则 source 置空。preview 暂不处理。
+   * 找不到则 source 置空。预览面另取 icons_{key}.{ext} 填进对应 surface.source。
    */
   const importIconPackFromZip = async (
     zip: JSZip,
@@ -731,6 +748,27 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (uploadedCount === 0) {
       if (!silent) message.error('压缩包内未找到 icon 资源');
       return null;
+    }
+
+    // 预览面不再按选中元素拼装，直接用包里的成品图
+    const missingSurfaces: string[] = [];
+    for (const { key, exts } of ICONPACK_SURFACE_IMAGES) {
+      const surface = (config as Record<string, any>)[key];
+      if (!surface || typeof surface !== 'object') continue;
+
+      let surfaceUpload: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+      for (const ext of exts) {
+        surfaceUpload = await uploadMediaFromZip(`icons_${key}.${ext}`, zip);
+        if (surfaceUpload) break;
+      }
+      if (surfaceUpload) {
+        surface.source = surfaceUpload.url;
+      } else {
+        missingSurfaces.push(`icons_${key}.${exts[0]}`);
+      }
+    }
+    if (missingSurfaces.length && !silent) {
+      message.warning(`压缩包缺少预览图：${missingSurfaces.join('、')}`);
     }
 
     const rootId = addIconPack(config);
@@ -1180,22 +1218,45 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           wallpaperItems,
           widgetItems,
         });
-        const withShowElements = (surface: Record<string, any>) => ({
+        // 预览面不再按选中元素拼装，直接用包里的成品图
+        const surfaceSources: Record<string, string> = {};
+        const missingSurfaces: string[] = [];
+        for (const key of THEME_SURFACE_KEYS) {
+          let surfaceUpload: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+          for (const ext of THEME_SURFACE_EXTS) {
+            surfaceUpload = await uploadMediaFromZip(`${key}.${ext}`, zip);
+            if (surfaceUpload) break;
+          }
+          if (surfaceUpload) {
+            surfaceSources[key] = surfaceUpload.url;
+          } else {
+            missingSurfaces.push(`${key}.${THEME_SURFACE_EXTS[0]}`);
+          }
+        }
+        if (missingSurfaces.length) {
+          message.warning(`Theme 压缩包缺少预览图：${missingSurfaces.join('、')}`);
+        }
+
+        const withSurface = (key: string, surface: Record<string, any>) => ({
           ...surface,
           showElements: [...showElements],
+          source: surfaceSources[key] ?? '',
         });
 
         addTheme({
           ...DEFAULT_THEME_CONFIG,
-          preview_long: withShowElements({
+          preview_long: withSurface('preview_long', {
             ...DEFAULT_THEME_CONFIG.preview_long,
             width: 887,
             height: 1920,
           }),
-          preview_short: withShowElements(DEFAULT_THEME_CONFIG.preview_short),
-          list_view: withShowElements(DEFAULT_THEME_CONFIG.list_view),
-          preview_long_ipad: withShowElements(DEFAULT_THEME_CONFIG.preview_long_ipad),
-          list_view_ipad: withShowElements(DEFAULT_THEME_CONFIG.list_view_ipad),
+          preview_short: withSurface('preview_short', DEFAULT_THEME_CONFIG.preview_short),
+          list_view: withSurface('list_view', DEFAULT_THEME_CONFIG.list_view),
+          preview_long_ipad: withSurface(
+            'preview_long_ipad',
+            DEFAULT_THEME_CONFIG.preview_long_ipad,
+          ),
+          list_view_ipad: withSurface('list_view_ipad', DEFAULT_THEME_CONFIG.list_view_ipad),
           selectElements,
         });
 

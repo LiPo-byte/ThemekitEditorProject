@@ -1706,7 +1706,7 @@ export const SelectedNodePropForm: React.FC<{
           </Space>
         </>
       )} */}
-      {hasKey('selectElements') && (
+      {/* {hasKey('selectElements') && (
         <>
           <Divider style={{
             width: '280px',
@@ -1716,7 +1716,7 @@ export const SelectedNodePropForm: React.FC<{
             <SelectElements selectElements={editProps.selectElements} showElements={editProps.showElements} onChange={onChange} />
           </Space>
         </>
-      )}
+      )} */}
       {hasKey('music') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.music} onChange={(key: string, value: any) => {

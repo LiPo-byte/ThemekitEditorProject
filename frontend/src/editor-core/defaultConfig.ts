@@ -5713,13 +5713,12 @@ export const IconPackDefaultConfig = {
     preview_long: {
         width: 887,
         height: 1920,
-        isGif: false,
         exportWidth: 887,
         exportHeight: 1920,
-        selectElements: {
-            apps: [],
-        },
-        showElements: [],
+        // selectElements: {
+        //     apps: [],
+        // },
+        // showElements: [],
         source: '',
     },
     preview_short: {
@@ -5727,10 +5726,10 @@ export const IconPackDefaultConfig = {
         height: 1578,
         exportWidth: 887,
         exportHeight: 1578,
-        selectElements: {
-            apps: [],
-        },
-        showElements: [],
+        // selectElements: {
+        //     apps: [],
+        // },
+        // showElements: [],
         source: '',
     },
     list_view: {
@@ -5738,10 +5737,10 @@ export const IconPackDefaultConfig = {
         height: 564,
         exportWidth: 738,
         exportHeight: 564,
-        selectElements: {
-            apps: [],
-        },
-        showElements: [],
+        // selectElements: {
+        //     apps: [],
+        // },
+        // showElements: [],
         source: '',
     },
 }
@@ -5846,41 +5845,41 @@ export const DEFAULT_THEME_CONFIG = {
   preview_long: {
     width: 887,
     height: 1920,
-    isGif: false,
     exportWidth: 887,
     exportHeight: 1920,
     showElements: [],
+    source: '',
   },
   preview_short: {
     width: 887,
     height: 1578,
     exportWidth: 887,
     exportHeight: 1578,
-    isGif: false,
     showElements: [],
+    source: '',
   },
   list_view: {
     width: 984,
     height: 2130,
     exportWidth: 492,
     exportHeight: 1065,
-    isGif: false,
     showElements: [],
+    source: '',
   },
   preview_long_ipad: {
     width: 2048,
     height: 2732,
     exportWidth: 1024,
     exportHeight: 1366,
-    isGif: false,
     showElements: [],
+    source: '',
   },
   list_view_ipad: {
     width: 1024,
     height: 1366,
     exportWidth: 512,
     exportHeight: 683,
-    isGif: false,
     showElements: [],
+    source: '',
   },
 };
