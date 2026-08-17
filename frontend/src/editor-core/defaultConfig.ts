@@ -5501,7 +5501,7 @@ export const WidgetDefaultConfig = {
                   "battery": {
                      "containerColor": "#BDBDBD",
                      "alpha": 0.5,
-                     "backgroundColor": "#000000"
+                     "backgroundColor": "#000000",
                   }
               },
                {
@@ -5595,7 +5595,8 @@ export const WidgetDefaultConfig = {
                   "battery": {
                      "containerColor": "#BDBDBD",
                      "alpha": 0.5,
-                     "backgroundColor": "#000000"
+                     "backgroundColor": "#000000",
+                     "textColor": '#ffffff',
                   }
               },
                {
@@ -5617,7 +5618,8 @@ export const WidgetDefaultConfig = {
                    "battery": {
                      "containerColor": "#BDBDBD",
                      "alpha": 0.5,
-                     "backgroundColor": "#000000"
+                     "backgroundColor": "#000000",
+                     "textColor": '#ffffff',
                   }
               },
                {
@@ -5639,7 +5641,8 @@ export const WidgetDefaultConfig = {
                   "battery": {
                      "containerColor": "#BDBDBD",
                      "alpha": 0.5,
-                     "backgroundColor": "#000000"
+                     "backgroundColor": "#000000",
+                     "textColor": '#ffffff',
                   }
               }
             ]

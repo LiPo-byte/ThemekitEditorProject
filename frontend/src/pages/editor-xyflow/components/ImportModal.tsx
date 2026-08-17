@@ -434,6 +434,54 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         };
       }
     }
+    if (type === 17) {
+      // music 挂在 platform 级，导出的 spec.json 里被整个剔除，且封面图不进包，
+      // 这里补一份默认值：source 留空让组件回退到内置封面，右侧面板也能再上传
+      spec.music = {
+        source: '',
+        singer: spec.music?.singer ?? 'Michael Jackson',
+        songName: spec.music?.songName ?? 'Billie Jean',
+        crop_props: {
+          ...DEFAULT_CROP_PROPS,
+          ...(spec.music?.crop_props ?? {}),
+        },
+      };
+
+      // player 图挂在各尺寸配置下（只有 medium/large 有），现在导出统一是
+      // widgets_{size}_music_player.png，旧包用的 widgets_{size}_player.png 继续兜底
+      for (let index = 0; index < sizes.length; index += 1) {
+        const item = sizes[index] as Record<string, any>;
+        const sizeLabel = SIZE_LABEL_MAP[Number(item?.size)];
+        if (!sizeLabel) continue;
+        const hasPlayerSource = Object.hasOwn(item?.player ?? {}, 'source');
+        const candidateFilenames = [
+          `widgets_${sizeLabel}_music_player.png`,
+          `widgets_${sizeLabel}_player.png`,
+        ];
+        let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+        for (const filename of candidateFilenames) {
+          uploadResult = await uploadMediaFromZip(filename, zip, exportIndex);
+          if (uploadResult) break;
+        }
+        if (!uploadResult) {
+          // small 本来就没有 player 图，只有声明了 source 的尺寸缺图才值得提示
+          if (hasPlayerSource && !silent) {
+            message.warning(
+              `压缩包缺少 ${applyIndexSuffix(`widgets_${sizeLabel}_music_player.png`, exportIndex)}`,
+            );
+          }
+          continue;
+        }
+        item.player = {
+          ...(item.player ?? {}),
+          source: uploadResult.url,
+          crop_props: {
+            ...DEFAULT_CROP_PROPS,
+            ...(item.player?.crop_props ?? {}),
+          },
+        };
+      }
+    }
 
     for (let i = 0; i < sizes.length; i += 1) {
       const item = sizes[i] as Record<string, any>;
@@ -441,9 +489,18 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       const sizeLabel = SIZE_LABEL_MAP[sizeNumber];
       if (!sizeLabel) continue;
 
-      const ext = isGif ? 'gif' : 'jpg';
-      const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}.${ext}`;
-      const uploadResult = await uploadMediaFromZip(expectedFilename, zip, exportIndex);
+      const filenameBase = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}`;
+      // 底图导出是 jpg，但外部给的包也可能是 png，按顺序试
+      const candidateExts = isGif ? ['gif'] : ['jpg', 'png'];
+      let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+      for (const candidateExt of candidateExts) {
+        uploadResult = await uploadMediaFromZip(
+          `${filenameBase}.${candidateExt}`,
+          zip,
+          exportIndex,
+        );
+        if (uploadResult) break;
+      }
       if (uploadResult) {
         const mediaSize = await getBlobImageSize(uploadResult.mediaBlob);
         const targetSize =
@@ -520,7 +577,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           ...DEFAULT_CROP_PROPS,
         };
       }
-      if (item.appLinks && Array.isArray(item.appLinks) && item.layoutType < 5) {
+      if (item.appLinks && Array.isArray(item.appLinks) && item.layoutType < 5 && type === 14) {
         const existingAppLinksSource = Array.isArray(item.appLinksSource)
           ? item.appLinksSource
           : [];

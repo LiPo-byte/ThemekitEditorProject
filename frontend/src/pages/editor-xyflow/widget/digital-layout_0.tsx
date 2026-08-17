@@ -68,7 +68,7 @@ export default function DigitalLayout_0(props: any) {
   const renderTimeAndAPM = () => {
     return   <div style={{
       width: '100%',
-      flex: '1 1 auto',
+      flex: !showWeekday && size === 3 ? 'none' : '1 1 auto',
       display: 'flex',
       alignItems: 'center',
       ...getTextJustifyContent(data?.time?.textAlignment),
@@ -107,7 +107,7 @@ export default function DigitalLayout_0(props: any) {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
+          justifyContent: !showWeekday && size === 3 ? 'center' : 'space-between',
           alignItems: 'center',
           height: '100%',
           position: 'relative',
@@ -119,6 +119,7 @@ export default function DigitalLayout_0(props: any) {
             alignItems: 'center',
             ...getTextStyle(props.parentId, data?.date),
             ...getTextJustifyContent(data?.date?.textAlignment),
+            marginBottom: !showWeekday && size === 3 ? 16 : 0,
           }}>
             { showWeekday ? '2026-01-09' : '01-09 Fri' }
           </div>

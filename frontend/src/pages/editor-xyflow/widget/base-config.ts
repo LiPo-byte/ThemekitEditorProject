@@ -237,6 +237,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
   default: Record<WidgetSizeLabel, WidgetExportRuleGroup>;
   ios?: Record<number, Partial<Record<WidgetSizeLabel, WidgetExportRuleGroup>>>;
   android?: Record<number, Partial<Record<WidgetSizeLabel, WidgetExportRuleGroup>>>;
+  common?: Record<number, Partial<Record<WidgetSizeLabel, WidgetExportRuleGroup>>>;
 } = {
   default: {
     small: {
@@ -507,5 +508,48 @@ export const WIDGET_EXPORT_FILE_RULES: {
         },
       },
     },
+    13: {
+
+    }
   },
+  common: {
+    13: {
+        small: {
+            static: {
+                timejpg: { width: 269, height: 269 },
+                timegif: { width: 269, height: 269 },
+                preview: { width: 269, height: 269 },
+            },
+            dynamic: {
+                timejpg: { width: 269, height: 269 },
+                timegif: { width: 269, height: 269 },
+                preview: { width: 269, height: 269 },
+            },
+        },
+        medium: {
+          static: {
+            timejpg: { width: 571, height: 269 },
+            timegif: { width: 571, height: 269 },
+            preview: { width: 571, height: 269 },
+          },
+          dynamic: {
+            timejpg: { width: 571, height: 269 },
+            timegif: { width: 571, height: 269 },
+            preview: { width: 571, height: 269 },
+          },
+        },
+        large: {
+          static: {
+            timejpg: { width: 571, height: 599 },
+            timegif: { width: 571, height: 599 },
+            preview: { width: 571, height: 599 },
+          },
+          dynamic: {
+            timejpg: { width: 571, height: 599 },
+            timegif: { width: 571, height: 599 },
+            preview: { width: 571, height: 599 },
+          },
+        },
+      },
+  }
 };

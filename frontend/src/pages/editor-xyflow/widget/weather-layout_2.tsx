@@ -58,7 +58,7 @@ export default function WeatherLayout2(props: any) {
 
   const weekdayText = 'wednesday';
   const dateText = 'Jan 9';
-  const mainText = '23°';
+  const mainText = '36°';
   const subText = 'Cloudy';
   const gap = size === 3 ? 12 : size === 2 ? 10 : 8;
   const paddingSize: any = { 1: 15, 2: 22, 3: 55 }
@@ -99,7 +99,7 @@ export default function WeatherLayout2(props: any) {
           </div>
           <div style={{
             ...getTextStyle(props.parentId, data.weatherMain),
-            fontSize: size === 3 ? '44px' : '25px',
+            fontSize: size === 3 ? '52px' : '28px',
           }}>
             {mainText}
           </div>

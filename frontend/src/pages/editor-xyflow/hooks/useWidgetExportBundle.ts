@@ -204,24 +204,25 @@ const normalizeCropProps = (cropProps: any) => ({
   scaleY: Number(cropProps?.scaleY ?? 1),
 });
 
-const resolvePlatform = (parentId: unknown): WidgetPlatform | null => {
+const resolvePlatform = (parentId: unknown): any | null => {
   const value = String(parentId ?? '');
   if (value.endsWith('_ios')) return 'ios';
   if (value.endsWith('_android')) return 'android';
+  if (value.endsWith('_common')) return 'common';
   return null;
 };
 
 const getExportRule = (params: {
   sizeLabel: SizeLabel;
   platform: WidgetPlatform | null;
-  layoutType: number;
+  type: number;
   mode: WidgetExportMode;
 }) => {
-  const { sizeLabel, platform, layoutType, mode } = params;
+  const { sizeLabel, platform, type, mode } = params;
 
   if (platform) {
     const platformRules = WIDGET_EXPORT_FILE_RULES[platform];
-    const byLayout = platformRules?.[layoutType]?.[sizeLabel]?.[mode];
+    const byLayout = platformRules?.[type]?.[sizeLabel]?.[mode];
     if (byLayout) return byLayout;
   }
   return WIDGET_EXPORT_FILE_RULES.default[sizeLabel][mode];
@@ -377,13 +378,13 @@ export const collectWidgetExportFiles = async (
     const sizeLabel =
       SIZE_LABEL_MAP[sizeNumber] ?? `size_${sizeNumber || index + 1}`;
     const platform = resolvePlatform(childNode?.parentId);
-    const layoutType = Number(data?.layoutType ?? 0);
+    const type = Number(selectedNodeData?.type ?? 0);
     const fixedRule = SIZE_LABEL_MAP[sizeNumber]
       ? getExportRule({
           sizeLabel: SIZE_LABEL_MAP[sizeNumber],
           platform,
-          layoutType,
-          mode: data?.isGif ? 'dynamic' : 'static',
+          type,
+          mode: (selectedNodeData?.isGif || data?.isGif) ? 'dynamic' : 'static',
         })
       : null;
     const sizeConfig = getSizeConfig(sizeNumber);
@@ -517,7 +518,7 @@ export const collectWidgetExportFiles = async (
     const musicPlayerSource = data?.player?.source;
     if (musicPlayerSource) {
       const musicPlayerBlob = await toPngBlobFromUrl(musicPlayerSource);
-      pushFile(`widgets_${sizeLabel}_player.png`, musicPlayerBlob);
+      pushFile(`widgets_${sizeLabel}_music_player.png`, musicPlayerBlob);
     }
     if (Array.isArray(data?.appLinks) && data?.appLinksSource) {
       const appLinksSource = Array.isArray(data?.appLinksSource)
