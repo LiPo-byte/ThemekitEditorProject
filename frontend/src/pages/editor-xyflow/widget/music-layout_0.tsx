@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import CropEditableImage from '../components/CropEditableImage';
 import {
   useEditorCropEditingNodeId,
@@ -6,7 +7,6 @@ import {
 } from '../context';
 import { resolveWidgetFontFamily, resolveHexColorWithAlpha } from './util';
 import { StepForwardOutlined } from '@ant-design/icons';
-import { StartPauseSvg } from '@/icons';
 import thrillerdefault from '../../../assets/thriller.png';
 import './style.css';
 
@@ -65,6 +65,38 @@ const renderPlayerBlurBackground = (thrillerSource?: string) => (
   </div>
 );
 
+/** 小组件右下角的播放/暂停按钮：三角形 7*10、竖条 2*10、间距 1 */
+const SMALL_PLAYER_ICON_COLOR = '#777777';
+
+const smallPlayerIconStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1,
+};
+
+// 用 border 画三角：上下各 5px 透明撑出 10 的高，左边 7px 实色即三角本体
+const smallPlayerTriangleStyle: CSSProperties = {
+  width: 0,
+  height: 0,
+  borderTop: '5px solid transparent',
+  borderBottom: '5px solid transparent',
+  borderLeft: `7px solid ${SMALL_PLAYER_ICON_COLOR}`,
+};
+
+const smallPlayerBarStyle: CSSProperties = {
+  width: 2,
+  height: 10,
+  backgroundColor: SMALL_PLAYER_ICON_COLOR,
+};
+
+const renderSmallPlayerIcon = () => (
+  <div style={smallPlayerIconStyle}>
+    <div style={smallPlayerTriangleStyle} />
+    <div style={smallPlayerBarStyle} />
+    <div style={smallPlayerBarStyle} />
+  </div>
+);
+
 export default function MusicLayout_0(props: any) {
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
@@ -105,8 +137,8 @@ export default function MusicLayout_0(props: any) {
         <div style={{
           position: 'relative',
           zIndex: 2,
-          width: '100%',
-          height: '100%',
+          width: '120px',
+          height: '120px',
           border: `3px solid ${data.player.borderColor}`,
           borderRadius: '5px',
         }}>
@@ -115,7 +147,7 @@ export default function MusicLayout_0(props: any) {
           <div style={{
             position: 'absolute', right: 7, bottom: 7
           }}>
-            <StartPauseSvg />
+            {renderSmallPlayerIcon()}
           </div>
         </div>
       ) }
@@ -137,6 +169,8 @@ export default function MusicLayout_0(props: any) {
             // position + zIndex 让模糊背景层的负层级被限制在这个框内
             position: 'relative',
             zIndex: 0,
+            width: '160px',
+            height: '120px',
           }}>
             {renderPlayerBlurBackground(thriller)}
             <div style={{
@@ -186,9 +220,7 @@ export default function MusicLayout_0(props: any) {
           </div>
           <div style={{
             width: 152,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            marginLeft: '21px',
           }}>
             { playerSource ? <img src={playerSource} alt="" style={{ height: '100%' }} /> : null}
           </div>
@@ -216,37 +248,35 @@ export default function MusicLayout_0(props: any) {
           }}>
             {renderPlayerBlurBackground(thriller)}
             <div style={{
-              margin: '0 9px 0 9px',
+              margin: '9px 9px 12px 9px',
               display: 'flex',
               gap: 10,
               alignItems: 'center',
               // justifyContent: 'space-between',
             }}>
-              <img src={thriller} alt="" style={{ width: 126, borderRadius: 5 }} />
+              <img src={thriller} alt="" style={{ width: 126, height: 126, flex: 'none', borderRadius: 6 }} />
               <div style={{
                 display: 'flex',
-                alignItems: 'center',
+                // alignItems: 'center',
                 justifyContent: 'center',
                 flexDirection: 'column',
                 flex: '1 1 auto',
                 gap: 5,
               }}>
-                {/* <span style={{ ...getTextStyle(props.parentId, data.player) }}>Billie Jean</span>
-                <span style={{ ...getCommonStyle(props.parentId, data.player) }}>Michael Jackson</span> */}
                 <span style={{ ...getTextStyle(props.parentId, data.player), fontSize: 18 * scale }}>{displaySongName}</span>
                 <span style={{ ...getCommonStyle(props.parentId, data.player), fontSize: 12 * scale }}>{displaySinger}</span>
               </div>
             </div>
             <div style={{
-              margin: '0 4px 0 6px',
+              margin: '0 4px 9px 4px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: 6,
+              // gap: 6,
             }}>
               <span style={{ ...getCommonStyle(props.parentId, data.player) }}>0:35</span>
               <div style={{
-                width: '200px',
+                width: '230px',
                 flex: 'none',
                 height: '6px',
                 background: resolveHexColorWithAlpha(data.player.textColor, 0.5),
@@ -263,10 +293,11 @@ export default function MusicLayout_0(props: any) {
             </div>
           </div>
           <div style={{
-            height: 160,
+            height: 140,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            // alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 13,
           }}>
             { playerSource ? <img src={playerSource} alt="" style={{ height: '90%' }} /> : null}
           </div>

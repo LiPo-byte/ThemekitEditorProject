@@ -1188,6 +1188,15 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('borderColor') && (
+        <>
+          <FontColorInput
+            title="BorderColor"
+            value={editProps.borderColor}
+            onChange={(nextValue) => onChange?.('borderColor', nextValue)}
+          />
+        </>
+      )}
       {hasKey('selectedBgColor') && (
         <>
           <FontColorInput
