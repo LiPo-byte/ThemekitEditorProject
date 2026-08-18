@@ -4,12 +4,10 @@ import type { Node as FlowNode } from '@xyflow/react';
 import { useEditorNodes } from '../context';
 import { buildIconPackConfigJson } from '../icon/buildIconPackConfig';
 import { cropMediaByUrl } from '../util/cropMediaByUrl';
-import {
-  generateElementPreview,
-  isGifSource,
-} from '../util/generateElementPreview';
+import { isGifSource } from '../util/generateElementPreview';
 import { CONFIG_SIZE_MAP } from '../widget/base-config';
 import {
+  fetchSourceBlob,
   findRootGroupNode,
   type ExportBundleOptions,
   type ExportProgressLevel,
@@ -17,7 +15,6 @@ import {
 
 const ICON_EXPORT_SIZE = 180;
 const EXPORT_JPEG_QUALITY = 1;
-const EXPORT_PREVIEW_SCALE = 3;
 
 const SIZE_LABEL_MAP: Record<number, string> = {
   1: 'small',
@@ -225,49 +222,24 @@ export const collectIconPackExportFiles = async (
     const filename = `icons_${name || 'preview'}.${
       name === 'list_view' ? 'png' : 'jpg'
     }`;
-    const outputWidth =
-      Number(data.exportWidth) > 0
-        ? Number(data.exportWidth)
-        : Number(data.width) > 0
-          ? Number(data.width)
-          : undefined;
-    const outputHeight =
-      Number(data.exportHeight) > 0
-        ? Number(data.exportHeight)
-        : Number(data.height) > 0
-          ? Number(data.height)
-          : undefined;
-    const targetElement = queryNodeElement(String(surfaceNode.id));
-    if (!targetElement) {
-      pushLine('warning', `跳过 ${filename}（未找到 DOM 节点）`);
+    const source = String(data.source || '').trim();
+    if (!source) {
+      pushLine('warning', `跳过 ${filename}（未上传预览图）`);
       continue;
     }
-    pushLine(
-      'info',
-      `开始处理 ${filename}${outputWidth && outputHeight ? ` ${outputWidth}x${outputHeight}` : ''}...`,
-    );
-    try {
-      const previewBlob = await generateElementPreview(targetElement, {
-        isGif: Boolean(data.isGif),
-        scale: EXPORT_PREVIEW_SCALE,
-        jpegQuality: EXPORT_JPEG_QUALITY,
-        outputWidth,
-        outputHeight,
-      });
-      if (!previewBlob) {
-        pushLine('warning', `跳过 ${filename}（截图失败）`);
-        continue;
-      }
-      files.push({
-        key: name || key,
-        kind: 'preview',
-        filename,
-        blob: previewBlob,
-      });
-      pushLine('success', `生成 ${filename}`);
-    } catch {
-      pushLine('warning', `跳过 ${filename}（导出失败）`);
+    pushLine('info', `开始处理 ${filename}...`);
+    const previewBlob = await fetchSourceBlob(source);
+    if (!previewBlob) {
+      pushLine('warning', `跳过 ${filename}（预览图读取失败）`);
+      continue;
     }
+    files.push({
+      key: name || key,
+      kind: 'preview',
+      filename,
+      blob: previewBlob,
+    });
+    pushLine('success', `生成 ${filename}`);
   }
 
   if (!files.length) {

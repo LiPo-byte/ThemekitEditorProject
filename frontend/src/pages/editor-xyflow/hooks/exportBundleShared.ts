@@ -21,6 +21,43 @@ export type ExportBundleApi = {
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 
+const MIME_EXT_MAP: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+};
+
+/**
+ * 透传导出时按实际内容定扩展名。
+ * 优先 MIME；服务端返回 octet-stream 时回退 URL 后缀（上传后存为 assets/{uuid}.{ext}）。
+ */
+export const resolveSourceExt = (
+  source: string,
+  blob: Blob,
+  fallback = 'jpg',
+): string => {
+  const mimeExt = MIME_EXT_MAP[String(blob.type || '').trim().toLowerCase()];
+  if (mimeExt) return mimeExt;
+  const path = String(source || '').split('?')[0].split('#')[0];
+  const ext = (path.split('.').pop() || '').toLowerCase();
+  return /^[a-z0-9]{1,5}$/.test(ext) ? ext : fallback;
+};
+
+/** 读上传资源原始 blob：预览图直接透传，不经 DOM 截图 */
+export const fetchSourceBlob = async (source: string): Promise<Blob | null> => {
+  const url = String(source || '').trim();
+  if (!url) return null;
+  try {
+    const response = await fetch(url, { mode: 'cors' });
+    if (!response.ok) return null;
+    return await response.blob();
+  } catch {
+    return null;
+  }
+};
+
 /** 从任意节点向上找到根 group */
 export const findRootGroupNode = (
   nodes: FlowNode[],

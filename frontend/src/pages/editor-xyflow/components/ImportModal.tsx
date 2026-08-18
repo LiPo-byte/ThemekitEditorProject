@@ -159,7 +159,8 @@ const THEME_SURFACE_KEYS = [
   'preview_long_ipad',
   'list_view_ipad',
 ];
-const THEME_SURFACE_EXTS = ['jpg', 'jpeg', 'png'];
+// 导出按上传内容定扩展名，这里要覆盖同一组格式
+const THEME_SURFACE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
 const resolveAmazonApp = (apps: any): Record<string, any> | null => {
   if (Array.isArray(apps)) {

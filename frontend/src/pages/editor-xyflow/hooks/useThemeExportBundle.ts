@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import JSZip from 'jszip';
 import type { Node as FlowNode } from '@xyflow/react';
 import { useEditorNodes } from '../context';
-import { generateElementPreview } from '../util/generateElementPreview';
 import {
   collectIconPackExportFiles,
   type IconPackExportFile,
@@ -16,13 +15,12 @@ import {
   type WallpaperExportFile,
 } from './useWallpaperExportBundle';
 import {
+  fetchSourceBlob,
   findRootGroupNode,
+  resolveSourceExt,
   type ExportBundleOptions,
   type ExportProgressLevel,
 } from './exportBundleShared';
-
-const EXPORT_JPEG_QUALITY = 1;
-const EXPORT_PREVIEW_SCALE = 3;
 
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
@@ -38,25 +36,13 @@ const downloadBlob = (blob: Blob, filename: string) => {
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 
-const getNodeSelectorById = (id: string) => {
-  if (!id) return '';
-  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
-    return `.xyflow-stage .react-flow__node[data-id="${CSS.escape(id)}"]`;
-  }
-  return `.xyflow-stage .react-flow__node[data-id="${id}"]`;
-};
-
-const queryNodeElement = (id: string) => {
-  if (typeof document === 'undefined') return null;
-  const selector = getNodeSelectorById(id);
-  if (!selector) return null;
-  return document.querySelector(selector) as HTMLElement | null;
-};
 type ThemeSurfaceExportItem = {
   key: string;
   surfaceNode: FlowNode;
   platformNode: FlowNode;
   isGif: boolean;
+  /** 上传的预览图，导出时直接透传 */
+  source: string;
   exportWidth: number;
   exportHeight: number;
   width: number;
@@ -95,6 +81,7 @@ const collectThemeSurfaceNodes = (
       surfaceNode,
       platformNode,
       isGif: data.isGif,
+      source: String(data.source || '').trim(),
       exportWidth: Number(data.exportWidth) > 0 ? Number(data.exportWidth) : 887,
       exportHeight: Number(data.exportHeight) > 0 ? Number(data.exportHeight) : 1920,
       width: Number(data.width) > 0 ? Number(data.width) : 887,
@@ -294,7 +281,9 @@ const collectThemeWallpaperAssets = async (
       continue;
     }
     for (const file of files) {
-      const filename = withExportIndex(file.filename, index, total);
+      // 首套始终保持原名，与导入端「无后缀自成一套」对齐；其余仍是 _2 / _3 …
+      const filename =
+        i === 0 ? file.filename : withExportIndex(file.filename, index, total);
       result.push({ filename, blob: file.blob });
       pushLine('success', `wallpaper 资源: [${elementKey}] → ${filename}`);
     }
@@ -337,34 +326,20 @@ export const useThemeExportBundle = (nodeId?: string) => {
 
         for (let index = 0; index < surfaces.length; index += 1) {
           const item = surfaces[index];
-          const isGif = item.isGif;
-          const filename = `${item.key}.${isGif ? 'gif' : 'jpg'}`;
-          const targetElement = queryNodeElement(String(item.surfaceNode.id));
-          if (!targetElement) {
-            pushLine('warning', `跳过 ${filename}（未找到 DOM 节点）`);
+          if (!item.source) {
+            pushLine('warning', `跳过 ${item.key}（未上传预览图）`);
             continue;
           }
-          pushLine(
-            'info',
-            `开始处理 ${filename} ${item.exportWidth}x${item.exportHeight}...`,
-          );
-          try {
-            const previewBlob = await generateElementPreview(targetElement, {
-              isGif: isGif,
-              scale: 2,
-              jpegQuality: EXPORT_JPEG_QUALITY,
-              outputWidth: item.exportWidth,
-              outputHeight: item.exportHeight,
-            });
-            if (!previewBlob) {
-              pushLine('warning', `跳过 ${filename}（截图失败）`);
-              continue;
-            }
-            zip.file(filename, previewBlob);
-            pushLine('success', `生成 ${filename}`);
-          } catch {
-            pushLine('warning', `跳过 ${filename}（导出失败）`);
+          pushLine('info', `开始处理 ${item.key}...`);
+          const previewBlob = await fetchSourceBlob(item.source);
+          if (!previewBlob) {
+            pushLine('warning', `跳过 ${item.key}（预览图读取失败）`);
+            continue;
           }
+          // 扩展名跟随上传内容，不再按 isGif 二选一
+          const filename = `${item.key}.${resolveSourceExt(item.source, previewBlob)}`;
+          zip.file(filename, previewBlob);
+          pushLine('success', `生成 ${filename}`);
         }
 
         // selectElements 关联资源：icon / widget / wallpaper 写入 zip
