@@ -25,6 +25,19 @@ export type UsersPublic = {
   count: number;
 };
 
+export type UserUpdate = {
+  email?: string | null;
+  username?: string | null;
+  password?: string | null;
+  full_name?: string | null;
+  is_active?: boolean;
+  is_superuser?: boolean;
+};
+
+export type MessageResponse = {
+  message: string;
+};
+
 /** 获取用户列表 GET /api/v1/users/ */
 export async function getApiV1Users(
   params?: {
@@ -55,6 +68,33 @@ export async function postApiV1Users(
       'Content-Type': 'application/json',
     },
     data: body,
+    ...(options || {}),
+  });
+}
+
+/** 更新用户，传 password 即重置密码（需要 superuser 权限） PATCH /api/v1/users/{user_id} */
+export async function patchApiV1User(
+  userId: string,
+  body: UserUpdate,
+  options?: { [key: string]: any },
+) {
+  return request<UserPublic>(`/api/v1/users/${userId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 删除用户（需要 superuser 权限，会级联删除其项目） DELETE /api/v1/users/{user_id} */
+export async function deleteApiV1User(
+  userId: string,
+  options?: { [key: string]: any },
+) {
+  return request<MessageResponse>(`/api/v1/users/${userId}`, {
+    method: 'DELETE',
     ...(options || {}),
   });
 }
