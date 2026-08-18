@@ -77,7 +77,10 @@ const EditorCanvas: React.FC = () => {
     const restoreSnapshot = async () => {
       let serverUpdatedAt: string | null = null;
       try {
-        const detail = await getProjectDetail(projectId);
+        // 与 context 里的详情请求是同一个接口，报错提示由那边统一负责，这里别再弹一遍
+        const detail = await getProjectDetail(projectId, {
+          skipErrorHandler: true,
+        });
         const { name, updated_at  } = detail;
         serverUpdatedAt = updated_at;
         setProjectName(name);

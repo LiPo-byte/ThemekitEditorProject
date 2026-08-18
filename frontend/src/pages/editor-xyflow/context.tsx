@@ -12,6 +12,7 @@ import { useReactFlow } from '@xyflow/react';
 import type { Node as FlowNode } from '@xyflow/react';
 import type { EditorCore } from '@/editor-core';
 import { history, useLocation, useParams } from '@umijs/max';
+import { message } from 'antd';
 import fontManifest from './components/font-manifest.json';
 // import { nanoid } from 'nanoid';
 // import { WidgetDefaultConfig } from '@/editor-core/defaultConfig';
@@ -513,7 +514,10 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     let disposed = false;
     const loadProjectName = async () => {
       try {
-        const detail = await getProjectDetail(projectId);
+        // 提示交给下面的 catch 分流，否则全局 errorHandler 会先弹一条后端英文原文
+        const detail = await getProjectDetail(projectId, {
+          skipErrorHandler: true,
+        });
         if (disposed) return;
         setCanEdit(detail?.can_edit !== false);
         if (detail?.name) {
@@ -525,7 +529,19 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
         // 详情拉成功才允许保存：batch 接口是全量覆盖式的，
         // 加载失败时 nodes 还是空的，这时候存下去会把服务端已有元素全软删掉
         setReadyProjectId(projectId);
-      } catch (error) {
+      } catch (error: any) {
+        if (disposed) return;
+        // 无权访问（别人的私有项目）或项目已不存在时，留在编辑器只会是一张空白画布，
+        // 直接退回项目列表
+        const status = error?.status;
+        if (status === 403 || status === 404) {
+          message.error(
+            status === 403 ? '无权访问该项目' : '项目不存在或已被删除',
+          );
+          history.replace('/project-list');
+          return;
+        }
+        message.error(error?.message || '项目加载失败，请重试');
         console.warn('[EditorCoreProvider] fetch project detail failed:', error);
       }
     };

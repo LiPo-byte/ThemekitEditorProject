@@ -122,7 +122,11 @@ export const errorConfig: RequestConfig = {
             : Array.isArray(detail)
               ? detail.map((d: any) => d.msg).join(', ')
               : error?.message || 'Request error';
-        return Promise.reject(new Error(errorMessage));
+        // 这里丢掉了 axios 的 error.response，业务侧需要按状态码分流（如 403 跳走），
+        // 所以把 status 挂回新 Error 上
+        const nextError: any = new Error(errorMessage);
+        nextError.status = error?.response?.status;
+        return Promise.reject(nextError);
       },
     ],
   ],
