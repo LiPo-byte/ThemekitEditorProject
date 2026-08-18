@@ -8,7 +8,7 @@ const getTextStyle = (parentId?: string, textData?: any) => ({
   fontFamily: resolveWidgetFontFamily(parentId, textData?.font),
   opacity: textData?.alpha ?? 1,
   color: textData?.textColor ?? '#111827',
-  // lineHeight: 1,
+  lineHeight: 1,
   // height: textData?.textHeight ? `${textData.textHeight}px` : 'auto',
   height: 'auto',
   whiteSpace: 'nowrap' as const,
@@ -109,7 +109,7 @@ export default function BatteryLayout_0(props: any) {
             style={{
               position: 'absolute',
               ...textpos(data.textAlignment, 0),
-              right: 20,
+              right: 0,
               display: 'flex',
               alignItems: 'center',
               pointerEvents: 'none',
