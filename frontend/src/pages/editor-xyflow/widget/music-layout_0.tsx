@@ -221,8 +221,11 @@ export default function MusicLayout_0(props: any) {
           <div style={{
             width: 152,
             marginLeft: '21px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}>
-            { playerSource ? <img src={playerSource} alt="" style={{ height: '100%', 'objectFit': 'cover' }} /> : null}
+            { playerSource ? <img src={playerSource} alt="" style={{ width: '100%', 'objectFit': 'cover' }} /> : null}
           </div>
         </div>
       ) }
