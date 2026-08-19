@@ -23,6 +23,7 @@ import { wallpaperConfig2Nodes, buildWallpaperConfigJson } from './wallpaper/uti
 import { themeConfig2Nodes, buildThemeConfigJson } from './theme/util';
 
 import { buildIconPackConfigJson } from './icon/buildIconPackConfig';
+import { relayoutRootNodes, resolveNextRootPosition } from './util/rootLayout';
 
 import { DEFAULT_CROP_PROPS } from './widget/base-config';
 
@@ -126,6 +127,8 @@ type EditorCoreCtxValue = {
   fitView: (options?: ViewFitOptions) => void;
   /** 聚焦：把视角移到指定根元素；元素尚未落到 nodes 时会等它出现后再执行 */
   focusElement: (rootId: string, options?: ViewFitOptions) => void;
+  /** 整理排列：把所有根元素按阅读顺序重新码放，回收增删留下的空洞 */
+  arrangeElements: () => void;
   deleteSelectedNodes: () => void;
   undo: () => void;
   redo: () => void;
@@ -208,6 +211,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   addTheme: noopAddNodeGroup,
   fitView: (_options?: ViewFitOptions) => {},
   focusElement: (_rootId: string, _options?: ViewFitOptions) => {},
+  arrangeElements: () => {},
   deleteSelectedNodes: noopDeleteSelectedNodes,
   undo: () => {},
   redo: () => {},
@@ -713,120 +717,34 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     applyBounds(bounds, pending.options);
   }, [nodes, applyBounds]);
 
+  const pendingFitViewRef = useRef<{ options?: ViewFitOptions } | null>(null);
+
+  useEffect(() => {
+    const pending = pendingFitViewRef.current;
+    if (!pending) return;
+    pendingFitViewRef.current = null;
+    const bounds = getRootNodesBounds(nodes);
+    if (!bounds) return;
+    applyBounds(bounds, pending.options);
+  }, [nodes, applyBounds]);
+
+  const arrangeElements = () => {
+    // 已经是整齐的就别记一条撤销，只把视角拉回全览
+    if (relayoutRootNodes(nodesRef.current) === nodesRef.current) {
+      fitView();
+      return;
+    }
+    // 新位置要等这次提交落到 nodes 才算得出包围盒，先挂起全览
+    pendingFitViewRef.current = {};
+    commitNodes((prev) => relayoutRootNodes(prev));
+  };
+
   const appendNodesBySlot = (newNodes: FlowNode[], rootNode: FlowNode) => {
-    const COLUMN_COUNT = 6;
-    // 各类元素根宽度差一个数量级（widget 几百，iconpack 上万），只按个数封顶会让某些行
-    // 被拉得极长，这里再加一道行宽上限
-    const ROW_MAX_WIDTH = 10000;
-    const DEFAULT_GAP = 100;
-    const ROW_TOLERANCE = 4;
-
-    const readNumber = (value: unknown) => {
-      const num = typeof value === 'number' ? value : Number(value);
-      return Number.isFinite(num) ? num : 0;
-    };
-
-    const getNodeSize = (node: FlowNode) => {
-      const style = (node.style ?? {}) as { width?: number | string; height?: number | string };
-      const measured = ((node as any).measured ?? {}) as { width?: number; height?: number };
-      return {
-        width: readNumber(style.width ?? measured.width),
-        height: readNumber(style.height ?? measured.height),
-      };
-    };
-
-    const resolveNextPosition = (prevNodes: FlowNode[], targetNode: FlowNode) => {
-      const roots = prevNodes.filter((node) => node.type === 'group' && !node.parentId);
-      if (!roots.length) return { x: 0, y: 0 };
-
-      const rows: Array<{
-        y: number;
-        bottom: number;
-        nodes: Array<{ node: FlowNode; x: number; width: number }>;
-        maxRight: number;
-        minX: number;
-      }> = [];
-
-      const sortedRoots = [...roots].sort((a, b) => {
-        const ay = readNumber(a.position?.y);
-        const by = readNumber(b.position?.y);
-        if (ay !== by) return ay - by;
-        return readNumber(a.position?.x) - readNumber(b.position?.x);
-      });
-
-      sortedRoots.forEach((node) => {
-        const x = readNumber(node.position?.x);
-        const y = readNumber(node.position?.y);
-        const size = getNodeSize(node);
-        const row = rows.find((item) => Math.abs(item.y - y) <= ROW_TOLERANCE);
-        const entry = { node, x, width: size.width };
-        if (row) {
-          row.nodes.push(entry);
-          row.maxRight = Math.max(row.maxRight, x + size.width);
-          row.minX = Math.min(row.minX, x);
-          row.bottom = Math.max(row.bottom, y + size.height);
-        } else {
-          rows.push({
-            y,
-            bottom: y + size.height,
-            nodes: [entry],
-            maxRight: x + size.width,
-            minX: x,
-          });
-        }
-      });
-
-      rows.forEach((row) => {
-        row.nodes.sort((a, b) => a.x - b.x);
-      });
-      rows.sort((a, b) => a.y - b.y);
-
-      let gapX = DEFAULT_GAP;
-      let gapY = DEFAULT_GAP;
-      rows.forEach((row) => {
-        for (let index = 1; index < row.nodes.length; index += 1) {
-          const prev = row.nodes[index - 1];
-          const current = row.nodes[index];
-          const candidate = current.x - (prev.x + prev.width);
-          if (candidate > 0) {
-            gapX = Math.min(gapX, candidate);
-          }
-        }
-      });
-      for (let index = 1; index < rows.length; index += 1) {
-        const prev = rows[index - 1];
-        const current = rows[index];
-        const candidate = current.y - prev.bottom;
-        if (candidate > 0) {
-          gapY = Math.min(gapY, candidate);
-        }
-      }
-
-      // 放不下时一律换行；单个超宽元素换行后独占一行，不会陷入死循环
-      const targetWidth = getNodeSize(targetNode).width;
-      const rowWithSpace = rows.find((row) => {
-        if (row.nodes.length >= COLUMN_COUNT) return false;
-        return row.maxRight + gapX + targetWidth - row.minX <= ROW_MAX_WIDTH;
-      });
-      if (rowWithSpace) {
-        return {
-          x: rowWithSpace.maxRight + gapX,
-          y: rowWithSpace.y,
-        };
-      }
-
-      const lastRow = rows[rows.length - 1];
-      const minRowX = Math.min(...rows.map((row) => row.minX));
-      return {
-        x: Number.isFinite(minRowX) ? minRowX : 0,
-        y: lastRow.bottom + gapY,
-      };
-    };
-
     commitNodes((prev) => {
-      const nextPosition = resolveNextPosition(prev, rootNode);
+      const nextPosition = resolveNextRootPosition(prev, rootNode);
 
-      const patchedNodes = cloneNodes(newNodes);
+      // commitNodes 出口会对整棵 nodes 做一次深拷贝，这里只需换掉 root 一项，浅拷贝即可
+      const patchedNodes = [...newNodes];
       const rootNodeIndex = patchedNodes.findIndex(
         (node) => node.id === rootNode.id && node.type === 'group' && !node.parentId,
       );
@@ -1531,6 +1449,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       addTheme,
       fitView,
       focusElement,
+      arrangeElements,
       deleteSelectedNodes,
       undo,
       redo,
@@ -1637,6 +1556,7 @@ export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpape
 export const useEditorAddTheme = () => useContext(EditorCoreCtx).addTheme;
 export const useEditorFitView = () => useContext(EditorCoreCtx).fitView;
 export const useEditorFocusElement = () => useContext(EditorCoreCtx).focusElement;
+export const useEditorArrangeElements = () => useContext(EditorCoreCtx).arrangeElements;
 export const useEditorDeleteSelectedNodes = () => useContext(EditorCoreCtx).deleteSelectedNodes;
 export const useEditorUndo = () => useContext(EditorCoreCtx).undo;
 export const useEditorRedo = () => useContext(EditorCoreCtx).redo;

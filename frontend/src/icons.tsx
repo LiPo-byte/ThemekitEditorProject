@@ -133,5 +133,20 @@ export const StartPauseSvg = React.memo(
   ),
 );
 
-
+export const RepaintSvg = React.memo(
+  ({ color = 'currentColor', size = 16, className }: IconProps) => (
+    <svg
+      className={className}
+      viewBox="0 0 1024 1024"
+      width={size}
+      height={size}
+      fill={color}
+      aria-hidden
+      // p-id="23971"
+    >
+      <title>RepaintSvg icon</title>
+      <path d="M460.2 159.6H175.4c-8.8 0-16 7.2-16 16v397.2c0 8.8 7.2 16 16 16h284.8c8.8 0 16-7.2 16-16V175.6c0-8.8-7.2-16-16-16z m-48.1 365.2H223.4V223.7h188.8v301.1zM847.9 159.6H563c-8.8 0-16 7.2-16 16v190.6c0 8.8 7.2 16 16 16h284.8c8.8 0 16-7.2 16-16V175.6c0.1-8.8-7.1-16-15.9-16z m-48.1 158.6H611.1v-94.6h188.8v94.6zM460.2 641.4H175.4c-8.8 0-16 7.2-16 16V848c0 8.8 7.2 16 16 16h284.8c8.8 0 16-7.2 16-16V657.4c0-8.8-7.2-16-16-16zM412.1 800H223.4v-94.6h188.8V800zM847.9 434.8H563c-8.8 0-16 7.2-16 16V848c0 8.8 7.2 16 16 16h284.8c8.8 0 16-7.2 16-16V450.8c0.1-8.8-7.1-16-15.9-16zM799.8 800H611.1V498.8h188.8V800z" p-id="1896"></path>
+    </svg>
+  ),
+);
 

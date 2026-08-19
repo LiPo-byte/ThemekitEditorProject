@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import {
+  useEditorArrangeElements,
   useEditorCanDeleteSelected,
   useEditorCanEdit,
   useEditorCanRedo,
@@ -25,6 +26,7 @@ type ShortcutState = {
   redo: () => void;
   deleteSelectedNodes: () => void;
   fitView: () => void;
+  arrangeElements: () => void;
   save: () => Promise<void>;
 };
 
@@ -40,7 +42,7 @@ const isTypingTarget = () => {
 /**
  * 编辑器全局快捷键。
  * 键位：Cmd/Ctrl+Z 撤销、Cmd/Ctrl+Shift+Z 或 Ctrl+Y 重做、Cmd/Ctrl+S 保存、
- * Delete/Backspace 删除选中、Shift+1 适应画布。
+ * Delete/Backspace 删除选中、Shift+1 适应画布、Shift+Option/Alt+T 整理排列。
  * 只在 EditorCoreProvider 内挂一次。
  */
 export const useEditorShortcuts = () => {
@@ -51,6 +53,7 @@ export const useEditorShortcuts = () => {
   const deleteSelectedNodes = useEditorDeleteSelectedNodes();
   const canDeleteSelected = useEditorCanDeleteSelected();
   const fitView = useEditorFitView();
+  const arrangeElements = useEditorArrangeElements();
   const save = useSaveProjectAction();
   const canEdit = useEditorCanEdit();
   const cropToolOpen = useEditorCropToolOpen();
@@ -73,6 +76,7 @@ export const useEditorShortcuts = () => {
     redo,
     deleteSelectedNodes,
     fitView,
+    arrangeElements,
     save,
   });
 
@@ -87,6 +91,7 @@ export const useEditorShortcuts = () => {
       redo,
       deleteSelectedNodes,
       fitView,
+      arrangeElements,
       save,
     };
   });
@@ -134,6 +139,19 @@ export const useEditorShortcuts = () => {
         if (!state.canDeleteSelected) return;
         event.preventDefault();
         state.deleteSelectedNodes();
+        return;
+      }
+
+      // Mac 上按住 Option 会改写 event.key（Alt+T 变成 †），只能按物理键位判断
+      if (
+        event.shiftKey &&
+        event.altKey &&
+        !withModifier &&
+        event.code === 'KeyT'
+      ) {
+        event.preventDefault();
+        if (!state.canEdit) return;
+        state.arrangeElements();
         return;
       }
 

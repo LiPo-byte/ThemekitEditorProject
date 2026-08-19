@@ -10,15 +10,17 @@ import {
   useEditorCanRedo,
   useEditorUndo,
   useEditorRedo,
-  useEditorGenerateProjectPayload,
+  // useEditorGenerateProjectPayload,
+  useEditorArrangeElements,
   useEditorCanEdit,
 } from '../context';
 import { patchProjectName } from '../service';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { useSaveProject } from '../hooks/useSaveProject';
-import { Dropdown, type MenuProps, Button, Tooltip, Input } from 'antd';
+import { type MenuProps, Button, Tooltip, Input } from 'antd';
 import type { InputRef } from 'antd';
-import { DownOutlined, UnorderedListOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
+import { SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
+import { RepaintSvg } from '@/icons';
 
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -215,6 +217,7 @@ const EditorToolbar: React.FC = () => {
   const projectId = useEditorProjectId();
   const canEdit = useEditorCanEdit();
   const visible = useEditorToolbarVisible();
+  const arrangeElements = useEditorArrangeElements();
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -280,6 +283,16 @@ const EditorToolbar: React.FC = () => {
                 disabled={!canRedo}
                 onClick={() => {
                   redo()
+                }}
+              />
+          </Tooltip>
+          <Tooltip title={canEdit ? 'Tidy up Shift+Option/Alt+T' : 'Read-only preview, cannot tidy up'}>
+              <Button
+                type='text'
+                icon={<RepaintSvg />}
+                disabled={!canEdit}
+                onClick={() => {
+                  arrangeElements()
                 }}
               />
           </Tooltip>
