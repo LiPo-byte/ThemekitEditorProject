@@ -121,7 +121,7 @@ export default function DigitalLayout_0(props: any) {
             ...getTextJustifyContent(data?.date?.textAlignment),
             marginBottom: !showWeekday && size === 3 ? 16 : 0,
           }}>
-            { showWeekday ? '2026-01-09' : '01-09 Fri' }
+            { showWeekday ? '2026-01-09' : '01/09 Fri' }
           </div>
           { renderTimeAndAPM() }
           { renderWeekday() }

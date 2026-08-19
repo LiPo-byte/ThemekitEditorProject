@@ -222,7 +222,7 @@ export default function MusicLayout_0(props: any) {
             width: 152,
             marginLeft: '21px',
           }}>
-            { playerSource ? <img src={playerSource} alt="" style={{ height: '100%' }} /> : null}
+            { playerSource ? <img src={playerSource} alt="" style={{ height: '100%', 'objectFit': 'cover' }} /> : null}
           </div>
         </div>
       ) }
@@ -299,7 +299,7 @@ export default function MusicLayout_0(props: any) {
             justifyContent: 'center',
             marginTop: 13,
           }}>
-            { playerSource ? <img src={playerSource} alt="" style={{ height: '90%' }} /> : null}
+            { playerSource ? <img src={playerSource} alt="" style={{ height: '90%', 'objectFit': 'cover' }} /> : null}
           </div>
         </div>
       ) }

@@ -5859,8 +5859,8 @@ export const DEFAULT_THEME_CONFIG = {
     source: '',
   },
   list_view: {
-    width: 984,
-    height: 2130,
+    width: 492,
+    height: 1065,
     exportWidth: 492,
     exportHeight: 1065,
     showElements: [],
