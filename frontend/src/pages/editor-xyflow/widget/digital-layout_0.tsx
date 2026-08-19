@@ -26,7 +26,7 @@ export default function DigitalLayout_0(props: any) {
   const showAmAndPm = data.AmAndPm && data.AmAndPm.show;
   const showWeekday = data.weekday && data.weekday.show;
   const size = data.size;
-  const paddSize:any = {1: '20px 10px', 2: '16px 20px 0 20px', 3: '30px 42px'};
+  const paddSize:any = {1: '20px 10px', 2: '16px 20px', 3: '30px 42px'};
   const getTextJustifyContent = (textAlignment: number):any => {
     if (textAlignment === 1) {
       return {
@@ -141,15 +141,28 @@ export default function DigitalLayout_0(props: any) {
             display: 'flex',
             width: '100%',
           }}>
-            <div style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              ...getTextStyle(props.parentId, data?.date),
-              ...getTextJustifyContent(data?.date?.textAlignment),
-            }}>
-              2026-01-09
-            </div>
+            { showWeekday ? (
+              <div style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                ...getTextStyle(props.parentId, data?.date),
+                ...getTextJustifyContent(data?.date?.textAlignment),
+              }}>
+                2026-01-09
+              </div>
+            ) : (
+              <div style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                ...getTextStyle(props.parentId, data?.date),
+                ...getTextJustifyContent(data?.date?.textAlignment),
+                marginTop: 4,
+              }}>
+                01/09 Fri
+              </div>
+            ) }
             { showWeekday && (
               <div style={{
                   width: '70%',
