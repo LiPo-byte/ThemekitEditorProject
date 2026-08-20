@@ -63,7 +63,6 @@ const HeaderControls: React.FC = () => {
         </Tooltip> */}
         <Segmented
             value={initialState?.settings?.navTheme || 'light'}
-            disabled
             onChange={(v: any) => {
                 setInitialState((s) => ({
                     ...s,
@@ -75,7 +74,7 @@ const HeaderControls: React.FC = () => {
             }}
             options={[
                 { value: 'light', icon: <SunOutlined /> },
-                { value: 'dark', icon: <MoonOutlined /> },
+                { value: 'realDark', icon: <MoonOutlined /> },
             ]}
         />
         <AvatarDropdown>

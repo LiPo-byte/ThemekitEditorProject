@@ -22,6 +22,7 @@ import {
 } from 'antd';
 import type { MenuProps } from 'antd';
 import { PageContainer } from '@ant-design/pro-components';
+import { createStyles } from 'antd-style';
 import { InitialAvatar } from '@/components';
 const { Meta } = Card;
 import dayjs from 'dayjs';
@@ -275,6 +276,21 @@ const ProjectCard = React.memo<ProjectCardProps>(
   },
 );
 
+/** 浮动分页条要跟随亮/暗主题，颜色只能取 token，不能写死 */
+const useStyles = createStyles(({ token, css }) => ({
+  paginationBar: css`
+    position: fixed;
+    right: 24px;
+    bottom: 16px;
+    z-index: 1000;
+    padding: 8px 12px;
+    background: ${token.colorBgElevated};
+    border: 1px solid ${token.colorBorderSecondary};
+    border-radius: ${token.borderRadiusLG}px;
+    box-shadow: ${token.boxShadowTertiary};
+  `,
+}));
+
 /** 骨架屏占位卡片，铺满一屏即可，不必和 pageSize 对齐 */
 const SKELETON_KEYS = Array.from(
   { length: 8 },
@@ -282,6 +298,7 @@ const SKELETON_KEYS = Array.from(
 );
 
 const ProjectList: React.FC = () => {
+  const { styles } = useStyles();
   const [data, setData] = useState<ProjectListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [current, setCurrent] = useState(1);
@@ -459,19 +476,7 @@ const ProjectList: React.FC = () => {
     <PageContainer>
       {renderContent()}
       {data.length ? (
-        <div
-          style={{
-            position: 'fixed',
-            right: 24,
-            bottom: 16,
-            zIndex: 1000,
-            background: '#fff',
-            border: '1px solid #f0f0f0',
-            borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
-            padding: '8px 12px',
-          }}
-        >
+        <div className={styles.paginationBar}>
           <Flex justify="end">
             <Pagination
               current={current}
