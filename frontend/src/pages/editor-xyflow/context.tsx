@@ -1557,16 +1557,16 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   );
 
   // 编辑器路由是 layout: false，拿不到 ProLayout 注入的暗色算法，这里按 navTheme 自己兜一层。
-  // 嵌套 ConfigProvider 的 algorithm 是覆盖而非合并，全局的 compact 必须显式带上。
+  // 亮色不传 theme，让它整份透传全局配置：一旦在这里显式写 algorithm，
+  // 就会覆盖掉外层，字号间距会跟全站对不上。
   return (
     <EditorCoreCtx.Provider value={value}>
       <ConfigProvider
-        theme={{
-          algorithm:
-            themeMode === 'realDark'
-              ? [antdTheme.compactAlgorithm, antdTheme.darkAlgorithm]
-              : antdTheme.compactAlgorithm,
-        }}
+        theme={
+          themeMode === 'realDark'
+            ? { algorithm: antdTheme.darkAlgorithm }
+            : undefined
+        }
       >
         {children}
       </ConfigProvider>
