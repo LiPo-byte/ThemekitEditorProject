@@ -1,6 +1,6 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { Button, Segmented, theme } from 'antd';
-import { MoonOutlined, PlusOutlined, SunOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
@@ -18,6 +18,8 @@ import {
   InitialAvatar,
   OfflineBanner,
 } from '@/components';
+// app.tsx 是 umi 运行时配置，加载时机很早，这里绕开 components 桶文件直接引，避免循环依赖
+import NavThemeSwitch from '@/components/NavThemeSwitch';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
@@ -84,41 +86,6 @@ const GLASS_BLUR: React.CSSProperties = {
   WebkitBackdropFilter: 'blur(8px)',
 };
 
-/**
- * actionsRender 是普通函数不是组件，里面调不了 useToken，
- * 所以单独抽一层来取 token，让底色跟着亮/暗主题走。
- */
-const NavThemeSwitch: React.FC<{
-  value: string;
-  onChange: (value: string) => void;
-}> = ({ value, onChange }) => {
-  const { token } = theme.useToken();
-  return (
-    <Segmented
-      value={value}
-      size="small"
-      style={{
-        borderRadius: '6px',
-      }}
-      // Segmented 默认 trackBg 不透明，换成 filled 按钮同款半透明填充色，
-      // 半透明才能让 backdrop-filter 把 header 下方的内容虚化透出来
-      styles={{
-        root: {
-          background: token.colorFillTertiary,
-          ...GLASS_BLUR,
-        },
-      }}
-      onChange={(v) => {
-        onChange(v as string);
-      }}
-      options={[
-        { value: 'light', icon: <SunOutlined /> },
-        { value: 'realDark', icon: <MoonOutlined /> },
-      ]}
-    />
-  );
-};
-
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({
   initialState,
@@ -148,16 +115,9 @@ export const layout: RunTimeLayoutConfig = ({
       </Button>,
       <NavThemeSwitch
         key="nav-theme"
-        value={initialState?.settings?.navTheme || 'light'}
-        onChange={(v) => {
-          setInitialState((s) => ({
-            ...s,
-            settings: {
-              ...initialState?.settings,
-              navTheme: v as LayoutSettings['navTheme'],
-            },
-          }));
-        }}
+        size="small"
+        glass
+        style={{ borderRadius: '6px', ...GLASS_BLUR }}
       />
       // <DocLink key="doc" />,
       // <VersionDropdown key="version" />,

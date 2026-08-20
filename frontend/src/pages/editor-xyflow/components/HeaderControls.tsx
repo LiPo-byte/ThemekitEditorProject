@@ -7,9 +7,9 @@ import {
 //   useEditorPreviewDevicesOpenSetter,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
-import { AvatarDropdown, InitialAvatar } from '@/components';
-import { Button, Tooltip, Segmented } from 'antd';
-import { PlayCircleOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons';
+import { AvatarDropdown, InitialAvatar, NavThemeSwitch } from '@/components';
+import { Button } from 'antd';
+// import { PlayCircleOutlined } from '@ant-design/icons';
 
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -48,7 +48,7 @@ const useStyles = createStyles(({ token, css }) => ({
 const HeaderControls: React.FC = () => {
   const { styles } = useStyles();
   const visible = useEditorHeaderControlsVisible();
-  const { initialState, setInitialState } = useModel('@@initialState');
+  const { initialState } = useModel('@@initialState');
   const currentUser = initialState?.currentUser;
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
 
@@ -61,22 +61,7 @@ const HeaderControls: React.FC = () => {
                 <PlayCircleOutlined style={{fontSize: '12px'}} />
             </Button>
         </Tooltip> */}
-        <Segmented
-            value={initialState?.settings?.navTheme || 'light'}
-            onChange={(v: any) => {
-                setInitialState((s) => ({
-                    ...s,
-                    settings: {
-                        ...initialState?.settings,
-                        navTheme: v,
-                    }
-                }));
-            }}
-            options={[
-                { value: 'light', icon: <SunOutlined /> },
-                { value: 'realDark', icon: <MoonOutlined /> },
-            ]}
-        />
+        <NavThemeSwitch />
         <AvatarDropdown>
             <Button type='text'>
                 <span
