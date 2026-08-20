@@ -6,7 +6,7 @@ import {
   useEditorOpenCropEditor,
   useEditorOpenDesktopEditor,
 } from '../context';
-import { App, Button, Modal, Typography } from 'antd';
+import { App, Button, Modal, Typography, theme } from 'antd';
 import { ExportOutlined, DeleteTwoTone, TableOutlined } from '@ant-design/icons';
 import { CropSvg, DragSvg } from '@/icons';
 import { useExportBundle } from '../hooks/useExportBundle';
@@ -20,6 +20,7 @@ const ActionPopover: React.FC = (props: any) => {
     data: { isVisible, actionList, nodeId },
   } = props;
   const { message } = App.useApp();
+  const { token } = theme.useToken();
   const canEdit = useEditorCanEdit();
   const openCropEditor = useEditorOpenCropEditor();
   const openDesktopEditor = useEditorOpenDesktopEditor();
@@ -123,8 +124,8 @@ const ActionPopover: React.FC = (props: any) => {
           style={{
             height: 320,
             overflowY: 'auto',
-            background: '#fafafa',
-            border: '1px solid #f0f0f0',
+            background: token.colorFillQuaternary,
+            border: `1px solid ${token.colorBorderSecondary}`,
             borderRadius: 6,
             padding: 12,
           }}

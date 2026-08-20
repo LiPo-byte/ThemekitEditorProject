@@ -50,6 +50,7 @@ const useStyles = createStyles(({ token, css }) => ({
     overflow: hidden;
     border-radius: 12px;
     transform: translateY(0px) translateX(-50%);
+    border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     user-select: none;
@@ -78,7 +79,7 @@ const useStyles = createStyles(({ token, css }) => ({
 }));
 
 const EditorBottomToolBar: React.FC = () => {
-  const { styles } = useStyles();
+  const { styles, theme } = useStyles();
   const addIconPack = useEditorAddIconPack();
   const visible = useEditorBottomToolBarVisible();
   // const coreLoading = useEditorCoreLoading();
@@ -111,7 +112,7 @@ const EditorBottomToolBar: React.FC = () => {
     <div className={`${styles.toolbar} ${playEnterAnimation ? styles.barEnter : ''}`}>
         <div className={styles.toolbarbody}>
             <Flex gap="medium" align="center">
-                <Button type='primary' icon={<SelectSvg color="#000000" size={14} />}></Button>
+                <Button type='primary' icon={<SelectSvg color={theme.colorWhite} size={14} />}></Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('widget'); }} >Widget</Button>
                 <Button type='text' onClick={onAddIconPack} >Icon Pack</Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button>

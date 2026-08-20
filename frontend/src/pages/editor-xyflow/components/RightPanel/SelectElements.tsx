@@ -5,12 +5,12 @@ import { useEditorGetElementsConfigMap } from '../../context';
 import { CONFIG_SIZE_MAP, TYPE_WIDGET_MAP, TYPE_WIDGET_NAME_MAP } from '../../widget/base-config';
 import AppIcon from '../../icon';
 import { xyFlowTypeNodeType } from '@/pages/editor-xyflow/xyFlowTypeNodeType';
-const useStyles = createStyles(({ css }) => ({
+const useStyles = createStyles(({ token, css }) => ({
   section: css`
     width: 100%;
   `,
   empty: css`
-    color: #8c8c8c;
+    color: ${token.colorTextTertiary};
     font-size: 12px;
   `,
   cell: css`
@@ -18,7 +18,7 @@ const useStyles = createStyles(({ css }) => ({
     height: 100%;
     aspect-ratio: 1;
     border-radius: 8px;
-    background: #f3f3f3;
+    background: ${token.colorFillTertiary};
     border: 2px solid transparent;
     display: flex;
     align-items: center;
@@ -36,8 +36,8 @@ const useStyles = createStyles(({ css }) => ({
     width: 100%;
     min-height: 48px;
     border-radius: 8px;
-    background: #f3f3f3;
-    border: 1px solid #e8e8e8;
+    background: ${token.colorFillTertiary};
+    border: 1px solid ${token.colorBorderSecondary};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -52,7 +52,7 @@ const useStyles = createStyles(({ css }) => ({
   `,
   meta: css`
     font-size: 7px;
-    color: #8c8c8c;
+    color: ${token.colorTextTertiary};
     margin-top: 2px;
     white-space: nowrap;
   `,
@@ -114,7 +114,7 @@ const AppCells: React.FC<{
   showElements: any;
   onChange: any;
 }> = ({ apps, showElements, elementKey, onChange }) => {
-  const { styles } = useStyles();
+  const { styles, theme } = useStyles();
   const appList = asArray<Record<string, any>>(apps);
   const showList = normalizeShowElements(showElements);
   if (!appList.length) {
@@ -152,11 +152,11 @@ const AppCells: React.FC<{
             justifyContent: 'center',
             flexDirection: 'column',
             padding: '5px',
-            border: `2px solid ${selected ? '#000000' : 'transparent'}`,
+            border: `2px solid ${selected ? theme.colorText : 'var(--editor-panel-border, transparent)'}`,
             margin: 10,
             cursor: 'pointer',
             borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06)',
+            boxShadow: theme.boxShadowSecondary,
           }} span={6} onClick={onClick}>
             <div style={{
               width: '45px',
@@ -194,7 +194,7 @@ const WidgetSizeCells: React.FC<{
   showElements,
   onChange
 }) => {
-  const { styles } = useStyles();
+  const { styles, theme } = useStyles();
   const sizeList = asArray<Record<string, any>>(config?.sizes);
   if (!sizeList.length) {
     return <div className={styles.empty}>暂无 widget sizes</div>;
@@ -248,8 +248,8 @@ const WidgetSizeCells: React.FC<{
             cursor: 'pointer',
             padding: 10,
             borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(1, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06)',
-            border: `2px solid ${selected ? '#000000' : 'transparent'}`
+            boxShadow: theme.boxShadowSecondary,
+            border: `2px solid ${selected ? theme.colorText : 'var(--editor-panel-border, transparent)'}`
           }} onClick={onClick}>
             <div
               style={{
@@ -287,7 +287,7 @@ const WallpaperCells: React.FC<{
   showElements,
   onChange
 }) => {
-  const { styles } = useStyles();
+  const { styles, theme } = useStyles();
   const wallpaper = config?.wallpaper;
   const wallpaper_ipad = config?.wallpaper_ipad;
   const showList = normalizeShowElements(showElements);
@@ -330,8 +330,8 @@ const WallpaperCells: React.FC<{
             cursor: 'pointer',
             padding: 10,
             borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(1, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06)',
-            border: `2px solid ${selected ? '#000000' : 'transparent'}`
+            boxShadow: theme.boxShadowSecondary,
+            border: `2px solid ${selected ? theme.colorText : 'var(--editor-panel-border, transparent)'}`
           }} onClick={onClick}>
             <div
               style={{

@@ -11,8 +11,8 @@ import React, {
 import { useReactFlow } from '@xyflow/react';
 import type { Node as FlowNode } from '@xyflow/react';
 import type { EditorCore } from '@/editor-core';
-import { history, useLocation, useParams } from '@umijs/max';
-import { message } from 'antd';
+import { history, useLocation, useModel, useParams } from '@umijs/max';
+import { ConfigProvider, message, theme as antdTheme } from 'antd';
 import fontManifest from './components/font-manifest.json';
 // import { nanoid } from 'nanoid';
 // import { WidgetDefaultConfig } from '@/editor-core/defaultConfig';
@@ -60,6 +60,13 @@ const MANIFEST_FONTS = (fontManifest as FontManifestItem[]).filter(
 
 export type LeftPanlContent = 'widget' | 'lockScreen' | 'theme' | 'wallpaper';
 
+// 画布底色是 xyflow 自己的 style，不走 antd token，这里按明暗各给一档：
+// 暗色用 #141414，比面板的 colorBgElevated(#1f1f1f) 深一档，让面板和节点能浮起来
+const CANVAS_BG_BY_THEME: Record<'light' | 'realDark', string> = {
+  light: '#ffffff',
+  realDark: '#141414',
+};
+
 export type CropProps = {
   scaleX: number;
   scaleY: number;
@@ -106,6 +113,8 @@ type EditorCoreCtxValue = {
   setProjectName: (name: string) => void;
   /** 打开别人的公开项目时为 false：编辑器只读，不保存也不允许改名 */
   canEdit: boolean;
+  /** 跟随全站 settings.navTheme，给需要按明暗分支取色的地方用（切换入口是顶栏 NavThemeSwitch） */
+  themeMode: 'light' | 'realDark';
   fontsReady: boolean;
   nodes: FlowNode[];
   setNodes: React.Dispatch<React.SetStateAction<FlowNode[]>>;
@@ -187,6 +196,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   projectName: '',
   setProjectName: () => {},
   canEdit: true,
+  themeMode: 'light',
   fontsReady: false,
   nodes: [],
   setNodes: noopSetNodes,
@@ -235,7 +245,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   setShowAxis: (_bool: boolean) => {},
   backgroundVariant: 'dots',
   setBackgroundVariant: (_variant: 'lines' | 'dots' | 'cross') => {},
-  backgroundColor: '#ffffff',
+  backgroundColor: CANVAS_BG_BY_THEME.light,
   setBackgroundColor: (_color: string) => {},
   globalLoading: false,
   setGlobalLoading: (_bool: boolean) => {},
@@ -430,7 +440,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [importModalOpen, setImportModalOpen] = useState<boolean>(false);
   const [showAxis, setShowAxis] = useState<boolean>(true);
   const [backgroundVariant, setBackgroundVariant] = useState<'lines' | 'dots' | 'cross'>('dots');
-  const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
+  const { initialState } = useModel('@@initialState');
+  const themeMode: 'light' | 'realDark' =
+    initialState?.settings?.navTheme === 'realDark' ? 'realDark' : 'light';
+  const [backgroundColor, setBackgroundColor] = useState<string>(
+    CANVAS_BG_BY_THEME[themeMode],
+  );
   const [globalLoading, setGlobalLoading] = useState<boolean>(false);
   const [cropEditingNodeId, setCropEditingNodeId] = useState<string>('');
   const [cropDraftProps, setCropDraftProps] = useState<CropProps | null>(null);
@@ -450,6 +465,11 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   const [readyProjectId, setReadyProjectId] = useState<string | null>(null);
   /** 新建项目时还没有详情，先按可编辑处理，详情回来再按 can_edit 修正 */
   const [canEdit, setCanEdit] = useState(true);
+
+  // 切主题直接覆盖画布底色：右侧面板 ColorPicker 里的临时自定义会被重置
+  useEffect(() => {
+    setBackgroundColor(CANVAS_BG_BY_THEME[themeMode]);
+  }, [themeMode]);
 
   useEffect(() => {
     let mounted = true;
@@ -1430,6 +1450,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       projectName,
       setProjectName,
       canEdit,
+      themeMode,
       fontsReady,
       nodes,
       setNodes,
@@ -1498,6 +1519,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       projectId,
       projectName,
       canEdit,
+      themeMode,
       fontsReady,
       selectedNodesMap,
       actionPropNode,
@@ -1534,7 +1556,22 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     ],
   );
 
-  return <EditorCoreCtx.Provider value={value}>{children}</EditorCoreCtx.Provider>;
+  // 编辑器路由是 layout: false，拿不到 ProLayout 注入的暗色算法，这里按 navTheme 自己兜一层。
+  // 嵌套 ConfigProvider 的 algorithm 是覆盖而非合并，全局的 compact 必须显式带上。
+  return (
+    <EditorCoreCtx.Provider value={value}>
+      <ConfigProvider
+        theme={{
+          algorithm:
+            themeMode === 'realDark'
+              ? [antdTheme.compactAlgorithm, antdTheme.darkAlgorithm]
+              : antdTheme.compactAlgorithm,
+        }}
+      >
+        {children}
+      </ConfigProvider>
+    </EditorCoreCtx.Provider>
+  );
 };
 
 export const useEditorNodes = () => useContext(EditorCoreCtx).nodes;
@@ -1601,6 +1638,7 @@ export const useEditorProjectId = () => useContext(EditorCoreCtx).projectId;
 export const useEditorProjectName = () => useContext(EditorCoreCtx).projectName;
 export const useEditorProjectNameSetter = () => useContext(EditorCoreCtx).setProjectName;
 export const useEditorCanEdit = () => useContext(EditorCoreCtx).canEdit;
+export const useEditorThemeMode = () => useContext(EditorCoreCtx).themeMode;
 export const useEditorSaveStatus = () => 'idle' as ProjectAutoSaveStatus;
 export const useEditorLastSavedAt = () => null as string | null;
 export const useEditorSaveAllNow = () => noop;

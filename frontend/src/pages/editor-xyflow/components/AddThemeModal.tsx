@@ -145,12 +145,13 @@ const resolveAmazonApp = (apps: any): Record<string, any> | null => {
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
     position: absolute;
-    right: 8%;
+    right: -4%;
     bottom: 52px;
     transform: translateX(-50%);
     width: 500px;
     height: 500px;
     border-radius: 12px;
+    border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     backdrop-filter: blur(14px);
@@ -214,13 +215,13 @@ const useStyles = createStyles(({ token, css }) => ({
     position: relative;
     padding: 8px;
     border-radius: 8px;
-    border: 2px solid transparent;
+    border: 2px solid var(--editor-panel-border, transparent);
     background: ${token.colorFillQuaternary};
     overflow: hidden;
     cursor: pointer;
     user-select: none;
     transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    box-shadow: ${token.boxShadowSecondary};
   `,
   itemSelected: css`
     border-color: ${token.colorPrimary};

@@ -27,6 +27,7 @@ const useStyles = createStyles(({ token, css }) => ({
     z-index: 20;
     border-radius: 12px;
     overflow: auto;
+    border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     backdrop-filter: blur(14px);

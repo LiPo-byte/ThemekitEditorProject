@@ -68,13 +68,13 @@ const InputTitle: React.FC<{ label: string }> = ({ label }) => {
   return <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{label}</span>;
 };
 
-const useImageUploadStyles = createStyles(({ css }) => ({
+const useImageUploadStyles = createStyles(({ token, css }) => ({
   uploadButtonLabelMixed: css`
     margin-top: 0;
     padding: 2px 8px;
     border-radius: 6px;
-    background: rgba(0, 0, 0, 0.45);
-    color: #fff;
+    background: ${token.colorBgMask};
+    color: ${token.colorTextLightSolid};
     font-weight: 600;
   `,
   previewImage: css`
@@ -117,8 +117,8 @@ const useImageUploadStyles = createStyles(({ css }) => ({
     width: 100%;
     aspect-ratio: 1;
     border-radius: 8px;
-    background: #f3f3f3;
-    border: 2px solid transparent;
+    background: ${token.colorFillTertiary};
+    border: 2px solid var(--editor-panel-border, transparent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -128,13 +128,13 @@ const useImageUploadStyles = createStyles(({ css }) => ({
     font-weight: 600;
     text-align: center;
     box-sizing: border-box;
-    color: #595959;
+    color: ${token.colorTextSecondary};
     word-break: break-word;
     user-select: none;
     font-family: AvenirNext-HeavyItalic;
   `,
   appCellSelected: css`
-    border-color: #1677ff;
+    border-color: ${token.colorPrimary};
     // background: #1677ff;
   `,
   appCellImg: css`

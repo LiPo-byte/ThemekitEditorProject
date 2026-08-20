@@ -41,6 +41,7 @@ const useStyles = createStyles(({ token, css }) => ({
     flex-direction: column;
     overflow: hidden;
     border-radius: 12px;
+    border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     backdrop-filter: blur(14px);

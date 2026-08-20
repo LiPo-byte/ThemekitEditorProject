@@ -16,6 +16,7 @@ const useStyles = createStyles(({ token, css }) => ({
     right: 0px;
     margin: auto;
     overflow: hidden;
+    border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     user-select: none;

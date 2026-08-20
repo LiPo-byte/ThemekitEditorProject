@@ -31,6 +31,7 @@ import {
   useEditorBackgroundColor,
   useEditorSelectedNodesMap,
   useEditorFitView,
+  useEditorThemeMode,
 } from './context';
 
 export const xyFlowTypeNodeType = {
@@ -81,6 +82,7 @@ export default function EditorStage() {
   const showAxis = useEditorShowAxis();
   const backgroundVariant = useEditorBackgroundVariant();
   const backgroundColor = useEditorBackgroundColor();
+  const themeMode = useEditorThemeMode();
   const fitView = useEditorFitView();
 
   // selected 以 selectedNodesMap 为准，避免 React Flow 默认单选覆盖多选状态
@@ -108,6 +110,8 @@ export default function EditorStage() {
     >
       <ReactFlow
         nodes={flowNodes}
+        // xyflow 内置控件（Controls 等）只认它自己的 colorMode，不受 antd token 影响
+        colorMode={themeMode === 'realDark' ? 'dark' : 'light'}
         nodeTypes={{
           'node-with-toolbar': ActionPopover,
           ...xyFlowTypeNodeType,

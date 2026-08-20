@@ -15,12 +15,14 @@ import {
   EditorCoreProvider,
   useEditorCanEdit,
   useEditorGlobalLoading,
+  useEditorThemeMode,
 } from './context';
 import { useEditorShortcuts } from './hooks/useEditorShortcuts';
 import { useStyles } from './style';
 
 const EditorPageContent: React.FC = () => {
-  const { styles } = useStyles();
+  // root 上挂 --editor-panel-border，各面板的边框颜色统一由它继承
+  const { styles } = useStyles(useEditorThemeMode() === 'realDark');
   const globalLoading = useEditorGlobalLoading();
   const canEdit = useEditorCanEdit();
   useEditorShortcuts();

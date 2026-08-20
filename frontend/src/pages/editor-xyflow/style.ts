@@ -5,7 +5,7 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
-export const useStyles = createStyles(({ token, css }) => ({
+export const useStyles = createStyles(({ token, css }, isDark: boolean) => ({
   root: css`
     display: flex;
     flex-direction: column;
@@ -14,6 +14,9 @@ export const useStyles = createStyles(({ token, css }) => ({
     background: ${token.colorBgLayout};
     color: ${token.colorText};
     overflow: hidden;
+    /* 暗色下黑阴影在深底上不可见，靠边框撑出面板边界；
+       亮色已有阴影，再叠边框会显得太重，所以留空 */
+    --editor-panel-border: ${isDark ? token.colorBorderSecondary : 'transparent'};
   `,
   body: css`
     flex: 1;
@@ -47,6 +50,7 @@ export const useStyles = createStyles(({ token, css }) => ({
     border-radius: 12px;
     background: ${token.colorBgElevated}f2;
     backdrop-filter: blur(14px);
+    border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
     color: ${token.colorText};
     font-size: 13px;

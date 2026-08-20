@@ -33,6 +33,7 @@ const useStyles = createStyles(({ token, css }) => ({
     z-index: 20;
     overflow: hidden;
     border-radius: 12px;
+    border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;
     display: flex;
