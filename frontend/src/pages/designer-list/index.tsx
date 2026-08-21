@@ -86,7 +86,7 @@ const DesignerList: React.FC = () => {
   const getUsers = async () => {
     const { data, status } = await getApiV1Users();
     if (status === 'ok') {
-      setDesigners(data.reverse())
+      setDesigners(data)
     }
   };
 
@@ -162,85 +162,101 @@ const DesignerList: React.FC = () => {
   return (
     <PageContainer>
       <Row gutter={[10, 10]}>
-        {designers.map((designer) => (
-          <Col key={designer.username} span={24}>
-            <Dropdown
-              trigger={['contextMenu']}
-              menu={{
-                items: [
-                  {
-                    key: 'reset-password',
-                    label: '修改密码',
-                  },
-                  // 冻结自己会让自己下一个请求就掉线，删除自己后端也直接 403，
-                  // 所以这两个入口在自己这张卡上不给
-                  ...(designer.id === currentUserId
-                    ? []
-                    : [
-                        {
-                          key: 'toggle-frozen',
-                          label:
-                            designer.is_active === false
-                              ? '解冻成员'
-                              : '冻结成员',
-                          disabled: freezingId === designer.id,
-                        },
-                        {
-                          key: 'delete-user',
-                          label: '删除成员',
-                          danger: true,
-                          disabled: deletingId === designer.id,
-                        },
-                      ]),
-                ] as MenuProps['items'],
-                onClick: ({ key, domEvent }) => {
-                  domEvent.stopPropagation();
-                  if (key === 'reset-password') {
-                    setPasswordTarget({
-                      id: designer.id,
-                      username: designer.username,
-                    });
-                  }
-                  if (key === 'toggle-frozen') {
-                    handleToggleFrozen(designer, designer.is_active === false);
-                  }
-                  if (key === 'delete-user') {
-                    openDeleteConfirm(designer);
-                  }
-                },
-              }}
-            >
-              <div>
-                <Card hoverable style={{ width: '100%' }}>
-                  <Meta
-                    avatar={<InitialAvatar name={designer.username} />}
-                    title={
-                      designer.is_active === false ? (
-                        <span>
-                          {designer.username}
-                          <Tag style={{ marginInlineStart: 8 }}>已冻结</Tag>
-                        </span>
-                      ) : (
-                        designer.username
-                      )
+        {designers.map((designer, index) => (
+          <React.Fragment key={designer.id ?? designer.username}>
+            {index === 0 && (
+              <Col span={2}>
+                <Button
+                  variant="filled"
+                  color="default"
+                  block
+                  style={{ height: '100%', minHeight: 86 }}
+                  icon={<PlusOutlined />}
+                  onClick={() => setOpen(true)}
+                />
+              </Col>
+            )}
+            <Col span={index === 0 ? 22 : 24}>
+              <Dropdown
+                trigger={['contextMenu']}
+                menu={{
+                  items: [
+                    {
+                      key: 'reset-password',
+                      label: '修改密码',
+                    },
+                    // 冻结自己会让自己下一个请求就掉线，删除自己后端也直接 403，
+                    // 所以这两个入口在自己这张卡上不给
+                    ...(designer.id === currentUserId
+                      ? []
+                      : [
+                          {
+                            key: 'toggle-frozen',
+                            label:
+                              designer.is_active === false
+                                ? '解冻成员'
+                                : '冻结成员',
+                            disabled: freezingId === designer.id,
+                          },
+                          {
+                            key: 'delete-user',
+                            label: '删除成员',
+                            danger: true,
+                            disabled: deletingId === designer.id,
+                          },
+                        ]),
+                  ] as MenuProps['items'],
+                  onClick: ({ key, domEvent }) => {
+                    domEvent.stopPropagation();
+                    if (key === 'reset-password') {
+                      setPasswordTarget({
+                        id: designer.id,
+                        username: designer.username,
+                      });
                     }
-                    description={designer.id}
-                  />
-                </Card>
-              </div>
-            </Dropdown>
-          </Col>
+                    if (key === 'toggle-frozen') {
+                      handleToggleFrozen(designer, designer.is_active === false);
+                    }
+                    if (key === 'delete-user') {
+                      openDeleteConfirm(designer);
+                    }
+                  },
+                }}
+              >
+                <div>
+                  <Card hoverable style={{ width: '100%' }}>
+                    <Meta
+                      avatar={<InitialAvatar name={designer.username} />}
+                      title={
+                        designer.is_active === false ? (
+                          <span>
+                            {designer.username}
+                            <Tag style={{ marginInlineStart: 8 }}>已冻结</Tag>
+                          </span>
+                        ) : (
+                          designer.username
+                        )
+                      }
+                      description={designer.id}
+                    />
+                  </Card>
+                </div>
+              </Dropdown>
+            </Col>
+          </React.Fragment>
         ))}
-        <Col span={24}>
-          <Button
-            variant="filled"
-            color="default"
-            block
-            style={{ height: '100%', minHeight: 86 }}
-            icon={<PlusOutlined />}
-            onClick={() => setOpen(true)}
-          />
-        </Col>
+        {!designers.length && (
+          <Col span={24}>
+            <Button
+              variant="filled"
+              color="default"
+              block
+              style={{ height: '100%', minHeight: 86 }}
+              icon={<PlusOutlined />}
+              onClick={() => setOpen(true)}
+            />
+          </Col>
+        )}
       </Row>
       <Modal
         title="添加成员"
