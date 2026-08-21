@@ -38,6 +38,7 @@ import Icon from './icon';
 import PlatformGroupNode from './components/PlatformGroupNode';
 import Wallpaper from './wallpaper/wallpaper';
 import LiveWallpaper from './wallpaper/live-wallpaper';
+import LottieWallpaper from './wallpaper/lottie_wallpaper';
 // import PreviewLong from './theme/preview_long';
 // import PreviewShort from './theme/preview_short';
 // import ListView from './theme/list_view';
@@ -85,4 +86,5 @@ export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   icon: Icon,
   wallpaper: Wallpaper,
   live_wallpaper: LiveWallpaper,
+  lottie_wallpaper: LottieWallpaper,
 };

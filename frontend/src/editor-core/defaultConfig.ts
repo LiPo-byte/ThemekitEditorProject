@@ -5834,6 +5834,15 @@ export const WallpaperDefaultConfig = {
             width: 886,
             height: 1920,
         }
+    },
+    "Diy Live Wallpaper": {
+        diy_live_wallpaper: {
+            lottieSource: '/data/project/c4e21220-0e35-416b-8075-4f560730c2a9/CharacterRunCycle.lottie',
+            width: 886,
+            height: 1920,
+        },
+        wallpaperType: 5,
+        layoutType: 0,
     }
 }
 export const DEFAULT_THEME_CONFIG = {

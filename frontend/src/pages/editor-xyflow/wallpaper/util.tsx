@@ -11,6 +11,7 @@ const WALLPAPERTYPE_SYSTEM:any = {
     "2": "ios",
     "3": "ios",
     "4": "android",
+    "5": "common",
 };
 const WALLPAPERTYPE_COMPONENTS:any = {
     "0": 'wallpaper',
@@ -18,6 +19,7 @@ const WALLPAPERTYPE_COMPONENTS:any = {
     "2": "wallpaper",
     "3": "live_wallpaper",
     "4": "live_wallpaper",
+    "5": "lottie_wallpaper",
 };
 
 const getNodeData = (node?: FlowNode | null) =>
@@ -161,11 +163,16 @@ export const buildWallpaperConfigJson = (
     const liveWallpaperNode = nodes.find(
       (node) => node.type === 'live_wallpaper' && node.parentId === platformNode.id,
     );
+    const diyliveWallpaperNode = nodes.find(
+      (node) => node.type === 'lottie_wallpaper' && node.parentId === platformNode.id,
+    );
     const liveWallpaperData = getNodeData(liveWallpaperNode);
     const data = getNodeData(wallpaperNode);
+    const diyliveWallpaperData = getNodeData(diyliveWallpaperNode)
     config[key] = {
       ...data,
       ...liveWallpaperData,
+      ...diyliveWallpaperData,
     };
   });
 
