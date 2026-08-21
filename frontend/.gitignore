@@ -52,3 +52,6 @@ docs/superpowers
 # cloudflare wrangler
 .wrangler
 requestRecord.mock.js
+
+# 由 postinstall 从 node_modules 拷贝生成
+/public/dotlottie-player.wasm

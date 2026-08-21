@@ -1,4 +1,5 @@
 import base64
+import json
 import mimetypes
 import uuid
 from datetime import datetime, timezone
@@ -57,6 +58,14 @@ _MEDIA_MIME_TO_EXT = {
 }
 _MAX_MEDIA_UPLOAD_BYTES = 100 * 1024 * 1024
 _MEDIA_CHUNK_BYTES = 1024 * 1024
+# lottie 的 content_type 浏览器给得不可靠（常为空或 octet-stream），只能按扩展名判定；
+# 落盘扩展名必须取白名单里的值，不能沿用文件名，否则 /data 静态目录会被传成 .html 之类
+_LOTTIE_EXT_TO_MIME = {
+    "lottie": "application/zip",
+    "json": "application/json",
+}
+_MAX_LOTTIE_UPLOAD_BYTES = 20 * 1024 * 1024
+_ZIP_MAGIC = b"PK\x03\x04"
 
 
 def _save_preview_image(project_id: uuid.UUID, preview_data_url: str) -> str:
@@ -96,6 +105,48 @@ def _guess_media_extension(content_type: str, filename: str | None) -> str:
     if filename and "." in filename:
         return filename.rsplit(".", maxsplit=1)[-1].lower()
     return "bin"
+
+
+async def _write_upload_stream(
+    file: UploadFile, target_file: Path, max_bytes: int
+) -> int:
+    """边读边写避免大文件整体进内存；中途失败要清掉写了一半的文件。"""
+    size = 0
+    try:
+        with target_file.open("wb") as buffer:
+            while chunk := await file.read(_MEDIA_CHUNK_BYTES):
+                size += len(chunk)
+                if size > max_bytes:
+                    raise HTTPException(status_code=413, detail="File too large")
+                buffer.write(chunk)
+        if not size:
+            raise HTTPException(status_code=400, detail="Empty upload file")
+    except HTTPException:
+        target_file.unlink(missing_ok=True)
+        raise
+    except OSError as error:
+        target_file.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=500, detail="Failed to save upload file"
+        ) from error
+    return size
+
+
+def _validate_lottie_file(target_file: Path, ext: str) -> None:
+    """挡住只改了后缀的假文件：.lottie 是 zip，.json 必须能解析。"""
+    if ext == "lottie":
+        with target_file.open("rb") as buffer:
+            if buffer.read(len(_ZIP_MAGIC)) != _ZIP_MAGIC:
+                raise HTTPException(
+                    status_code=400, detail="Invalid dotLottie file content"
+                )
+        return
+    try:
+        json.loads(target_file.read_text(encoding="utf-8"))
+    except (ValueError, UnicodeDecodeError) as error:
+        raise HTTPException(
+            status_code=400, detail="Invalid lottie json content"
+        ) from error
 
 
 def _can_edit_project(project: Project, current_user: User) -> bool:
@@ -491,30 +542,57 @@ async def upload_project_file(
     relative_path = f"data/project/{project_id}/assets/{file_id}.{ext}"
     target_file = _BACKEND_ROOT / relative_path
 
-    # 视频体积大，边读边写避免整体进内存；中途失败要清掉写了一半的文件
-    size = 0
-    try:
-        with target_file.open("wb") as buffer:
-            while chunk := await file.read(_MEDIA_CHUNK_BYTES):
-                size += len(chunk)
-                if size > _MAX_MEDIA_UPLOAD_BYTES:
-                    raise HTTPException(status_code=413, detail="File too large")
-                buffer.write(chunk)
-        if not size:
-            raise HTTPException(status_code=400, detail="Empty upload file")
-    except HTTPException:
-        target_file.unlink(missing_ok=True)
-        raise
-    except OSError as error:
-        target_file.unlink(missing_ok=True)
-        raise HTTPException(
-            status_code=500, detail="Failed to save upload file"
-        ) from error
+    size = await _write_upload_stream(file, target_file, _MAX_MEDIA_UPLOAD_BYTES)
 
     return ProjectUploadFileResponse(
         url=f"/{relative_path}",
         path=relative_path,
         content_type=content_type,
+        size=size,
+    )
+
+
+@router.post("/{project_id}/upload-lottie", response_model=ProjectUploadFileResponse)
+async def upload_project_lottie(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    project_id: uuid.UUID,
+    file: UploadFile = File(...),
+) -> Any:
+    """
+    Upload a lottie asset (.lottie / .json) for diy live wallpaper.
+    """
+    project = session.get(Project, project_id)
+    if not project or project.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if not current_user.is_superuser and project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    filename = file.filename or ""
+    ext = filename.rsplit(".", maxsplit=1)[-1].lower() if "." in filename else ""
+    if ext not in _LOTTIE_EXT_TO_MIME:
+        raise HTTPException(
+            status_code=400, detail="Only .lottie and .json files are supported"
+        )
+
+    target_dir = _ASSET_DIR / str(project_id) / "assets"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    file_id = uuid.uuid4()
+    relative_path = f"data/project/{project_id}/assets/{file_id}.{ext}"
+    target_file = _BACKEND_ROOT / relative_path
+
+    size = await _write_upload_stream(file, target_file, _MAX_LOTTIE_UPLOAD_BYTES)
+    try:
+        _validate_lottie_file(target_file, ext)
+    except HTTPException:
+        target_file.unlink(missing_ok=True)
+        raise
+
+    return ProjectUploadFileResponse(
+        url=f"/{relative_path}",
+        path=relative_path,
+        content_type=_LOTTIE_EXT_TO_MIME[ext],
         size=size,
     )
 

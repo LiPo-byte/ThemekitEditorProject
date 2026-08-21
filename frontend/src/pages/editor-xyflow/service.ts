@@ -210,6 +210,24 @@ export async function uploadProjectFile(
   );
 }
 
+/** 上传项目 lottie 文件 POST /api/v1/project/{project_id}/upload-lottie */
+export async function uploadProjectLottie(
+  projectId: string,
+  file: File,
+  options?: { [key: string]: any },
+) {
+  const formData = new FormData();
+  formData.append('file', file);
+  return request<ProjectUploadFileResponse>(
+    `/api/v1/project/${projectId}/upload-lottie`,
+    {
+      method: 'POST',
+      data: formData,
+      ...(options || {}),
+    },
+  );
+}
+
 /** 删除项目图片 DELETE /api/v1/project/{project_id}/assets */
 export async function deleteProjectImage(
   projectId: string,

@@ -15,6 +15,7 @@
     "biome:lint": "biome lint",
     "biome": "biome check --write",
     "openapi": "max openapi",
+    "postinstall": "node scripts/copy-lottie-wasm.js",
     "preview": "max preview --port 8000",
     "preview:build": "max build && max preview --port 8000",
     "record": "cross-env NODE_ENV=development UMI_ENV=test max record --scene=login",
