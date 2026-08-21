@@ -5,6 +5,8 @@ import { useEditorNodes } from '../context';
 import { buildWallpaperConfigJson } from '../wallpaper/util';
 import { cropMediaByUrl } from '../util/cropMediaByUrl';
 import { generateElementPreview } from '../util/generateElementPreview';
+import { unpackLottieBundleByUrl } from '../util/lottieBundle';
+import { buildLottieWallpaperSpec } from '../util/lottieWallpaperSpec';
 import {
   findRootGroupNode,
   type ExportBundleOptions,
@@ -70,7 +72,7 @@ const resolveExportExt = (value: unknown, fallback = 'jpg') => {
   return ext === 'jpeg' ? 'jpg' : ext;
 };
 
-const mimeTypeByExt = (ext: string) => {
+const mimeTypeByExt  = (ext: string) => {
   if (ext === 'png') return 'image/png';
   if (ext === 'webp') return 'image/webp';
   return 'image/jpeg';
@@ -189,6 +191,13 @@ export const collectWallpaperExportFiles = async (
       platformIds.has(node.parentId as string),
   );
 
+  const diyLiveWallpaperNodes = nodes.filter(
+    (node) =>
+      node.type === 'lottie_wallpaper' &&
+      Boolean(node.parentId) &&
+      platformIds.has(node.parentId as string),
+  );
+
   for (let index = 0; index < wallpaperNodes.length; index += 1) {
     const wallpaperNode = wallpaperNodes[index];
     const data = getNodeData(wallpaperNode);
@@ -263,6 +272,68 @@ export const collectWallpaperExportFiles = async (
       pushLine('warning', `跳过 ${filename}（下载失败）`);
     }
   }
+
+  for (let index = 0; index < diyLiveWallpaperNodes.length; index += 1) {
+    const diyLiveWallpaperNode = diyLiveWallpaperNodes[index];
+    const data = getNodeData(diyLiveWallpaperNode);
+    // 第一套保持原名，其余加 _2 / _3…，避免多平台节点互相覆盖
+    const suffix = index === 0 ? '' : `_${index + 1}`;
+    const jsonFilename = `lottie${suffix}.json`;
+    const specFilename = `wallpapers_spec${suffix}.json`;
+    const imageDir = `images${suffix}`;
+    const source = data.lottieSource;
+
+    if (!source || typeof source !== 'string') {
+      pushLine('warning', `跳过 ${jsonFilename}（未上传 Lottie 文件）`);
+      continue;
+    }
+
+    pushLine('info', `开始处理 ${jsonFilename}...`);
+    try {
+      const bundle = await unpackLottieBundleByUrl(source, { imageDir });
+      if (!bundle) {
+        pushLine('warning', `跳过 ${jsonFilename}（未找到动画 json）`);
+        continue;
+      }
+
+      const { animation, images } = bundle;
+      files.push({
+        filename: jsonFilename,
+        blob: new Blob([JSON.stringify(animation)], {
+          type: 'application/json',
+        }),
+      });
+      pushLine('success', `生成 ${jsonFilename}`);
+
+      if (images.size) {
+        images.forEach((blob, name) => {
+          files.push({ filename: `${imageDir}/${name}`, blob });
+        });
+        pushLine('success', `生成 ${imageDir}/（${images.size} 张图片）`);
+      } else {
+        pushLine('warning', `${jsonFilename} 未找到图片资源，跳过 ${imageDir}/`);
+      }
+
+      const spec = buildLottieWallpaperSpec(animation);
+      if (spec) {
+        files.push({
+          filename: specFilename,
+          blob: new Blob([JSON.stringify(spec, null, 2)], {
+            type: 'application/json',
+          }),
+        });
+        pushLine('success', `生成 ${specFilename}（${spec.frames.length} 个槽位）`);
+      } else {
+        pushLine(
+          'warning',
+          `跳过 ${specFilename}（content_N 编号不连续或图层缺失）`,
+        );
+      }
+    } catch {
+      pushLine('warning', `跳过 ${jsonFilename}（解析失败）`);
+    }
+  }
+
 
   if (!files.length) {
     pushLine('warning', '没有可导出的文件');

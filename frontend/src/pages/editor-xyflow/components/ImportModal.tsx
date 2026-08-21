@@ -12,7 +12,8 @@ import { Button, message, Segmented, Select, Upload, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import { CONFIG_SIZE_MAP, DEFAULT_CROP_PROPS, DEFAULT_RADIUS, SIZE_LABEL_MAP, SOURCENAME_TYPE_WIDGET_MAP, TYPE_WIDGET_MAP } from '../widget/base-config';
 import JSZip from 'jszip';
-import { uploadProjectFile, uploadProjectImage } from '../service';
+import { uploadProjectFile, uploadProjectImage, uploadProjectLottie } from '../service';
+import { packDotLottie } from '../util/lottieBundle';
 import {
   DEFAULT_THEME_CONFIG,
   IconPackDefaultConfig,
@@ -72,7 +73,7 @@ type Props = {
   onClose: () => void;
 };
 type ImportSystem = 'ios' | 'android' | 'common';
-type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'photo_shuffles' | 'theme' | 'wallpaper_depth' | 'live_wallpaper';
+type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'photo_shuffles' | 'theme' | 'wallpaper_depth' | 'live_wallpaper' | 'diy_live_wallpaper';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -987,6 +988,81 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     return { rootId, config };
   };
 
+  /**
+   * Diy Live Wallpaper：读导出包里的 lottie.json + images/，重新打成 .lottie 再上传。
+   * 后端 upload-lottie 只收单个文件，images/ 没处安放；内联成 base64 又会撑大体积，
+   * 打回 zip 反而有压缩。包里的 wallpapers_spec.json 不读，导出时从 lottie 现算。
+   */
+  const importDiyLiveWallpaperFromZip = async (
+    zip: JSZip,
+    options?: { exportIndex?: ExportIndex; silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any>; imageCount: number } | null> => {
+    const exportIndex = options?.exportIndex ?? null;
+    const silent = Boolean(options?.silent);
+    if (!projectId) {
+      throw new Error('项目未初始化，无法上传资源');
+    }
+
+    const jsonFilename = applyIndexSuffix('lottie.json', exportIndex);
+    const animationFile =
+      zip.file(jsonFilename) ??
+      zip.file(new RegExp(`(^|\\/)${escapeRegExp(jsonFilename)}$`, 'i'))?.[0];
+    if (!animationFile) {
+      if (!silent) message.error(`压缩包内未找到 ${jsonFilename}`);
+      return null;
+    }
+
+    let animation: Record<string, any>;
+    try {
+      animation = JSON.parse(await animationFile.async('string'));
+    } catch (error) {
+      console.warn('[ImportModal] lottie.json 解析失败:', error);
+      if (!silent) message.error(`${jsonFilename} 不是合法的 JSON`);
+      return null;
+    }
+
+    // 目录名与导出一致：无后缀是 images/，多套时是 images_2/ …
+    const imageDir = exportIndex == null ? 'images' : `images_${exportIndex}`;
+    // 锚定到 lottie.json 所在目录，既兼容外面套了一层文件夹的包，
+    // 又不会把其它层级下碰巧也叫 images 的目录一起吃进来
+    const basePath = animationFile.name.slice(
+      0,
+      animationFile.name.lastIndexOf('/') + 1,
+    );
+    const imagePrefix = `${basePath}${imageDir}/`.toLowerCase();
+    const images = new Map<string, Blob>();
+    for (const path of Object.keys(zip.files)) {
+      const entry = zip.files[path];
+      if (!entry || entry.dir) continue;
+      if (!path.toLowerCase().startsWith(imagePrefix)) continue;
+      const name = path.slice(imagePrefix.length);
+      if (!name || name.includes('/')) continue;
+      images.set(name, await entry.async('blob'));
+    }
+    if (!images.size && !silent) {
+      message.warning(`压缩包内 ${imageDir}/ 为空，动画可能缺图`);
+    }
+
+    const packed = await packDotLottie({ animation, images, imageDir });
+    const uploadFile = new File([packed], 'lottie.lottie', {
+      type: 'application/zip',
+    });
+    const { url } = await uploadProjectLottie(projectId, uploadFile);
+
+    const config = structuredClone(
+      WallpaperDefaultConfig['Diy Live Wallpaper'],
+    ) as Record<string, any>;
+    for (const key of Object.keys(config)) {
+      const item = config[key];
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+      item.lottieSource = url;
+    }
+
+    const rootId = addWallpaper(config);
+    if (!rootId) return null;
+    return { rootId, config, imageCount: images.size };
+  };
+
   const readWallpaperFromZip = async (file: File) => {
     const isZipFile =
       file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
@@ -1116,6 +1192,37 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       } catch (error) {
         console.error('[ImportModal] Live Wallpaper 导入失败:', error);
         message.error('Live Wallpaper 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readDiyLiveWallpaperFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importDiyLiveWallpaperFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(
+            `Diy Live Wallpaper 导入成功（${result.imageCount} 张图片）`,
+          );
+        }
+      } catch (error) {
+        console.error('[ImportModal] Diy Live Wallpaper 导入失败:', error);
+        message.error('Diy Live Wallpaper 导入失败');
       }
       return false;
     });
@@ -1292,6 +1399,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'live_wallpaper') {
       return readLiveWallpaperFromZip(file);
     }
+    if (importKind === 'diy_live_wallpaper') {
+      return readDiyLiveWallpaperFromZip(file);
+    }
     if (importKind === 'theme') {
       return prepareThemeImport(file);
     }
@@ -1337,6 +1447,10 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
                 {
                   label: 'live wallpaper',
                   value: 'live_wallpaper',
+                },
+                {
+                  label: 'diy live wallpaper',
+                  value: 'diy_live_wallpaper',
                 }
               ],
             },
