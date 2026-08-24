@@ -283,7 +283,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
         static: {
           timejpg: { width: 310, height: 310 },
           timegif: { width: 310, height: 310 },
-          preview: { width: 269, height: 269 },
+          preview: { width: 310, height: 310 },
         },
         dynamic: {
           timejpg: { width: 310, height: 310 },
@@ -295,7 +295,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
         static: {
           timejpg: { width: 658, height: 310 },
           timegif: { width: 658, height: 310 },
-          preview: { width: 571, height: 269 },
+          preview: { width: 658, height: 310 },
         },
         dynamic: {
           timejpg: { width: 658, height: 310 },
@@ -307,7 +307,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
         static: {
           timejpg: { width: 658, height: 690 },
           timegif: { width: 658, height: 690 },
-          preview: { width: 571, height: 599 },
+          preview: { width: 658, height: 690 },
         },
         dynamic: {
           timejpg: { width: 658, height: 690 },
@@ -553,3 +553,13 @@ export const WIDGET_EXPORT_FILE_RULES: {
       },
   }
 };
+
+/**
+ * 这些 type 的组件导出时不产出 widgets_{size}_{name}.jpg，
+ * timegif 与 preview 仍按 WIDGET_EXPORT_FILE_RULES 正常导出。
+ * 需要新增时把组件 type 数值填进来即可。
+ */
+export const WIDGET_EXPORT_SKIP_TIMEJPG_TYPES: number[] = [13];
+
+export const shouldSkipWidgetTimeJpg = (type: unknown) =>
+  WIDGET_EXPORT_SKIP_TIMEJPG_TYPES.includes(Number(type));

@@ -15,6 +15,7 @@ import {
   SOURCENAME_TYPE_WIDGET_MAP,
   TYPE_WIDGET_MAP,
   WIDGET_EXPORT_FILE_RULES,
+  shouldSkipWidgetTimeJpg,
   type WidgetExportMode,
   type WidgetPlatform,
   type WidgetSizeLabel,
@@ -397,6 +398,7 @@ export const collectWidgetExportFiles = async (
     const normalizedCropProps = normalizeCropProps(data?.crop_props ?? {});
     pushLine('info', `开始处理 widgets_${sizeLabel}...`);
 
+    const skipTimeJpg = shouldSkipWidgetTimeJpg(type);
     const { jpegBlob, gifBlob } = await cropMediaByUrl(source, {
       transform: normalizedCropProps,
       targetElement,
@@ -408,16 +410,24 @@ export const collectWidgetExportFiles = async (
       outputScale: 1,
       renderScale: 2,
       resizeMode: 'stretch',
+      skipJpeg: skipTimeJpg,
     });
-    if (!jpegBlob) {
-      pushLine('warning', `跳过 ${sizeLabel} 主图（未找到 source）`);
+    if (!jpegBlob && !gifBlob) {
+      pushLine(
+        'warning',
+        skipTimeJpg && source
+          ? `跳过 ${sizeLabel} 主图（该类型不导出 jpg）`
+          : `跳过 ${sizeLabel} 主图（未找到 source）`,
+      );
     } else {
       const expectedFilename = `widgets_${sizeLabel}_${SOURCENAME_TYPE_WIDGET_MAP[type] || TYPE_WIDGET_MAP[type]}`;
-      pushFile(`${expectedFilename}.jpg`, jpegBlob);
-      pushLine(
-        'info',
-        `${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
-      );
+      if (jpegBlob) {
+        pushFile(`${expectedFilename}.jpg`, jpegBlob);
+        pushLine(
+          'info',
+          `${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
+        );
+      }
       if (gifBlob) {
         pushFile(`${expectedFilename}.gif`, gifBlob);
         pushLine(

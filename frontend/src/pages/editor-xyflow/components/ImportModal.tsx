@@ -638,6 +638,15 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       }
       if (item.AmAndPm) {
         item.AmAndPm.show = true;
+      } else if (type === 4) {
+        // Digital 的老包/外部包可能整个缺 AmAndPm，补一份默认值（默认关闭），
+        // 让右侧面板的 hasKey('AmAndPm') 能显示这块配置供手动开启
+        item.AmAndPm = {
+          show: false,
+          font: 'AvenirNext-Medium',
+          textSize: sizeNumber === 3 ? 14 : 10,
+          textColor: '#000000',
+        };
       }
 
       if (type === 5 && item.layoutType === 0) {

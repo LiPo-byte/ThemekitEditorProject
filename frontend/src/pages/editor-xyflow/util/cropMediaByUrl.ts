@@ -25,6 +25,8 @@ export type CropMediaByUrlOptions = {
   jpegQuality?: number;
   gifMinDelayMs?: number;
   gifBackgroundColor?: string | null;
+  /** 为 true 时不产出 jpeg（gif 仍照常输出），jpegBlob 恒为 null */
+  skipJpeg?: boolean;
 };
 
 export type CropMediaByUrlResult = {
@@ -502,16 +504,20 @@ export const cropMediaByUrl = async (
         Math.max(1, Math.round(gifWidth * outputScale)),
         Math.max(1, Math.round(gifHeight * outputScale)),
       );
-    const jpegFrameCanvas = resizeCanvasTo(
-      firstFrameCanvas,
-      Math.max(1, Math.round(jpegWidth * outputScale)),
-      Math.max(1, Math.round(jpegHeight * outputScale)),
-    );
-    const jpegBlob = await canvasToBlob(
-      jpegFrameCanvas,
-      'image/jpeg',
-      options.jpegQuality ?? 0.92,
-    );
+    const jpegFrameCanvas = options.skipJpeg
+      ? null
+      : resizeCanvasTo(
+          firstFrameCanvas,
+          Math.max(1, Math.round(jpegWidth * outputScale)),
+          Math.max(1, Math.round(jpegHeight * outputScale)),
+        );
+    const jpegBlob = jpegFrameCanvas
+      ? await canvasToBlob(
+          jpegFrameCanvas,
+          'image/jpeg',
+          options.jpegQuality ?? 0.92,
+        )
+      : null;
     return {
       blob: gifBlob,
       mimeType: 'image/gif',
@@ -520,6 +526,19 @@ export const cropMediaByUrl = async (
       height: Math.max(1, Math.round(gifHeight * outputScale)),
       gifBlob,
       jpegBlob,
+    };
+  }
+
+  // 非 gif 源只会产出 jpeg，跳过时无需下载和渲染
+  if (options.skipJpeg) {
+    return {
+      blob: null,
+      mimeType: 'image/jpeg',
+      isGif: false,
+      width: 0,
+      height: 0,
+      gifBlob: null,
+      jpegBlob: null,
     };
   }
 
