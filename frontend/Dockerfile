@@ -4,6 +4,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+# postinstall 会跑 scripts/copy-lottie-wasm.js，必须先于 install 存在
+COPY scripts ./scripts
 RUN npm install --legacy-peer-deps
 
 COPY . .
