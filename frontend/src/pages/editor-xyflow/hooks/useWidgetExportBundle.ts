@@ -106,6 +106,27 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
   return value;
 };
 
+/** type 12 + layoutType 2 的静态天气组件，客户端读取的字段名是 isGIF */
+const renameIsGifKeyForWeatherLayout2 = (spec: unknown): unknown => {
+  if (!spec || typeof spec !== 'object' || Array.isArray(spec)) return spec;
+  const source = spec as Record<string, any>;
+  const isTarget =
+    Number(source.type) === 12 &&
+    source.isGif === false &&
+    Array.isArray(source.sizes) &&
+    source.sizes.some((item: any) => Number(item?.layoutType) === 2);
+  if (!isTarget) return spec;
+  const next: Record<string, unknown> = {};
+  Object.keys(source).forEach((key) => {
+    if (key === 'isGif') {
+      next.isGIF = source.isGif;
+      return;
+    }
+    next[key] = source[key];
+  });
+  return next;
+};
+
 const toPositiveNumber = (value: unknown) => {
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -292,10 +313,12 @@ export const collectWidgetExportFiles = async (
     .map((node: any) => ({ ...(node?.data ?? {}) }))
     .filter((config) => Object.keys(config).length > 0)
     .sort((a: any, b: any) => Number(a?.size ?? 0) - Number(b?.size ?? 0));
-  const widgetsSpec = sanitizeWidgetsSpec({
-    ...selectedNodeData,
-    sizes: childConfigs,
-  });
+  const widgetsSpec = renameIsGifKeyForWeatherLayout2(
+    sanitizeWidgetsSpec({
+      ...selectedNodeData,
+      sizes: childConfigs,
+    }),
+  );
   const type: any = selectedNodeData ? selectedNodeData.type : 1;
   pushFile(
     'widgets_spec.json',

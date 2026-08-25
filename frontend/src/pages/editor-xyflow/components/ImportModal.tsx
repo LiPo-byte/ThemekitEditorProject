@@ -359,6 +359,11 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
 
     const specText = await specFile.async('string');
     const spec = JSON.parse(specText);
+    // type 12 + layoutType 2 的包里字段名是 isGIF，归一成编辑器内部使用的 isGif
+    if (spec && typeof spec === 'object' && 'isGIF' in spec && !('isGif' in spec)) {
+      spec.isGif = spec.isGIF;
+      delete spec.isGIF;
+    }
     const { sizes, isGif, type } = spec;
     if (!Array.isArray(sizes)) {
       if (!silent) message.error(`${specFilename} 缺少 sizes 数组`);
