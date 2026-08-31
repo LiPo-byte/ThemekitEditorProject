@@ -3079,6 +3079,7 @@ export const WidgetDefaultConfig = {
                 "name":"Battery_Android_Small",
                  radius: 28,
                  "source": "",
+                 "charge_source": "",
                  "crop_props": defaultCropProps,
                  "battery": {
                      "font":"AvenirNext-Bold",
@@ -3102,6 +3103,7 @@ export const WidgetDefaultConfig = {
                 "name":"Battery_Android_Medium",
                  radius: 28,
                  "source": "",
+                 "charge_source": "",
                  "crop_props": defaultCropProps,
                  "battery": {
                      "font":"AvenirNext-Bold",
@@ -3125,6 +3127,7 @@ export const WidgetDefaultConfig = {
                 "name":"Battery_Android_Large",
                  radius: 28,
                  "source": "",
+                 "charge_source": "",
                  "crop_props": defaultCropProps,
                  "battery": {
                      "font":"AvenirNext-Bold",

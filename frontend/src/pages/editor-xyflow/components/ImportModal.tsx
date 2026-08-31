@@ -554,6 +554,26 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         item.radius = DEFAULT_RADIUS;
       }
 
+      // 只有安卓 Battery Layout 2 支持充电图，其余组件不必查包也不必上传
+      if (
+        system === 'android' &&
+        Number(type) === 5 &&
+        Number(item.layoutType) === 2
+      ) {
+        // spec 里不含 charge_source，只能按文件名去 zip 里找；充电图与主图共用 crop_props
+        let chargeUpload: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+        for (const candidateExt of ['jpg', 'png', 'gif']) {
+          chargeUpload = await uploadMediaFromZip(
+            `widgets_${sizeLabel}_charge.${candidateExt}`,
+            zip,
+            exportIndex,
+          );
+          if (chargeUpload) break;
+        }
+        // 缺图时补空字段，让右侧面板保留上传入口
+        item.charge_source = chargeUpload ? chargeUpload.url : '';
+      }
+
       if (item.firstImageAnimation) {
         const filename = `widgets_${sizeLabel}_animation_first.png`;
         const animUpload = await uploadMediaFromZip(filename, zip, exportIndex);

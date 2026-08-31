@@ -121,7 +121,7 @@ const RightPanel: React.FC = () => {
     Object.keys(value).forEach((key) => {
       const nextPath = ctx.pathPrefix ? `${ctx.pathPrefix}.${key}` : key;
       const current = value[key];
-      if (key === 'source') {
+      if (key === 'source' || key === 'charge_source') {
         const prevList = (getValueByPath(output, nextPath) ?? []) as any[];
         prevList.push({
           name: ctx.pathPrefix || ctx.nodeName,
@@ -224,7 +224,7 @@ const RightPanel: React.FC = () => {
     if (!projectId) return;
     let v = val;
     // 资源需要单独处理
-    if (key === 'source') {
+    if (key === 'source' || key === 'charge_source') {
       handleSourceChange(v);
       return;
     }

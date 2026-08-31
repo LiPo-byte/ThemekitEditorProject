@@ -86,6 +86,7 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
     'themekitSizewithTypes',
     'music',
     'show',
+    'charge_source',
   ];
   const showKey = ['weekday']
   if (Array.isArray(value)) {
@@ -421,7 +422,13 @@ export const collectWidgetExportFiles = async (
     const normalizedCropProps = normalizeCropProps(data?.crop_props ?? {});
     pushLine('info', `开始处理 widgets_${sizeLabel}...`);
 
-    const skipTimeJpg = shouldSkipWidgetTimeJpg(type);
+    // Battery Layout 2 的 gif 主图只输出 gif，不额外产出首帧 jpg
+    const isBatteryLayout2GifSource =
+      type === 5 &&
+      Number(data?.layoutType) === 2 &&
+      isGifSource(String(source ?? ''));
+    const skipTimeJpg =
+      shouldSkipWidgetTimeJpg(type) || isBatteryLayout2GifSource;
     const { jpegBlob, gifBlob } = await cropMediaByUrl(source, {
       transform: normalizedCropProps,
       targetElement,
@@ -460,18 +467,79 @@ export const collectWidgetExportFiles = async (
       }
     }
 
+    // 充电图与主图共用 crop_props 和导出尺寸；gif 源保留 gif，其余一律输出 jpg
+    const chargeSource = data?.charge_source;
+    if (typeof chargeSource === 'string' && chargeSource) {
+      const chargeIsGif = isGifSource(chargeSource);
+      const chargeWidth = chargeIsGif ? timegifWidth : timejpgWidth;
+      const chargeHeight = chargeIsGif ? timegifHeight : timejpgHeight;
+      const chargeFilename = `widgets_${sizeLabel}_charge.${chargeIsGif ? 'gif' : 'jpg'}`;
+      try {
+        const chargeResult = await cropMediaByUrl(chargeSource, {
+          transform: normalizedCropProps,
+          targetElement,
+          gifOutputWidth: timegifWidth,
+          gifOutputHeight: timegifHeight,
+          jpegOutputWidth: timejpgWidth,
+          jpegOutputHeight: timejpgHeight,
+          jpegQuality: EXPORT_JPEG_QUALITY,
+          outputScale: 1,
+          renderScale: 2,
+          resizeMode: 'stretch',
+          skipJpeg: chargeIsGif,
+        });
+        const chargeBlob = chargeIsGif
+          ? chargeResult.gifBlob
+          : chargeResult.jpegBlob;
+        if (chargeBlob) {
+          pushFile(chargeFilename, chargeBlob);
+          pushLine(
+            'info',
+            `${chargeFilename} ${formatSizeText(chargeWidth, chargeHeight)}`,
+          );
+        } else {
+          pushLine('warning', `跳过 ${chargeFilename}（生成失败）`);
+        }
+      } catch {
+        pushLine('warning', `跳过 ${chargeFilename}（资源下载失败）`);
+      }
+    }
+
     if (source) {
-      const previewBlob = await generateElementPreview(targetElement, {
-        isGif: isDynamic,
-        sourceUrl: source,
-        scale: EXPORT_PREVIEW_SCALE,
-        jpegQuality: EXPORT_JPEG_QUALITY,
-        outputWidth: previewWidth,
-        outputHeight: previewHeight,
-        ...(shouldPaceToAlternateCycle
-          ? { durationMs: alternateCycleMs, paceSampling: true }
-          : {}),
-      });
+      // 配了充电图时组件会交替背景，preview 只录主图：先接管组件停掉交替，截完再交还
+      const shouldFreezeAlternateBackground = Boolean(data?.charge_source);
+      let previewBlob: Blob | null = null;
+      try {
+        if (shouldFreezeAlternateBackground) {
+          setWidgetCaptureFrameIndex(0);
+          // 等 React 提交并绘制，避免首帧仍停在充电图上。
+          // 标签页不可见时 rAF 不会触发，用超时兜底，否则导出会永久卡在这里。
+          await new Promise<void>((resolve) => {
+            const timer = window.setTimeout(resolve, 100);
+            window.requestAnimationFrame(() => {
+              window.requestAnimationFrame(() => {
+                window.clearTimeout(timer);
+                resolve();
+              });
+            });
+          });
+        }
+        previewBlob = await generateElementPreview(targetElement, {
+          isGif: isDynamic,
+          sourceUrl: source,
+          scale: EXPORT_PREVIEW_SCALE,
+          jpegQuality: EXPORT_JPEG_QUALITY,
+          outputWidth: previewWidth,
+          outputHeight: previewHeight,
+          ...(shouldPaceToAlternateCycle
+            ? { durationMs: alternateCycleMs, paceSampling: true }
+            : {}),
+        });
+      } finally {
+        if (shouldFreezeAlternateBackground) {
+          setWidgetCaptureFrameIndex(null);
+        }
+      }
       if (previewBlob) {
         const previewName = `widgets_${sizeLabel}_preview.${isDynamic ? 'gif' : 'jpg'}`;
         pushFile(previewName, previewBlob);

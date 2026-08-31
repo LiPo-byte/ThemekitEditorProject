@@ -60,6 +60,9 @@ export const resolveAlternateAnimationCycleMs = (data: any): number => {
   );
 };
 
+/** 主图与充电图交替显示时各自的停留时长 */
+export const BACKGROUND_ALTERNATE_HOLD_MS = 2000;
+
 /**
  * 通过图片地址获取原始尺寸（naturalWidth / naturalHeight）。
  */

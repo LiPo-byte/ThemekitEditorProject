@@ -485,18 +485,21 @@ export const ImageUpload: React.FC<{
     });
   }
 
+  // 只有被 walkNodeData 聚合过的 source 类字段才是数组，其余情况兜底成空列表避免整个面板崩掉
+  const sourceList = Array.isArray(value) ? value : [];
+
   return (
     <>
       <Row className={styles.formRow}>
         {title !== null ? (
           <Col span={24}>
-              <InputTitle label="Source" />
+              <InputTitle label={title ?? 'Source'} />
           </Col>
         ) : null}
       </Row>
       <Row>
         <Col span={24}>
-          {value.map((v: any) => {
+          {sourceList.map((v: any) => {
             return (v.value ? (
                 <Flex key={v.id} align='center' justify='space-between' style={{ marginBottom: marginBottom || '5px' }}>
                   <Button variant="filled" color="default" style={{ width: '80%' }} >
@@ -1417,6 +1420,15 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('charge_source') && (
+        <>
+          <ImageUpload
+            value={editProps.charge_source}
+            onChange={(nextValue) => onChange?.('charge_source', nextValue)}
+            title="ChargeSource"
+          />
+        </>
+      )}
       {hasKey('movsource') && (
         <>
           <FileUpload
@@ -1604,7 +1616,6 @@ export const SelectedNodePropForm: React.FC<{
           }} title="Clock"/>
         </>
       )}
-      
       {hasKey('battery_20') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.battery_20} onChange={(key: string, value: any) => {

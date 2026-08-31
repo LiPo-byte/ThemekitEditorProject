@@ -4,7 +4,12 @@ import {
   useEditorCropEditingNodeId,
   useEditorCropToolOpen,
 } from '../context';
-import { resolveAnimationHoldMs, resolveWidgetFontFamily } from './util';
+import { useWidgetCaptureFrameIndex } from '../util/widgetCaptureFrame';
+import {
+  BACKGROUND_ALTERNATE_HOLD_MS,
+  resolveAnimationHoldMs,
+  resolveWidgetFontFamily,
+} from './util';
 import './style.css';
 
 const getTextStyle = (parentId?: string, textData?: any) => ({
@@ -56,8 +61,36 @@ export default function BatteryLayout_2(props: any) {
     };
   }, [shouldAlternateAnimation, thirdHoldMs, fourthHoldMs]);
 
+  // source 与 charge_source 都配了图时交替显示；
+  // 裁剪编辑期间固定显示主图避免画面跳动，导出截图期间同样交出控制权、只保留主图
+  const captureFrameIndex = useWidgetCaptureFrameIndex();
+  const shouldAlternateBackground =
+    Boolean(data?.source) &&
+    Boolean(data?.charge_source) &&
+    !isCropEditingNode &&
+    captureFrameIndex === null;
+  const [backgroundIndex, setBackgroundIndex] = useState(0);
+
+  useEffect(() => {
+    if (!shouldAlternateBackground) {
+      setBackgroundIndex(0);
+      return undefined;
+    }
+    const timer = window.setInterval(() => {
+      setBackgroundIndex((prev) => (prev === 0 ? 1 : 0));
+    }, BACKGROUND_ALTERNATE_HOLD_MS);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [shouldAlternateBackground]);
+
   if (!data) return null;
   const size = data.size;
+  // 只配了其中一张时回退显示有值的那张
+  const backgroundSource =
+    shouldAlternateBackground && backgroundIndex === 1
+      ? data.charge_source
+      : data.source || data.charge_source;
 
   const firstImageAnimation = data?.firstImageAnimation;
   const secondImageAnimation = data?.secondImageAnimation;
@@ -205,7 +238,7 @@ export default function BatteryLayout_2(props: any) {
         : null}
       <CropEditableImage
         nodeId={props.id}
-        source={data.source}
+        source={backgroundSource}
         radius={data.radius}
         cropProps={data.crop_props}
       />
