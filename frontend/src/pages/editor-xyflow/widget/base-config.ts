@@ -319,8 +319,8 @@ export const WIDGET_EXPORT_FILE_RULES: {
     5: {
       small: {
         static: {
-          timejpg: { width: 310, height: 310 },
-          timegif: { width: 310, height: 310 },
+          timejpg: { width: 269, height: 269 },
+          timegif: { width: 269, height: 269 },
           preview: { width: 269, height: 269 },
         },
         dynamic: {
@@ -331,8 +331,8 @@ export const WIDGET_EXPORT_FILE_RULES: {
       },
       medium: {
         static: {
-          timejpg: { width: 658, height: 310 },
-          timegif: { width: 658, height: 310 },
+          timejpg: { width: 571, height: 269 },
+          timegif: { width: 571, height: 269 },
           preview: { width: 571, height: 269 },
         },
         dynamic: {
@@ -343,8 +343,8 @@ export const WIDGET_EXPORT_FILE_RULES: {
       },
       large: {
         static: {
-          timejpg: { width: 658, height: 690 },
-          timegif: { width: 658, height: 690 },
+          timejpg: { width: 571, height: 599 },
+          timegif: { width: 571, height: 599 },
           preview: { width: 571, height: 599 },
         },
         dynamic: {
@@ -435,9 +435,9 @@ export const WIDGET_EXPORT_FILE_RULES: {
     5: {
       small: {
         static: {
-          timejpg: { width: 310, height: 310 },
-          timegif: { width: 310, height: 310 },
-          preview: { width: 310, height: 310 },
+          timejpg: { width: 269, height: 269 },
+          timegif: { width: 269, height: 269 },
+          preview: { width: 269, height: 269 },
         },
         dynamic: {
           timejpg: { width: 310, height: 310 },
@@ -447,9 +447,9 @@ export const WIDGET_EXPORT_FILE_RULES: {
       },
       medium: {
         static: {
-          timejpg: { width: 658, height: 310 },
-          timegif: { width: 658, height: 310 },
-          preview: { width: 658, height: 310 },
+          timejpg: { width: 571, height: 269 },
+          timegif: { width: 571, height: 269 },
+          preview: { width: 571, height: 269 },
         },
         dynamic: {
           timejpg: { width: 658, height: 310 },
@@ -459,9 +459,9 @@ export const WIDGET_EXPORT_FILE_RULES: {
       },
       large: {
         static: {
-          timejpg: { width: 658, height: 690 },
-          timegif: { width: 658, height: 690 },
-          preview: { width: 658, height: 690 },
+          timejpg: { width: 571, height: 599 },
+          timegif: { width: 571, height: 599 },
+          preview: { width: 571, height: 599 },
         },
         dynamic: {
           timejpg: { width: 658, height: 690 },

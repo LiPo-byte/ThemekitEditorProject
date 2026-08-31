@@ -15,10 +15,11 @@ export default function TimeLayout_1(props: any) {
   const secondImageAnimation = data?.secondImageAnimation;
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
-
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
 
   if (!data) return null;
+
+  const textAlign = data.textAlignment || data.time.textAlignment;
   const getTextStyle = (textData?: any) => ({
     fontSize: textData?.textSize ?? 14,
     fontFamily: resolveWidgetFontFamily(props.parentId, textData?.font),
@@ -39,7 +40,7 @@ export default function TimeLayout_1(props: any) {
       overflow: isCropEditingNode ? 'visible' : 'hidden',
       borderRadius: `${data.radius ?? 0}px`,
       position: 'relative' as const,
-      textAlign: data.time.textAlignment === 1 ? 'left' : (data.time.textAlignment === 2 ? 'center' : 'right'),
+      textAlign: textAlign === 1 ? 'left' : (textAlign === 2 ? 'center' : 'right'),
     };
   }, [data, isCropEditingNode])
 

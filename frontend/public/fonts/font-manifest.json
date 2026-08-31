@@ -756,6 +756,13 @@
     "postscriptName": "HelveticaNeue"
   },
   {
+    "file": "HFTwinkling-Regular.ttf",
+    "family": "HFTwinkling",
+    "subfamily": "Regular",
+    "fullName": "HFTwinkling Regular",
+    "postscriptName": "HFTwinkling-Regular"
+  },
+  {
     "file": "Impact.ttf",
     "family": "Impact",
     "subfamily": "Regular",

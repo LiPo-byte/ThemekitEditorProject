@@ -1047,13 +1047,13 @@ export const WidgetDefaultConfig = {
                  "radius": 28,
                   "source": "",
                 "crop_props": defaultCropProps,
+                "textAlignment": 1,
                  "time":{
                        "font":"AvenirNext-DemiBold",
                        "textSize":21,
                        "textHeight":29,
                        "textColor":"#000000",
                        "alpha":1.0,
-                       "textAlignment": 1
                  },
              },
              {
@@ -1063,13 +1063,13 @@ export const WidgetDefaultConfig = {
                  "radius": 28,
                  "source": "",
                "crop_props": defaultCropProps,
+               "textAlignment": 3,
                  "time":{
                        "font":"AvenirNext-DemiBold",
                        "textSize":48,
                        "textHeight":66,
                        "textColor":"#000000",
                        "alpha":1.0,
-                       "textAlignment": 3
                  },
              }, 
              {
@@ -1079,13 +1079,13 @@ export const WidgetDefaultConfig = {
                  "radius": 28,
                  "source": "",
                  "crop_props": defaultCropProps,
+                 "textAlignment": 2,
                  "time":{
                        "font":"AvenirNext-DemiBold",
                        "textSize":60,
                        "textHeight":82,
                        "textColor":"#000000",
                        "alpha":1.0,
-                       "textAlignment": 2
                  },
              }
             ]
