@@ -114,9 +114,9 @@ const EditorBottomToolBar: React.FC = () => {
             <Flex gap="medium" align="center">
                 <Button type='primary' icon={<SelectSvg color={theme.colorWhite} size={14} />}></Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('widget'); }} >Widget</Button>
+                <Button type='text' onClick={() => { onToggleLeftPanl('lockScreen'); }} >Lock Widget</Button>
                 <Button type='text' onClick={onAddIconPack} >Icon Pack</Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button>
-                <Button type='text' onClick={() => { onToggleLeftPanl('lockScreen'); }} >Lock Screen</Button>
                 <Button type={addThemeModalOpen ? 'primary' : 'text'} onClick={onToggleAddThemeModal} >Theme</Button>
                 <Button
                   color={importModalOpen ? 'primary' : 'default'}

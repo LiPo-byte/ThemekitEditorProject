@@ -1,0 +1,114 @@
+[
+  {
+    "key": "Battery",
+    "label": "Battery"
+  },
+  {
+    "key": "Calendar",
+    "label": "Calendar"
+  },
+  {
+    "key": "Weather",
+    "label": "Weather",
+    "children": [
+      { 
+        "key": "Rect_Weather",
+        "label": "Rect Weather",
+        "children": [
+          { "key": "Rect_WeatherType_1", "label": "Rect WeatherType 1" },
+          { "key": "Rect_WeatherType_2", "label": "Rect WeatherType 2" },
+          { "key": "Rect_WeatherType_3", "label": "Rect WeatherType 3" },
+          { "key": "Rect_WeatherType_4", "label": "Rect WeatherType 4" },
+          { "key": "Rect_WeatherType_5", "label": "Rect WeatherType 5" },
+          { "key": "Rect_WeatherType_6", "label": "Rect WeatherType 6" }
+        ]
+      },
+      {
+        "key": "Circle_Weather",
+        "label": "Circle Weather",
+        "children": [
+          { "key": "Circle_WeatherType_1", "label": "Circle WeatherType 1" },
+          { "key": "Circle_WeatherType_2", "label": "Circle WeatherType 2" },
+          { "key": "Circle_WeatherType_3", "label": "Circle WeatherType 3" },
+          { "key": "Circle_WeatherType_4", "label": "Circle WeatherType 4" },
+          { "key": "Circle_WeatherType_5", "label": "Circle WeatherType 5" },
+          { "key": "Circle_WeatherType_6", "label": "Circle WeatherType 6" }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "Dynamic",
+    "label": "Dynamic",
+    "children": [
+      { "key": "Circle_Dynamic", "label": "Circle Dynamic" },
+      { "key": "Rect_Dynamic", "label": "Rect Dynamic" }
+    ]
+  },
+  {
+    "key": "Static",
+    "label": "Static",
+    "children": [
+      { "key": "Circle_Static", "label": "Circle Static" },
+      { "key": "Rect_Static", "label": "Rect Static" }
+    ]
+  },
+  {
+    "key": "CountDown",
+    "label": "CountDown",
+    "children": [
+      {
+        "key": "DIY_CountDown",
+        "label": "DIY CountDown",
+        "children": [
+          { "key": "DIY_CountDown_LayoutType_0", "label": "LayoutType 0" },
+          { "key": "DIY_CountDown_LayoutType_1", "label": "LayoutType 1" }
+        ]
+      },
+      {
+        "key": "NO_DIY_CountDown",
+        "label": "NO DIY CountDown"
+      }
+    ]
+  },
+  {
+    "key": "Quotation",
+    "label": "Quotation"
+  },
+  {
+    "key": "Health",
+    "label": "Health",
+    "children": [
+      {
+        "key": "Rect",
+        "label": "Rect",
+        "children": [
+          { "key": "Health_Rect_LayoutType_0", "label": "LayoutType 0" },
+          { "key": "Health_Rect_LayoutType_1", "label": "LayoutType 1" }
+        ]
+      },
+      { "key": "InLine", "label": "InLine" },
+      {
+        "key": "Circle",
+        "label": "Circle",
+        "children": [
+          { "key": "Health_Circle_LayoutType_0", "label": "LayoutType 0" },
+          { "key": "Health_Circle_LayoutType_1", "label": "LayoutType 1" },
+          { "key": "Health_Circle_LayoutType_2", "label": "LayoutType 2" }
+        ]
+      }
+    ]
+  },
+  {
+    "label": "Launcher",
+    "key": "Launcher",
+    "children": [
+      { "key": "Rect_Launcher", "label": "Rect Launcher" },
+      { "key": "Circle_Launcher", "label": "Circle Launcher" }
+    ]
+  },
+  {
+    "label": "Custom InLine",
+    "key": "Custom_InLine"
+  }
+]

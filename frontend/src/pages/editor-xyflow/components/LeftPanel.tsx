@@ -12,6 +12,7 @@ import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { Button, Col, Menu, Row, Typography, type MenuProps, Flex } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import widgetitems from '../widget_config.json';
+import lockwidgetItems from '../lock_widget_config.json';
 import wallpaperitems from '../wallpaper_config.json';
 
 import { WidgetDefaultConfig, WallpaperDefaultConfig } from '@/editor-core/defaultConfig'
@@ -24,7 +25,7 @@ const LEFT_PANL_TITLE_MAP: Record<LeftPanlContent, string> = {
 };
 const LEFT_PANL_MENU_MAP: Record<LeftPanlContent, any> = {
   widget: widgetitems,
-  lockScreen: [],
+  lockScreen: lockwidgetItems,
   theme: [],
   wallpaper: wallpaperitems,
 }
