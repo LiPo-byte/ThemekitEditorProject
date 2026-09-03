@@ -5696,6 +5696,43 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
                 }
             }
         ]
+    },
+    Calendar: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1002,
+        "sizes": [
+          {
+            "size": 1002,
+            "name": "Lock_Calendar_Rectangle",
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "image_calendar_rectangle": {
+              "source": '',
+            },
+            "title": {
+              "font": "HFBonBon",
+              "textSize": 10,
+              "textHeight": 9
+            },
+            "date": {
+              "font": "HFBonBon",
+              "textSize": 19,
+              "textHeight": 17
+            },
+            "weekday": {
+              "font": "HFBonBon",
+              "textSize": 10,
+              "textHeight": 9
+            },
+            "calendar": {
+              "font": "HFBonBon",
+              "textSize": 16,
+              "textHeight": 15,
+              "textAlignment": 2
+            }
+          }
+        ]
     }
 }
 

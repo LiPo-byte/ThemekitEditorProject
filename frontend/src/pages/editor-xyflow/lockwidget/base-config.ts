@@ -30,6 +30,9 @@ export const LOCK_WIDGET_SIZE: any = {
   },
 };
 
+/** 卡片圆角24px */
+export const LOCK_CARD_RADIUS = 24 / LOCK_ASSET_SCALE;
+
 export const LOCK_CONFIG_SIZE_MAP: any = {
   1001: LOCK_WIDGET_SIZE.circle,
   1002: LOCK_WIDGET_SIZE.rect,

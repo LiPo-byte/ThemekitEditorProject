@@ -8,6 +8,38 @@ import {
 const GAP = 50;
 
 /**
+ * 图片资源都是透明底 + 纯白图形，用 alpha 通道当遮罩、由 background 上色，
+ * 抗锯齿边缘会按 alpha 比例着色所以不会有锯齿。
+ * background 传纯色或渐变都可以，传渐变就能只让图形的一部分着色。
+ * 导出走 html-to-image，它会把 mask-image 的 url 一并内联成 data URI，这套写法在导出时同样成立。
+ */
+export const getLockMaskStyle = (src: string, background: string) => ({
+  background,
+  maskImage: `url(${src})`,
+  WebkitMaskImage: `url(${src})`,
+  maskSize: 'contain' as const,
+  WebkitMaskSize: 'contain' as const,
+  maskRepeat: 'no-repeat' as const,
+  WebkitMaskRepeat: 'no-repeat' as const,
+  maskPosition: 'center' as const,
+  WebkitMaskPosition: 'center' as const,
+});
+
+export const getLockTextStyle = (textData?: any) => ({
+  fontFamily: textData?.font,
+  fontSize: textData?.textSize ?? 12,
+  lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 1,
+  whiteSpace: 'nowrap' as const,
+});
+
+/** textAlignment 取值与普通 widget 一致：1 左 / 2 居中 / 3 右 */
+export const getLockTextJustify = (textAlignment?: number) => {
+  if (textAlignment === 1) return 'flex-start';
+  if (textAlignment === 3) return 'flex-end';
+  return 'center';
+};
+
+/**
  * 节点 type 命名：lock_{组件类型}_{形状}_{变体号}，例如 lock_weather_circle_3。
  * 形状由 size 推出（1001 circle / 1002 rect / 1003 inline）；
  * 变体号各类型取的字段不同：weather 用 weatherType，health / countdown 用 layoutType，其余恒为 0。

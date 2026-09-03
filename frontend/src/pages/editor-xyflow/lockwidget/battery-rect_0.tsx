@@ -1,4 +1,5 @@
-import { LOCK_ASSET_SCALE } from './base-config';
+import { LOCK_ASSET_SCALE, LOCK_CARD_RADIUS } from './base-config';
+import { getLockMaskStyle, getLockTextStyle } from './util';
 import './style.css';
 
 /**
@@ -11,7 +12,6 @@ import './style.css';
 /** 以下尺寸都是在 @3x 素材上量出来的像素，除以 LOCK_ASSET_SCALE 换算到画布的 @1x 点 */
 const RING_SIZE = 186 / LOCK_ASSET_SCALE;
 const BATTERY_ICON_SIZE = 36 / LOCK_ASSET_SCALE;
-const CARD_RADIUS = 24 / LOCK_ASSET_SCALE;
 /**
  * 内边距和行间距是手调的，没有跟着 LOCK_ASSET_SCALE 换算：
  * 配置里的 textSize（10/16/8/8）本身就是 @1x 点、不随素材比例缩放，
@@ -37,32 +37,6 @@ const RING_BAND_MASK =
   ` #000 ${RING_OUTER_RADIUS}px,` +
   ` transparent ${RING_OUTER_RADIUS}px)`;
 
-/**
- * 图片资源都是透明底 + 纯白图形，用 alpha 通道当遮罩、由 background 上色，
- * 抗锯齿边缘会按 alpha 比例着色所以不会有锯齿。
- * background 传纯色或渐变都可以，传渐变就能只让图形的一部分着色。
- * 必须写成行内样式：导出走 html-to-image，它只内联 node.style 里的 mask url。
- */
-const getMaskStyle = (src: string, background: string) => ({
-  background,
-  maskImage: `url(${src})`,
-  WebkitMaskImage: `url(${src})`,
-  maskSize: 'contain' as const,
-  WebkitMaskSize: 'contain' as const,
-  maskRepeat: 'no-repeat' as const,
-  WebkitMaskRepeat: 'no-repeat' as const,
-  maskPosition: 'center' as const,
-  WebkitMaskPosition: 'center' as const,
-});
-
-const getTextStyle = (textData?: any) => ({
-  fontFamily: textData?.font,
-  fontSize: textData?.textSize ?? 12,
-  lineHeight: textData?.textHeight ? `${textData.textHeight}px` : 1,
-  // color: textData?.textColor ?? '#ffffff',
-  whiteSpace: 'nowrap' as const,
-});
-
 export default function LockBatteryRect_0(props: any) {
   const data = props.data;
   const scale = props.scale || 1;
@@ -83,7 +57,7 @@ export default function LockBatteryRect_0(props: any) {
         transformOrigin: '0 0',
         backgroundColor,
         overflow: 'hidden',
-        borderRadius: CARD_RADIUS,
+        borderRadius: LOCK_CARD_RADIUS,
         boxSizing: 'border-box',
         display: 'flex',
         alignItems: 'center',
@@ -102,10 +76,10 @@ export default function LockBatteryRect_0(props: any) {
           pointerEvents: 'none',
         }}
       >
-        <div style={getTextStyle(data.title)}>Battery</div>
+        <div style={getLockTextStyle(data.title)}>Battery</div>
         <div
           style={{
-            ...getTextStyle(data.percent),
+            ...getLockTextStyle(data.percent),
             display: 'flex',
             alignItems: 'center',
           }}
@@ -113,7 +87,7 @@ export default function LockBatteryRect_0(props: any) {
           {batteryIcon && (
             <div
               style={{
-                ...getMaskStyle(batteryIcon, focusColor),
+                ...getLockMaskStyle(batteryIcon, focusColor),
                 position: 'relative',
                 width: BATTERY_ICON_SIZE,
                 height: BATTERY_ICON_SIZE,
@@ -122,8 +96,8 @@ export default function LockBatteryRect_0(props: any) {
           )}
           {PREVIEW_PERCENT}%
         </div>
-        <div style={getTextStyle(data.isCharging)}>Not charging</div>
-        <div style={getTextStyle(data.mode)}>Low power mode Off</div>
+        <div style={getLockTextStyle(data.isCharging)}>Not charging</div>
+        <div style={getLockTextStyle(data.mode)}>Low power mode Off</div>
       </div>
       <div
         style={{
@@ -146,7 +120,7 @@ export default function LockBatteryRect_0(props: any) {
         {emptyRing && (
           <div
             style={{
-              ...getMaskStyle(emptyRing, focusColor),
+              ...getLockMaskStyle(emptyRing, focusColor),
               position: 'absolute',
               inset: 0,
             }}
@@ -155,7 +129,7 @@ export default function LockBatteryRect_0(props: any) {
         {chargingIcon && (
           <div
             style={{
-              ...getMaskStyle(chargingIcon, focusColor),
+              ...getLockMaskStyle(chargingIcon, focusColor),
               position: 'absolute',
               inset: 0,
             }}

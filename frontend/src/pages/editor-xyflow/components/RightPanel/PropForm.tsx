@@ -1881,6 +1881,13 @@ export const SelectedNodePropForm: React.FC<{
           }} title="Image Empty Ring Rectangle"/>
         </>
       )}
+      {hasKey('image_calendar_rectangle') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.image_calendar_rectangle} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'image_calendar_rectangle');
+          }} title="Image Calendar Rectangle"/>
+        </>
+      )}
     </>
   );
 };
