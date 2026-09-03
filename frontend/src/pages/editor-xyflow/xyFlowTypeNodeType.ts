@@ -36,6 +36,8 @@ import TimeMixCalendarMixBatteryLayout_1 from './widget/timemixcalendarmixbatter
 import ClockMixBatteryLayout_0 from './widget/clockmixbattery-layout_0';
 import LockBatteryRect_0 from './lockwidget/battery-rect_0';
 import LockCalendarRect_0 from './lockwidget/calendar-rect_0';
+import LockWeatherCircle_1 from './lockwidget/weather-circle_1';
+import LockWeatherRect_1 from './lockwidget/weather-rect_1';
 import Icon from './icon';
 import PlatformGroupNode from './components/PlatformGroupNode';
 import Wallpaper from './wallpaper/wallpaper';
@@ -87,6 +89,8 @@ export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   clockmixbattery_0: ClockMixBatteryLayout_0,
   lock_battery_rect_0: LockBatteryRect_0,
   lock_calendar_rect_0: LockCalendarRect_0,
+  lock_weather_rect_1: LockWeatherRect_1,
+  lock_weather_circle_1: LockWeatherCircle_1,
   icon: Icon,
   wallpaper: Wallpaper,
   live_wallpaper: LiveWallpaper,

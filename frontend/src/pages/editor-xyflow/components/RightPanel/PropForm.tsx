@@ -47,6 +47,7 @@ import SelectElements from './SelectElements';
 
 import { createStyles } from 'antd-style';
 import React, { useEffect, useRef, useState } from 'react';
+import { LOCK_IMAGE_FIELD_KEYS } from '../../lockwidget/base-config';
 import { APP_LINK_OPTIONS } from '../../widget/base-config';
 import {
   useEditorBackgroundColor,
@@ -1029,6 +1030,15 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('font_heavy') && (
+        <>
+          <FontFamilyInput
+            title="FontHeavy"
+            value={editProps.font_heavy}
+            onChange={(nextValue) => onChange?.('font_heavy', nextValue)}
+          />
+        </>
+      )}
       {hasKey('commonField') && (
         <>
           <FontFamilyInput
@@ -1519,6 +1529,13 @@ export const BaseSelectedNodePropForm: React.FC<{
 //   );
 // };
 
+/** image_charging_icon_rectangle -> Image Charging Icon Rectangle */
+const formatImageFieldTitle = (key: string) =>
+  key
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
 export const SelectedNodePropForm: React.FC<{
   editProps: Record<string, any>;
   onChange?: (key: string, value: any, keyClass?: string) => void;
@@ -1860,34 +1877,31 @@ export const SelectedNodePropForm: React.FC<{
           }} title="Mode"/>
         </>
       )}
-      {hasKey('image_battery_rectangle') && (
+      {hasKey('topInfo') && (
         <>
-          <BaseSelectedNodePropForm editProps={editProps.image_battery_rectangle} onChange={(key: string, value: any) => {
-            onChange && onChange(key, value, 'image_battery_rectangle');
-          }} title="Image Battery Rectangle"/>
+          <BaseSelectedNodePropForm editProps={editProps.topInfo} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'topInfo');
+          }} title="TopInfo"/>
         </>
       )}
-      {hasKey('image_charging_icon_rectangle') && (
+      {hasKey('bottomInfo') && (
         <>
-          <BaseSelectedNodePropForm editProps={editProps.image_charging_icon_rectangle} onChange={(key: string, value: any) => {
-            onChange && onChange(key, value, 'image_charging_icon_rectangle');
-          }} title="Image Charging Icon Rectangle"/>
+          <BaseSelectedNodePropForm editProps={editProps.bottomInfo} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'bottomInfo');
+          }} title="BottomInfo"/>
         </>
       )}
-      {hasKey('image_empty_ring_rectangle') && (
-        <>
-          <BaseSelectedNodePropForm editProps={editProps.image_empty_ring_rectangle} onChange={(key: string, value: any) => {
-            onChange && onChange(key, value, 'image_empty_ring_rectangle');
-          }} title="Image Empty Ring Rectangle"/>
-        </>
-      )}
-      {hasKey('image_calendar_rectangle') && (
-        <>
-          <BaseSelectedNodePropForm editProps={editProps.image_calendar_rectangle} onChange={(key: string, value: any) => {
-            onChange && onChange(key, value, 'image_calendar_rectangle');
-          }} title="Image Calendar Rectangle"/>
-        </>
-      )}
+      {/* 锁屏组件的图片位，清单见 lockwidget/base-config 的 LOCK_IMAGE_FIELD_KEYS */}
+      {LOCK_IMAGE_FIELD_KEYS.filter((key) => hasKey(key)).map((imageKey) => (
+        <BaseSelectedNodePropForm
+          key={imageKey}
+          editProps={editProps[imageKey]}
+          onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, imageKey);
+          }}
+          title={formatImageFieldTitle(imageKey)}
+        />
+      ))}
     </>
   );
 };

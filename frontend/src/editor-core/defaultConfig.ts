@@ -5733,6 +5733,89 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             }
           }
         ]
+    },
+    Rect_WeatherType_1: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1002,
+            "weatherType": 1,
+            "name": "Lock_Weather_Rect_Type_1",
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "image_cloud": {
+              "source": '',
+            },
+            "image_rain": {
+              "source": '',
+            },
+            "image_snow": {
+              "source": '',
+            },
+            "image_sun": {
+              "source": '',
+            },
+            "image_thunder": {
+              "source": '',
+            },
+            "image_wind": {
+              "source": '',
+            },
+            "topInfo": {
+              "font": "HFTroy-Medium",
+              "textSize": 12,
+              "textHeight": 11
+            },
+            "bottomInfo": {
+              "font": "HFTroy-Medium",
+              "font_heavy": "HFTroy-Medium",
+              "textSize": 10,
+              "textHeight": 10
+            }
+          }
+        ]
+    },
+    Circle_WeatherType_1: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1001,
+            "weatherType": 1,
+            "name": "Lock_Weather_Temperature_Circular",
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "image_cloud": {
+              "source": '',
+            },
+            "image_rain": {
+              "source": '',
+            },
+            "image_snow": {
+              "source": '',
+            },
+            "image_sun": {
+              "source": '',
+            },
+            "image_temp": {
+              "source": '',
+            },
+            "image_thunder": {
+              "source": '',
+            },
+            "image_wind": {
+              "source": '',
+            },
+            "bottomInfo": {
+              "font": "HFTroy-Medium",
+              "textSize": 14,
+              "textHeight": 14
+            }
+          }
+        ]
     }
 }
 

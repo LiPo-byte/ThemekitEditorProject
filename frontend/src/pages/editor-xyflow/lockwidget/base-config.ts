@@ -33,6 +33,36 @@ export const LOCK_WIDGET_SIZE: any = {
 /** 卡片圆角24px */
 export const LOCK_CARD_RADIUS = 24 / LOCK_ASSET_SCALE;
 
+/**
+ * 天气条件图标，顺序取自 lock_screen_weather_*.yml 的 required_files。
+ * 各 weatherType 用到的张数不同（矩形没有 image_temp），组件里按这个顺序
+ * 过滤掉配置中不存在的即可，不用各自维护一份。
+ */
+export const LOCK_WEATHER_ICON_KEYS = [
+  'image_cloud',
+  'image_rain',
+  'image_snow',
+  'image_sun',
+  'image_temp',
+  'image_thunder',
+  'image_wind',
+];
+
+/**
+ * 锁屏组件全部的图片位，右侧属性面板按这个清单渲染上传入口，
+ * 顺序即面板里的排列顺序。新增组件时要把它的图片字段名加进来，否则面板上传不了图。
+ *
+ * 用显式清单而不是按 image_ 前缀匹配：前缀匹配会把以后任何叫 image_ 开头的字段
+ * 都悄悄捡进面板，加字段的人不会意识到自己改了 UI，出问题也不好查。
+ */
+export const LOCK_IMAGE_FIELD_KEYS = [
+  'image_battery_rectangle',
+  'image_charging_icon_rectangle',
+  'image_empty_ring_rectangle',
+  'image_calendar_rectangle',
+  ...LOCK_WEATHER_ICON_KEYS,
+];
+
 export const LOCK_CONFIG_SIZE_MAP: any = {
   1001: LOCK_WIDGET_SIZE.circle,
   1002: LOCK_WIDGET_SIZE.rect,
