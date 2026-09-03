@@ -1,0 +1,16 @@
+/* 锁屏组件画布尺寸，取值见 lockwidget/base-config.ts 的 LOCK_CONFIG_SIZE_MAP
+   （素材像素 ÷ LOCK_ASSET_SCALE，与普通 widget 一样使用 @1x 点） */
+.lock_size_1001 {
+  width: 62px;
+  height: 62px;
+}
+
+.lock_size_1002 {
+  width: 155px;
+  height: 62px;
+}
+
+.lock_size_1003 {
+  width: 244px;
+  height: 23px;
+}

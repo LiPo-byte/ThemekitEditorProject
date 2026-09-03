@@ -5653,6 +5653,52 @@ export const WidgetDefaultConfig = {
     }
 }
 
+// key 需与 editor-xyflow/lock_widget_config.json 的叶子节点 key 保持一致，未登记的 key 点击后不会添加组件
+export const LockWidgetDefaultConfig: Record<string, any> = {
+    Battery: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1001,
+        "sizes": [
+            {
+                "size": 1002,
+                "name": "Lock_Battery_Rectangle",
+                "focusColor": "#000000",
+                "backgroundColor": "#00000066",
+                "image_battery_rectangle": {
+                    "source": '',
+                },
+                "image_charging_icon_rectangle": {
+                    "source": '',
+                },
+                "image_empty_ring_rectangle": {
+                    "source": '',
+                },
+                "title": {
+                    "font": "HFMonkey-Regular",
+                    "textSize": 10,
+                    "textHeight": 8
+                },
+                "percent": {
+                    "font": "HFConfeito",
+                    "textSize": 16,
+                    "textHeight": 13
+                },
+                "isCharging": {
+                    "font": "HFMonkey-Regular",
+                    "textSize": 8,
+                    "textHeight": 7
+                },
+                "mode": {
+                    "font": "HFMonkey-Regular",
+                    "textSize": 8,
+                    "textHeight": 7
+                }
+            }
+        ]
+    }
+}
+
 export const IconPackDefaultConfig = {
     apps: withDefaultIconRadius({
         zoom: {

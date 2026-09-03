@@ -1322,6 +1322,15 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('focusColor') && (
+        <>
+          <FontColorInput
+            title="FocusColor"
+            value={editProps.focusColor}
+            onChange={(nextValue) => onChange?.('focusColor', nextValue)}
+          />
+        </>
+      )}
       {hasKey('content') && (
         <ContentTextAreaInput
           value={editProps.content}
@@ -1828,6 +1837,48 @@ export const SelectedNodePropForm: React.FC<{
           <BaseSelectedNodePropForm editProps={editProps.music} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'music');
           }} title="Music"/>
+        </>
+      )}
+      {hasKey('percent') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.percent} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'percent');
+          }} title="Percent"/>
+        </>
+      )}
+      {hasKey('isCharging') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.isCharging} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'isCharging');
+          }} title="IsCharging"/>
+        </>
+      )}
+      {hasKey('mode') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.mode} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'mode');
+          }} title="Mode"/>
+        </>
+      )}
+      {hasKey('image_battery_rectangle') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.image_battery_rectangle} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'image_battery_rectangle');
+          }} title="Image Battery Rectangle"/>
+        </>
+      )}
+      {hasKey('image_charging_icon_rectangle') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.image_charging_icon_rectangle} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'image_charging_icon_rectangle');
+          }} title="Image Charging Icon Rectangle"/>
+        </>
+      )}
+      {hasKey('image_empty_ring_rectangle') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.image_empty_ring_rectangle} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'image_empty_ring_rectangle');
+          }} title="Image Empty Ring Rectangle"/>
         </>
       )}
     </>

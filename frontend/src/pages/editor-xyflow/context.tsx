@@ -18,6 +18,7 @@ import fontManifest from './components/font-manifest.json';
 // import { WidgetDefaultConfig } from '@/editor-core/defaultConfig';
 // import { CONFIG_SIZE_MAP } from './widget/base-config'
 import { widgetConfig2Nodes } from './widget/util';
+import { lockWidgetConfig2Nodes } from './lockwidget/util';
 import { iconPackConfig2Nodes } from './icon/util';
 import { wallpaperConfig2Nodes, buildWallpaperConfigJson } from './wallpaper/util';
 import { themeConfig2Nodes, buildThemeConfigJson } from './theme/util';
@@ -129,6 +130,7 @@ type EditorCoreCtxValue = {
   selectNode: (fn: FlowNode, append?: boolean) => void;
   deselectedNode: (nodeId?: string) => void;
   addWidget: (config: any) => string | undefined;
+  addLockWidget: (config: any) => string | undefined;
   addIconPack: (config: any) => string | undefined;
   addWallpaper: (config: any) => string | undefined;
   addTheme: (config: any) => string | undefined;
@@ -216,6 +218,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   selectNode: noopSelectNode,
   deselectedNode: noopDeselectedNode,
   addWidget: noopAddNodeGroup,
+  addLockWidget: noopAddNodeGroup,
   addIconPack: noopAddNodeGroup,
   addWallpaper: noopAddNodeGroup,
   addTheme: noopAddNodeGroup,
@@ -355,6 +358,7 @@ const ELEMENT_LOADERS: Record<
   ((configJson: any, element_key?: any) => { nodes: FlowNode[]; rootNode: FlowNode } | null | undefined)
 > = {
   widget: (configJson, element_key) => widgetConfig2Nodes(configJson, element_key),
+  lockwidget: (configJson, element_key) => lockWidgetConfig2Nodes(configJson, element_key),
   iconpack: (configJson, element_key) => iconPackConfig2Nodes(configJson, element_key),
   wallpaper: (configJson, element_key) => wallpaperConfig2Nodes(configJson, element_key),
   theme: (configJson, element_key) => themeConfig2Nodes(configJson, element_key),
@@ -794,6 +798,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     appendNodesBySlot(newNodes, rootNode);
     return String(rootNode.id);
   };
+  const addLockWidget = (config: any) => {
+    const { nodes: newNodes, rootNode } = lockWidgetConfig2Nodes(config);
+    if (!rootNode) return undefined;
+    appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
+  };
   const addWallpaper = (config: any) => {
     const { nodes: newNodes, rootNode } = wallpaperConfig2Nodes(config);
     if (!rootNode) return undefined;
@@ -1174,6 +1184,35 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     };
   };
 
+  /** 锁屏组件只有 iOS 一个平台，config_json 顶层直接是 version / type / sizes */
+  const buildLockWidgetElementPayload = (rootNode: FlowNode) => {
+    const platformNode = nodes.find(
+      (node) => node.type === 'platform_group' && node.parentId === rootNode.id,
+    );
+    const platformData = ((platformNode?.data as Record<string, any>) ?? {}) as Record<string, any>;
+    const sizeNodes = platformNode
+      ? nodes
+          .filter((node: any) => node.parentId === platformNode.id && node.metaable)
+          .map((node) => ({ ...((node.data as Record<string, any>) ?? {}) }))
+          .sort((a: any, b: any) => Number(a.size ?? 0) - Number(b.size ?? 0))
+      : [];
+
+    return {
+      element_key: rootNode.id,
+      category: 'lockwidget',
+      subtype: 'lockwidget',
+      x: rootNode.position?.x ?? 0,
+      y: rootNode.position?.y ?? 0,
+      visible: true,
+      locked: false,
+      schema_version: 1,
+      config_json: {
+        ...platformData,
+        sizes: sizeNodes,
+      },
+    };
+  };
+
   const buildIconPackElementPayload = (rootNode: FlowNode) => ({
     element_key: rootNode.id,
     category: 'iconpack',
@@ -1237,6 +1276,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     ((rootNode: FlowNode) => Record<string, any>) | undefined
   > = {
     widget: buildWidgetElementPayload,
+    lockwidget: buildLockWidgetElementPayload,
     iconpack: buildIconPackElementPayload,
     wallpaper: buildWallpaperElementPayload,
     theme: buildThemeElementPayload,
@@ -1465,6 +1505,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       selectNode,
       deselectedNode,
       addWidget,
+      addLockWidget,
       addIconPack,
       addWallpaper,
       addTheme,
@@ -1588,6 +1629,7 @@ export const useEditorGetParentNodeData = () => useContext(EditorCoreCtx).getPar
 export const useEditorSelectNode = () => useContext(EditorCoreCtx).selectNode;
 export const useEditorDeselectedNode = () => useContext(EditorCoreCtx).deselectedNode;
 export const useEditorAddWidget = () => useContext(EditorCoreCtx).addWidget;
+export const useEditorAddLockWidget = () => useContext(EditorCoreCtx).addLockWidget;
 export const useEditorAddIconPack = () => useContext(EditorCoreCtx).addIconPack;
 export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpaper;
 export const useEditorAddTheme = () => useContext(EditorCoreCtx).addTheme;

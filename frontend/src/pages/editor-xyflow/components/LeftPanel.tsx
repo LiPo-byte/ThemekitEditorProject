@@ -5,6 +5,7 @@ import {
   useEditorLeftPanlOpenSetter,
   useEditorLeftPanlContent,
   useEditorAddWidget,
+  useEditorAddLockWidget,
   useEditorAddWallpaper,
   type LeftPanlContent,
 } from '../context';
@@ -15,11 +16,11 @@ import widgetitems from '../widget_config.json';
 import lockwidgetItems from '../lock_widget_config.json';
 import wallpaperitems from '../wallpaper_config.json';
 
-import { WidgetDefaultConfig, WallpaperDefaultConfig } from '@/editor-core/defaultConfig'
+import { WidgetDefaultConfig, LockWidgetDefaultConfig, WallpaperDefaultConfig } from '@/editor-core/defaultConfig'
 
 const LEFT_PANL_TITLE_MAP: Record<LeftPanlContent, string> = {
   widget: 'Widget',
-  lockScreen: 'Lock Screen',
+  lockScreen: 'Lock Widget',
   theme: 'Theme',
   wallpaper: 'Wallpaper',
 };
@@ -92,6 +93,7 @@ const useStyles = createStyles(({ token, css }) => ({
 const LeftPanel: React.FC<any> = () => {
   const { styles } = useStyles();
   const addWidget = useEditorAddWidget();
+  const addLockWidget = useEditorAddLockWidget();
   const addWallpaper = useEditorAddWallpaper();
   const open = useEditorLeftPanlOpen();
   const setOpen = useEditorLeftPanlOpenSetter();
@@ -103,6 +105,12 @@ const LeftPanel: React.FC<any> = () => {
       addWidget(structuredClone(WidgetDefaultConfig[key]));
     }
   };
+  const handleAddLockWidget = (param: { key: keyof typeof LockWidgetDefaultConfig }) => {
+    const { key } = param;
+    if (LockWidgetDefaultConfig[key]) {
+      addLockWidget(structuredClone(LockWidgetDefaultConfig[key]));
+    }
+  };
   const handleAddWallpaper = (param: { key: keyof typeof WallpaperDefaultConfig }) => {
     const { key } = param;
     if (WallpaperDefaultConfig[key]) {
@@ -112,6 +120,7 @@ const LeftPanel: React.FC<any> = () => {
   const LEFT_PANL_ADD_HANDLER_MAP: Partial<Record<LeftPanlContent, (param: any) => void>> = {
     widget: handleAddWidget,
     wallpaper: handleAddWallpaper,
+    lockScreen: handleAddLockWidget,
   };
   const handleMenuClick = (param: any) => {
     LEFT_PANL_ADD_HANDLER_MAP[leftPanlContent]?.(param);
