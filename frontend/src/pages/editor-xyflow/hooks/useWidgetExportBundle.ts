@@ -419,6 +419,9 @@ export const collectWidgetExportFiles = async (
     const timegifHeight = fixedRule?.timegif.height ?? sizeConfig.height;
     const previewWidth = fixedRule?.preview.width ?? sizeConfig.width;
     const previewHeight = fixedRule?.preview.height ?? sizeConfig.height;
+    // 电量档位图（Battery Layout 0）与主图 timejpg 不同尺寸，未单独配置时沿用 timejpg
+    const batteryjpgWidth = fixedRule?.batteryjpg?.width ?? timejpgWidth;
+    const batteryjpgHeight = fixedRule?.batteryjpg?.height ?? timejpgHeight;
     const normalizedCropProps = normalizeCropProps(data?.crop_props ?? {});
     pushLine('info', `开始处理 widgets_${sizeLabel}...`);
 
@@ -576,8 +579,8 @@ export const collectWidgetExportFiles = async (
       }
       const promislist = batteryEntries.map((bs: any) => {
         return toPngBlobFromUrl(bs.source, {
-          width: timejpgWidth,
-          height: timejpgHeight,
+          width: batteryjpgWidth,
+          height: batteryjpgHeight,
           mimeType: 'image/jpeg',
         }).then((jpegBlob) => {
           if (!jpegBlob) return;
@@ -585,7 +588,7 @@ export const collectWidgetExportFiles = async (
           pushFile(`${expectedFilename}.jpg`, jpegBlob);
           pushLine(
             'info',
-            `${expectedFilename}.jpg ${formatSizeText(timejpgWidth, timejpgHeight)}`,
+            `${expectedFilename}.jpg ${formatSizeText(batteryjpgWidth, batteryjpgHeight)}`,
           );
         });
       });

@@ -248,13 +248,15 @@ export const FESTIVAL_NAME_OPTIONS = [
 export const DEFAULT_RADIUS = 28;
 
 export type WidgetSizeLabel = 'small' | 'medium' | 'large';
-export type WidgetPlatform = 'ios' | 'android';
+export type WidgetPlatform = 'ios' | 'android' | 'common';
 export type WidgetExportMode = 'static' | 'dynamic';
 
 export type WidgetExportRule = {
   timejpg: { width: number; height: number };
   timegif: { width: number; height: number };
   preview: { width: number; height: number };
+  /** Battery Layout 0 的 widgets_{size}_battery_{20..100}.jpg，尺寸与主图 timejpg 不同；不配则回退 timejpg */
+  batteryjpg?: { width: number; height: number };
 };
 
 export type WidgetExportRuleGroup = {
@@ -357,6 +359,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
           timejpg: { width: 269, height: 269 },
           timegif: { width: 269, height: 269 },
           preview: { width: 269, height: 269 },
+          batteryjpg: { width: 310, height: 310 },
         },
         dynamic: {
           timejpg: { width: 310, height: 310 },
@@ -369,6 +372,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
           timejpg: { width: 571, height: 269 },
           timegif: { width: 571, height: 269 },
           preview: { width: 571, height: 269 },
+          batteryjpg: { width: 658, height: 310 },
         },
         dynamic: {
           timejpg: { width: 658, height: 310 },
@@ -381,6 +385,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
           timejpg: { width: 571, height: 599 },
           timegif: { width: 571, height: 599 },
           preview: { width: 571, height: 599 },
+          batteryjpg: { width: 658, height: 690 },
         },
         dynamic: {
           timejpg: { width: 658, height: 690 },
@@ -473,6 +478,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
           timejpg: { width: 269, height: 269 },
           timegif: { width: 269, height: 269 },
           preview: { width: 269, height: 269 },
+          batteryjpg: { width: 310, height: 310 },
         },
         dynamic: {
           timejpg: { width: 310, height: 310 },
@@ -485,6 +491,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
           timejpg: { width: 571, height: 269 },
           timegif: { width: 571, height: 269 },
           preview: { width: 571, height: 269 },
+          batteryjpg: { width: 658, height: 310 },
         },
         dynamic: {
           timejpg: { width: 658, height: 310 },
@@ -497,6 +504,7 @@ export const WIDGET_EXPORT_FILE_RULES: {
           timejpg: { width: 571, height: 599 },
           timegif: { width: 571, height: 599 },
           preview: { width: 571, height: 599 },
+          batteryjpg: { width: 658, height: 690 },
         },
         dynamic: {
           timejpg: { width: 658, height: 690 },
@@ -548,6 +556,48 @@ export const WIDGET_EXPORT_FILE_RULES: {
     }
   },
   common: {
+    // 与 ios/android 的 type 5 保持一致：type_5 的 yaml 不区分平台
+    5: {
+      small: {
+        static: {
+          timejpg: { width: 269, height: 269 },
+          timegif: { width: 269, height: 269 },
+          preview: { width: 269, height: 269 },
+          batteryjpg: { width: 310, height: 310 },
+        },
+        dynamic: {
+          timejpg: { width: 310, height: 310 },
+          timegif: { width: 269, height: 269 },
+          preview: { width: 269, height: 269 },
+        },
+      },
+      medium: {
+        static: {
+          timejpg: { width: 571, height: 269 },
+          timegif: { width: 571, height: 269 },
+          preview: { width: 571, height: 269 },
+          batteryjpg: { width: 658, height: 310 },
+        },
+        dynamic: {
+          timejpg: { width: 658, height: 310 },
+          timegif: { width: 571, height: 269 },
+          preview: { width: 571, height: 269 },
+        },
+      },
+      large: {
+        static: {
+          timejpg: { width: 571, height: 599 },
+          timegif: { width: 571, height: 599 },
+          preview: { width: 571, height: 599 },
+          batteryjpg: { width: 658, height: 690 },
+        },
+        dynamic: {
+          timejpg: { width: 658, height: 690 },
+          timegif: { width: 571, height: 599 },
+          preview: { width: 571, height: 599 },
+        },
+      },
+    },
     13: {
         small: {
             static: {
