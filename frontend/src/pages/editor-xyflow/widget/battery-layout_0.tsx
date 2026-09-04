@@ -131,7 +131,7 @@ export default function BatteryLayout_0(props: any) {
             style={{
               ...getTextStyle(props.parentId, data.battery),
               position: 'absolute',
-              ...textpos(data.textAlignment, data.battery.padding),
+              ...textpos(data.textAlignment, data.battery.padding || 0),
               bottom: 20,
               textAlign: 'center',
               pointerEvents: 'none',

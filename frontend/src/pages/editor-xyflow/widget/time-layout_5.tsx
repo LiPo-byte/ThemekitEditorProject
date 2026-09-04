@@ -253,6 +253,8 @@ export default function TimeLayout_5(props: any) {
               left: 16,
               top: 16,
               zIndex: 9,
+              width: 'calc(50% - 16px)',
+              textAlign: 'right',
               ...getTextStyle({
                 ...data.time,
               }),

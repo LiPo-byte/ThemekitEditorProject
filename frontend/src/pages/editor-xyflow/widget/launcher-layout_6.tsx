@@ -13,7 +13,7 @@ export default function LauncherLayout_6(props: any) {
   // const gapSize: any = {1: 16, 2: 16, 3: 10 };
   const heightSize: any = {1: 96, 2: 64, 3: 48 };
   const widthSize: any = {1: 96, 2: 240, 3: 240 };
-  const gapSize: any = {1: 16, 2: 5, 3: 16};
+  const gapSize: any = {1: 16, 2: 7, 3: 16};
   const cropToolOpen = useEditorCropToolOpen();
   const cropEditingNodeId = useEditorCropEditingNodeId();
   const isCropEditingNode = cropToolOpen && cropEditingNodeId === props.id;
