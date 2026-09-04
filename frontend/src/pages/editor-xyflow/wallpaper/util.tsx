@@ -1,6 +1,10 @@
 import { nanoid } from 'nanoid';
 import type { Node as FlowNode } from '@xyflow/react';
 import { DEFAULT_CROP_PROPS } from '../widget/base-config';
+import {
+  PLATFORM_GROUP_STYLE,
+  ROOT_GROUP_STYLE,
+} from '../util/groupNodeStyle';
 
 const GAP = 50;
 const DEFAULT_WALLPAPER_WIDTH = 887;
@@ -77,10 +81,7 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
       style: {
         width: platformWidth,
         height: platformHeight,
-        background: '#eef3ff',
-        border: '1px solid #dfe5ff',
-        borderRadius: 12,
-        boxShadow: '0 2px 8px rgba(63, 93, 255, 0.06)',
+        ...PLATFORM_GROUP_STYLE.wallpaper,
       },
     });
 
@@ -126,9 +127,7 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
     style: {
       width: rootWidth,
       height: rootHeight,
-      background: '#f5f7ff',
-      border: '1px solid #b4c0ff',
-      borderRadius: 16,
+      ...ROOT_GROUP_STYLE.wallpaper,
     },
   };
 

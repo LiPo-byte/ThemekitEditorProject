@@ -2,6 +2,10 @@ import { nanoid } from 'nanoid';
 import type { Node as FlowNode } from '@xyflow/react';
 import { DEFAULT_THEME_CONFIG } from '@/editor-core/defaultConfig';
 import { resolveShowElements } from './resolveShowElements';
+import {
+  PLATFORM_GROUP_STYLE,
+  ROOT_GROUP_STYLE,
+} from '../util/groupNodeStyle';
 
 const GAP = 50;
 
@@ -61,10 +65,7 @@ export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
       style: {
         width: platformWidth,
         height: platformHeight,
-        background: '#eef3ff',
-        border: '1px solid #dfe5ff',
-        borderRadius: 12,
-        boxShadow: '0 2px 8px rgba(63, 93, 255, 0.06)',
+        ...PLATFORM_GROUP_STYLE.theme,
       },
     });
 
@@ -113,9 +114,7 @@ export const themeConfig2Nodes: any = (config: any, elementKey?: any) => {
     style: {
       width: cursorX,
       height: maxPlatformHeight + GAP * 2,
-      background: '#f5f7ff',
-      border: '1px solid #b4c0ff',
-      borderRadius: 16,
+      ...ROOT_GROUP_STYLE.theme,
     },
   };
 

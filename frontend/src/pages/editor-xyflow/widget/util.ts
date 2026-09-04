@@ -1,5 +1,9 @@
 import { nanoid } from 'nanoid';
 import { CONFIG_SIZE_MAP, TYPE_WIDGET_MAP } from './base-config';
+import {
+  PLATFORM_GROUP_STYLE,
+  ROOT_GROUP_STYLE,
+} from '../util/groupNodeStyle';
 // import { WIDGET_BORDER_RADIUS } from '@/editor-core/WidgetBaseNode';
 export type ImageSize = {
   width: number;
@@ -164,10 +168,7 @@ export const widgetConfig2Nodes: any = (config: any, element_key?: any) => {
       style: {
         width: groupWidth,
         height: groupHeight,
-        background: '#eef3ff',
-        border: '1px solid #dfe5ff',
-        borderRadius: 12,
-        boxShadow: '0 2px 8px rgba(63, 93, 255, 0.06)',
+        ...PLATFORM_GROUP_STYLE.widget,
       },
     });
     platformNodes.push(...widgetNodes);
@@ -221,9 +222,7 @@ export const widgetConfig2Nodes: any = (config: any, element_key?: any) => {
     style: {
       width: rootWidth,
       height: rootHeight,
-      background: '#f5f7ff',
-      border: '1px solid #b4c0ff',
-      borderRadius: 16,
+      ...ROOT_GROUP_STYLE.widget,
     },
   }
   res.push(rootNode, ...platformNodes);

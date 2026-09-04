@@ -1,6 +1,10 @@
 import { nanoid } from 'nanoid';
 import { DEFAULT_ICON_RADIUS } from '@/editor-core/defaultConfig';
 import { DEFAULT_CROP_PROPS } from '../widget/base-config';
+import {
+  PLATFORM_GROUP_STYLE,
+  ROOT_GROUP_STYLE,
+} from '../util/groupNodeStyle';
 
 const ICON_SIZE = 180;
 const ICON_GAP = 100;
@@ -126,10 +130,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
     style: {
       width: platformWidth,
       height: platformHeight,
-      background: '#eef3ff',
-      border: '1px solid #dfe5ff',
-      borderRadius: 12,
-      boxShadow: '0 2px 8px rgba(63, 93, 255, 0.06)',
+      ...PLATFORM_GROUP_STYLE.iconpack,
     },
   });
   nodes.push(...iconNodes);
@@ -165,10 +166,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
       style: {
         width: groupWidth,
         height: groupHeight,
-        background: '#eef3ff',
-        border: '1px solid #dfe5ff',
-        borderRadius: 12,
-        boxShadow: '0 2px 8px rgba(63, 93, 255, 0.06)',
+        ...PLATFORM_GROUP_STYLE.iconpack,
       },
     });
 
@@ -221,9 +219,7 @@ export const iconPackConfig2Nodes: any = (config: any, elementKey?: any) => {
     style: {
       width: rootWidth,
       height: rootHeight,
-      background: '#f5f7ff',
-      border: '1px solid #b4c0ff',
-      borderRadius: 16,
+      ...ROOT_GROUP_STYLE.iconpack,
     },
   };
 
