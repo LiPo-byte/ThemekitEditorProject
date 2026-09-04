@@ -37,7 +37,31 @@ import ClockMixBatteryLayout_0 from './widget/clockmixbattery-layout_0';
 import LockBatteryRect_0 from './lockwidget/battery-rect_0';
 import LockCalendarRect_0 from './lockwidget/calendar-rect_0';
 import LockWeatherCircle_1 from './lockwidget/weather-circle_1';
+import LockWeatherCircle_2 from './lockwidget/weather-circle_2';
+import LockWeatherCircle_3 from './lockwidget/weather-circle_3';
+import LockWeatherCircle_4 from './lockwidget/weather-circle_4';
 import LockWeatherRect_1 from './lockwidget/weather-rect_1';
+import LockWeatherRect_2 from './lockwidget/weather-rect_2';
+import LockWeatherRect_3 from './lockwidget/weather-rect_3';
+import LockWeatherRect_4 from './lockwidget/weather-rect_4';
+import LockWeatherRect_5 from './lockwidget/weather-rect_5';
+import LockWeatherRect_6 from './lockwidget/weather-rect_6';
+import LockDynamicRect_0 from './lockwidget/dynamic-rect_0';
+import LockDynamicCircle_0 from './lockwidget/dynamic-circle_0';
+import LockStaticRect_0 from './lockwidget/static-rect_0';
+import LockStaticCircle_0 from './lockwidget/static-circle_0';
+import LockQuotationRect_0 from './lockwidget/quotation-rect_0';
+import LockCustomInLine_0 from './lockwidget/custominline-inline_0';
+import LockCountDownRectNoDIY_0 from './lockwidget/countdown-rect_nodiy_0';
+import LockCountDownRectDIY_0 from './lockwidget/countdown-rect_diy_0';
+import LockCountDownRectDIY_1 from './lockwidget/countdown-rect_diy_1';
+import LockHealthRect_0 from './lockwidget/health-rect_0';
+import LockHealthRect_1 from './lockwidget/health-rect_1';
+import LockHealthCircle_0 from './lockwidget/health-circle_0';
+import LockHealthCircle_1 from './lockwidget/health-circle_1';
+import LockHealthCircle_2 from './lockwidget/health-circle_2';
+import LockHealthInLine_0 from './lockwidget/health-inline_0';
+
 import Icon from './icon';
 import PlatformGroupNode from './components/PlatformGroupNode';
 import Wallpaper from './wallpaper/wallpaper';
@@ -90,7 +114,30 @@ export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   lock_battery_rect_0: LockBatteryRect_0,
   lock_calendar_rect_0: LockCalendarRect_0,
   lock_weather_rect_1: LockWeatherRect_1,
+  lock_weather_rect_2: LockWeatherRect_2,
+  lock_weather_rect_3: LockWeatherRect_3,
+  lock_weather_rect_4: LockWeatherRect_4,
+  lock_weather_rect_5: LockWeatherRect_5,
+  lock_weather_rect_6: LockWeatherRect_6,
   lock_weather_circle_1: LockWeatherCircle_1,
+  lock_weather_circle_2: LockWeatherCircle_2,
+  lock_weather_circle_3: LockWeatherCircle_3,
+  lock_weather_circle_4: LockWeatherCircle_4,
+  lock_dynamic_rect_0: LockDynamicRect_0,
+  lock_dynamic_circle_0: LockDynamicCircle_0,
+  lock_static_circle_0: LockStaticCircle_0,
+  lock_static_rect_0: LockStaticRect_0,
+  lock_quotation_rect_0: LockQuotationRect_0,
+  lock_custominline_inline_0: LockCustomInLine_0,
+  lock_countdown_rect_nodiy_0: LockCountDownRectNoDIY_0,
+  lock_countdown_rect_diy_0: LockCountDownRectDIY_0,
+  lock_countdown_rect_diy_1: LockCountDownRectDIY_1,
+  lock_health_rect_0: LockHealthRect_0,
+  lock_health_rect_1: LockHealthRect_1,
+  lock_health_circle_0: LockHealthCircle_0,
+  lock_health_circle_1: LockHealthCircle_1,
+  lock_health_circle_2: LockHealthCircle_2,
+  lock_health_inline_0: LockHealthInLine_0,
   icon: Icon,
   wallpaper: Wallpaper,
   live_wallpaper: LiveWallpaper,

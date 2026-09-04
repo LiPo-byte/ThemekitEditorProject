@@ -48,7 +48,7 @@ import SelectElements from './SelectElements';
 import { createStyles } from 'antd-style';
 import React, { useEffect, useRef, useState } from 'react';
 import { LOCK_IMAGE_FIELD_KEYS } from '../../lockwidget/base-config';
-import { APP_LINK_OPTIONS } from '../../widget/base-config';
+import { APP_LINK_OPTIONS, FESTIVAL_NAME_OPTIONS } from '../../widget/base-config';
 import {
   useEditorBackgroundColor,
   useEditorBackgroundColorSetter,
@@ -954,12 +954,33 @@ export const BaseSelectedNodePropForm: React.FC<{
           </Row>
         </>
       )}
+      {/* 节日名是 yml 的固定枚举，手输大小写或撇号错一点要到导出校验才报错，所以只给下拉选 */}
       {hasKey('festivalName') && (
         <>
+          <Row style={{ marginBottom: '5px' }}>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                <InputTitle label="FestivalName" />
+                <Select
+                  size="small"
+                  showSearch
+                  value={editProps.festivalName === MIXED_VALUE ? undefined : editProps.festivalName}
+                  placeholder={editProps.festivalName === MIXED_VALUE ? 'Multiple values' : 'Select'}
+                  options={FESTIVAL_NAME_OPTIONS}
+                  onChange={(nextValue) => onChange?.('festivalName', nextValue)}
+                  style={{ width: '50%' }}
+                />
+              </Flex>
+            </Col>
+          </Row>
+        </>
+      )}
+      {hasKey('fileName') && (
+        <>
           <PropInput
-            LabelName="FestivalName"
-            value={editProps.festivalName}
-            onChange={(nextValue) => onChange?.('festivalName', nextValue)}
+            LabelName="FileName"
+            value={editProps.fileName}
+            onChange={(nextValue) => onChange?.('fileName', nextValue)}
           />
         </>
       )}
@@ -1006,6 +1027,33 @@ export const BaseSelectedNodePropForm: React.FC<{
                       size="small"
                       checked={editProps.isLockScreen}
                       onChange={(nextValue) => onChange?.('isLockScreen', nextValue)}
+                    />
+              </Flex>
+            </Col>
+          </Row>
+        </>
+      )}
+      {hasKey('numberOfLines') && (
+        <>
+          <PropInput
+            LabelName="NumberOfLines"
+            value={editProps.numberOfLines}
+            type="number"
+            onChange={(nextValue) => onChange?.('numberOfLines', nextValue)}
+          />
+        </>
+      )}
+      {/* yml 里 canBeCustomised 的 enum 是 [0, 1] 而不是布尔，提交时要转回 0 / 1 */}
+      {hasKey('canBeCustomised') && (
+        <>
+          <Row style={{ marginBottom: '5px' }}>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                  <InputTitle label="CanBeCustomised" />
+                  <Switch
+                      size="small"
+                      checked={editProps.canBeCustomised === 1}
+                      onChange={(nextValue) => onChange?.('canBeCustomised', nextValue ? 1 : 0)}
                     />
               </Flex>
             </Col>

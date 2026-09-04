@@ -210,6 +210,41 @@ export const APP_LINK_OPTIONS = [
     { value: 131, label: 'Clash of Clans' },
     { value: 132, label: 'Genshin Impact' },
 ];
+
+/**
+ * 倒数日组件的节日名，取值抄自 rule_ymal/resource-validation/lock_screen_countdown_layout_0_nodiy.yml
+ * 的 festivalName 枚举。客户端靠这个值查节日日期再算剩余天数，所以必须和 yml 逐字一致，
+ * 撇号和点号（St.Patrick's Day / Presidents' Day）都不能改。
+ *
+ * 首页倒数日（widget type 9）的 yml 只校验 expected_type: str 没给枚举，
+ * 但两端支持的节日是同一套，所以共用这份清单。
+ */
+export const FESTIVAL_NAME_OPTIONS = [
+    'Easter',
+    'Thanksgiving',
+    "St.Patrick's Day",
+    "Valentine's Day",
+    "April Fool's Day",
+    'Halloween',
+    "Mother's Day",
+    'Christmas',
+    'NewYear',
+    "Lincoln's Birthday",
+    "Presidents' Day",
+    'Arbor Day',
+    'Memorial Day',
+    'Flag Day',
+    'Independence Day',
+    'International Kissing Day',
+    'World Chocolate Day',
+    "World Teachers' Day",
+    "Veteran's Day",
+    "Father's Day",
+    'Labor Day',
+    'Columbus Day',
+    'Black Friday',
+].map((name) => ({ value: name, label: name }));
+
 export const DEFAULT_RADIUS = 28;
 
 export type WidgetSizeLabel = 'small' | 'medium' | 'large';

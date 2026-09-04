@@ -60,6 +60,12 @@ export const LOCK_IMAGE_FIELD_KEYS = [
   'image_charging_icon_rectangle',
   'image_empty_ring_rectangle',
   'image_calendar_rectangle',
+  'image_count_down_rectangular',
+  'image_count_down_rectangular_customised',
+  'image_dynamics_gif',
+  'image_static_rectangle',
+  'image_static_circular',
+  'image_health',
   ...LOCK_WEATHER_ICON_KEYS,
 ];
 
@@ -75,7 +81,6 @@ export const LOCK_SIZE_LABEL_MAP: Record<number, 'circle' | 'rect' | 'inline'> =
     1002: 'rect',
     1003: 'inline',
   };
-
 export const LOCK_TYPE_WIDGET_MAP: any = {
   1001: 'battery',
   1002: 'calendar',

@@ -30,9 +30,7 @@
           { "key": "Circle_WeatherType_1", "label": "Circle WeatherType 1" },
           { "key": "Circle_WeatherType_2", "label": "Circle WeatherType 2" },
           { "key": "Circle_WeatherType_3", "label": "Circle WeatherType 3" },
-          { "key": "Circle_WeatherType_4", "label": "Circle WeatherType 4" },
-          { "key": "Circle_WeatherType_5", "label": "Circle WeatherType 5" },
-          { "key": "Circle_WeatherType_6", "label": "Circle WeatherType 6" }
+          { "key": "Circle_WeatherType_4", "label": "Circle WeatherType 4" }
         ]
       }
     ]
@@ -41,16 +39,16 @@
     "key": "Dynamic",
     "label": "Dynamic",
     "children": [
-      { "key": "Circle_Dynamic", "label": "Circle Dynamic" },
-      { "key": "Rect_Dynamic", "label": "Rect Dynamic" }
+      { "key": "Rect_Dynamic", "label": "Rect Dynamic" },
+      { "key": "Circle_Dynamic", "label": "Circle Dynamic" }
     ]
   },
   {
     "key": "Static",
     "label": "Static",
     "children": [
-      { "key": "Circle_Static", "label": "Circle Static" },
-      { "key": "Rect_Static", "label": "Rect Static" }
+      { "key": "Rect_Static", "label": "Rect Static" },
+      { "key": "Circle_Static", "label": "Circle Static" }
     ]
   },
   {
@@ -87,7 +85,7 @@
           { "key": "Health_Rect_LayoutType_1", "label": "LayoutType 1" }
         ]
       },
-      { "key": "InLine", "label": "InLine" },
+      { "key": "Health_InLine", "label": "InLine" },
       {
         "key": "Circle",
         "label": "Circle",

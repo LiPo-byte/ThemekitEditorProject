@@ -5777,6 +5777,182 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           }
         ]
     },
+    Rect_WeatherType_2: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1002,
+            "weatherType": 2,
+            "name": "Lock_Weather_Rect_Type_2",
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "image_cloud": {
+              "source": '',
+            },
+            "image_rain": {
+              "source": '',
+            },
+            "image_snow": {
+              "source": '',
+            },
+            "image_sun": {
+              "source": '',
+            },
+            "image_thunder": {
+              "source": '',
+            },
+            "image_temp": {
+              "source": '',
+            },
+            "topInfo": {
+              "font": "HFAppleTree",
+              "textSize": 12,
+              "textHeight": 12
+            },
+            "bottomInfo": {
+              "font": "HFAppleTree",
+              "textSize": 8,
+              "textHeight": 8
+            }
+          }
+        ]
+    },
+    Rect_WeatherType_3: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1002,
+            "weatherType": 3,
+            "name": "Lock_Weather_Rect_Type_3",
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "image_cloud": {
+              "source": '',
+            },
+            "image_rain": {
+              "source": '',
+            },
+            "image_snow": {
+              "source": '',
+            },
+            "image_sun": {
+              "source": '',
+            },
+            "image_thunder": {
+              "source": '',
+            },
+            "image_wind": {
+              "source": '',
+            },
+            "topInfo": {
+              "font": "PingFangSC-Regular",
+              "textSize": 13,
+              "textHeight": 12
+            },
+            "bottomInfo": {
+              "font": "PingFangSC-Regular",
+              "textSize": 9,
+              "textHeight": 8
+            }
+          }
+        ]
+    },
+    Rect_WeatherType_4: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1002,
+            "weatherType": 4,
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "image_cloud": {
+              "source": '',
+            },
+            "image_rain": {
+              "source": '',
+            },
+            "image_snow": {
+              "source": '',
+            },
+            "image_sun": {
+              "source": '',
+            },
+            "image_thunder": {
+              "source": '',
+            },
+            "image_wind": {
+              "source": '',
+            },
+            "name": "Lock_Weather_Rect_Type_4",
+            "topInfo": {
+              "font": "AvenirNext-Medium",
+              "textSize": 13,
+              "textHeight": 12
+            },
+            "bottomInfo": {
+              "font": "AvenirNext-Medium",
+              "textSize": 10,
+              "textHeight": 8
+            }
+          }
+        ]
+    },
+    Rect_WeatherType_5: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1002,
+            "weatherType": 5,
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "containerColor": "#FFFFFF33",
+            "name": "Lock_Weather_Rect_Type_5",
+            "topInfo": {
+              "font": "HFTroy-Medium",
+              "textSize": 18,
+              "textHeight": 25
+            },
+            "bottomInfo": {
+              "font": "HFTroy-Medium",
+              "textSize": 12,
+              "textHeight": 17
+            }
+          }
+        ]
+    },
+    Rect_WeatherType_6: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1002,
+            "weatherType": 6,
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "containerColor": "#FFFFFF33",
+            "name": "Lock_Weather_Rect_Type_6",
+            "topInfo": {
+              "font": "HFTroy-Medium",
+              "textSize": 18,
+              "textHeight": 25
+            },
+            "bottomInfo": {
+              "font": "HFTroy-Medium",
+              "textSize": 12,
+              "textHeight": 17
+            }
+          }
+        ]
+    },
     Circle_WeatherType_1: {
         "version": 0,
         "isLockScreen": true,
@@ -5785,7 +5961,7 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1001,
             "weatherType": 1,
-            "name": "Lock_Weather_Temperature_Circular",
+            "name": "Lock_Weather_Circle_Type_1",
             "focusColor": "#000000",
             "backgroundColor": "#00000066",
             "image_cloud": {
@@ -5814,6 +5990,377 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
               "textSize": 14,
               "textHeight": 14
             }
+          }
+        ]
+    },
+    Circle_WeatherType_2: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1001,
+            "weatherType": 2,
+            "name": "Lock_Weather_Circle_Type_2",
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "image_cloud": {
+              "source": '',
+            },
+            "image_rain": {
+              "source": '',
+            },
+            "image_snow": {
+              "source": '',
+            },
+            "image_sun": {
+              "source": '',
+            },
+            "image_thunder": {
+              "source": '',
+            },
+            "image_wind": {
+              "source": '',
+            },
+            "bottomInfo": {
+                "font": "AvenirNext-DemiBold",
+                "textSize": 16,
+                "textHeight": 22
+            }
+          }
+        ]
+    },
+    Circle_WeatherType_3: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1001,
+            "weatherType": 3,
+            "name": "Lock_Weather_Circle_Type_3",
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "bottomInfo": {
+              "font": "PingFangSC-Medium",
+              "textSize": 12,
+              "textHeight": 17
+            }
+          }
+        ]
+    },
+    Circle_WeatherType_4: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1004,
+        "sizes": [
+          {
+            "size": 1001,
+            "weatherType": 4,
+            "name": "Lock_Weather_Circle_Type_4",
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "containerColor": "#FFFFFF33",
+            "bottomInfo": {
+              "font": "PingFangSC-Medium",
+              "textSize": 12,
+              "textHeight": 17
+            }
+          }
+        ]
+    },
+    Rect_Dynamic: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1005,
+        "sizes": [
+         {
+            image_dynamics_gif: {
+                "source": '',
+            },
+            "size": 1002,
+            "backgroundColor": "#00000066",
+            "name": "Lock_Rect_Dynamic",
+            "fileName": "lock_rect_dynamic_background"
+          }
+        ]
+    },
+    Circle_Dynamic: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1005,
+        "sizes": [
+          {
+            image_dynamics_gif: {
+                "source": '',
+            },
+            "backgroundColor": "#00000066",
+            "size": 1001,
+            "name": "Lock_Circle_Dynamic",
+            "fileName": "lock_circle_dynamic_background"
+          }
+        ]
+    },
+    Rect_Static: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1006,
+        "sizes": [
+          {
+            image_static_rectangle: {
+                "source": '',
+            },
+            "backgroundColor": "#00000066",
+            "size": 1002,
+            "name": "lock_rect_static_background"
+          }
+        ]
+    },
+    Circle_Static: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1006,
+        "sizes": [
+          {
+            image_static_circular: {
+                "source": '',
+            },
+            "backgroundColor": "#00000066",
+            "size": 1001,
+            "name": "lock_circle_static_background"
+          }
+        ]
+    },
+    Quotation: {
+      "version": 0,
+      "isLockScreen": true,
+      "type": 1008,
+      "sizes": [
+        {
+          "size": 1002,
+          "name": "Lock_Quotation",
+          "canBeCustomised": 1,
+          "numberOfLines": 2,
+          "focusColor": "#000000",
+          "backgroundColor": "#00000066",
+          "title": {
+            "content": "When fortune favors, all under heaven join forces",
+            "font": "HFElasticity",
+            "textSize": 21,
+            "textHeight": 21
+          }
+        }
+      ]
+    },
+    Custom_InLine: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1011,
+        "sizes": [
+          {
+            "size": 1003,
+            "name": "Pink_Star_A_C_Inline",
+            "layoutType": 0,
+            "numberOfLines": 1,
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "title": {
+              "content": "(￣ε(#￣)"
+            }
+          }
+        ]
+    },
+    NO_DIY_CountDown: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1007,
+        "sizes": [
+          {
+            "size": 1002,
+            "name": "Lock_CountDown_Rectagular_NO_DIY",
+            "canBeCustomised": 0,
+            "festivalName": "Flag Day",
+            "image_count_down_rectangular": {
+                source: '',
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "title": {
+              "content": "Flag Day",
+              "font": "HFAppleTree-Regular",
+              "textSize": 15,
+              "textHeight": 15
+            },
+            "days": {
+              "font": "HFAppleTree-Regular",
+              "textSize": 15,
+              "textHeight": 15
+            },
+            "remainDays": {
+              "font": "HFAppleTree-Regular",
+              "textSize": 26,
+              "textHeight": 26
+            }
+          }
+        ]
+    },
+    DIY_CountDown_LayoutType_0: {
+      "version": 0,
+      "isLockScreen": true,
+      "type": 1007,
+      "sizes": [
+        {
+          "size": 1002,
+          "name": "Lock_CountDown_Rectagular_DIY_0",
+          "canBeCustomised": 1,
+          "layoutType": 0,
+          image_count_down_rectangular_customised: {
+            source: '',
+          },
+          "focusColor": "#000000",
+          "backgroundColor": "#00000066",
+          "title": {
+            "content": "MomsBirthday Partyis",
+            "font": "HFAppleTree-Regular",
+            "textSize": 15,
+            "textHeight": 15
+          },
+          "remainDays": {
+            "font": "HFAppleTree-Regular",
+            "textSize": 26,
+            "textHeight": 26
+          }
+        }
+      ]
+    },
+    DIY_CountDown_LayoutType_1: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1007,
+        "sizes": [
+          {
+            "size": 1002,
+            "name": "Lock_CountDown_Rectagular_DIY_1",
+            "canBeCustomised": 1,
+            "layoutType": 1,
+            image_count_down_rectangular_customised: {
+                source: '',
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "title": {
+              "content": "Go home time",
+              "font": "HFAppleTree-Regular",
+              "textSize": 15,
+              "textHeight": 15
+            },
+            "remainDays": {
+              "font": "HFAppleTree-Regular",
+              "textSize": 26,
+              "textHeight": 26
+            }
+          }
+        ]
+    },
+    Health_Rect_LayoutType_0: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1009,
+        "sizes": [
+          {
+            "size": 1002,
+            "name": "Lock_Health_Rectagular_0",
+            "image_health": {
+                source: '',
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "layoutType": 0
+          }
+        ]
+    },
+    Health_Rect_LayoutType_1: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1009,
+        "sizes": [
+          {
+            "image_health": {
+                source: '',
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "size": 1002,
+            "name": "Lock_Health_Rectagular_1",
+            "layoutType": 1
+          }
+        ]
+    },
+    Health_Circle_LayoutType_0: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1009,
+        "sizes": [
+          {
+            "size": 1001,
+            "image_health": {
+                source: '',
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "name": "Lock_Health_Circular_0",
+            "layoutType": 0
+          }
+        ]
+    },
+    Health_Circle_LayoutType_1: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1009,
+        "sizes": [
+          {
+            "size": 1001,
+            "image_health": {
+                source: '',
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "name": "Lock_Health_Circular_1",
+            "layoutType": 1
+          }
+        ]
+    },
+    Health_Circle_LayoutType_2: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1009,
+        "sizes": [
+          {
+            "size": 1001,
+            "image_health": {
+                source: '',
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "name": "Lock_Health_Circular_2",
+            "layoutType": 2
+          }
+        ]
+    },
+    Health_InLine: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1009,
+        "sizes": [
+          {
+            "size": 1003,
+            "image_health": {
+                source: '',
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "name": "Lock_Health_Inline",
+            "layoutType": 0
           }
         ]
     }

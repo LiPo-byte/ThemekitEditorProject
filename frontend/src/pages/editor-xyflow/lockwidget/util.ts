@@ -47,6 +47,18 @@ export const getLockTextJustify = (textAlignment?: number) => {
 const getLockWidgetType = (type: number, item: any) => {
   const name = LOCK_TYPE_WIDGET_MAP[type];
   const shape = LOCK_SIZE_LABEL_MAP[item?.size];
+  /**
+   * 倒数日的 DIY 与非 DIY 是两套排版，但区分它们的是 canBeCustomised 而不是 layoutType
+   * （见 lock_screen_countdown_layout_0_diy / _nodiy.yml 的判定条件），两边的 layoutType
+   * 都可以是 0，只按变体号会算出同一个节点类型，所以单独给 1007 拼上 diy / nodiy。
+   *
+   * 只对 1007 这么做：Quotation 的 canBeCustomised 也是 1，
+   * 把它掺进所有类型的变体号会把 Quotation 的节点类型也一起改掉。
+   */
+  if (type === 1007) {
+    const customisable = item?.canBeCustomised === 1 ? 'diy' : 'nodiy';
+    return `lock_${name}_${shape}_${customisable}_${item?.layoutType ?? 0}`;
+  }
   const variant = item?.layoutType ?? item?.weatherType ?? 0;
   return `lock_${name}_${shape}_${variant}`;
 };

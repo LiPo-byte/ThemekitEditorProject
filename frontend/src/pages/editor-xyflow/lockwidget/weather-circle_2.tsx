@@ -3,10 +3,13 @@ import { getLockMaskStyle, getLockTextStyle } from './util';
 import './style.css';
 
 /**
- * 锁屏天气组件（type 1004 / weatherType 1 / 圆形）。
- * 结构参照 rule_ymal/resource-validation/lock_screen_weather_1_size_0.yml：
- * 圆形只有 bottomInfo 一个文本字段（没有矩形那边的 topInfo 和 font_heavy），
- * 所以是上图标下文字的居中两行；图标集比矩形多一张 image_temp，共七张。
+ * 锁屏天气组件（type 1004 / weatherType 2 / 圆形）。
+ * 结构参照 rule_ymal/resource-validation/lock_screen_weather_2_size_0.yml：
+ * 圆形规格只有 bottomInfo 一个文本字段（没有矩形那边的 topInfo），
+ * 所以是上图标下文字的居中两行。
+ *
+ * 图标六张，和同为 weatherType 2 的矩形不是一套：圆形要 image_wind、不要 image_temp，
+ * 矩形正好相反。两边的 required_files 别照抄。
  */
 
 const ICON_SIZE = 42 / LOCK_ASSET_SCALE;
@@ -19,7 +22,7 @@ const CONTENT_GAP = 2;
  */
 const PREVIEW_TEMP = '36°F';
 
-export default function LockWeatherCircle_1(props: any) {
+export default function LockWeatherCircle_2(props: any) {
   const data = props.data;
   const scale = props.scale || 1;
 
