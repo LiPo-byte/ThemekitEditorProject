@@ -62,6 +62,9 @@ import LockHealthCircle_1 from './lockwidget/health-circle_1';
 import LockHealthCircle_2 from './lockwidget/health-circle_2';
 import LockHealthInLine_0 from './lockwidget/health-inline_0';
 
+import LockLauncherRect_0 from './lockwidget/launcher-rect_0';
+import LockLauncherCircle_0 from './lockwidget/launcher-circle_0';
+
 import Icon from './icon';
 import PlatformGroupNode from './components/PlatformGroupNode';
 import Wallpaper from './wallpaper/wallpaper';
@@ -138,6 +141,8 @@ export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   lock_health_circle_1: LockHealthCircle_1,
   lock_health_circle_2: LockHealthCircle_2,
   lock_health_inline_0: LockHealthInLine_0,
+  lock_launcher_rect_0 :LockLauncherRect_0,
+  lock_launcher_circle_0 :LockLauncherCircle_0,
   icon: Icon,
   wallpaper: Wallpaper,
   live_wallpaper: LiveWallpaper,

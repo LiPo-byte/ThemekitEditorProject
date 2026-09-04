@@ -6363,6 +6363,44 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             "layoutType": 0
           }
         ]
+    },
+    Rect_Launcher: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1010,
+        "sizes": [
+          {
+            "size": 1002,
+            "name": "Lock_Launcher_Rectangular",
+            "image_launcher_rectangle": {
+                source: "",
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "title": {
+              "font": "HelveticaNeue",
+              "textSize": 24
+            },
+            "appLinks": [27]
+          }
+        ]
+    },
+    Circle_Launcher: {
+        "version": 0,
+        "isLockScreen": true,
+        "type": 1010,
+        "sizes": [
+          {
+            "size": 1001,
+            "image_launcher_circular": {
+                source: "",
+            },
+            "focusColor": "#000000",
+            "backgroundColor": "#00000066",
+            "name": "Lock_Launcher_Circular",
+            "appLinks": [27]
+          }
+        ]
     }
 }
 

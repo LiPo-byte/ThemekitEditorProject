@@ -66,6 +66,8 @@ export const LOCK_IMAGE_FIELD_KEYS = [
   'image_static_rectangle',
   'image_static_circular',
   'image_health',
+  'image_launcher_rectangle',
+  'image_launcher_circular',
   ...LOCK_WEATHER_ICON_KEYS,
 ];
 
