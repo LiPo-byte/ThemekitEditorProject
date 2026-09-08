@@ -9,6 +9,10 @@ export type GenerateElementPreviewOptions = {
   fps?: number;
   durationMs?: number;
   jpegQuality?: number;
+  /** 静态图输出格式，默认 jpeg；规则要求 png 的预览（含 previewTransParent）传 'png' */
+  imageFormat?: 'jpeg' | 'png';
+  /** 不铺底色，保留元素自身的透明区域；只对 png 有意义，jpeg 没有 alpha */
+  transparentBackground?: boolean;
   /** gif.js 取样步长：数值越大体积越小、画质越差，常用 10~20 */
   gifQuality?: number;
   sourceUrl?: string;
@@ -88,6 +92,7 @@ const pickPreviewBackgroundColor = (element: HTMLElement) => {
 const captureElementPreviewCanvas = async (
   element: HTMLElement,
   scale: number,
+  transparentBackground = false,
 ) => {
   const captureElement = getCaptureElement(element);
   const firstChild = element.firstElementChild;
@@ -102,11 +107,13 @@ const captureElementPreviewCanvas = async (
     const computedStyle = window.getComputedStyle(captureElement);
     const shouldResetTransform =
       Boolean(computedStyle.transform) && computedStyle.transform !== 'none';
-    const previewBackgroundColor = pickPreviewBackgroundColor(element);
     return await toCanvas(captureElement, {
       cacheBust: true,
       pixelRatio: scale,
-      backgroundColor: previewBackgroundColor,
+      // 透明底预览不能铺底色，否则 alpha 通道会被填满
+      backgroundColor: transparentBackground
+        ? undefined
+        : pickPreviewBackgroundColor(element),
       style: shouldResetTransform
         ? {
             transform: 'none',
@@ -365,6 +372,8 @@ export const generateElementPreview = async (
     fps = 8,
     durationMs = 1200,
     jpegQuality = 0.92,
+    imageFormat = 'jpeg',
+    transparentBackground = false,
     gifQuality = 18,
     sourceUrl,
     outputWidth,
@@ -380,7 +389,11 @@ export const generateElementPreview = async (
     : safeScale;
 
   if (!isGif) {
-    const canvas = await captureElementPreviewCanvas(element, captureScale);
+    const canvas = await captureElementPreviewCanvas(
+      element,
+      captureScale,
+      transparentBackground,
+    );
     if (!canvas) {
       throw new Error('Element is not visible.');
     }
@@ -388,7 +401,10 @@ export const generateElementPreview = async (
       outputWidth && outputHeight
         ? normalizeCanvasSize(canvas, outputWidth, outputHeight)
         : canvas;
-    return await canvasToBlob(normalizedCanvas, 'image/jpeg', jpegQuality);
+    // png 不吃 quality 参数，传了也会被忽略，这里直接不传
+    return imageFormat === 'png'
+      ? await canvasToBlob(normalizedCanvas, 'image/png')
+      : await canvasToBlob(normalizedCanvas, 'image/jpeg', jpegQuality);
   }
 
   const captureElement = getCaptureElement(element);

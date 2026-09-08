@@ -67,6 +67,7 @@ import LockLauncherCircle_0 from './lockwidget/launcher-circle_0';
 
 import Icon from './icon';
 import PlatformGroupNode from './components/PlatformGroupNode';
+import { withLockCaptureTheme } from './util/lockCaptureTheme';
 import Wallpaper from './wallpaper/wallpaper';
 import LiveWallpaper from './wallpaper/live-wallpaper';
 import LottieWallpaper from './wallpaper/lottie_wallpaper';
@@ -77,7 +78,7 @@ import LottieWallpaper from './wallpaper/lottie_wallpaper';
 // import ListViewIpad from './theme/list_view_ipad';
 
 /** 不含 preview，避免与 icon/preview 循环依赖 */
-export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
+const rawXyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   platform_group: PlatformGroupNode,
   time_0: TimeLayout_0,
   time_1: TimeLayout_1,
@@ -148,3 +149,18 @@ export const xyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   live_wallpaper: LiveWallpaper,
   lottie_wallpaper: LottieWallpaper,
 };
+
+/**
+ * lock_* 统一套一层配色接管：导出 previewTransParent 时要求「没有背景 + 元素纯白」，
+ * 而这两个颜色在所有锁屏组件里都取自 data.backgroundColor / data.focusColor。
+ * 包在这里，29 个组件不用各自加代码；不在导出截图期间行为与原来完全一致。
+ */
+export const xyFlowTypeNodeType: Record<string, ComponentType<any>> =
+  Object.fromEntries(
+    Object.entries(rawXyFlowTypeNodeType).map(([nodeType, Component]) => [
+      nodeType,
+      nodeType.startsWith('lock_')
+        ? withLockCaptureTheme(Component)
+        : Component,
+    ]),
+  );

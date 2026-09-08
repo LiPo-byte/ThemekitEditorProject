@@ -5,6 +5,7 @@ import {
   type ExportBundleApi,
 } from './exportBundleShared';
 import { useWidgetExportBundle } from './useWidgetExportBundle';
+import { useLockWidgetExportBundle } from './useLockWidgetExportBundle';
 import { useIconPackExportBundle } from './useIconPackExportBundle';
 import { useWallpaperExportBundle } from './useWallpaperExportBundle';
 import { useThemeExportBundle } from './useThemeExportBundle';
@@ -33,6 +34,9 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
   const widgetExport = useWidgetExportBundle(
     category === 'widget' ? nodeId : undefined,
   );
+  const lockWidgetExport = useLockWidgetExportBundle(
+    category === 'lockwidget' ? nodeId : undefined,
+  );
   const iconPackExport = useIconPackExportBundle(
     category === 'iconpack' ? nodeId : undefined,
   );
@@ -45,6 +49,7 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
 
   const byCategory: Record<string, ExportBundleApi> = {
     widget: widgetExport,
+    lockwidget: lockWidgetExport,
     iconpack: iconPackExport,
     wallpaper: wallpaperExport,
     theme: themeExport,
@@ -65,6 +70,7 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
 /** 供外部查看当前已注册的导出 category */
 export const listRegisteredExportCategories = () => [
   'widget',
+  'lockwidget',
   'iconpack',
   'wallpaper',
   'theme',
