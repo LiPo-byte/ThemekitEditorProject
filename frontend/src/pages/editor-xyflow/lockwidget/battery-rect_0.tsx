@@ -113,8 +113,8 @@ export default function LockBatteryRect_0(props: any) {
             position: 'absolute',
             inset: 0,
             background: `conic-gradient(${focusColor} ${PREVIEW_PERCENT}%, transparent ${PREVIEW_PERCENT}%)`,
-            maskImage: RING_BAND_MASK,
-            WebkitMaskImage: RING_BAND_MASK,
+            maskImage: `radial-gradient(circle at center, transparent ${RING_INNER_RADIUS}px, #000 ${RING_INNER_RADIUS}px, #000 ${RING_OUTER_RADIUS}px, transparent ${RING_OUTER_RADIUS}px)`,
+            WebkitMaskImage: `radial-gradient(circle at center, transparent ${RING_INNER_RADIUS}px, #000 ${RING_INNER_RADIUS}px, #000 ${RING_OUTER_RADIUS}px, transparent ${RING_OUTER_RADIUS}px)`,
           }}
         />
         {emptyRing && (
