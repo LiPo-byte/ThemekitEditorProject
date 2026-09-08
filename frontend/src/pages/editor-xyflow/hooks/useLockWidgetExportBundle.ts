@@ -12,6 +12,7 @@ import {
   getLockExportRule,
   type LockExportFileRule,
   LOCK_SPEC_TOP_FIELDS,
+  resolveLockExportFileName,
 } from '../lockwidget/export-rules';
 import {
   generateElementPreview,
@@ -198,16 +199,6 @@ const captureLockPreview = async (
   }
 };
 
-/**
- * 规则里的文件名。1005 Dynamic 的 gif 名字来自 sizes[].fileName，
- * 要和 spec 里的值逐字一致才过得了 yml 的 file_references 校验，所以不做归一化。
- * 名字算不出来（没填 fileName）时返回空串，由调用方跳过这一个文件。
- */
-const resolveLockFileName = (
-  rule: LockExportFileRule,
-  sizeData: Record<string, any>,
-) => (typeof rule.name === 'function' ? rule.name(sizeData) : rule.name);
-
 /** 取 sizes[] 当前项里某个上传字段的原图 */
 const fetchLockSourceBlob = (
   sizeData: Record<string, any>,
@@ -238,7 +229,7 @@ const pushLockRuleAssets = async (
   const { sizeData, typeName, sizeLabel, pushFile, pushLine } = ctx;
   for (const assetRule of assetRules) {
     const sourceField = String(assetRule.sourceField ?? '');
-    const filename = resolveLockFileName(assetRule, sizeData);
+    const filename = resolveLockExportFileName(assetRule, sizeData);
     if (!filename) {
       pushLine('warning', `跳过 ${sourceField} 素材（spec 里没填 fileName）`);
       continue;
@@ -323,7 +314,7 @@ const pushLockRulePreviews = async (
   const { sizeData, typeName, sizeLabel, pushFile, pushLine } = ctx;
   const blobByFilename = new Map<string, Blob>();
   for (const previewRule of previewRules) {
-    const filename = resolveLockFileName(previewRule, sizeData);
+    const filename = resolveLockExportFileName(previewRule, sizeData);
     const source = await loadLockPreviewBlob(previewRule, ctx);
     if (!source.blob) {
       pushLine('warning', `跳过 ${filename}（${source.reason}）`);

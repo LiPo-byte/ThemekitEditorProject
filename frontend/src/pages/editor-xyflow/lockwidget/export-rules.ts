@@ -1339,3 +1339,61 @@ export const getLockExportRule = (
 
 /** 当前已登记规则的节点 type 列表 */
 export const listLockExportRuleKeys = () => Object.keys(LOCK_EXPORT_RULES);
+
+/**
+ * 规则里的文件名。1005 Dynamic 的 gif 名字来自 sizes[].fileName，所以可能是个函数；
+ * 名字必须和 spec 里的值逐字一致才对得上 yml 的 file_references，这里不做任何归一化。
+ * 算不出名字（没填 fileName）时返回空串，由调用方跳过这个文件。
+ */
+export const resolveLockExportFileName = (
+  rule: LockExportFileRule,
+  sizeData: Record<string, any>,
+) => (typeof rule.name === 'function' ? rule.name(sizeData) : rule.name);
+
+/**
+ * 把规则表反过来查，得到「spec 里的上传字段 -> 包内候选文件名」，供导入还原素材用。
+ *
+ * 候选名可能有多个，要按顺序试：asset 排在 preview 前面。
+ * 1005 Dynamic 的 image_dynamics_gif 同时对应 {fileName}.gif（asset）和
+ * previewTransParent.gif（preview），1009 Health 的 image_static_* 同理 ——
+ * 这些文件导出时本来就是同一份内容，任意一个存在就能还原出这个字段。
+ *
+ * 导入导出共用这张表，包里的文件名改了只用改一处。
+ */
+export type LockImportSource = {
+  sourceField: string;
+  filenames: string[];
+  /** 候选文件本来就是同一张图，尺寸取第一条规则的即可 */
+  expectedWidth: number;
+  expectedHeight: number;
+};
+
+export const listLockImportSources = (
+  nodeType: string,
+  sizeData: Record<string, any>,
+): LockImportSource[] => {
+  const files = getLockExportRule(nodeType)?.files ?? [];
+  // asset 优先：preview 只是碰巧内容相同，asset 才是这个字段的正主
+  const ordered = [
+    ...files.filter((file) => file.kind === 'asset'),
+    ...files.filter((file) => file.kind === 'preview'),
+  ];
+  const sourceByField = new Map<string, LockImportSource>();
+  ordered.forEach((file) => {
+    if (!file.sourceField) return;
+    const filename = resolveLockExportFileName(file, sizeData);
+    if (!filename) return;
+    const source = sourceByField.get(file.sourceField);
+    if (!source) {
+      sourceByField.set(file.sourceField, {
+        sourceField: file.sourceField,
+        filenames: [filename],
+        expectedWidth: file.expectedWidth,
+        expectedHeight: file.expectedHeight,
+      });
+      return;
+    }
+    if (!source.filenames.includes(filename)) source.filenames.push(filename);
+  });
+  return [...sourceByField.values()];
+};

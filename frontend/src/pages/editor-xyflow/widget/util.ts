@@ -90,7 +90,7 @@ export const getImageSize = (src: string): Promise<ImageSize> =>
     image.src = src;
 });
 
-const getWidgetType = (type: number, layoutType?: number) => {
+export const getWidgetType = (type: number, layoutType?: number) => {
     let wt = TYPE_WIDGET_MAP[type];
     let lyt = layoutType || 0;
     return wt + '_' + lyt;

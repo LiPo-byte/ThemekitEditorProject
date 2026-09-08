@@ -2,12 +2,20 @@ import React from 'react';
 import { InboxOutlined } from '@ant-design/icons';
 import {
   useEditorAddIconPack,
+  useEditorAddLockWidget,
   useEditorAddTheme,
   useEditorAddWidget,
   useEditorAddWallpaper,
   useEditorGlobalLoadingSetter,
   useEditorProjectId,
 } from '../context';
+import { getLockDefaultSizeData, getLockWidgetType } from '../lockwidget/util';
+import { getWidgetType } from '../widget/util';
+import { xyFlowTypeNodeType } from '../xyFlowTypeNodeType';
+import {
+  getLockExportRule,
+  listLockImportSources,
+} from '../lockwidget/export-rules';
 import { Button, message, Segmented, Select, Upload, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import { CONFIG_SIZE_MAP, DEFAULT_CROP_PROPS, DEFAULT_RADIUS, SIZE_LABEL_MAP, SOURCENAME_TYPE_WIDGET_MAP, TYPE_WIDGET_MAP } from '../widget/base-config';
@@ -73,7 +81,16 @@ type Props = {
   onClose: () => void;
 };
 type ImportSystem = 'ios' | 'android' | 'common';
-type ImportKind = 'widget' | 'iconPack' | 'wallpaper' | 'photo_shuffles' | 'theme' | 'wallpaper_depth' | 'live_wallpaper' | 'diy_live_wallpaper';
+type ImportKind =
+ | 'widget'
+ | 'iconPack'
+ | 'wallpaper'
+ | 'photo_shuffles'
+ | 'theme'
+ | 'wallpaper_depth'
+ | 'live_wallpaper'
+ | 'diy_live_wallpaper'
+ | 'lockWidget';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -234,6 +251,17 @@ const buildThemeShowElements = (params: {
   return showElements;
 };
 
+/**
+ * 节点 type 必须在 xyFlowTypeNodeType 里注册过，否则 React Flow 找不到组件，
+ * 画布上就是一个没有内容、没有样式的空白框 —— 表现为「导入成功但什么都没有」。
+ *
+ * 各品类的包都叫 widgets_spec.json，选错品类时 type 查不到对应的名字
+ * （如把锁屏包按 widget 导入，TYPE_WIDGET_MAP[1005] 是 undefined，
+ * 算出来的 type 是字符串 "undefined_0"），正好落在这个判断上。
+ */
+const isRenderableNodeType = (nodeType: string) =>
+  Boolean(nodeType && xyFlowTypeNodeType[nodeType]);
+
 const getBlobImageSize = (blob: Blob) =>
   new Promise<{ width: number; height: number }>((resolve, reject) => {
     const objectUrl = URL.createObjectURL(blob);
@@ -258,6 +286,7 @@ const getBlobImageSize = (blob: Blob) =>
 const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const { styles } = useStyles();
   const addWidget = useEditorAddWidget();
+  const addLockWidget = useEditorAddLockWidget();
   const addIconPack = useEditorAddIconPack();
   const addWallpaper = useEditorAddWallpaper();
   const addTheme = useEditorAddTheme();
@@ -367,6 +396,26 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     const { sizes, isGif, type } = spec;
     if (!Array.isArray(sizes)) {
       if (!silent) message.error(`${specFilename} 缺少 sizes 数组`);
+      return null;
+    }
+    if (spec.isLockScreen) {
+      if (!silent) {
+        message.error(`${specFilename} 是锁屏组件的包，请改用 LockWidget 导入`);
+      }
+      return null;
+    }
+    const unsupportedSize = sizes.find(
+      (item: any) =>
+        !isRenderableNodeType(
+          getWidgetType(Number(type), Number(item?.layoutType) || 0),
+        ),
+    );
+    if (unsupportedSize) {
+      if (!silent) {
+        message.error(
+          `不支持的组件：type=${type}，layoutType=${unsupportedSize.layoutType ?? 0}`,
+        );
+      }
       return null;
     }
 
@@ -740,6 +789,160 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
         }
       } catch (error) {
         console.error('[ImportModal] 读取 widgets_spec.json 失败:', error);
+        message.error('读取 widgets_spec.json 失败');
+      }
+      return false;
+    });
+  };
+
+  /**
+   * 从已加载 zip 解析一套锁屏组件；成功返回节点 id + config。
+   *
+   * 与 widget 的两点不同：
+   * - 锁屏只有 iOS 一个平台，spec 顶层就是 addLockWidget 要的 config，不用再按 ios / android 包一层；
+   * - 素材的文件名不写死在这里。按 sizes[] 每一项算出节点 type，再从导出规则表反查
+   *   该节点要哪些素材、对应包内哪个文件名，导入导出共用同一份契约（见 lockwidget/export-rules.ts）。
+   */
+  const importLockWidgetFromZip = async (
+    zip: JSZip,
+    options?: { exportIndex?: ExportIndex; silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any> } | null> => {
+    const exportIndex = options?.exportIndex ?? null;
+    const silent = Boolean(options?.silent);
+
+    const specFilename = applyIndexSuffix('widgets_spec.json', exportIndex);
+    const specFile =
+      zip.file(specFilename) ??
+      zip.file(new RegExp(`(^|\\/)${escapeRegExp(specFilename)}$`, 'i'))?.[0];
+    if (!specFile) {
+      if (!silent) message.error(`压缩包内未找到 ${specFilename}`);
+      return null;
+    }
+
+    const spec = JSON.parse(await specFile.async('string'));
+    const { type, sizes } = spec ?? {};
+    if (!Array.isArray(sizes) || !sizes.length) {
+      if (!silent) message.error(`${specFilename} 缺少 sizes 数组`);
+      return null;
+    }
+    // 普通 widget 的包也叫 widgets_spec.json，选错品类时给个明确提示而不是导入出一个空组件
+    if (!spec.isLockScreen) {
+      if (!silent) message.error(`${specFilename} 不是锁屏组件，请改用 Widget 导入`);
+      return null;
+    }
+    const unsupportedSize = sizes.find(
+      (item: any) => !isRenderableNodeType(getLockWidgetType(Number(type), item)),
+    );
+    if (unsupportedSize) {
+      if (!silent) {
+        message.error(
+          `不支持的锁屏组件：type=${type}，size=${unsupportedSize.size}`,
+        );
+      }
+      return null;
+    }
+
+    const nextSizes: Record<string, any>[] = [];
+    for (const item of sizes) {
+      const nodeType = getLockWidgetType(Number(type), item);
+      /**
+       * 默认配置为底、包里的 spec 覆盖在上面。
+       *
+       * 导出时 sanitizeLockSizeSpec 把 image_* 和 focusColor / backgroundColor 剔掉了
+       * （客户端不读这些），只靠 spec 还原出来的组件在编辑器里既没有配色也没有上传入口，
+       * 所以要拿默认配置把这些字段补回来，补出来的形状和左侧菜单新增的组件一致。
+       *
+       * 是浅合并：spec 里给了 title 就整个用 spec 的，不会去补 title.font 这种嵌套字段。
+       * 我们自己导出的包里这些嵌套对象是完整的，够用。
+       */
+      const defaultSizeData = getLockDefaultSizeData(nodeType);
+      if (!defaultSizeData && !silent) {
+        message.warning(`${nodeType} 没有默认配置，配色与素材字段未补全`);
+      }
+      const nextItem: Record<string, any> = defaultSizeData
+        ? { ...structuredClone(defaultSizeData), ...item }
+        : { ...item };
+      nextSizes.push(nextItem);
+
+      if (!getLockExportRule(nodeType)) {
+        if (!silent) message.warning(`${nodeType} 未登记导出规则，素材未还原`);
+        continue;
+      }
+      // 没有 image_* 素材的类型（如 Quotation / Custom InLine）返回空数组，直接跳过
+      for (const {
+        sourceField,
+        filenames,
+        expectedWidth,
+        expectedHeight,
+      } of listLockImportSources(nodeType, nextItem)) {
+        /**
+         * 只还原默认配置里声明过的图片位。
+         * 规则表里有些文件在编辑器里并没有对应的上传字段，比如 1009 Health 的
+         * image_static_*：那是导出时从透明底预览复制出来的，还原回来也没人读。
+         */
+        if (!(sourceField in nextItem)) continue;
+        let uploadResult: Awaited<ReturnType<typeof uploadMediaFromZip>> = null;
+        for (const filename of filenames) {
+          uploadResult = await uploadMediaFromZip(filename, zip, exportIndex);
+          if (uploadResult) break;
+        }
+        if (!uploadResult) {
+          if (!silent) {
+            message.warning(
+              `压缩包缺少 ${applyIndexSuffix(filenames[0], exportIndex)}`,
+            );
+          }
+        } else if (!silent) {
+          /**
+           * 锁屏素材是原图透传、不裁剪不缩放（普通 widget 靠 crop_props 贴合，所以不校验），
+           * 尺寸不对客户端会校验失败。只警告不拦：图还是能用，让用户进编辑器换掉比拒绝导入有用。
+           */
+          // 探测失败（文件损坏 / 根本不是图片）只跳过这条提示，不能中断整个导入
+          const actual = await getBlobImageSize(uploadResult.mediaBlob).catch(
+            () => null,
+          );
+          if (
+            actual &&
+            (actual.width !== expectedWidth || actual.height !== expectedHeight)
+          ) {
+            message.warning(
+              `${filenames[0]} 尺寸应为 ${expectedWidth}×${expectedHeight}，实际 ${actual.width}×${actual.height}`,
+            );
+          }
+        }
+        // 缺图也要把字段占上：右侧属性面板按字段存在与否渲染上传入口
+        nextItem[sourceField] = { source: uploadResult ? uploadResult.url : '' };
+      }
+    }
+    spec.sizes = nextSizes;
+
+    const rootId = addLockWidget(spec);
+    if (!rootId) return null;
+    return { rootId, config: spec };
+  };
+
+  const readLockWidgetFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+        const zip = await JSZip.loadAsync(file);
+        const result = await importLockWidgetFromZip(zip);
+        if (result) {
+          onClose();
+          message.success('导入成功');
+        }
+      } catch (error) {
+        console.error('[ImportModal] 读取锁屏 widgets_spec.json 失败:', error);
         message.error('读取 widgets_spec.json 失败');
       }
       return false;
@@ -1418,6 +1621,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   };
 
   const beforeUpload = async (file: File) => {
+    if (importKind === 'lockWidget') {
+      return readLockWidgetFromZip(file);
+    }
     if (importKind === 'iconPack') {
       return readIconPackFromZip(file);
     }
@@ -1462,6 +1668,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
           onChange={handleImportKindChange}
           options={[
             { label: 'Widget', value: 'widget' },
+            { label: 'LockWidget', value: 'lockWidget' },
             { label: 'IconPack', value: 'iconPack' },
             {
               label: 'WallPaper',

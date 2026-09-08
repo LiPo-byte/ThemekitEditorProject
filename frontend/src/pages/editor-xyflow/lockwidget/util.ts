@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid';
+import { LockWidgetDefaultConfig } from '@/editor-core/defaultConfig';
 import {
   LOCK_CONFIG_SIZE_MAP,
   LOCK_SIZE_LABEL_MAP,
@@ -48,7 +49,7 @@ export const getLockTextJustify = (textAlignment?: number) => {
  * 形状由 size 推出（1001 circle / 1002 rect / 1003 inline）；
  * 变体号各类型取的字段不同：weather 用 weatherType，health / countdown 用 layoutType，其余恒为 0。
  */
-const getLockWidgetType = (type: number, item: any) => {
+export const getLockWidgetType = (type: number, item: any) => {
   const name = LOCK_TYPE_WIDGET_MAP[type];
   const shape = LOCK_SIZE_LABEL_MAP[item?.size];
   /**
@@ -65,6 +66,34 @@ const getLockWidgetType = (type: number, item: any) => {
   }
   const variant = item?.layoutType ?? item?.weatherType ?? 0;
   return `lock_${name}_${shape}_${variant}`;
+};
+
+/**
+ * 节点 type -> LockWidgetDefaultConfig 里对应那套的 sizes[0]。
+ *
+ * 左侧菜单新增组件用的就是这份默认配置，所以它是「一个锁屏组件在编辑器里该有哪些字段」
+ * 的权威来源：哪些图片位有上传入口、有哪些配色字段（focusColor / backgroundColor /
+ * containerColor 等），都以它为准。导入包时靠它把 spec 里没有的编辑器字段补回来。
+ *
+ * key 用 getLockWidgetType 现算而不是手写一张映射表，加组件时不用再回来补一行。
+ */
+let lockDefaultSizeByNodeType: Map<string, Record<string, any>> | null = null;
+
+export const getLockDefaultSizeData = (
+  nodeType: string,
+): Record<string, any> | undefined => {
+  if (!lockDefaultSizeByNodeType) {
+    lockDefaultSizeByNodeType = new Map();
+    Object.values(LockWidgetDefaultConfig).forEach((config: any) => {
+      const item = config?.sizes?.[0];
+      if (!item) return;
+      lockDefaultSizeByNodeType!.set(
+        getLockWidgetType(config.type, item),
+        item,
+      );
+    });
+  }
+  return lockDefaultSizeByNodeType.get(nodeType);
 };
 
 /**
