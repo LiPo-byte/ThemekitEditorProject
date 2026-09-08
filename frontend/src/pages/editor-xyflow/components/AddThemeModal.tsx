@@ -145,10 +145,10 @@ const resolveAmazonApp = (apps: any): Record<string, any> | null => {
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
     position: absolute;
-    right: -4%;
+    // right: -4%;
     bottom: 52px;
     transform: translateX(-50%);
-    width: 500px;
+    width: 100%;
     height: 500px;
     border-radius: 12px;
     border: 1px solid var(--editor-panel-border, transparent);

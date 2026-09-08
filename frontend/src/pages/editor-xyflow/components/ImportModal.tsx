@@ -31,10 +31,10 @@ import {
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
     position: absolute;
-    right: 18%;
+    // right: 18%;
     bottom: 52px;
     transform: translateX(-50%);
-    width: 300px;
+    width: 100%;
     border-radius: 12px;
     border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
