@@ -15,12 +15,12 @@ import {
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
-import { Button, Flex } from 'antd';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Divider, Flex } from 'antd';
+import { CloseOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import { IconPackDefaultConfig } from '@/editor-core/defaultConfig'
 import ImportModal from './ImportModal';
 import AddThemeModal from './AddThemeModal';
-
+import AddLockPackModal from './AddLockPackModal';
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
     position: absolute;
@@ -91,7 +91,7 @@ const EditorBottomToolBar: React.FC = () => {
   const leftPanlContent = useEditorLeftPanlContent();
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
   const [addThemeModalOpen, setAddThemeModalOpen] = React.useState(false);
-
+  const [addLockPackModalOpen, setAddLockPackModalOpen] = React.useState(false);
   const onAddIconPack = () => {
     addIconPack(IconPackDefaultConfig)
   }
@@ -103,8 +103,20 @@ const EditorBottomToolBar: React.FC = () => {
     setLeftPanlContent(content);
     setLeftPanlOpen(true);
   }
+  // 三个底部面板互斥：打开一个时关掉其余两个，传 null 表示全部关闭
+  const openOnlyPanel = (target: 'import' | 'theme' | 'lockPack' | null) => {
+    setImportModalOpen(target === 'import');
+    setAddThemeModalOpen(target === 'theme');
+    setAddLockPackModalOpen(target === 'lockPack');
+  }
+  const onToggleImportModal = () => {
+    openOnlyPanel(importModalOpen ? null : 'import');
+  }
   const onToggleAddThemeModal = () => {
-    setAddThemeModalOpen((open) => !open);
+    openOnlyPanel(addThemeModalOpen ? null : 'theme');
+  }
+  const onToggleAddLockPackModal = () => {
+    openOnlyPanel(addLockPackModalOpen ? null : 'lockPack');
   }
   if (!visible) return null;
 
@@ -115,9 +127,15 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='primary' icon={<SelectSvg color={theme.colorWhite} size={14} />}></Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('widget'); }} >Widget</Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('lockScreen'); }} >Lock Widget</Button>
+                {/* <Button type='text' onClick={() => {}} >Control Center</Button> */}
+                {/* <Button type='text' onClick={() => {}} >Sticker</Button> */}
+                {/* <Button type='text' onClick={() => {}} >Watch Face</Button> */}
+                {/* <Button type='text' onClick={() => {}} >Charging Animation</Button> */}
                 <Button type='text' onClick={onAddIconPack} >Icon Pack</Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button>
+                <Button type={addLockPackModalOpen ? 'primary' : 'text'} onClick={onToggleAddLockPackModal} >Lock Pack</Button>
                 <Button type={addThemeModalOpen ? 'primary' : 'text'} onClick={onToggleAddThemeModal} >Theme</Button>
+                <Button type='text' onClick={() => {}} >More</Button>
                 <Button
                   color={importModalOpen ? 'primary' : 'default'}
                   variant='filled'
@@ -128,12 +146,13 @@ const EditorBottomToolBar: React.FC = () => {
                       {importModalOpen ? <CloseOutlined /> : <PlusOutlined />}
                     </span>
                   }
-                  onClick={() => setImportModalOpen(!importModalOpen)}
+                  onClick={onToggleImportModal}
                 />
             </Flex>
         </div>
         <ImportModal open={importModalOpen} onClose={() => { setImportModalOpen(false); }} />
         <AddThemeModal open={addThemeModalOpen} onClose={() => { setAddThemeModalOpen(false); }} />
+        <AddLockPackModal open={addLockPackModalOpen} onClose={() => { setAddLockPackModalOpen(false); }} />
     </div>
   );
 };
