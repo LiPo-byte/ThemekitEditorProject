@@ -2,6 +2,7 @@ import React from 'react';
 import { InboxOutlined } from '@ant-design/icons';
 import {
   useEditorAddIconPack,
+  useEditorAddLockpack,
   useEditorAddLockWidget,
   useEditorAddTheme,
   useEditorAddWidget,
@@ -23,10 +24,12 @@ import JSZip from 'jszip';
 import { uploadProjectFile, uploadProjectImage, uploadProjectLottie } from '../service';
 import { packDotLottie } from '../util/lottieBundle';
 import {
+  DEFAULT_LOCKPACK_CONFIG,
   DEFAULT_THEME_CONFIG,
   IconPackDefaultConfig,
   WallpaperDefaultConfig,
 } from '@/editor-core/defaultConfig';
+import { LOCKPACK_SURFACE_KEYS } from '../lockpack/util';
 
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
@@ -90,7 +93,8 @@ type ImportKind =
  | 'wallpaper_depth'
  | 'live_wallpaper'
  | 'diy_live_wallpaper'
- | 'lockWidget';
+ | 'lockWidget'
+ | 'lockPack';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -251,6 +255,36 @@ const buildThemeShowElements = (params: {
   return showElements;
 };
 
+/** 与 AddLockPackModal 一致：单张壁纸 + 每套锁屏组件存整套 config */
+const buildLockpackShowElements = (params: {
+  wallpaperItem: { id: string; config: Record<string, any> } | null;
+  lockWidgetItems: Array<{ id: string; config: Record<string, any> }>;
+}) => {
+  const showElements: Array<Record<string, any>> = [];
+  const wallpaperData = params.wallpaperItem?.config?.wallpaper;
+  if (params.wallpaperItem && wallpaperData) {
+    showElements.push({
+      key: `${params.wallpaperItem.id}_wallpaper`,
+      category: 'wallpaper',
+      data: { ...wallpaperData },
+    });
+  }
+
+  params.lockWidgetItems.forEach((item) => {
+    const sizes = Array.isArray(item.config?.sizes) ? item.config.sizes : [];
+    if (!sizes.length) return;
+    showElements.push({
+      key: `${item.id}_lockwidget`,
+      category: 'lockwidget',
+      data: {
+        ...item.config,
+        sizes: sizes.map((size: any) => ({ ...size })),
+      },
+    });
+  });
+  return showElements;
+};
+
 /**
  * 节点 type 必须在 xyFlowTypeNodeType 里注册过，否则 React Flow 找不到组件，
  * 画布上就是一个没有内容、没有样式的空白框 —— 表现为「导入成功但什么都没有」。
@@ -290,6 +324,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const addIconPack = useEditorAddIconPack();
   const addWallpaper = useEditorAddWallpaper();
   const addTheme = useEditorAddTheme();
+  const addLockpack = useEditorAddLockpack();
   const setGlobalLoading = useEditorGlobalLoadingSetter();
   const projectId = useEditorProjectId();
   const [importKind, setImportKind] = React.useState<ImportKind>('widget');
@@ -1465,6 +1500,125 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     });
   };
 
+  /**
+   * LockPack：单张 wallpaper.jpg + 1~N 套锁屏组件 + 三张整包预览图，不含 icon。
+   *
+   * 不像 Theme 那样先扫描再确认：锁屏组件只有 iOS 一个平台，没有需要用户选的东西，
+   * 拖进来就能一路导完。
+   */
+  const readLockPackFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+    if (!projectId) {
+      message.error('项目未初始化，无法上传资源');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        const zip = await JSZip.loadAsync(file);
+
+        const lockIndices = discoverWidgetIndices(zip);
+        if (!lockIndices.length) {
+          message.error('LockPack 压缩包内未找到 widgets_spec.json');
+          return false;
+        }
+
+        const lockWidgetItems: Array<{
+          id: string;
+          config: Record<string, any>;
+        }> = [];
+        for (const exportIndex of lockIndices) {
+          const result = await importLockWidgetFromZip(zip, {
+            exportIndex,
+            silent: true,
+          });
+          if (result) {
+            lockWidgetItems.push({ id: result.rootId, config: result.config });
+          }
+        }
+        if (!lockWidgetItems.length) {
+          message.error('LockPack 内的锁屏组件都导入失败');
+          return false;
+        }
+
+        // LockPack 固定单张 wallpaper.jpg，没有 _N 分组
+        const wallpaperResult = await importWallpaperFromZip(zip, {
+          silent: true,
+        });
+        if (!wallpaperResult) {
+          message.error('LockPack 压缩包缺少 wallpaper.jpg');
+          return false;
+        }
+        const wallpaperItem = {
+          id: wallpaperResult.rootId,
+          config: wallpaperResult.config,
+        };
+
+        const surfaceSources: Record<string, string> = {};
+        const missingSurfaces: string[] = [];
+        for (const key of LOCKPACK_SURFACE_KEYS) {
+          let surfaceUpload: Awaited<ReturnType<typeof uploadMediaFromZip>> =
+            null;
+          for (const ext of THEME_SURFACE_EXTS) {
+            surfaceUpload = await uploadMediaFromZip(`${key}.${ext}`, zip);
+            if (surfaceUpload) break;
+          }
+          if (surfaceUpload) {
+            surfaceSources[key] = surfaceUpload.url;
+          } else {
+            missingSurfaces.push(`${key}.jpg`);
+          }
+        }
+        if (missingSurfaces.length) {
+          message.warning(
+            `LockPack 压缩包缺少预览图：${missingSurfaces.join('、')}`,
+          );
+        }
+
+        const showElements = buildLockpackShowElements({
+          wallpaperItem,
+          lockWidgetItems,
+        });
+        const withSurface = (key: string, surface: Record<string, any>) => ({
+          ...surface,
+          showElements: [...showElements],
+          source: surfaceSources[key] ?? '',
+        });
+
+        addLockpack({
+          ...DEFAULT_LOCKPACK_CONFIG,
+          preview_long: withSurface(
+            'preview_long',
+            DEFAULT_LOCKPACK_CONFIG.preview_long,
+          ),
+          preview_short: withSurface(
+            'preview_short',
+            DEFAULT_LOCKPACK_CONFIG.preview_short,
+          ),
+          list_view: withSurface('list_view', DEFAULT_LOCKPACK_CONFIG.list_view),
+          selectElements: {
+            lockwidgets: lockWidgetItems.map((item) => item.id),
+            wallpaper: [wallpaperItem.id],
+          },
+        });
+
+        onClose();
+        message.success(
+          `LockPack 导入完成：锁屏组件 ${lockWidgetItems.length}/${lockIndices.length}，Wallpaper 1`,
+        );
+      } catch (error) {
+        console.error('[ImportModal] lockpack 导入失败:', error);
+        message.error('LockPack 导入失败');
+      }
+      return false;
+    });
+  };
+
   /** 选择 Theme zip 后先扫描，有 widget 则进入按套选平台 */
   const prepareThemeImport = async (file: File) => {
     const isZipFile =
@@ -1645,6 +1799,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'theme') {
       return prepareThemeImport(file);
     }
+    if (importKind === 'lockPack') {
+      return readLockPackFromZip(file);
+    }
     return readWidgetsSpecFromZip(file);
   };
 
@@ -1696,6 +1853,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
               ],
             },
             { label: 'Theme', value: 'theme' },
+            { label: 'LockPack', value: 'lockPack' },
           ]}
           style={{ width: '100%' }}
         />
