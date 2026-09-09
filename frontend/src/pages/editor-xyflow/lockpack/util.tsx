@@ -113,9 +113,7 @@ export const lockpackConfig2Nodes: any = (config: any, elementKey?: any) => {
     id: rootGroupId,
     type: 'group',
     deleteable: true,
-    // 导出器（useLockpackExportBundle）还没做，先不出导出按钮：
-    // useExportBundle 对未注册的 category 会兜底到 widget 导出器，打出来的包是错的
-    packable: false,
+    packable: true,
     position: { x: 0, y: 0 },
     data: {
       category: 'lockpack',

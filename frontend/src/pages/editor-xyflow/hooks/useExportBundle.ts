@@ -9,6 +9,7 @@ import { useLockWidgetExportBundle } from './useLockWidgetExportBundle';
 import { useIconPackExportBundle } from './useIconPackExportBundle';
 import { useWallpaperExportBundle } from './useWallpaperExportBundle';
 import { useThemeExportBundle } from './useThemeExportBundle';
+import { useLockpackExportBundle } from './useLockpackExportBundle';
 
 const DEFAULT_EXPORT_CATEGORY = 'widget';
 
@@ -46,6 +47,9 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
   const themeExport = useThemeExportBundle(
     category === 'theme' ? nodeId : undefined,
   );
+  const lockpackExport = useLockpackExportBundle(
+    category === 'lockpack' ? nodeId : undefined,
+  );
 
   const byCategory: Record<string, ExportBundleApi> = {
     widget: widgetExport,
@@ -53,6 +57,7 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
     iconpack: iconPackExport,
     wallpaper: wallpaperExport,
     theme: themeExport,
+    lockpack: lockpackExport,
   };
 
   const active =
@@ -74,4 +79,5 @@ export const listRegisteredExportCategories = () => [
   'iconpack',
   'wallpaper',
   'theme',
+  'lockpack',
 ];
