@@ -43,7 +43,7 @@ import {
   Space
 } from 'antd';
 import SelectElements from './SelectElements';
-import LockpackElements from './LockpackElements';
+import RefElements from './RefElements';
 // import type { ColorPickerProps } from 'antd';
 
 import { createStyles } from 'antd-style';
@@ -1898,19 +1898,25 @@ export const SelectedNodePropForm: React.FC<{
           </Space>
         </>
       )} */}
-      {/* LockPack 的引用清单（只读）：用 lockwidgets 字段区分，theme 的 selectElements 不走这里 */}
-      {hasKey('selectElements') &&
-        Array.isArray(editProps.selectElements?.lockwidgets) && (
-          <>
-            <Divider style={{
-              width: '280px',
-              marginLeft: '-16px',
-            }} size="small"></Divider>
-            <Space orientation="vertical" size="medium" style={{ display: 'flex' }}>
-              <LockpackElements selectElements={editProps.selectElements} />
-            </Space>
-          </>
-        )}
+      {/* theme / lockpack 的引用清单（只读），分区按 selectElements 里的字段自适应 */}
+      {hasKey('selectElements') && (
+        <>
+          <Divider style={{
+            width: '280px',
+            marginLeft: '-16px',
+          }} size="small"></Divider>
+          <Space orientation="vertical" size="medium" style={{ display: 'flex' }}>
+            <RefElements
+              selectElements={editProps.selectElements}
+              title={
+                Array.isArray(editProps.selectElements?.lockwidgets)
+                  ? 'Pack Elements'
+                  : 'Theme Elements'
+              }
+            />
+          </Space>
+        </>
+      )}
       {hasKey('music') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.music} onChange={(key: string, value: any) => {
