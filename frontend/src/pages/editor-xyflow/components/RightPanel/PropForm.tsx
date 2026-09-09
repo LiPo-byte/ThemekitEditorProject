@@ -43,6 +43,7 @@ import {
   Space
 } from 'antd';
 import SelectElements from './SelectElements';
+import LockpackElements from './LockpackElements';
 // import type { ColorPickerProps } from 'antd';
 
 import { createStyles } from 'antd-style';
@@ -1897,6 +1898,19 @@ export const SelectedNodePropForm: React.FC<{
           </Space>
         </>
       )} */}
+      {/* LockPack 的引用清单（只读）：用 lockwidgets 字段区分，theme 的 selectElements 不走这里 */}
+      {hasKey('selectElements') &&
+        Array.isArray(editProps.selectElements?.lockwidgets) && (
+          <>
+            <Divider style={{
+              width: '280px',
+              marginLeft: '-16px',
+            }} size="small"></Divider>
+            <Space orientation="vertical" size="medium" style={{ display: 'flex' }}>
+              <LockpackElements selectElements={editProps.selectElements} />
+            </Space>
+          </>
+        )}
       {hasKey('music') && (
         <>
           <BaseSelectedNodePropForm editProps={editProps.music} onChange={(key: string, value: any) => {

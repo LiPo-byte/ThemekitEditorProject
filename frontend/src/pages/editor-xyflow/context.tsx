@@ -22,6 +22,7 @@ import { lockWidgetConfig2Nodes } from './lockwidget/util';
 import { iconPackConfig2Nodes } from './icon/util';
 import { wallpaperConfig2Nodes, buildWallpaperConfigJson } from './wallpaper/util';
 import { themeConfig2Nodes, buildThemeConfigJson } from './theme/util';
+import { lockpackConfig2Nodes, buildLockpackConfigJson } from './lockpack/util';
 
 import { buildIconPackConfigJson } from './icon/buildIconPackConfig';
 import { relayoutRootNodes, resolveNextRootPosition } from './util/rootLayout';
@@ -134,6 +135,7 @@ type EditorCoreCtxValue = {
   addIconPack: (config: any) => string | undefined;
   addWallpaper: (config: any) => string | undefined;
   addTheme: (config: any) => string | undefined;
+  addLockpack: (config: any) => string | undefined;
   /** 全览：把画布缩放平移到刚好容纳所有根元素 */
   fitView: (options?: ViewFitOptions) => void;
   /** 聚焦：把视角移到指定根元素；元素尚未落到 nodes 时会等它出现后再执行 */
@@ -222,6 +224,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   addIconPack: noopAddNodeGroup,
   addWallpaper: noopAddNodeGroup,
   addTheme: noopAddNodeGroup,
+  addLockpack: noopAddNodeGroup,
   fitView: (_options?: ViewFitOptions) => {},
   focusElement: (_rootId: string, _options?: ViewFitOptions) => {},
   arrangeElements: () => {},
@@ -362,6 +365,8 @@ const ELEMENT_LOADERS: Record<
   iconpack: (configJson, element_key) => iconPackConfig2Nodes(configJson, element_key),
   wallpaper: (configJson, element_key) => wallpaperConfig2Nodes(configJson, element_key),
   theme: (configJson, element_key) => themeConfig2Nodes(configJson, element_key),
+  lockpack: (configJson, element_key) =>
+    lockpackConfig2Nodes(configJson, element_key),
 };
 
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
@@ -812,6 +817,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
   };
   const addTheme = (config: any) => {
     const { nodes: newNodes, rootNode } = themeConfig2Nodes(config);
+    if (!rootNode) return undefined;
+    appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
+  };
+  const addLockpack = (config: any) => {
+    const { nodes: newNodes, rootNode } = lockpackConfig2Nodes(config);
     if (!rootNode) return undefined;
     appendNodesBySlot(newNodes, rootNode);
     return String(rootNode.id);
@@ -1271,6 +1282,41 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     };
   };
 
+  /** LockPack 只引用锁屏组件和壁纸，不含 icon，也不引用别的整包 */
+  const buildLockpackElementPayload = (rootNode: FlowNode) => {
+    const sourceConfigMap: Record<string, any> = {};
+    nodes
+      .filter(
+        (node) =>
+          node.type === 'group' && !node.parentId && node.id !== rootNode.id,
+      )
+      .forEach((root) => {
+        const category =
+          ((root.data as Record<string, any> | undefined)?.category as string) ??
+          'widget';
+        if (category === 'lockwidget') {
+          sourceConfigMap[root.id] =
+            buildLockWidgetElementPayload(root).config_json ?? {};
+          return;
+        }
+        if (category === 'wallpaper') {
+          sourceConfigMap[root.id] = buildWallpaperConfigJson(root, nodes);
+        }
+      });
+
+    return {
+      element_key: rootNode.id,
+      category: 'lockpack',
+      subtype: 'lockpack',
+      x: rootNode.position?.x ?? 0,
+      y: rootNode.position?.y ?? 0,
+      visible: true,
+      locked: false,
+      schema_version: 1,
+      config_json: buildLockpackConfigJson(rootNode, nodes, sourceConfigMap),
+    };
+  };
+
   const ELEMENT_BUILDERS: Record<
     string,
     ((rootNode: FlowNode) => Record<string, any>) | undefined
@@ -1280,6 +1326,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     iconpack: buildIconPackElementPayload,
     wallpaper: buildWallpaperElementPayload,
     theme: buildThemeElementPayload,
+    lockpack: buildLockpackElementPayload,
   };
 
   const buildElementsPayloadFromNodes = () => {
@@ -1509,6 +1556,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       addIconPack,
       addWallpaper,
       addTheme,
+      addLockpack,
       fitView,
       focusElement,
       arrangeElements,
@@ -1633,6 +1681,7 @@ export const useEditorAddLockWidget = () => useContext(EditorCoreCtx).addLockWid
 export const useEditorAddIconPack = () => useContext(EditorCoreCtx).addIconPack;
 export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpaper;
 export const useEditorAddTheme = () => useContext(EditorCoreCtx).addTheme;
+export const useEditorAddLockpack = () => useContext(EditorCoreCtx).addLockpack;
 export const useEditorFitView = () => useContext(EditorCoreCtx).fitView;
 export const useEditorFocusElement = () => useContext(EditorCoreCtx).focusElement;
 export const useEditorArrangeElements = () => useContext(EditorCoreCtx).arrangeElements;

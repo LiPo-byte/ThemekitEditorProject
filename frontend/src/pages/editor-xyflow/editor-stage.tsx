@@ -18,6 +18,11 @@ import ListView from './theme/list_view';
 import ListViewShort from './theme/list_view_short';
 import PreviewLongIpad from './theme/preview_long_ipad';
 import ListViewIpad from './theme/list_view_ipad';
+import {
+  LockpackListView,
+  LockpackPreviewLong,
+  LockpackPreviewShort,
+} from './lockpack/surfaces';
 import { xyFlowTypeNodeType as baseXyFlowTypeNodeType } from './xyFlowTypeNodeType';
 import {
   useEditorNodes,
@@ -43,6 +48,9 @@ export const xyFlowTypeNodeType = {
   preview_long_ipad: PreviewLongIpad,
   list_view_ipad: ListViewIpad,
   preview: Preview,
+  lockpack_preview_long: LockpackPreviewLong,
+  lockpack_preview_short: LockpackPreviewShort,
+  lockpack_list_view: LockpackListView,
 };
 
 /** 自身可选则返回自身；否则沿 parentId 找最近 selectable !== false 的祖先 */

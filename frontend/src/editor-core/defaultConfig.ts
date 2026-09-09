@@ -6646,3 +6646,39 @@ export const DEFAULT_THEME_CONFIG = {
     source: '',
   },
 };
+
+/**
+ * 锁屏包默认配置。尺寸取自 widget/rule_ymal/resource-validation/lockpack.yml：
+ * 只有三张手机预览图，没有 iPad 面；包里固定单张壁纸，且不含 icon，
+ * 所以 selectElements 里只有 lockwidgets 和 wallpaper。
+ */
+export const DEFAULT_LOCKPACK_CONFIG = {
+  selectElements: {
+    lockwidgets: [],
+    wallpaper: [],
+  },
+  preview_long: {
+    width: 887,
+    height: 1920,
+    exportWidth: 887,
+    exportHeight: 1920,
+    showElements: [],
+    source: '',
+  },
+  preview_short: {
+    width: 887,
+    height: 1578,
+    exportWidth: 887,
+    exportHeight: 1578,
+    showElements: [],
+    source: '',
+  },
+  list_view: {
+    width: 492,
+    height: 1065,
+    exportWidth: 492,
+    exportHeight: 1065,
+    showElements: [],
+    source: '',
+  },
+};

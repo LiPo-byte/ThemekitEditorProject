@@ -124,6 +124,30 @@ const resolveWallpaperData = (
   return best;
 };
 
+/**
+ * 锁屏组件整套回源：LockPack 导出的 widgets_spec.json 是整套（含全部 sizes），
+ * 所以 showElements 里也存整套 config，key 形如 `${lockWidgetRootId}_lockwidget`。
+ */
+const resolveLockWidgetData = (
+  itemKey: string,
+  configMap: Record<string, any>,
+): Record<string, any> | null => {
+  const suffix = '_lockwidget';
+  if (!itemKey.endsWith(suffix)) return null;
+  const elementKey = itemKey.slice(0, -suffix.length);
+  if (!elementKey) return null;
+
+  const config = configMap?.[elementKey];
+  if (!config || typeof config !== 'object') return null;
+  const sizes = asArray<Record<string, any>>(config.sizes);
+  if (!sizes.length) return null;
+
+  return {
+    ...config,
+    sizes: sizes.map((item) => ({ ...item })),
+  };
+};
+
 /** 单条：解析成功返回最新 data，失败返回 null（调用方回退旧快照） */
 export const resolveShowElementData = (
   item: any,
@@ -136,6 +160,7 @@ export const resolveShowElementData = (
   const category = String(item.category ?? '');
   if (category === 'iconpack') return resolveIconpackData(key, configMap);
   if (category === 'widget') return resolveWidgetData(key, configMap);
+  if (category === 'lockwidget') return resolveLockWidgetData(key, configMap);
   if (category === 'wallpaper') return resolveWallpaperData(key, configMap);
   return null;
 };

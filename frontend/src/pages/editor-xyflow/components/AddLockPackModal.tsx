@@ -1,7 +1,12 @@
 import { Button, Divider, Flex, message, Tag, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import React from 'react';
-import { useEditorGetElementsConfigMap, useEditorNodes } from '../context';
+import { DEFAULT_LOCKPACK_CONFIG } from '@/editor-core/defaultConfig';
+import {
+  useEditorAddLockpack,
+  useEditorGetElementsConfigMap,
+  useEditorNodes,
+} from '../context';
 import {
   LOCK_CONFIG_SIZE_MAP,
   LOCK_TYPE_WIDGET_NAME_MAP,
@@ -175,6 +180,7 @@ const AddLockPackModal: React.FC<Props> = ({ open, onClose }) => {
   const { styles } = useStyles();
   const nodes = useEditorNodes();
   const getElementsConfigMap = useEditorGetElementsConfigMap();
+  const addLockpack = useEditorAddLockpack();
   const [singleSelected, setSingleSelected] =
     React.useState<ThemeCategory | null>('lockWidget');
   const [selectedKeys, setSelectedKeys] =
@@ -326,7 +332,51 @@ const AddLockPackModal: React.FC<Props> = ({ open, onClose }) => {
       message.error('请选择一张 Wallpaper');
       return;
     }
-    console.log('onConfirm', selectedKeys);
+
+    const configMap = getElementsConfigMap();
+    const wallpaperKey = selectedKeys.wallpaper;
+    const showElements: Array<Record<string, any>> = [];
+
+    const wallpaperData = configMap[wallpaperKey]?.wallpaper;
+    if (wallpaperData) {
+      showElements.push({
+        key: `${wallpaperKey}_wallpaper`,
+        category: 'wallpaper',
+        data: { ...wallpaperData },
+      });
+    }
+
+    // 导出的 widgets_spec.json 是整套，所以这里也存整套 config（含全部 sizes）
+    selectedKeys.lockWidget.forEach((elementKey) => {
+      const config = configMap[elementKey];
+      const sizes = Array.isArray(config?.sizes) ? config.sizes : [];
+      if (!sizes.length) return;
+      showElements.push({
+        key: `${elementKey}_lockwidget`,
+        category: 'lockwidget',
+        data: {
+          ...config,
+          sizes: sizes.map((item: any) => ({ ...item })),
+        },
+      });
+    });
+
+    const withShowElements = (surface: Record<string, any>) => ({
+      ...surface,
+      showElements: [...showElements],
+    });
+
+    addLockpack({
+      ...DEFAULT_LOCKPACK_CONFIG,
+      preview_long: withShowElements(DEFAULT_LOCKPACK_CONFIG.preview_long),
+      preview_short: withShowElements(DEFAULT_LOCKPACK_CONFIG.preview_short),
+      list_view: withShowElements(DEFAULT_LOCKPACK_CONFIG.list_view),
+      selectElements: {
+        lockwidgets: [...selectedKeys.lockWidget],
+        wallpaper: [wallpaperKey],
+      },
+    });
+    setSelectedKeys(EMPTY_SELECTED_KEYS);
     onClose();
   };
 

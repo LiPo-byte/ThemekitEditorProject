@@ -15,7 +15,8 @@ export type GroupNodeCategory =
   | 'widget'
   | 'lockwidget'
   | 'theme'
-  | 'wallpaper';
+  | 'wallpaper'
+  | 'lockpack';
 
 type GroupNodeStyle = {
   background: string;
@@ -48,6 +49,12 @@ export const ROOT_GROUP_STYLE: Record<GroupNodeCategory, GroupNodeStyle> = {
   wallpaper: {
     background: '#fff5f5',
     border: '1px solid #f9adb2',
+    borderRadius: 16,
+  },
+  /** 色相 210，落在绿（155）与蓝（257）中间的空档 */
+  lockpack: {
+    background: '#f0fafc',
+    border: '1px solid #79d5e5',
     borderRadius: 16,
   },
 };
@@ -83,5 +90,11 @@ export const PLATFORM_GROUP_STYLE: Record<GroupNodeCategory, GroupNodeStyle> = {
     border: '1px solid #ffd0d2',
     borderRadius: 12,
     boxShadow: '0 2px 8px rgba(188, 63, 83, 0.06)',
+  },
+  lockpack: {
+    background: '#e3f6fa',
+    border: '1px solid #b8e7f0',
+    borderRadius: 12,
+    boxShadow: '0 2px 8px rgba(0, 130, 149, 0.06)',
   },
 };
