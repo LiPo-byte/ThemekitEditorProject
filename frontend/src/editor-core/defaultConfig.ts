@@ -5662,9 +5662,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
         "sizes": [
             {
                 "size": 1002,
-                "name": "Lock_Battery_Rectangle",
-                "focusColor": "#000000",
-                "backgroundColor": "#00000066",
+                "name": "XXX_Battery_Rectangular",
+                "focusColor": "#FFFFFF",
+                "backgroundColor": "#DEBAFF",
                 "image_battery_rectangle": {
                     "source": '',
                 },
@@ -5704,9 +5704,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
         "sizes": [
           {
             "size": 1002,
-            "name": "Lock_Calendar_Rectangle",
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "name": "XXX_Calendar_Rectangular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "image_calendar_rectangle": {
               "source": '',
             },
@@ -5742,9 +5742,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1002,
             "weatherType": 1,
-            "name": "Lock_Weather_Rect_Type_1",
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "name": "XXX_Weather_Rectangular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "image_cloud": {
               "source": '',
             },
@@ -5785,9 +5785,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1002,
             "weatherType": 2,
-            "name": "Lock_Weather_Rect_Type_2",
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "name": "XXX_Weather_Rectangular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "image_cloud": {
               "source": '',
             },
@@ -5827,9 +5827,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1002,
             "weatherType": 3,
-            "name": "Lock_Weather_Rect_Type_3",
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "name": "XXX_Weather_Rectangular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "image_cloud": {
               "source": '',
             },
@@ -5869,8 +5869,8 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1002,
             "weatherType": 4,
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "image_cloud": {
               "source": '',
             },
@@ -5889,7 +5889,7 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             "image_wind": {
               "source": '',
             },
-            "name": "Lock_Weather_Rect_Type_4",
+            "name": "XXX_Weather_Rectangular",
             "topInfo": {
               "font": "AvenirNext-Medium",
               "textSize": 13,
@@ -5911,10 +5911,10 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1002,
             "weatherType": 5,
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "containerColor": "#FFFFFF33",
-            "name": "Lock_Weather_Rect_Type_5",
+            "name": "XXX_Weather_Rectangular",
             "topInfo": {
               "font": "HFTroy-Medium",
               "textSize": 18,
@@ -5936,10 +5936,10 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1002,
             "weatherType": 6,
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "containerColor": "#FFFFFF33",
-            "name": "Lock_Weather_Rect_Type_6",
+            "name": "XXX_Weather_Rectangular",
             "topInfo": {
               "font": "HFTroy-Medium",
               "textSize": 18,
@@ -5961,9 +5961,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1001,
             "weatherType": 1,
-            "name": "Lock_Weather_Circle_Type_1",
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "name": "XXX_Weather_Circular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "image_cloud": {
               "source": '',
             },
@@ -6001,9 +6001,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1001,
             "weatherType": 2,
-            "name": "Lock_Weather_Circle_Type_2",
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "name": "XXX_Weather_Circular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "image_cloud": {
               "source": '',
             },
@@ -6038,9 +6038,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1001,
             "weatherType": 3,
-            "name": "Lock_Weather_Circle_Type_3",
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "name": "XXX_Weather_Circular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "bottomInfo": {
               "font": "PingFangSC-Medium",
               "textSize": 12,
@@ -6057,9 +6057,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
           {
             "size": 1001,
             "weatherType": 4,
-            "name": "Lock_Weather_Circle_Type_4",
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "name": "XXX_Weather_Circular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "containerColor": "#FFFFFF33",
             "bottomInfo": {
               "font": "PingFangSC-Medium",
@@ -6079,8 +6079,8 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
                 "source": '',
             },
             "size": 1002,
-            "backgroundColor": "#00000066",
-            "name": "Lock_Rect_Dynamic",
+            "backgroundColor": "#DEBAFF",
+            "name": "XXX_Dynamic_Rectangular",
             "fileName": "lock_rect_dynamic_background"
           }
         ]
@@ -6094,9 +6094,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             image_dynamics_gif: {
                 "source": '',
             },
-            "backgroundColor": "#00000066",
+            "backgroundColor": "#DEBAFF",
             "size": 1001,
-            "name": "Lock_Circle_Dynamic",
+            "name": "XXX_Dynamic_Circular",
             "fileName": "lock_circle_dynamic_background"
           }
         ]
@@ -6110,9 +6110,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             image_static_rectangle: {
                 "source": '',
             },
-            "backgroundColor": "#00000066",
+            "backgroundColor": "#DEBAFF",
             "size": 1002,
-            "name": "lock_rect_static_background"
+            "name": "XXX_Static_Rectangular"
           }
         ]
     },
@@ -6125,9 +6125,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             image_static_circular: {
                 "source": '',
             },
-            "backgroundColor": "#00000066",
+            "backgroundColor": "#DEBAFF",
             "size": 1001,
-            "name": "lock_circle_static_background"
+            "name": "XXX_Static_Circular"
           }
         ]
     },
@@ -6138,11 +6138,11 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
       "sizes": [
         {
           "size": 1002,
-          "name": "Lock_Quotation",
+          "name": "XXX_Quotation_Rectangular",
           "canBeCustomised": 1,
           "numberOfLines": 2,
-          "focusColor": "#000000",
-          "backgroundColor": "#00000066",
+          "focusColor": "#FFFFFF",
+          "backgroundColor": "#DEBAFF",
           "title": {
             "content": "When fortune favors, all under heaven join forces",
             "font": "HFElasticity",
@@ -6159,11 +6159,11 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
         "sizes": [
           {
             "size": 1003,
-            "name": "Pink_Star_A_C_Inline",
+            "name": "XXX_Custom_Inline",
             "layoutType": 0,
             "numberOfLines": 1,
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "title": {
               "content": "(￣ε(#￣)"
             }
@@ -6177,14 +6177,14 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
         "sizes": [
           {
             "size": 1002,
-            "name": "Lock_CountDown_Rectagular_NO_DIY",
+            "name": "XXX_CountDown_Rectangular",
             "canBeCustomised": 0,
             "festivalName": "Flag Day",
             "image_count_down_rectangular": {
                 source: '',
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "title": {
               "content": "Flag Day",
               "font": "HFAppleTree-Regular",
@@ -6211,14 +6211,14 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
       "sizes": [
         {
           "size": 1002,
-          "name": "Lock_CountDown_Rectagular_DIY_0",
+          "name": "XXX_CountDown_Rectangular",
           "canBeCustomised": 1,
           "layoutType": 0,
           image_count_down_rectangular_customised: {
             source: '',
           },
-          "focusColor": "#000000",
-          "backgroundColor": "#00000066",
+          "focusColor": "#FFFFFF",
+          "backgroundColor": "#DEBAFF",
           "title": {
             "content": "MomsBirthday Partyis",
             "font": "HFAppleTree-Regular",
@@ -6240,14 +6240,14 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
         "sizes": [
           {
             "size": 1002,
-            "name": "Lock_CountDown_Rectagular_DIY_1",
+            "name": "XXX_CountDown_Rectangular",
             "canBeCustomised": 1,
             "layoutType": 1,
             image_count_down_rectangular_customised: {
                 source: '',
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "title": {
               "content": "Go home time",
               "font": "HFAppleTree-Regular",
@@ -6269,12 +6269,12 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
         "sizes": [
           {
             "size": 1002,
-            "name": "Lock_Health_Rectagular_0",
+            "name": "XXX_Health_Rectangular",
             "image_health": {
                 source: '',
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "layoutType": 0
           }
         ]
@@ -6288,10 +6288,10 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             "image_health": {
                 source: '',
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "size": 1002,
-            "name": "Lock_Health_Rectagular_1",
+            "name": "XXX_Health_Rectangular",
             "layoutType": 1
           }
         ]
@@ -6306,9 +6306,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             "image_health": {
                 source: '',
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
-            "name": "Lock_Health_Circular_0",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
+            "name": "XXX_Health_Circular",
             "layoutType": 0
           }
         ]
@@ -6323,9 +6323,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             "image_health": {
                 source: '',
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
-            "name": "Lock_Health_Circular_1",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
+            "name": "XXX_Health_Circular",
             "layoutType": 1
           }
         ]
@@ -6340,9 +6340,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             "image_health": {
                 source: '',
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
-            "name": "Lock_Health_Circular_2",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
+            "name": "XXX_Health_Circular",
             "layoutType": 2
           }
         ]
@@ -6357,9 +6357,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             "image_health": {
                 source: '',
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
-            "name": "Lock_Health_Inline",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
+            "name": "XXX_Health_Inline",
             "layoutType": 0
           }
         ]
@@ -6371,12 +6371,12 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
         "sizes": [
           {
             "size": 1002,
-            "name": "Lock_Launcher_Rectangular",
+            "name": "XXX_Launcher_Rectangular",
             "image_launcher_rectangle": {
                 source: "",
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
             "title": {
               "font": "HelveticaNeue",
               "textSize": 24
@@ -6395,9 +6395,9 @@ export const LockWidgetDefaultConfig: Record<string, any> = {
             "image_launcher_circular": {
                 source: "",
             },
-            "focusColor": "#000000",
-            "backgroundColor": "#00000066",
-            "name": "Lock_Launcher_Circular",
+            "focusColor": "#FFFFFF",
+            "backgroundColor": "#DEBAFF",
+            "name": "XXX_Launcher_Circular",
             "appLinks": [27]
           }
         ]

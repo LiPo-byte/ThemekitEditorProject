@@ -14,13 +14,6 @@ import './style.css';
  */
 
 /**
- * 圆盘底色，spec 没有这个字段，是编辑器额外加的（yaml allow_extra_fields: true）。
- * 默认给半透明白：设计稿里这圈盘比卡片底色浅，是个淡光晕；
- * 用半透明黑的话叠在卡片上只会更暗，看着像月亮两边有阴影。
- */
-const DEFAULT_CONTAINER_COLOR = '#FFFFFF33';
-
-/**
  * 圆盘直径取内容高度：时刻 25 + AM/PM 17 + 图标 14 = 56，卡片 62 上下各留 3。
  * 设计稿量出来的圆盘约 50，但配置里 textHeight 25+17 已经占掉 42，
  * 再放一个和设计稿等大的图标就超出 50 了，会顶出圆盘。要严格对齐设计稿
@@ -28,6 +21,40 @@ const DEFAULT_CONTAINER_COLOR = '#FFFFFF33';
  */
 const DISC_SIZE = 56;
 const ICON_SIZE = 14;
+
+/**
+ * 图标线条的目标粗细（画布 px）。
+ *
+ * strokeWidth 用的是 viewBox 单位，不是 px：图标 1184 单位画在 14px 里，
+ * 1px ≈ 85 单位，所以 strokeWidth={3} 这种值肉眼根本看不出变化。
+ * 而且路径本身是填充出来的实心线条（约 51 单位 ≈ 0.6px），描边只用补差额。
+ */
+const ICON_STROKE_PX = 1.5;
+const ICON_VIEW_WIDTH = 1184;
+const ICON_VIEW_HEIGHT = 1024;
+const ICON_FILLED_STROKE_UNITS = 51;
+const ICON_STROKE_UNITS = Math.max(
+  0,
+  (ICON_STROKE_PX * ICON_VIEW_WIDTH) / ICON_SIZE - ICON_FILLED_STROKE_UNITS,
+);
+/** 描边往轮廓外扩半个宽度，viewBox 四周留出等量余量，否则贴边的水平线会被裁掉一半 */
+const ICON_VIEW_MARGIN = ICON_STROKE_UNITS / 2;
+const ICON_VIEW_BOX = [
+  -ICON_VIEW_MARGIN,
+  -ICON_VIEW_MARGIN,
+  ICON_VIEW_WIDTH + ICON_STROKE_UNITS,
+  ICON_VIEW_HEIGHT + ICON_STROKE_UNITS,
+].join(' ');
+
+/**
+ * 圆盘底色 = 卡片底色掺 20% 白，同色系亮一档。
+ *
+ * 不能用「底色 + 透明度」：同色叠同色，无论 alpha 取多少合成结果都等于底色，
+ * 底色不透明时圆盘会整个看不见。
+ */
+const DISC_WHITE_MIX = '20%';
+const getDiscColor = (color: string) =>
+  `color-mix(in srgb, #FFFFFF ${DISC_WHITE_MIX}, ${color})`;
 
 /** 画布上的示例日出日落，仅用于预览，不进配置 */
 const PREVIEW_SUN_TIMES = [
@@ -39,13 +66,15 @@ const PREVIEW_SUN_TIMES = [
 function SunOverHorizonIcon({ color }: { color: string }) {
   return (
     <svg
-      viewBox="0 0 1184 1024"
+      viewBox={ICON_VIEW_BOX}
       width={ICON_SIZE}
       height={ICON_SIZE}
       fill={color}
       stroke={color}
-      strokeWidth={1.6}
+      strokeWidth={ICON_STROKE_UNITS}
       strokeLinecap="round"
+      // 描边这么宽时，默认的 miter 连接会在拐角甩出尖刺
+      strokeLinejoin="round"
     >
       <title>sun over horizon</title>
       <path
@@ -64,7 +93,7 @@ export default function LockWeatherRect_5(props: any) {
 
   const focusColor = data.focusColor ?? '#000000';
   const backgroundColor = data.backgroundColor ?? '#00000066';
-  const containerColor = data.containerColor ?? DEFAULT_CONTAINER_COLOR;
+  const discColor = getDiscColor(backgroundColor);
 
   return (
     <div
@@ -91,7 +120,7 @@ export default function LockWeatherRect_5(props: any) {
             width: DISC_SIZE,
             height: DISC_SIZE,
             borderRadius: '50%',
-            backgroundColor: containerColor,
+            backgroundColor: discColor,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',

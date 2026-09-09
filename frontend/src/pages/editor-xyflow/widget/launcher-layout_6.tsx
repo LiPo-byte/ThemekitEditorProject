@@ -28,7 +28,7 @@ export default function LauncherLayout_6(props: any) {
       <div style={{
         width: '100%',
         height: '100%',
-        borderRadius: '10px',
+        borderRadius: size === 2 ? '15px' : '10px',
         background: appLink ? 'none' : '#f6efe9',
         display: 'flex',
         alignItems: 'center',
@@ -70,6 +70,7 @@ export default function LauncherLayout_6(props: any) {
         flexDirection: 'column',
         justifyContent: 'center',
         gap: gapSize[size],
+        padding: size === 2 ? '10px 0px' : '0px',
         zIndex: 2,
       }}>
         {appLinks.map((_: any, index: number) => {

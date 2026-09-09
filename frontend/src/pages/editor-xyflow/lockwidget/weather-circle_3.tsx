@@ -7,7 +7,7 @@ import './style.css';
  */
 
 const ICON_SIZE = 60 / LOCK_ASSET_SCALE;
-const CONTENT_GAP = 2;
+const CONTENT_GAP = 8;
 
 const PREVIEW_TEMP = '36°F';
 

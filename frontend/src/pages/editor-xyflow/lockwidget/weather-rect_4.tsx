@@ -1,3 +1,5 @@
+import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import type { ReactNode } from 'react';
 import {
   LOCK_ASSET_SCALE,
   LOCK_CARD_RADIUS,
@@ -27,6 +29,8 @@ const BOTTOM_ITEM_GAP = 12;
 /** 底部那行的图标跟着小字走，比右上角的主图标小一圈 */
 const BOTTOM_ICON_SIZE = 10;
 const BOTTOM_ICON_GAP = 2;
+/** 箭头图标按小字的比例缩，1em 时比温度还高 */
+const ARROW_FONT_SCALE = 0.75;
 
 /** 画布上的示例天气，仅用于预览，不进配置 */
 const PREVIEW_TEMP = '60°';
@@ -35,13 +39,17 @@ const PREVIEW_FEELS_LIKE_TEMP = '50°';
 /**
  * 降水概率后面跟 image_rain，这张图配置里有、yaml 的 required_files 里也有。
  *
- * 设计稿里高温后面还跟向上箭头、低温后面跟向下箭头，这两个暂不画：
- * 配置字段和 required_files 里都没有它们的位置，画布上凭空加了客户端渲染不出来，
- * 两边会对不上。之后确认要做的话，在这里补 iconKey 即可。
+ * 高低温后面的上下箭头没有对应的图片位（配置字段和 required_files 里都没有），
+ * 所以用 antd 的箭头图标跟着温度一起排，颜色继承 bottomInfo、字号按 ARROW_FONT_SCALE 缩。
  */
-const PREVIEW_BOTTOM: { id: string; text: string; iconKey?: string }[] = [
-  { id: 'high', text: '25°' },
-  { id: 'low', text: '25°' },
+const PREVIEW_BOTTOM: {
+  id: string;
+  text: string;
+  arrow?: ReactNode;
+  iconKey?: string;
+}[] = [
+  { id: 'high', text: '25°', arrow: <ArrowUpOutlined /> },
+  { id: 'low', text: '25°', arrow: <ArrowDownOutlined /> },
   { id: 'precipitation', text: '9%', iconKey: 'image_rain' },
 ];
 
@@ -126,7 +134,19 @@ export default function LockWeatherRect_4(props: any) {
                 gap: BOTTOM_ICON_GAP,
               }}
             >
-              <span>{item.text}</span>
+              <span>
+                {item.text}
+                {item.arrow ? (
+                  <span
+                    style={{
+                      fontSize: `${ARROW_FONT_SCALE}em`,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {item.arrow}
+                  </span>
+                ) : null}
+              </span>
               {iconSource && (
                 <div
                   style={{

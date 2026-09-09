@@ -1,8 +1,4 @@
-import {
-  LOCK_ASSET_SCALE,
-  LOCK_CARD_RADIUS,
-  LOCK_WEATHER_ICON_KEYS,
-} from './base-config';
+import { LOCK_ASSET_SCALE, LOCK_CARD_RADIUS } from './base-config';
 import { getLockMaskStyle, getLockTextStyle } from './util';
 import './style.css';
 
@@ -43,12 +39,9 @@ export default function LockWeatherRect_2(props: any) {
   const backgroundColor = data.backgroundColor ?? '#00000066';
   /**
    * 天气图标运行时按当天天气挑一张，画布上没有依据决定哪天是什么天气，
-   * 就把已经传了的依次铺到五列，让每列显示不同的图标、方便一眼核对素材。
-   * 配置里没有记录上传先后，所以排序只能按固定的 key 走，不是真正的上传时间。
+   * 五列统一用 image_sun 占位。
    */
-  const uploadedIcons = LOCK_WEATHER_ICON_KEYS.map(
-    (key) => data[key]?.source,
-  ).filter(Boolean);
+  const previewIcon = data.image_sun?.source;
 
   const bottomInfo = data.bottomInfo;
   const highStyle = getLockTextStyle(
@@ -76,7 +69,7 @@ export default function LockWeatherRect_2(props: any) {
         pointerEvents: 'none',
       }}
     >
-      {PREVIEW_TIMES.map((time, index) => (
+      {PREVIEW_TIMES.map((time) => (
         <div
           key={time.time}
           style={{
@@ -91,8 +84,9 @@ export default function LockWeatherRect_2(props: any) {
           <div style={getLockTextStyle(data.topInfo)}>{time.val}</div>
           <div
             style={{
-              ...(uploadedIcons[index]
-                ? getLockMaskStyle(uploadedIcons[index], focusColor)
+              // 没传图时不能给 mask：url(undefined) 遮罩失效，会露出一整块纯色方块
+              ...(previewIcon
+                ? getLockMaskStyle(previewIcon, focusColor)
                 : undefined),
               width: ICON_SIZE,
               height: ICON_SIZE,

@@ -21,7 +21,9 @@ const CONTENT_GAP = 2;
  * 缺字形会回退到系统字体，和旁边的数字不是一套，导出截图时也会跟着走样。
  */
 const PREVIEW_TEMP = '36°F';
-
+const DISC_WHITE_MIX = '20%';
+const getDiscColor = (color: string) =>
+  `color-mix(in srgb, #FFFFFF ${DISC_WHITE_MIX}, ${color})`;
 export default function LockWeatherCircle_2(props: any) {
   const data = props.data;
   const scale = props.scale || 1;
@@ -55,17 +57,34 @@ export default function LockWeatherCircle_2(props: any) {
         pointerEvents: 'none',
       }}
     >
-      <div
-        style={{
-          ...(previewIcon
-            ? getLockMaskStyle(previewIcon, focusColor)
-            : undefined),
-          width: ICON_SIZE,
-          height: ICON_SIZE,
-          flexShrink: 0,
-        }}
-      />
-      <div style={getLockTextStyle(data.bottomInfo)}>{PREVIEW_TEMP}</div>
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        background: getDiscColor(backgroundColor),
+        borderRadius: '50%',
+        paddingTop: '12px',
+        paddingBottom: '15px',
+        gap: 5,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <div
+          style={{
+            ...(previewIcon
+              ? getLockMaskStyle(previewIcon, focusColor)
+              : undefined),
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+            flexShrink: 0,
+          }}
+        />
+        <div style={getLockTextStyle(data.bottomInfo)}>{PREVIEW_TEMP}</div>
+      </div>
     </div>
   );
 }
