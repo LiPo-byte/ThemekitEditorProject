@@ -23,6 +23,7 @@ import { iconPackConfig2Nodes } from './icon/util';
 import { wallpaperConfig2Nodes, buildWallpaperConfigJson } from './wallpaper/util';
 import { themeConfig2Nodes, buildThemeConfigJson } from './theme/util';
 import { lockpackConfig2Nodes, buildLockpackConfigJson } from './lockpack/util';
+import { stickerConfig2Nodes, buildStickerConfigJson } from './sticker/util';
 
 import { buildIconPackConfigJson } from './icon/buildIconPackConfig';
 import { relayoutRootNodes, resolveNextRootPosition } from './util/rootLayout';
@@ -136,6 +137,7 @@ type EditorCoreCtxValue = {
   addWallpaper: (config: any) => string | undefined;
   addTheme: (config: any) => string | undefined;
   addLockpack: (config: any) => string | undefined;
+  addSticker: (config: any) => string | undefined;
   /** 全览：把画布缩放平移到刚好容纳所有根元素 */
   fitView: (options?: ViewFitOptions) => void;
   /** 聚焦：把视角移到指定根元素；元素尚未落到 nodes 时会等它出现后再执行 */
@@ -225,6 +227,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   addWallpaper: noopAddNodeGroup,
   addTheme: noopAddNodeGroup,
   addLockpack: noopAddNodeGroup,
+  addSticker: noopAddNodeGroup,
   fitView: (_options?: ViewFitOptions) => {},
   focusElement: (_rootId: string, _options?: ViewFitOptions) => {},
   arrangeElements: () => {},
@@ -367,6 +370,8 @@ const ELEMENT_LOADERS: Record<
   theme: (configJson, element_key) => themeConfig2Nodes(configJson, element_key),
   lockpack: (configJson, element_key) =>
     lockpackConfig2Nodes(configJson, element_key),
+  sticker: (configJson, element_key) =>
+    stickerConfig2Nodes(configJson, element_key),
 };
 
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
@@ -827,6 +832,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     appendNodesBySlot(newNodes, rootNode);
     return String(rootNode.id);
   };
+  const addSticker = (config: any) => {
+    const { nodes: newNodes, rootNode } = stickerConfig2Nodes(config);
+    if (!rootNode) return undefined;
+    appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
+  };
 
   const selectedBranchNodes = useMemo(
     () => {
@@ -1248,6 +1259,18 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     config_json: buildWallpaperConfigJson(rootNode, nodes),
   });
 
+  const buildStickerElementPayload = (rootNode: FlowNode) => ({
+    element_key: rootNode.id,
+    category: 'sticker',
+    subtype: 'sticker',
+    x: rootNode.position?.x ?? 0,
+    y: rootNode.position?.y ?? 0,
+    visible: true,
+    locked: false,
+    schema_version: 1,
+    config_json: buildStickerConfigJson(rootNode, nodes),
+  });
+
   const buildThemeElementPayload = (rootNode: FlowNode) => {
     const sourceConfigMap: Record<string, any> = {};
     nodes
@@ -1327,6 +1350,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     wallpaper: buildWallpaperElementPayload,
     theme: buildThemeElementPayload,
     lockpack: buildLockpackElementPayload,
+    sticker: buildStickerElementPayload,
   };
 
   const buildElementsPayloadFromNodes = () => {
@@ -1557,6 +1581,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       addWallpaper,
       addTheme,
       addLockpack,
+      addSticker,
       fitView,
       focusElement,
       arrangeElements,
@@ -1682,6 +1707,7 @@ export const useEditorAddIconPack = () => useContext(EditorCoreCtx).addIconPack;
 export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpaper;
 export const useEditorAddTheme = () => useContext(EditorCoreCtx).addTheme;
 export const useEditorAddLockpack = () => useContext(EditorCoreCtx).addLockpack;
+export const useEditorAddSticker = () => useContext(EditorCoreCtx).addSticker;
 export const useEditorFitView = () => useContext(EditorCoreCtx).fitView;
 export const useEditorFocusElement = () => useContext(EditorCoreCtx).focusElement;
 export const useEditorArrangeElements = () => useContext(EditorCoreCtx).arrangeElements;

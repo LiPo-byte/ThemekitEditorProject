@@ -6499,6 +6499,34 @@ export const IconPackDefaultConfig = {
     },
 }
 
+export const StickerDefaultConfig = {
+    'Sticker': {
+        name: 'sticker',
+        sticker_gif: false,
+        sticker: {
+            source: '',
+            width: 450,
+            height: 450,
+        },
+    },
+    'Sticker Gif': {
+        name: 'sticker_gif',
+        sticker_gif: true,
+        list_view: {
+            source: '',
+            width: 192,
+            height: 192,
+        },
+        /** mov 走 movsource，右侧属性面板才会渲染成文件上传（source 是图片上传） */
+        sticker: {
+            movsource: '',
+            width: 450,
+            height: 450,
+        },
+    }
+}
+
+
 const withPhotoShufflesHandler = (n: number) => {
     const obj:any = {};
     const ipadobj:any = {};

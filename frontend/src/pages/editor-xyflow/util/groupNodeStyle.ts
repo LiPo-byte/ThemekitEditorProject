@@ -16,7 +16,8 @@ export type GroupNodeCategory =
   | 'lockwidget'
   | 'theme'
   | 'wallpaper'
-  | 'lockpack';
+  | 'lockpack'
+  | 'sticker';
 
 type GroupNodeStyle = {
   background: string;
@@ -55,6 +56,12 @@ export const ROOT_GROUP_STYLE: Record<GroupNodeCategory, GroupNodeStyle> = {
   lockpack: {
     background: '#f0fafc',
     border: '1px solid #79d5e5',
+    borderRadius: 16,
+  },
+  /** 色相 110，落在橙（65）与绿（155）之间最大的空档 */
+  sticker: {
+    background: '#f8f8f0',
+    border: '1px solid #c8ca85',
     borderRadius: 16,
   },
 };
@@ -96,5 +103,11 @@ export const PLATFORM_GROUP_STYLE: Record<GroupNodeCategory, GroupNodeStyle> = {
     border: '1px solid #b8e7f0',
     borderRadius: 12,
     boxShadow: '0 2px 8px rgba(0, 130, 149, 0.06)',
+  },
+  sticker: {
+    background: '#f2f3e3',
+    border: '1px solid #dfe1bb',
+    borderRadius: 12,
+    boxShadow: '0 2px 8px rgba(118, 119, 0, 0.06)',
   },
 };

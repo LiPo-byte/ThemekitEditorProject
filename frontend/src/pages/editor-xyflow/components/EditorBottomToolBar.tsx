@@ -21,6 +21,7 @@ import { IconPackDefaultConfig } from '@/editor-core/defaultConfig'
 import ImportModal from './ImportModal';
 import AddThemeModal from './AddThemeModal';
 import AddLockPackModal from './AddLockPackModal';
+import AddMoreElementModal from './AddMoreElementmodal/AddMoreElementModal';
 const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
     position: absolute;
@@ -92,6 +93,8 @@ const EditorBottomToolBar: React.FC = () => {
   const playEnterAnimation = useEnterAnimation(true, { durationMs: 260 });
   const [addThemeModalOpen, setAddThemeModalOpen] = React.useState(false);
   const [addLockPackModalOpen, setAddLockPackModalOpen] = React.useState(false);
+  const [addMoreElementModalOpen, setAddMoreElementModalOpen] =
+    React.useState(false);
   const onAddIconPack = () => {
     addIconPack(IconPackDefaultConfig)
   }
@@ -103,11 +106,14 @@ const EditorBottomToolBar: React.FC = () => {
     setLeftPanlContent(content);
     setLeftPanlOpen(true);
   }
-  // 三个底部面板互斥：打开一个时关掉其余两个，传 null 表示全部关闭
-  const openOnlyPanel = (target: 'import' | 'theme' | 'lockPack' | null) => {
+  // 底部面板互斥：打开一个时关掉其余的，传 null 表示全部关闭
+  const openOnlyPanel = (
+    target: 'import' | 'theme' | 'lockPack' | 'more' | null,
+  ) => {
     setImportModalOpen(target === 'import');
     setAddThemeModalOpen(target === 'theme');
     setAddLockPackModalOpen(target === 'lockPack');
+    setAddMoreElementModalOpen(target === 'more');
   }
   const onToggleImportModal = () => {
     openOnlyPanel(importModalOpen ? null : 'import');
@@ -117,6 +123,9 @@ const EditorBottomToolBar: React.FC = () => {
   }
   const onToggleAddLockPackModal = () => {
     openOnlyPanel(addLockPackModalOpen ? null : 'lockPack');
+  }
+  const onToggleAddMoreElementModal = () => {
+    openOnlyPanel(addMoreElementModalOpen ? null : 'more');
   }
   if (!visible) return null;
 
@@ -135,7 +144,7 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button>
                 <Button type={addLockPackModalOpen ? 'primary' : 'text'} onClick={onToggleAddLockPackModal} >Lock Pack</Button>
                 <Button type={addThemeModalOpen ? 'primary' : 'text'} onClick={onToggleAddThemeModal} >Theme</Button>
-                <Button type='text' onClick={() => {}} >More</Button>
+                <Button type={addMoreElementModalOpen ? 'primary' : 'text'} onClick={onToggleAddMoreElementModal} >More</Button>
                 <Button
                   color={importModalOpen ? 'primary' : 'default'}
                   variant='filled'
@@ -153,6 +162,7 @@ const EditorBottomToolBar: React.FC = () => {
         <ImportModal open={importModalOpen} onClose={() => { setImportModalOpen(false); }} />
         <AddThemeModal open={addThemeModalOpen} onClose={() => { setAddThemeModalOpen(false); }} />
         <AddLockPackModal open={addLockPackModalOpen} onClose={() => { setAddLockPackModalOpen(false); }} />
+        <AddMoreElementModal open={addMoreElementModalOpen} onClose={() => { setAddMoreElementModalOpen(false); }} />
     </div>
   );
 };

@@ -71,6 +71,7 @@ import { withLockCaptureTheme } from './util/lockCaptureTheme';
 import Wallpaper from './wallpaper/wallpaper';
 import LiveWallpaper from './wallpaper/live-wallpaper';
 import LottieWallpaper from './wallpaper/lottie_wallpaper';
+import Sticker from './sticker/sticker';
 // import PreviewLong from './theme/preview_long';
 // import PreviewShort from './theme/preview_short';
 // import ListView from './theme/list_view';
@@ -148,6 +149,7 @@ const rawXyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   wallpaper: Wallpaper,
   live_wallpaper: LiveWallpaper,
   lottie_wallpaper: LottieWallpaper,
+  sticker: Sticker,
 };
 
 /**

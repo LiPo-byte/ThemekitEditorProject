@@ -4,6 +4,7 @@ import {
   useEditorAddIconPack,
   useEditorAddLockpack,
   useEditorAddLockWidget,
+  useEditorAddSticker,
   useEditorAddTheme,
   useEditorAddWidget,
   useEditorAddWallpaper,
@@ -27,6 +28,7 @@ import {
   DEFAULT_LOCKPACK_CONFIG,
   DEFAULT_THEME_CONFIG,
   IconPackDefaultConfig,
+  StickerDefaultConfig,
   WallpaperDefaultConfig,
 } from '@/editor-core/defaultConfig';
 import { LOCKPACK_SURFACE_KEYS } from '../lockpack/util';
@@ -94,7 +96,8 @@ type ImportKind =
  | 'live_wallpaper'
  | 'diy_live_wallpaper'
  | 'lockWidget'
- | 'lockPack';
+ | 'lockPack'
+ | 'sticker';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -117,6 +120,12 @@ const applyIndexSuffix = (filename: string, index: ExportIndex): string => {
   if (dot <= 0) return `${filename}_${index}`;
   return `${filename.slice(0, dot)}_${index}${filename.slice(dot)}`;
 };
+
+/** 按文件名找 zip 条目，兼容外面套了一层文件夹的包 */
+const findZipEntry = (zip: JSZip, filename: string) =>
+  zip.file(filename) ??
+  zip.file(new RegExp(`(^|\\/)${escapeRegExp(filename)}$`, 'i'))?.[0] ??
+  null;
 
 const listZipBasenames = (zip: JSZip): string[] =>
   Object.keys(zip.files)
@@ -163,6 +172,14 @@ const LIVE_WALLPAPER_MIME_MAP: Record<string, string> = {
   mov: 'video/quicktime',
   mp4: 'video/mp4',
 };
+
+/**
+ * sticker 导出包内的固定文件名，与导出规则一致：
+ * widget/rule_ymal/resource-validation/resource_sticker_gif_ios.yml
+ * widget/rule_ymal/resource-validation/resource_sticker_static_ios.yml
+ */
+const STICKER_GIF_FILES = { listView: 'list_view.webp', sticker: 'sticker.mov' };
+const STICKER_STATIC_FILE = 'sticker.png';
 
 const hasIconPackAssets = (zip: JSZip): boolean =>
   listZipBasenames(zip).some((name) => /^icon_.+\.(?:jpg|jpeg|png)$/i.test(name));
@@ -323,6 +340,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const addLockWidget = useEditorAddLockWidget();
   const addIconPack = useEditorAddIconPack();
   const addWallpaper = useEditorAddWallpaper();
+  const addSticker = useEditorAddSticker();
   const addTheme = useEditorAddTheme();
   const addLockpack = useEditorAddLockpack();
   const setGlobalLoading = useEditorGlobalLoadingSetter();
@@ -1261,6 +1279,57 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   };
 
   /**
+   * Sticker：包里有 sticker.mov 就按 gif 规则导（list_view.webp + sticker.mov），
+   * 否则按静态规则导（sticker.png）。mov 走 upload-file，图片走 upload-image。
+   */
+  const importStickerFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any> } | null> => {
+    const silent = Boolean(options?.silent);
+    const isGif = Boolean(findZipEntry(zip, STICKER_GIF_FILES.sticker));
+    const config = structuredClone(
+      isGif
+        ? StickerDefaultConfig['Sticker Gif']
+        : StickerDefaultConfig.Sticker,
+    ) as Record<string, any>;
+
+    if (isGif) {
+      const listViewResult = await uploadMediaFromZip(
+        STICKER_GIF_FILES.listView,
+        zip,
+      );
+      const stickerResult = await uploadVideoFromZip(
+        STICKER_GIF_FILES.sticker,
+        zip,
+      );
+      if (!listViewResult || !stickerResult) {
+        if (!silent) {
+          message.error(
+            `gif sticker 需要 ${STICKER_GIF_FILES.listView} 和 ${STICKER_GIF_FILES.sticker} 两个文件`,
+          );
+        }
+        return null;
+      }
+      config.list_view.source = listViewResult.url;
+      config.sticker.movsource = stickerResult.url;
+    } else {
+      const stickerResult = await uploadMediaFromZip(STICKER_STATIC_FILE, zip);
+      if (!stickerResult) {
+        if (!silent) {
+          message.error(`压缩包内未找到 ${STICKER_STATIC_FILE}`);
+        }
+        return null;
+      }
+      config.sticker.source = stickerResult.url;
+    }
+
+    const rootId = addSticker(config);
+    if (!rootId) return null;
+    return { rootId, config };
+  };
+
+  /**
    * Diy Live Wallpaper：读导出包里的 lottie.json + images/，重新打成 .lottie 再上传。
    * 后端 upload-lottie 只收单个文件，images/ 没处安放；内联成 base64 又会撑大体积，
    * 打回 zip 反而有压缩。包里的 wallpapers_spec.json 不读，导出时从 lottie 现算。
@@ -1464,6 +1533,35 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       } catch (error) {
         console.error('[ImportModal] Live Wallpaper 导入失败:', error);
         message.error('Live Wallpaper 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readStickerFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importStickerFromZip(zip);
+        if (result) {
+          onClose();
+          message.success('Sticker 导入成功');
+        }
+      } catch (error) {
+        console.error('[ImportModal] Sticker 导入失败:', error);
+        message.error('Sticker 导入失败');
       }
       return false;
     });
@@ -1802,6 +1900,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'lockPack') {
       return readLockPackFromZip(file);
     }
+    if (importKind === 'sticker') {
+      return readStickerFromZip(file);
+    }
     return readWidgetsSpecFromZip(file);
   };
 
@@ -1854,6 +1955,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
             },
             { label: 'Theme', value: 'theme' },
             { label: 'LockPack', value: 'lockPack' },
+            { label: 'Sticker', value: 'sticker' },
           ]}
           style={{ width: '100%' }}
         />
