@@ -87,10 +87,10 @@ const serializeSurfaces: SectionSerializer = ({ nodes, platformGroups }) => {
         Number(data.height) > 0
           ? Number(data.height)
           : Number(surfaceDefaults.height) || 1920,
-      selectElements:
-        data.selectElements && typeof data.selectElements === 'object'
-          ? data.selectElements
-          : surfaceDefaults.selectElements || { apps: [] },
+      // selectElements:
+      //   data.selectElements && typeof data.selectElements === 'object'
+      //     ? data.selectElements
+      //     : surfaceDefaults.selectElements || { apps: [] },
       showElements: Array.isArray(data.showElements) ? data.showElements : [],
     };
   });
