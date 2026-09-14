@@ -58,6 +58,9 @@ _MEDIA_MIME_TO_EXT = {
 }
 _MAX_MEDIA_UPLOAD_BYTES = 100 * 1024 * 1024
 _MEDIA_CHUNK_BYTES = 1024 * 1024
+# pag 的 content_type 浏览器一律给 application/octet-stream，靠 MIME 认不出来，
+# 只能按扩展名放行；落盘扩展名取的就是这里的字面值，不会沿用文件名里的任意后缀
+_MEDIA_EXT_ONLY = {"pag"}
 # lottie 的 content_type 浏览器给得不可靠（常为空或 octet-stream），只能按扩展名判定；
 # 落盘扩展名必须取白名单里的值，不能沿用文件名，否则 /data 静态目录会被传成 .html 之类
 _LOTTIE_EXT_TO_MIME = {
@@ -530,12 +533,11 @@ async def upload_project_file(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     content_type = (file.content_type or "").lower()
-    if content_type not in _MEDIA_MIME_TO_EXT:
-        raise HTTPException(
-            status_code=400, detail="Only video and audio files are supported"
-        )
-
     ext = _guess_media_extension(content_type, file.filename)
+    if content_type not in _MEDIA_MIME_TO_EXT and ext not in _MEDIA_EXT_ONLY:
+        raise HTTPException(
+            status_code=400, detail="Only video, audio and .pag files are supported"
+        )
     target_dir = _ASSET_DIR / str(project_id) / "assets"
     target_dir.mkdir(parents=True, exist_ok=True)
     file_id = uuid.uuid4()

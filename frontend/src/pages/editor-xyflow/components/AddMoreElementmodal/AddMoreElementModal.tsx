@@ -1,7 +1,18 @@
 import { App, Button, Divider, Flex, Tag, Typography } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useMemo, useRef, useState } from 'react';
-import { useEditorAddSticker, useEditorProjectId } from '../../context';
+import {
+  useEditorAddChargingAnimation,
+  useEditorAddSticker,
+  useEditorProjectId,
+} from '../../context';
+import AddChargingAnimationModal, {
+  type ChargingAnimationFormValue,
+  EMPTY_CHARGING_ANIMATION_VALUE,
+  uploadChargingAnimationFiles,
+  validateChargingAnimationValue,
+  buildChargingAnimationConfig,
+} from './AddChargingAnimationModal';
 import AddStickerModal, {
   buildStickerConfig,
   EMPTY_STICKER_VALUE,
@@ -140,12 +151,20 @@ const getSubTags = (category: MoreCategory): readonly MoreSubTagItem[] => {
   const tag = tagsData.find((item) => item.value === category);
   return tag && 'subTags' in tag ? tag.subTags : [];
 };
+
+/** 一个一级分类要提供的东西：body 里的表单，以及可选的 add 行为 */
+type MoreCategoryHandler = {
+  render: () => React.ReactNode;
+  /** 不填表示 add 还没接，点了只打日志 */
+  onAdd?: () => void | Promise<void>;
+};
 /** 内容待定，先只有面板骨架：头部标题 + 可滚动 body + 底部操作区 */
 const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
   const { styles } = useStyles();
   const { message } = App.useApp();
   const projectId = useEditorProjectId();
   const addSticker = useEditorAddSticker();
+  const addChargingAnimation = useEditorAddChargingAnimation();
   const [singleSelected, setSingleSelected] = useState<MoreCategory>('sticker');
   /** 二级选中按一级标签分别记住，来回切一级时保留各自上次的选择 */
   const [subSelectedMap, setSubSelectedMap] = useState<
@@ -175,6 +194,8 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
 
   const [stickerValue, setStickerValue] =
     useState<StickerFormValue>(EMPTY_STICKER_VALUE);
+  const [chargingValue, setChargingValue] =
+    useState<ChargingAnimationFormValue>(EMPTY_CHARGING_ANIMATION_VALUE);
   const [submitting, setSubmitting] = useState(false);
 
   const onAddSticker = async () => {
@@ -191,7 +212,7 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
     try {
       const result = await uploadStickerFiles(projectId, stickerValue);
       addSticker(buildStickerConfig(result));
-      message.success('sticker 已添加');
+      message.success('Sticker 已添加');
       setStickerValue(EMPTY_STICKER_VALUE);
       onClose();
     } catch {
@@ -201,12 +222,62 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
     }
   };
 
-  const onAdd = () => {
-    if (singleSelected === 'sticker') {
-      void onAddSticker();
+  const onAddChargingAnimation = async () => {
+    const invalidText = validateChargingAnimationValue(chargingValue);
+    if (invalidText) {
+      message.error(invalidText);
       return;
     }
-    // 其余分类的内容还没做，先留日志
+    if (!projectId) {
+      message.error('项目未初始化，无法上传');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const result = await uploadChargingAnimationFiles(
+        projectId,
+        chargingValue,
+      );
+      addChargingAnimation(buildChargingAnimationConfig(result));
+      message.success('Charging Animation 已添加');
+      setChargingValue(EMPTY_CHARGING_ANIMATION_VALUE);
+      onClose();
+    } catch {
+      message.error('上传失败，请重试');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  /**
+   * 各一级分类的 body 表单和 add 行为。加新分类只在这里补一项，
+   * 不用再去改下面的 JSX 和 onAdd；表里没登记的分类走「暂未实现」。
+   */
+  const categoryHandlers: Partial<Record<MoreCategory, MoreCategoryHandler>> = {
+    sticker: {
+      render: () => (
+        <AddStickerModal value={stickerValue} onChange={setStickerValue} />
+      ),
+      onAdd: onAddSticker,
+    },
+    charging_animation: {
+      render: () => (
+        <AddChargingAnimationModal
+          value={chargingValue}
+          onChange={setChargingValue}
+        />
+      ),
+      onAdd: onAddChargingAnimation,
+    },
+  };
+  const currentHandler = categoryHandlers[singleSelected];
+
+  const onAdd = () => {
+    if (currentHandler?.onAdd) {
+      void currentHandler.onAdd();
+      return;
+    }
+    // 还没接 add 的分类，先留日志
     console.log('[AddMoreElement] add', {
       category: singleSelected,
       subCategory: subSelected,
@@ -247,9 +318,7 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
       </div>
       <Divider className={styles.divider} size="small" />
       <div className={styles.body}>
-        {singleSelected === 'sticker' ? (
-          <AddStickerModal value={stickerValue} onChange={setStickerValue} />
-        ) : <>暂未实现</>}
+        {currentHandler ? currentHandler.render() : <>暂未实现</>}
       </div>
       <Divider className={styles.divider} size="small" />
       <div className={styles.footer}>

@@ -6526,6 +6526,30 @@ export const StickerDefaultConfig = {
     }
 }
 
+export const ChargingAnimationDefaultConfig = {
+    name: 'Charging_Animation',
+    preview: {
+        pagsource: '',
+    },
+    charging_wallpaper: {
+        mp4source: '',
+    },
+    "origin": {
+        "x": 0.5,
+        "y": 0.8
+    },
+    "style": {
+        "font": "HFBone",
+        "fontColor": "#BCFFDC",
+        "fontSize": 65,
+        "showTime": true,
+        "gifCycle": true
+    },
+    "calendar": {
+      "fontSize": 15
+    }
+}
+
 
 const withPhotoShufflesHandler = (n: number) => {
     const obj:any = {};

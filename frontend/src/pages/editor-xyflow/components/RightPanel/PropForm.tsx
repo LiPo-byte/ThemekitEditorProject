@@ -556,6 +556,8 @@ export const FileUpload: React.FC<{
       ? decodeURIComponent(value.split('/').pop() || '')
       : '';
   const isMp4 = uploadedName.toLowerCase().endsWith('.mp4');
+  const isPag = uploadedName.toLowerCase().endsWith('.pag');
+  const isMov = uploadedName.toLowerCase().endsWith('.mov');
 
   // 多选时各节点的文件不一样，没法合并成一个上传态，直接不展示
   if (value === MIXED_VALUE) return null;
@@ -592,8 +594,12 @@ export const FileUpload: React.FC<{
           {uploadedName ? (
             <Flex align="center" justify="space-between">
               <Button variant="filled" color="default" style={{ width: '80%' }}>
-                {isMp4 ? <Mp4Svg /> : <MovSvg />}
-                {isMp4 ? 'Mp4' : 'Mov'}
+                {isMp4 ? <Mp4Svg /> : null}
+                {isMov ? <MovSvg /> : null}
+                {isPag ? <img src="/icons/img_pag.png" style={{height: '80%'}} alt="" /> : null }
+                {isMp4 ? 'Mp4' : ''}
+                {isMov ? 'Mov' : ''}
+                {isPag ? 'PAG' : ''}
               </Button>
               <Button
                 type="text"
@@ -603,7 +609,7 @@ export const FileUpload: React.FC<{
             </Flex>
           ) : (
             <Upload
-              accept=".mov,.mp4,.mp3,.m4a,.wav"
+              accept=".mov,.mp4,.mp3,.m4a,.wav,.pag"
               maxCount={1}
               fileList={[]}
               beforeUpload={() => false}
@@ -1034,6 +1040,58 @@ export const BaseSelectedNodePropForm: React.FC<{
           </Row>
         </>
       )}
+      {hasKey('x') && (
+        <>
+          <PropInput
+            LabelName="X"
+            value={editProps.x}
+            type="number"
+            onChange={(nextValue) => onChange?.('x', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('y') && (
+        <>
+          <PropInput
+            LabelName="Y"
+            value={editProps.y}
+            type="number"
+            onChange={(nextValue) => onChange?.('y', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('showTime') && (
+        <>
+          <Row style={{ marginBottom: '5px' }}>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                  <InputTitle label="ShowTime" />
+                  <Switch
+                      size="small"
+                      checked={editProps.showTime}
+                      onChange={(nextValue) => onChange?.('showTime', nextValue)}
+                    />
+              </Flex>
+            </Col>
+          </Row>
+        </>
+      )}
+      {hasKey('gifCycle') && (
+        <>
+          <Row style={{ marginBottom: '5px' }}>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                  <InputTitle label="GifCycle" />
+                  <Switch
+                      size="small"
+                      checked={editProps.gifCycle}
+                      onChange={(nextValue) => onChange?.('gifCycle', nextValue)}
+                    />
+              </Flex>
+            </Col>
+          </Row>
+        </>
+      )}
       {hasKey('numberOfLines') && (
         <>
           <PropInput
@@ -1068,6 +1126,16 @@ export const BaseSelectedNodePropForm: React.FC<{
             value={editProps.textSize}
             type="number"
             onChange={(nextValue) => onChange?.('textSize', nextValue)}
+          />
+        </>
+      )}
+      {hasKey('fontSize') && (
+        <>
+          <PropInput
+            LabelName="FontSize"
+            value={editProps.fontSize}
+            type="number"
+            onChange={(nextValue) => onChange?.('fontSize', nextValue)}
           />
         </>
       )}
@@ -1336,6 +1404,15 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('fontColor') && (
+        <>
+          <FontColorInput
+          title="FontColor"
+            value={editProps.fontColor}
+            onChange={(nextValue) => onChange?.('fontColor', nextValue)}
+          />
+        </>
+      )}
       {hasKey('borderColor') && (
         <>
           <FontColorInput
@@ -1506,12 +1583,22 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+
       {hasKey('mp4source') && (
         <>
           <FileUpload
             value={editProps.mp4source}
             onChange={(nextValue) => onChange?.('mp4source', nextValue)}
             title="Mp4Source"
+          />
+        </>
+      )}
+      {hasKey('pagsource') && (
+        <>
+          <FileUpload
+            value={editProps.pagsource}
+            onChange={(nextValue) => onChange?.('pagsource', nextValue)}
+            title="PagSource"
           />
         </>
       )}
@@ -1957,6 +2044,20 @@ export const SelectedNodePropForm: React.FC<{
           <BaseSelectedNodePropForm editProps={editProps.bottomInfo} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'bottomInfo');
           }} title="BottomInfo"/>
+        </>
+      )}
+      {hasKey('origin') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.origin} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'origin');
+          }} title="Origin"/>
+        </>
+      )}
+      {hasKey('style') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.style} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'style');
+          }} title="Style"/>
         </>
       )}
       {/* 锁屏组件的图片位，清单见 lockwidget/base-config 的 LOCK_IMAGE_FIELD_KEYS */}

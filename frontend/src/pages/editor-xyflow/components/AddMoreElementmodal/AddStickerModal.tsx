@@ -154,7 +154,7 @@ const readImageSize = (file: File) =>
     img.src = url;
   });
 
-const readVideoSize = (file: File) =>
+export const readVideoSize = (file: File) =>
   new Promise<{ width: number; height: number }>((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const video = document.createElement('video');

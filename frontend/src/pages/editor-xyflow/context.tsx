@@ -24,6 +24,10 @@ import { wallpaperConfig2Nodes, buildWallpaperConfigJson } from './wallpaper/uti
 import { themeConfig2Nodes, buildThemeConfigJson } from './theme/util';
 import { lockpackConfig2Nodes, buildLockpackConfigJson } from './lockpack/util';
 import { stickerConfig2Nodes, buildStickerConfigJson } from './sticker/util';
+import {
+  chargingAnimationConfig2Nodes,
+  buildChargingAnimationConfigJson,
+} from './charginganimation/util';
 
 import { buildIconPackConfigJson } from './icon/buildIconPackConfig';
 import { relayoutRootNodes, resolveNextRootPosition } from './util/rootLayout';
@@ -138,6 +142,7 @@ type EditorCoreCtxValue = {
   addTheme: (config: any) => string | undefined;
   addLockpack: (config: any) => string | undefined;
   addSticker: (config: any) => string | undefined;
+  addChargingAnimation: (config: any) => string | undefined;
   /** 全览：把画布缩放平移到刚好容纳所有根元素 */
   fitView: (options?: ViewFitOptions) => void;
   /** 聚焦：把视角移到指定根元素；元素尚未落到 nodes 时会等它出现后再执行 */
@@ -228,6 +233,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   addTheme: noopAddNodeGroup,
   addLockpack: noopAddNodeGroup,
   addSticker: noopAddNodeGroup,
+  addChargingAnimation: noopAddNodeGroup,
   fitView: (_options?: ViewFitOptions) => {},
   focusElement: (_rootId: string, _options?: ViewFitOptions) => {},
   arrangeElements: () => {},
@@ -372,6 +378,8 @@ const ELEMENT_LOADERS: Record<
     lockpackConfig2Nodes(configJson, element_key),
   sticker: (configJson, element_key) =>
     stickerConfig2Nodes(configJson, element_key),
+  charging_animation: (configJson, element_key) =>
+    chargingAnimationConfig2Nodes(configJson, element_key),
 };
 
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
@@ -838,6 +846,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     appendNodesBySlot(newNodes, rootNode);
     return String(rootNode.id);
   };
+  const addChargingAnimation = (config: any) => {
+    const { nodes: newNodes, rootNode } = chargingAnimationConfig2Nodes(config);
+    if (!rootNode) return undefined;
+    appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
+  };
 
   const selectedBranchNodes = useMemo(
     () => {
@@ -1271,6 +1285,18 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     config_json: buildStickerConfigJson(rootNode, nodes),
   });
 
+  const buildChargingAnimationElementPayload = (rootNode: FlowNode) => ({
+    element_key: rootNode.id,
+    category: 'charging_animation',
+    subtype: 'charging_animation',
+    x: rootNode.position?.x ?? 0,
+    y: rootNode.position?.y ?? 0,
+    visible: true,
+    locked: false,
+    schema_version: 1,
+    config_json: buildChargingAnimationConfigJson(rootNode, nodes),
+  });
+
   const buildThemeElementPayload = (rootNode: FlowNode) => {
     const sourceConfigMap: Record<string, any> = {};
     nodes
@@ -1351,6 +1377,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     theme: buildThemeElementPayload,
     lockpack: buildLockpackElementPayload,
     sticker: buildStickerElementPayload,
+    charging_animation: buildChargingAnimationElementPayload,
   };
 
   const buildElementsPayloadFromNodes = () => {
@@ -1582,6 +1609,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       addTheme,
       addLockpack,
       addSticker,
+      addChargingAnimation,
       fitView,
       focusElement,
       arrangeElements,
@@ -1708,6 +1736,8 @@ export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpape
 export const useEditorAddTheme = () => useContext(EditorCoreCtx).addTheme;
 export const useEditorAddLockpack = () => useContext(EditorCoreCtx).addLockpack;
 export const useEditorAddSticker = () => useContext(EditorCoreCtx).addSticker;
+export const useEditorAddChargingAnimation = () =>
+  useContext(EditorCoreCtx).addChargingAnimation;
 export const useEditorFitView = () => useContext(EditorCoreCtx).fitView;
 export const useEditorFocusElement = () => useContext(EditorCoreCtx).focusElement;
 export const useEditorArrangeElements = () => useContext(EditorCoreCtx).arrangeElements;

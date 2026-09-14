@@ -17,7 +17,8 @@ export type GroupNodeCategory =
   | 'theme'
   | 'wallpaper'
   | 'lockpack'
-  | 'sticker';
+  | 'sticker'
+  | 'charging_animation';
 
 type GroupNodeStyle = {
   background: string;
@@ -62,6 +63,12 @@ export const ROOT_GROUP_STYLE: Record<GroupNodeCategory, GroupNodeStyle> = {
   sticker: {
     background: '#f8f8f0',
     border: '1px solid #c8ca85',
+    borderRadius: 16,
+  },
+  /** 色相 340，落在紫（305）与红（12）之间剩下的空档 */
+  charging_animation: {
+    background: '#fdf5fa',
+    border: '1px solid #edaed7',
     borderRadius: 16,
   },
 };
@@ -109,5 +116,11 @@ export const PLATFORM_GROUP_STYLE: Record<GroupNodeCategory, GroupNodeStyle> = {
     border: '1px solid #dfe1bb',
     borderRadius: 12,
     boxShadow: '0 2px 8px rgba(118, 119, 0, 0.06)',
+  },
+  charging_animation: {
+    background: '#fcedf6',
+    border: '1px solid #f6d1e8',
+    borderRadius: 12,
+    boxShadow: '0 2px 8px rgba(168, 72, 141, 0.06)',
   },
 };

@@ -488,8 +488,30 @@ def test_upload_project_file_rejects_non_media(
     )
     assert upload_response.status_code == 400
     assert (
-        upload_response.json()["detail"] == "Only video and audio files are supported"
+        upload_response.json()["detail"]
+        == "Only video, audio and .pag files are supported"
     )
+
+
+def test_upload_project_file_accepts_pag(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """pag 的 content_type 浏览器只给 octet-stream，靠扩展名放行。"""
+    create_response = client.post(
+        f"{settings.API_V1_STR}/project/",
+        headers=normal_user_token_headers,
+        json={"name": "Upload Pag Project"},
+    )
+    assert create_response.status_code == 200
+    project_id = create_response.json()["project_id"]
+
+    upload_response = client.post(
+        f"{settings.API_V1_STR}/project/{project_id}/upload-file",
+        headers=normal_user_token_headers,
+        files={"file": ("preview.pag", b"PAGfake_binary", "application/octet-stream")},
+    )
+    assert upload_response.status_code == 200
+    assert upload_response.json()["path"].endswith(".pag")
 
 
 def test_get_project_assets(
