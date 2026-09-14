@@ -11,6 +11,7 @@ import { useWallpaperExportBundle } from './useWallpaperExportBundle';
 import { useThemeExportBundle } from './useThemeExportBundle';
 import { useLockpackExportBundle } from './useLockpackExportBundle';
 import { useStickerExportBundle } from './useStickerExportBundle';
+import { useChargingAnimationExportBundle } from './useChargingAnimationExportBundle';
 
 const DEFAULT_EXPORT_CATEGORY = 'widget';
 
@@ -54,6 +55,9 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
   const stickerExport = useStickerExportBundle(
     category === 'sticker' ? nodeId : undefined,
   );
+  const chargingAnimationExport = useChargingAnimationExportBundle(
+    category === 'charging_animation' ? nodeId : undefined,
+  );
 
   const byCategory: Record<string, ExportBundleApi> = {
     widget: widgetExport,
@@ -63,6 +67,7 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
     theme: themeExport,
     lockpack: lockpackExport,
     sticker: stickerExport,
+    charging_animation: chargingAnimationExport,
   };
 
   const active =
@@ -86,4 +91,5 @@ export const listRegisteredExportCategories = () => [
   'theme',
   'lockpack',
   'sticker',
+  'charging_animation',
 ];

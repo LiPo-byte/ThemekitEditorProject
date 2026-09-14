@@ -4,6 +4,7 @@ import {
   useEditorAddIconPack,
   useEditorAddLockpack,
   useEditorAddLockWidget,
+  useEditorAddChargingAnimation,
   useEditorAddSticker,
   useEditorAddTheme,
   useEditorAddWidget,
@@ -28,6 +29,7 @@ import {
   DEFAULT_LOCKPACK_CONFIG,
   DEFAULT_THEME_CONFIG,
   IconPackDefaultConfig,
+  ChargingAnimationDefaultConfig,
   StickerDefaultConfig,
   WallpaperDefaultConfig,
 } from '@/editor-core/defaultConfig';
@@ -97,7 +99,8 @@ type ImportKind =
  | 'diy_live_wallpaper'
  | 'lockWidget'
  | 'lockPack'
- | 'sticker';
+ | 'sticker'
+ | 'charging_animation';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -180,6 +183,16 @@ const LIVE_WALLPAPER_MIME_MAP: Record<string, string> = {
  */
 const STICKER_GIF_FILES = { listView: 'list_view.webp', sticker: 'sticker.mov' };
 const STICKER_STATIC_FILE = 'sticker.png';
+
+/**
+ * charging animation 导出包内的固定文件名，与校验规则一致：
+ * widget/rule_ymal/resource-validation/resource_charging_animation.yaml
+ */
+const CHARGING_ANIMATION_FILES = {
+  preview: 'preview.pag',
+  wallpaper: 'charging_wallpaper.mp4',
+  spec: 'charging_animation_spec.json',
+} as const;
 
 const hasIconPackAssets = (zip: JSZip): boolean =>
   listZipBasenames(zip).some((name) => /^icon_.+\.(?:jpg|jpeg|png)$/i.test(name));
@@ -341,6 +354,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const addIconPack = useEditorAddIconPack();
   const addWallpaper = useEditorAddWallpaper();
   const addSticker = useEditorAddSticker();
+  const addChargingAnimation = useEditorAddChargingAnimation();
   const addTheme = useEditorAddTheme();
   const addLockpack = useEditorAddLockpack();
   const setGlobalLoading = useEditorGlobalLoadingSetter();
@@ -1330,6 +1344,74 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   };
 
   /**
+   * Charging Animation：规则要求三件套都在。
+   * pag/mp4 走 upload-file；spec 只取 origin / style / calendar，缺的用默认配置补。
+   */
+  const importChargingAnimationFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any> } | null> => {
+    const silent = Boolean(options?.silent);
+    const missing = [
+      CHARGING_ANIMATION_FILES.preview,
+      CHARGING_ANIMATION_FILES.wallpaper,
+      CHARGING_ANIMATION_FILES.spec,
+    ].filter((filename) => !findZipEntry(zip, filename));
+    if (missing.length) {
+      if (!silent) {
+        message.error(`压缩包内缺少 ${missing.join('、')}`);
+      }
+      return null;
+    }
+
+    const previewResult = await uploadVideoFromZip(
+      CHARGING_ANIMATION_FILES.preview,
+      zip,
+    );
+    const wallpaperResult = await uploadVideoFromZip(
+      CHARGING_ANIMATION_FILES.wallpaper,
+      zip,
+    );
+    if (!previewResult || !wallpaperResult) {
+      if (!silent) {
+        message.error('preview.pag 或 charging_wallpaper.mp4 上传失败');
+      }
+      return null;
+    }
+
+    const config = structuredClone(ChargingAnimationDefaultConfig) as Record<
+      string,
+      any
+    >;
+    config.preview.pagsource = previewResult.url;
+    config.charging_wallpaper.mp4source = wallpaperResult.url;
+
+    const specFile = findZipEntry(zip, CHARGING_ANIMATION_FILES.spec);
+    try {
+      const parsed = JSON.parse((await specFile?.async('string')) ?? '');
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        if (parsed.origin && typeof parsed.origin === 'object') {
+          config.origin = { ...config.origin, ...parsed.origin };
+        }
+        if (parsed.style && typeof parsed.style === 'object') {
+          config.style = { ...config.style, ...parsed.style };
+        }
+        if (parsed.calendar && typeof parsed.calendar === 'object') {
+          config.calendar = { ...config.calendar, ...parsed.calendar };
+        }
+      }
+    } catch (error) {
+      console.warn('[ImportModal] charging_animation_spec.json 解析失败:', error);
+      if (!silent) message.error('charging_animation_spec.json 不是合法的 JSON');
+      return null;
+    }
+
+    const rootId = addChargingAnimation(config);
+    if (!rootId) return null;
+    return { rootId, config };
+  };
+
+  /**
    * Diy Live Wallpaper：读导出包里的 lottie.json + images/，重新打成 .lottie 再上传。
    * 后端 upload-lottie 只收单个文件，images/ 没处安放；内联成 base64 又会撑大体积，
    * 打回 zip 反而有压缩。包里的 wallpapers_spec.json 不读，导出时从 lottie 现算。
@@ -1562,6 +1644,35 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       } catch (error) {
         console.error('[ImportModal] Sticker 导入失败:', error);
         message.error('Sticker 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readChargingAnimationFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importChargingAnimationFromZip(zip);
+        if (result) {
+          onClose();
+          message.success('Charging Animation 导入成功');
+        }
+      } catch (error) {
+        console.error('[ImportModal] Charging Animation 导入失败:', error);
+        message.error('Charging Animation 导入失败');
       }
       return false;
     });
@@ -1903,6 +2014,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'sticker') {
       return readStickerFromZip(file);
     }
+    if (importKind === 'charging_animation') {
+      return readChargingAnimationFromZip(file);
+    }
     return readWidgetsSpecFromZip(file);
   };
 
@@ -1956,6 +2070,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
             { label: 'Theme', value: 'theme' },
             { label: 'LockPack', value: 'lockPack' },
             { label: 'Sticker', value: 'sticker' },
+            { label: 'Charging Animation', value: 'charging_animation' },
           ]}
           style={{ width: '100%' }}
         />
