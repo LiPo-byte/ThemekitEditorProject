@@ -79,6 +79,7 @@ export default function LauncherLayout_6(props: any) {
               borderRadius: 10,
               display: 'flex',
               alignItems: 'center',
+              flexDirection: size === 2 ? 'row-reverse' : 'row',
               justifyContent: size === 1 ? 'center' : justifyContentsize[index % 3],
             }}>
               <div style={{
