@@ -16,16 +16,40 @@ const WALLPAPERTYPE_SYSTEM:any = {
     "3": "ios",
     "4": "android",
     "5": "common",
+    "6": "ios",
+    "7": "ios",
+    "8": "ios",
 };
 const WALLPAPERTYPE_COMPONENTS:any = {
     "0": 'wallpaper',
     "1": "wallpaper",
     "2": "wallpaper",
+    "6": "wallpaper",
+    "7": "wallpaper",
+    "8": "wallpaper",
     "3": "live_wallpaper",
     "4": "live_wallpaper",
     "5": "lottie_wallpaper",
 };
-
+// { label: 'Normal Wallpaper', value: 'normal_wallpaper' },
+// { label: 'Photo Shuffle', value: 'photo_shuffle' },
+// { label: 'Depth Wallpaper', value: 'depth_wallpaper' },
+// { label: 'Contact Poster', value: 'contact_poster' },
+// { label: 'DynamicIsland Wallpaper', value: 'dynamicisland_wallpaper' },
+// { label: 'Chat Wallpaper', value: 'chat_wallpaper' },
+// { label: 'Live Wallpaper', value: 'live_wallpaper' },
+// { label: 'Diy Live Wallpaper', value: 'diy_live_wallpaper' },
+const WALLPAPERTYPE_NAME:any = {
+  "0": 'normal_wallpaper',
+  "1": "photo_shuffle",
+  "2": "depth_wallpaper",
+  "3": "live_wallpaper",
+  "4": "live_wallpaper",
+  "5": "diy_live_wallpaper",
+  "6": "contact_poster",
+  "7": "dynamicisland_wallpaper",
+  "8": "chat_wallpaper",
+};
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 
@@ -68,6 +92,7 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
       className: 'widget-group-node',
       position: { x: cursorX, y: GAP },
       data: {
+        wallpaperTypeName: WALLPAPERTYPE_NAME[wallpaperType],
         label: WALLPAPERTYPE_SYSTEM[wallpaperType],
         themekitType: key,
       },

@@ -6623,6 +6623,45 @@ export const WallpaperDefaultConfig = {
             height: 1920,
         }
     },
+    "Contact Poster": {
+        wallpaperType: 6,
+        wallpaper: {
+            source: '',
+            name: 'wallpaper',
+            width: 887,
+            height: 1920,
+        },
+        wallpaper_depth_preview: {
+            source: '',
+            name: 'wallpaper_depth_preview',
+            width: 887,
+            height: 1920,
+        }
+    },
+    "Dynamicisland Wallpaper": {
+        wallpaperType: 7,
+        wallpaper: {
+            source: '',
+            name: 'wallpaper',
+            width: 887,
+            height: 1920,
+        },
+    },
+    "Chat Wallpaper": {
+        wallpaperType: 8,
+        wallpaper: {
+            source: '',
+            name: 'wallpaper',
+            width: 887,
+            height: 1920,
+        },
+        wallpaper_ipad: {
+            source: '',
+            name: 'wallpaper_ipad',
+            width: 2048,
+            height: 2732,
+        }
+    },
     "Live Wallpaper IOS": {
         wallpaperType: 3,
         mov: {

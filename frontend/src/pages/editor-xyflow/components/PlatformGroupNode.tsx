@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 type PlatformGroupData = {
   label?: string;
   themekitType?: string;
+  wallpaperTypeName?: string;
 };
 
 const tagStyle: CSSProperties = {
@@ -57,6 +58,7 @@ export default function PlatformGroupNode(props: NodeProps) {
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
         <div style={tagContainerStyle}>
         {data.label ? (<span style={{ ...tagStyle, flexShrink: 0 }}>{data.label}</span>) : null}
+        {data.wallpaperTypeName ? (<span style={{ ...tagStyle, background: '#a492dd', flexShrink: 0 }}>{data.wallpaperTypeName}</span>) : null}
         {data.themekitType ? (<span style={secondaryTagStyle} title={data.themekitType}>{data.themekitType}</span>) : null}
         </div>
     </div>

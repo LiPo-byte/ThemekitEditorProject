@@ -136,11 +136,11 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='primary' icon={<SelectSvg color={theme.colorWhite} size={14} />}></Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('widget'); }} >Widget</Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('lockScreen'); }} >Lock Widget</Button>
-                {/* <Button type='text' onClick={() => {}} >Control Center</Button> */}
+                <Button type='text' onClick={() => {}} >Control Center</Button>
                 {/* <Button type='text' onClick={() => {}} >Sticker</Button> */}
                 {/* <Button type='text' onClick={() => {}} >Watch Face</Button> */}
                 {/* <Button type='text' onClick={() => {}} >Charging Animation</Button> */}
-                <Button type='text' onClick={onAddIconPack} >Icon Pack</Button>
+                {/* <Button type='text' onClick={onAddIconPack} >Icon Pack</Button> */}
                 <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button>
                 <Button type={addLockPackModalOpen ? 'primary' : 'text'} onClick={onToggleAddLockPackModal} >Lock Pack</Button>
                 <Button type={addThemeModalOpen ? 'primary' : 'text'} onClick={onToggleAddThemeModal} >Theme</Button>

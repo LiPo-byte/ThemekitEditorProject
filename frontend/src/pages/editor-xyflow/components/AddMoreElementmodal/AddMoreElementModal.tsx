@@ -3,7 +3,9 @@ import { createStyles } from 'antd-style';
 import React, { useMemo, useRef, useState } from 'react';
 import {
   useEditorAddChargingAnimation,
+  useEditorAddIconPack,
   useEditorAddSticker,
+  useEditorAddWallpaper,
   useEditorProjectId,
 } from '../../context';
 import AddChargingAnimationModal, {
@@ -13,6 +15,14 @@ import AddChargingAnimationModal, {
   validateChargingAnimationValue,
   buildChargingAnimationConfig,
 } from './AddChargingAnimationModal';
+import AddIconPackModal, {
+  buildEmptyIconPackConfig,
+  buildIconPackConfig,
+  EMPTY_ICON_PACK_VALUE,
+  type IconPackFormValue,
+  uploadIconPackFiles,
+  validateIconPackValue,
+} from './AddIconPackModal';
 import AddStickerModal, {
   buildStickerConfig,
   EMPTY_STICKER_VALUE,
@@ -20,6 +30,15 @@ import AddStickerModal, {
   uploadStickerFiles,
   validateStickerValue,
 } from './AddStickerModal';
+import AddWallpaperModal, {
+  buildEmptyWallpaperConfig,
+  buildWallpaperConfig,
+  EMPTY_WALLPAPER_VALUE,
+  type WallpaperFormValue,
+  hasWallpaperFiles,
+  uploadWallpaperFiles,
+  validateWallpaperValue,
+} from './AddWallpaperModal';
 
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
@@ -131,6 +150,7 @@ const subWallpaperTags = [
 const tagsData = [
   { label: 'Sticker', value: 'sticker' },
   { label: 'Charging Animation', value: 'charging_animation' },
+  { label: 'Icon Pack', value: 'icon_pack' },
   { label: 'Wallpaper', value: 'wallpaper', subTags: subWallpaperTags },
 ] as const satisfies readonly MoreTagItem[];
 type MoreCategory = (typeof tagsData)[number]['value'];
@@ -140,7 +160,8 @@ type MoreSubCategory = Extract<
   { subTags: unknown }
 >['subTags'][number]['value'];
 
-const tagOptions = tagsData.slice(0, 2).map(({ label, value }) => ({ label, value }));
+// const tagOptions = tagsData.slice(0, 3).map(({ label, value }) => ({ label, value }));
+const tagOptions = tagsData.map(({ label, value }) => ({ label, value }));
 
 /** 每个一级标签默认的二级选中项 */
 const DEFAULT_SUB_SELECTED: Partial<Record<MoreCategory, MoreSubCategory>> = {
@@ -165,6 +186,8 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
   const projectId = useEditorProjectId();
   const addSticker = useEditorAddSticker();
   const addChargingAnimation = useEditorAddChargingAnimation();
+  const addIconPack = useEditorAddIconPack();
+  const addWallpaper = useEditorAddWallpaper();
   const [singleSelected, setSingleSelected] = useState<MoreCategory>('sticker');
   /** 二级选中按一级标签分别记住，来回切一级时保留各自上次的选择 */
   const [subSelectedMap, setSubSelectedMap] = useState<
@@ -196,6 +219,10 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
     useState<StickerFormValue>(EMPTY_STICKER_VALUE);
   const [chargingValue, setChargingValue] =
     useState<ChargingAnimationFormValue>(EMPTY_CHARGING_ANIMATION_VALUE);
+  const [iconPackValue, setIconPackValue] =
+    useState<IconPackFormValue>(EMPTY_ICON_PACK_VALUE);
+  const [wallpaperValue, setWallpaperValue] =
+    useState<WallpaperFormValue>(EMPTY_WALLPAPER_VALUE);
   const [submitting, setSubmitting] = useState(false);
 
   const onAddSticker = async () => {
@@ -249,6 +276,86 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
     }
   };
 
+  const onAddIconPack = async () => {
+    const invalidText = validateIconPackValue(iconPackValue);
+    if (invalidText) {
+      message.error(invalidText);
+      return;
+    }
+    // 无图直接落默认 config；有图才需要上传
+    if (!iconPackValue.images.length) {
+      addIconPack(buildEmptyIconPackConfig());
+      message.success('Icon Pack 已添加');
+      setIconPackValue(EMPTY_ICON_PACK_VALUE);
+      onClose();
+      return;
+    }
+    if (!projectId) {
+      message.error('项目未初始化，无法上传');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const result = await uploadIconPackFiles(projectId, iconPackValue);
+      addIconPack(buildIconPackConfig(result));
+      message.success(`Icon Pack 已添加（上传 ${result.uploadedCount} 个）`);
+      setIconPackValue(EMPTY_ICON_PACK_VALUE);
+      onClose();
+    } catch {
+      message.error('上传失败，请重试');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const onAddWallpaper = async () => {
+    const wallpaperType = subSelected || '';
+    const invalidText = validateWallpaperValue(wallpaperValue, wallpaperType);
+    if (invalidText) {
+      message.error(invalidText);
+      return;
+    }
+    if (!hasWallpaperFiles(wallpaperValue, wallpaperType)) {
+      const config = buildEmptyWallpaperConfig(
+        wallpaperType,
+        wallpaperValue.liveSystem,
+      );
+      if (!config) {
+        message.error('该壁纸类型暂未实现');
+        return;
+      }
+      addWallpaper(config);
+      message.success('Wallpaper 已添加');
+      setWallpaperValue(EMPTY_WALLPAPER_VALUE);
+      onClose();
+      return;
+    }
+    if (!projectId) {
+      message.error('项目未初始化，无法上传');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const result = await uploadWallpaperFiles(
+        projectId,
+        wallpaperValue,
+        wallpaperType,
+      );
+      addWallpaper(buildWallpaperConfig(result));
+      message.success(
+        result.uploadedCount
+          ? `Wallpaper 已添加（上传 ${result.uploadedCount} 个）`
+          : 'Wallpaper 已添加',
+      );
+      setWallpaperValue(EMPTY_WALLPAPER_VALUE);
+      onClose();
+    } catch {
+      message.error('上传失败，请重试');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   /**
    * 各一级分类的 body 表单和 add 行为。加新分类只在这里补一项，
    * 不用再去改下面的 JSX 和 onAdd；表里没登记的分类走「暂未实现」。
@@ -269,6 +376,18 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
       ),
       onAdd: onAddChargingAnimation,
     },
+    icon_pack: {
+      render: () => (
+        <AddIconPackModal value={iconPackValue} onChange={setIconPackValue} />
+      ),
+      onAdd: onAddIconPack,
+    },
+    wallpaper: {
+      render: () => (
+        <AddWallpaperModal value={wallpaperValue} onChange={setWallpaperValue} wallpaperType={subSelected || ''} />
+      ),
+      onAdd: onAddWallpaper,
+    }
   };
   const currentHandler = categoryHandlers[singleSelected];
 
