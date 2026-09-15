@@ -12,12 +12,73 @@ export type LayoutPoint = {
   y: number;
 };
 
-/** 元素之间的固定留白 */
+/** 列内同类元素的间距（行内横向 & 行间竖向） */
 export const LAYOUT_GAP = 100;
-/** 各类元素根宽度差一个数量级（widget 几百，iconpack 上万），只按个数封顶会让某些行被拉得极长 */
-export const ROW_MAX_WIDTH = 10000;
-/** 同一水平带上最多并排多少个元素 */
-export const ROW_MAX_COUNT = 6;
+/** 不同 category 区域之间的横向间距 */
+export const COLUMN_GAP = LAYOUT_GAP * 5;
+
+/**
+ * 按 category 分列的固定顺序；空列不占位。
+ * 未列入的 category 排在已知类型之后。
+ */
+export const CATEGORY_COLUMN_ORDER = [
+  'widget',
+  'lockwidget',
+  'iconpack',
+  'wallpaper',
+  'sticker',
+  'charging_animation',
+  'theme',
+  'lockpack',
+] as const;
+
+/**
+ * 各类在区域内每行的「格数」容量；未配置默认 1。
+ * 多数类型一格一项；wallpaper 按宽度折算占格（单张≈1、双张≈2）。
+ */
+export const CATEGORY_ROW_SLOT_CAPACITY: Record<string, number> = {
+  widget: 4,
+  lockwidget: 6,
+  sticker: 4,
+  wallpaper: 2,
+};
+
+/** 按根节点宽度相对「同类最小宽」估算占格数的类型 */
+const WIDTH_BASED_SLOT_CATEGORIES = new Set(['wallpaper']);
+
+export const getRowSlotCapacity = (category: string) => {
+  const n = CATEGORY_ROW_SLOT_CAPACITY[category];
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
+};
+
+/** 同类里最窄的根宽当作 1 格基准 */
+export const resolveSlotUnitWidth = (
+  widths: number[],
+  fallbackWidth = 0,
+): number => {
+  let unit = Number.POSITIVE_INFINITY;
+  widths.forEach((width) => {
+    if (width > 0) unit = Math.min(unit, width);
+  });
+  if (Number.isFinite(unit)) return unit;
+  return fallbackWidth > 0 ? fallbackWidth : 0;
+};
+
+export const getEntrySlotCost = (
+  category: string,
+  width: number,
+  unitWidth: number,
+): number => {
+  if (!WIDTH_BASED_SLOT_CATEGORIES.has(category)) return 1;
+  if (!(unitWidth > 0) || !(width > 0)) return 1;
+  return Math.max(1, Math.round(width / unitWidth));
+};
+
+type RootEntry = {
+  id: string;
+  category: string;
+  rect: LayoutRect;
+};
 
 const readNumber = (value: unknown) => {
   const num = typeof value === 'number' ? value : Number(value);
@@ -42,145 +103,35 @@ export const getNodeSize = (node: FlowNode) => {
   };
 };
 
-/** 取出画布上所有 root group 的占位矩形，尺寸算不出来的节点无法参与碰撞判断，直接跳过 */
-export const collectRootRects = (nodes: FlowNode[]): LayoutRect[] => {
-  const rects: LayoutRect[] = [];
+export const getRootCategory = (node: FlowNode): string => {
+  const data = (node.data ?? {}) as { category?: unknown };
+  const category = data.category;
+  return typeof category === 'string' && category.trim()
+    ? category.trim()
+    : 'unknown';
+};
+
+const categoryOrderIndex = (category: string) => {
+  const index = (CATEGORY_COLUMN_ORDER as readonly string[]).indexOf(category);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+};
+
+const compareCategory = (a: string, b: string) => {
+  const orderDiff = categoryOrderIndex(a) - categoryOrderIndex(b);
+  if (orderDiff !== 0) return orderDiff;
+  return a.localeCompare(b);
+};
+
+/** 取出画布上所有可参与排布的 root group（需能算出尺寸） */
+export const collectRootEntries = (nodes: FlowNode[]): RootEntry[] => {
+  const entries: RootEntry[] = [];
   nodes.forEach((node) => {
     if (!isRootGroupNode(node)) return;
     const { width, height } = getNodeSize(node);
-    if (!(width > 0) || !(height > 0)) return;
-    rects.push({
-      x: readNumber(node.position?.x),
-      y: readNumber(node.position?.y),
-      width,
-      height,
-    });
-  });
-  return rects;
-};
-
-export const rectsIntersect = (a: LayoutRect, b: LayoutRect): boolean =>
-  a.x < b.x + b.width &&
-  b.x < a.x + a.width &&
-  a.y < b.y + b.height &&
-  b.y < a.y + a.height;
-
-export const findOverlappingPair = (
-  rects: LayoutRect[],
-): [LayoutRect, LayoutRect] | null => {
-  for (let i = 0; i < rects.length; i += 1) {
-    for (let j = i + 1; j < rects.length; j += 1) {
-      if (rectsIntersect(rects[i], rects[j])) return [rects[i], rects[j]];
-    }
-  }
-  return null;
-};
-
-/**
- * 为新元素挑一个不与任何已有元素相交的落点。
- *
- * 不从坐标反推「行」，而是直接拿候选点跟真实矩形做相交测试：候选点来自每个已有元素的右边缘
- * （同一带继续往右排）和下边缘（另起一带），按从上到下、从左到右取第一个放得下的位置。
- * 已有元素的位置是会落库的权威数据，所以这里只决定新元素放哪，不会去动别人。
- */
-export const resolveRootPlacement = (
-  occupied: LayoutRect[],
-  size: { width: number; height: number },
-): LayoutPoint => {
-  if (!occupied.length) return { x: 0, y: 0 };
-
-  const width = size.width > 0 ? size.width : 0;
-  const height = size.height > 0 ? size.height : 0;
-
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxBottom = Number.NEGATIVE_INFINITY;
-  occupied.forEach((rect) => {
-    minX = Math.min(minX, rect.x);
-    minY = Math.min(minY, rect.y);
-    maxBottom = Math.max(maxBottom, rect.y + rect.height);
-  });
-
-  // 所有元素下方一定是空的，作为永远成立的兜底落点
-  const fallback: LayoutPoint = { x: minX, y: maxBottom + LAYOUT_GAP };
-  // 尺寸未知的元素没法做碰撞判断，直接丢到最下面，避免压到别人身上
-  if (!(width > 0) || !(height > 0)) return fallback;
-
-  const sortedByX = [...occupied].sort((a, b) => a.x - b.x);
-
-  const candidates: LayoutPoint[] = [{ x: minX, y: minY }];
-  occupied.forEach((rect) => {
-    candidates.push({ x: rect.x + rect.width + LAYOUT_GAP, y: rect.y });
-    candidates.push({ x: minX, y: rect.y + rect.height + LAYOUT_GAP });
-  });
-
-  const seen = new Set<string>();
-  const ordered = candidates
-    .filter((point) => {
-      if (point.x < minX || point.y < minY) return false;
-      // 行宽上限按「离最左边多远」算，避免一整行横向拉到看不见头
-      if (point.x + width - minX > ROW_MAX_WIDTH) return false;
-      const key = `${point.x}|${point.y}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x));
-
-  for (const point of ordered) {
-    const candidate: LayoutRect = { x: point.x, y: point.y, width, height };
-
-    let blocked = false;
-    for (const rect of sortedByX) {
-      // sortedByX 按 x 升序，一旦越过候选右边界，后面的都不可能相交
-      if (rect.x >= candidate.x + width) break;
-      if (rectsIntersect(candidate, rect)) {
-        blocked = true;
-        break;
-      }
-    }
-    if (blocked) continue;
-
-    let sameBandCount = 0;
-    for (const rect of occupied) {
-      if (rect.y < candidate.y + height && candidate.y < rect.y + rect.height) {
-        sameBandCount += 1;
-      }
-    }
-    if (sameBandCount >= ROW_MAX_COUNT) continue;
-
-    return point;
-  }
-
-  return fallback;
-};
-
-/** 直接给一批 nodes 用的入口：找出新元素 root 该放的位置 */
-export const resolveNextRootPosition = (
-  existingNodes: FlowNode[],
-  targetRoot: FlowNode,
-): LayoutPoint =>
-  resolveRootPlacement(
-    collectRootRects(existingNodes),
-    getNodeSize(targetRoot),
-  );
-
-/**
- * 整理排列：把所有 root 元素按当前的阅读顺序重新码放，回收增删留下的空洞。
- *
- * 一行一行往下铺，行高取行内最高的元素，所以行与行不可能相交；行内元素首尾相接，
- * 行内也不可能相交。整体锚定在原来的左上角，避免整理完画布整个跑掉。
- * 位置没有变化时返回传入的原数组，调用方据此跳过提交，不污染撤销栈。
- */
-export const relayoutRootNodes = (nodes: FlowNode[]): FlowNode[] => {
-  const entries: Array<{ id: string; rect: LayoutRect }> = [];
-  nodes.forEach((node) => {
-    if (!isRootGroupNode(node)) return;
-    const { width, height } = getNodeSize(node);
-    // 尺寸算不出来的元素无法参与排布，保持原位不动
     if (!(width > 0) || !(height > 0)) return;
     entries.push({
       id: node.id,
+      category: getRootCategory(node),
       rect: {
         x: readNumber(node.position?.x),
         y: readNumber(node.position?.y),
@@ -189,6 +140,126 @@ export const relayoutRootNodes = (nodes: FlowNode[]): FlowNode[] => {
       },
     });
   });
+  return entries;
+};
+
+/**
+ * 把同 category 的元素按格数容量折成多行。
+ * 占格超过整行容量时独占一行（例如超宽 wallpaper）。
+ */
+export const packCategoryRows = (
+  group: RootEntry[],
+  category: string,
+): RootEntry[][] => {
+  if (!group.length) return [];
+
+  const capacity = getRowSlotCapacity(category);
+  const unitWidth = resolveSlotUnitWidth(group.map((entry) => entry.rect.width));
+  const rows: RootEntry[][] = [];
+  let current: RootEntry[] = [];
+  let used = 0;
+
+  group.forEach((entry) => {
+    const cost = getEntrySlotCost(category, entry.rect.width, unitWidth);
+
+    if (cost >= capacity) {
+      if (current.length) {
+        rows.push(current);
+        current = [];
+        used = 0;
+      }
+      rows.push([entry]);
+      return;
+    }
+
+    if (used + cost > capacity && current.length) {
+      rows.push(current);
+      current = [];
+      used = 0;
+    }
+
+    current.push(entry);
+    used += cost;
+  });
+
+  if (current.length) rows.push(current);
+  return rows;
+};
+
+/**
+ * 为新元素挑落点：同 category 接到当前最后一行右侧（剩余格数够时）；
+ * 行已满或不夠格则换到下一行最左；尚无该列则在现有内容最右侧新开一列。
+ * 只决定新元素坐标，不移动已有节点。
+ */
+export const resolveNextRootPosition = (
+  existingNodes: FlowNode[],
+  targetRoot: FlowNode,
+): LayoutPoint => {
+  const occupied = collectRootEntries(existingNodes);
+  if (!occupied.length) return { x: 0, y: 0 };
+
+  const category = getRootCategory(targetRoot);
+  const sameColumn = occupied.filter((entry) => entry.category === category);
+  const targetSize = getNodeSize(targetRoot);
+
+  if (sameColumn.length) {
+    let colX = Number.POSITIVE_INFINITY;
+    let colBottom = Number.NEGATIVE_INFINITY;
+    let lastRowY = Number.NEGATIVE_INFINITY;
+    sameColumn.forEach(({ rect }) => {
+      colX = Math.min(colX, rect.x);
+      colBottom = Math.max(colBottom, rect.y + rect.height);
+      lastRowY = Math.max(lastRowY, rect.y);
+    });
+
+    const lastRow = sameColumn.filter(({ rect }) => rect.y === lastRowY);
+    const capacity = getRowSlotCapacity(category);
+    const unitWidth = resolveSlotUnitWidth(
+      [
+        ...sameColumn.map((entry) => entry.rect.width),
+        targetSize.width,
+      ],
+      targetSize.width,
+    );
+    const used = lastRow.reduce(
+      (sum, entry) =>
+        sum + getEntrySlotCost(category, entry.rect.width, unitWidth),
+      0,
+    );
+    const cost = getEntrySlotCost(category, targetSize.width, unitWidth);
+
+    if (cost < capacity && used + cost <= capacity) {
+      let rowRight = Number.NEGATIVE_INFINITY;
+      lastRow.forEach(({ rect }) => {
+        rowRight = Math.max(rowRight, rect.x + rect.width);
+      });
+      return { x: rowRight + LAYOUT_GAP, y: lastRowY };
+    }
+
+    return { x: colX, y: colBottom + LAYOUT_GAP };
+  }
+
+  // 新 category：开在所有已有内容的右侧，顶部与现有内容对齐
+  let minY = Number.POSITIVE_INFINITY;
+  let maxRight = Number.NEGATIVE_INFINITY;
+  occupied.forEach(({ rect }) => {
+    minY = Math.min(minY, rect.y);
+    maxRight = Math.max(maxRight, rect.x + rect.width);
+  });
+  return { x: maxRight + COLUMN_GAP, y: minY };
+};
+
+/**
+ * 整理排列：按 category 分区域，区域内按格数容量折行，回收增删留下的空洞。
+ *
+ * 列顺序见 CATEGORY_COLUMN_ORDER；空列不占位。
+ * wallpaper 单张占 1 格、双张占 2 格，每行 2 格，避免一宽一窄叠着不齐。
+ * 区域宽取各行「元素宽 + 间距」的最大值（按内容算，不定宽）。
+ * 整体锚定在原来的左上角，避免整理完画布整个跑掉。
+ * 位置没有变化时返回传入的原数组，调用方据此跳过提交，不污染撤销栈。
+ */
+export const relayoutRootNodes = (nodes: FlowNode[]): FlowNode[] => {
+  const entries = collectRootEntries(nodes);
   if (entries.length < 2) return nodes;
 
   let originX = Number.POSITIVE_INFINITY;
@@ -198,31 +269,46 @@ export const relayoutRootNodes = (nodes: FlowNode[]): FlowNode[] => {
     originY = Math.min(originY, rect.y);
   });
 
-  const ordered = [...entries].sort((a, b) =>
-    a.rect.y !== b.rect.y ? a.rect.y - b.rect.y : a.rect.x - b.rect.x,
-  );
+  const byCategory = new Map<string, RootEntry[]>();
+  entries.forEach((entry) => {
+    const list = byCategory.get(entry.category);
+    if (list) {
+      list.push(entry);
+    } else {
+      byCategory.set(entry.category, [entry]);
+    }
+  });
+
+  const categories = [...byCategory.keys()].sort(compareCategory);
 
   const placed = new Map<string, LayoutPoint>();
   let cursorX = originX;
-  let cursorY = originY;
-  let rowHeight = 0;
-  let rowCount = 0;
 
-  ordered.forEach(({ id, rect }) => {
-    const overflowed =
-      rowCount >= ROW_MAX_COUNT ||
-      cursorX + rect.width - originX > ROW_MAX_WIDTH;
-    // rowCount 为 0 时不换行，保证超宽元素独占一行而不是空转
-    if (rowCount > 0 && overflowed) {
+  categories.forEach((category) => {
+    const group = byCategory.get(category) ?? [];
+    group.sort((a, b) =>
+      a.rect.y !== b.rect.y ? a.rect.y - b.rect.y : a.rect.x - b.rect.x,
+    );
+
+    const rows = packCategoryRows(group, category);
+    let cursorY = originY;
+    let colWidth = 0;
+
+    rows.forEach((row) => {
+      let rowX = cursorX;
+      let rowHeight = 0;
+
+      row.forEach(({ id, rect }) => {
+        placed.set(id, { x: rowX, y: cursorY });
+        rowX += rect.width + LAYOUT_GAP;
+        rowHeight = Math.max(rowHeight, rect.height);
+      });
+
+      colWidth = Math.max(colWidth, rowX - cursorX - LAYOUT_GAP);
       cursorY += rowHeight + LAYOUT_GAP;
-      cursorX = originX;
-      rowHeight = 0;
-      rowCount = 0;
-    }
-    placed.set(id, { x: cursorX, y: cursorY });
-    cursorX += rect.width + LAYOUT_GAP;
-    rowHeight = Math.max(rowHeight, rect.height);
-    rowCount += 1;
+    });
+
+    cursorX += colWidth + COLUMN_GAP;
   });
 
   let changed = false;

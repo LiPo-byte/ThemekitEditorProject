@@ -31,14 +31,7 @@ const WALLPAPERTYPE_COMPONENTS:any = {
     "4": "live_wallpaper",
     "5": "lottie_wallpaper",
 };
-// { label: 'Normal Wallpaper', value: 'normal_wallpaper' },
-// { label: 'Photo Shuffle', value: 'photo_shuffle' },
-// { label: 'Depth Wallpaper', value: 'depth_wallpaper' },
-// { label: 'Contact Poster', value: 'contact_poster' },
-// { label: 'DynamicIsland Wallpaper', value: 'dynamicisland_wallpaper' },
-// { label: 'Chat Wallpaper', value: 'chat_wallpaper' },
-// { label: 'Live Wallpaper', value: 'live_wallpaper' },
-// { label: 'Diy Live Wallpaper', value: 'diy_live_wallpaper' },
+
 const WALLPAPERTYPE_NAME:any = {
   "0": 'normal_wallpaper',
   "1": "photo_shuffle",
@@ -66,6 +59,63 @@ const getWallpaperEntries = (
     .map(([key, item]) => ({ key, item: item as Record<string, any> }));
 };
 
+type WallpaperEntry = { key: string; item: Record<string, any> };
+
+/**
+ * Photo Shuffle：按序号配对成行
+ * wallpaper_1 | wallpaper_ipad_1
+ * wallpaper_2 | wallpaper_ipad_2
+ * ...
+ * 预览 wallpaper_preview | wallpaper_preview_ipad 放最后一行
+ */
+const buildPhotoShuffleRows = (entries: WallpaperEntry[]): WallpaperEntry[][] => {
+  const byKey = new Map(entries.map((entry) => [entry.key, entry]));
+  const indices = new Set<number>();
+
+  entries.forEach(({ key }) => {
+    const phoneMatch = /^wallpaper_(\d+)$/.exec(key);
+    const ipadMatch = /^wallpaper_ipad_(\d+)$/.exec(key);
+    if (phoneMatch) indices.add(Number(phoneMatch[1]));
+    if (ipadMatch) indices.add(Number(ipadMatch[1]));
+  });
+
+  const rows: WallpaperEntry[][] = [];
+  [...indices]
+    .sort((a, b) => a - b)
+    .forEach((index) => {
+      const row: WallpaperEntry[] = [];
+      const phoneKey = `wallpaper_${index}`;
+      const ipadKey = `wallpaper_ipad_${index}`;
+      const phone = byKey.get(phoneKey);
+      const ipad = byKey.get(ipadKey);
+      if (phone) {
+        row.push(phone);
+        byKey.delete(phoneKey);
+      }
+      if (ipad) {
+        row.push(ipad);
+        byKey.delete(ipadKey);
+      }
+      if (row.length) rows.push(row);
+    });
+
+  const previewRow: WallpaperEntry[] = [];
+  (['wallpaper_preview', 'wallpaper_preview_ipad'] as const).forEach((key) => {
+    const entry = byKey.get(key);
+    if (!entry) return;
+    previewRow.push(entry);
+    byKey.delete(key);
+  });
+  if (previewRow.length) rows.push(previewRow);
+
+  // 未识别 key 各自独占一行，避免漏掉
+  byKey.forEach((entry) => {
+    rows.push([entry]);
+  });
+
+  return rows;
+};
+
 export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
   const entries = getWallpaperEntries(config);
   if (!entries.length) {
@@ -74,32 +124,32 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
 
   const rootGroupId = elementKey || nanoid();
   const childNodes: any[] = [];
-  let cursorX = GAP;
-  let maxPlatformHeight = 0;
-  const wallpaperType:any = Number(config?.wallpaperType ?? 0) || 0;
+  const wallpaperType: any = Number(config?.wallpaperType ?? 0) || 0;
 
-  entries.forEach(({ key, item }) => {
-    const width = Number(item.width) || DEFAULT_WALLPAPER_WIDTH;
-    const height = Number(item.height) || DEFAULT_WALLPAPER_HEIGHT;
-    const platformGroupId = `${nanoid()}_${key}`;
+  const appendEntry = (
+    entry: WallpaperEntry,
+    position: { x: number; y: number },
+  ) => {
+    const width = Number(entry.item.width) || DEFAULT_WALLPAPER_WIDTH;
+    const height = Number(entry.item.height) || DEFAULT_WALLPAPER_HEIGHT;
+    const platformGroupId = `${nanoid()}_${entry.key}`;
     const platformWidth = width + GAP * 2;
     const platformHeight = height + GAP * 2;
-    maxPlatformHeight = Math.max(maxPlatformHeight, platformHeight);
 
     childNodes.push({
       id: platformGroupId,
       type: 'platform_group',
       className: 'widget-group-node',
-      position: { x: cursorX, y: GAP },
+      position,
       data: {
         wallpaperTypeName: WALLPAPERTYPE_NAME[wallpaperType],
         label: WALLPAPERTYPE_SYSTEM[wallpaperType],
-        themekitType: key,
+        themekitType: entry.key,
       },
       parentId: rootGroupId,
       extent: 'parent',
       draggable: false,
-    //   selectable: false,
+      //   selectable: false,
       connectable: false,
       focusable: false,
       zIndex: 10,
@@ -114,8 +164,8 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
       id: nanoid(),
       type: WALLPAPERTYPE_COMPONENTS[wallpaperType],
       data: {
-        ...item,
-        key,
+        ...entry.item,
+        key: entry.key,
       },
       position: { x: GAP, y: GAP },
       parentId: platformGroupId,
@@ -129,11 +179,52 @@ export const wallpaperConfig2Nodes: any = (config: any, elementKey?: any) => {
       },
     });
 
-    cursorX += platformWidth + GAP;
-  });
+    return { platformWidth, platformHeight };
+  };
 
-  const rootWidth = cursorX;
-  const rootHeight = maxPlatformHeight + GAP * 2;
+  let rootWidth = GAP;
+  let rootHeight = GAP;
+
+  if (wallpaperType === 1) {
+    // Photo Shuffle：每行 phone_i + ipad_i，再换行
+    const rows = buildPhotoShuffleRows(entries);
+    let cursorY = GAP;
+
+    rows.forEach((row) => {
+      let cursorX = GAP;
+      let rowHeight = 0;
+
+      row.forEach((entry) => {
+        const { platformWidth, platformHeight } = appendEntry(entry, {
+          x: cursorX,
+          y: cursorY,
+        });
+        cursorX += platformWidth + GAP;
+        rowHeight = Math.max(rowHeight, platformHeight);
+      });
+
+      rootWidth = Math.max(rootWidth, cursorX);
+      cursorY += rowHeight + GAP;
+    });
+
+    rootHeight = cursorY;
+  } else {
+    // 其它类型：保持原逻辑，同一行从左往右排
+    let cursorX = GAP;
+    let maxPlatformHeight = 0;
+
+    entries.forEach((entry) => {
+      const { platformWidth, platformHeight } = appendEntry(entry, {
+        x: cursorX,
+        y: GAP,
+      });
+      cursorX += platformWidth + GAP;
+      maxPlatformHeight = Math.max(maxPlatformHeight, platformHeight);
+    });
+
+    rootWidth = cursorX;
+    rootHeight = maxPlatformHeight + GAP * 2;
+  }
 
   const rootNode = {
     id: rootGroupId,
@@ -172,7 +263,11 @@ export const buildWallpaperConfigJson = (
       (node) =>
         node.type === 'platform_group' && node.parentId === rootNode.id,
     )
-    .sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0));
+    .sort((a, b) => {
+      const dy = (a.position?.y ?? 0) - (b.position?.y ?? 0);
+      if (dy !== 0) return dy;
+      return (a.position?.x ?? 0) - (b.position?.x ?? 0);
+    });
 
   const rootData = getNodeData(rootNode);
   const config: Record<string, any> = {
