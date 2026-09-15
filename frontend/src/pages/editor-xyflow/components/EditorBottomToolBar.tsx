@@ -141,7 +141,7 @@ const EditorBottomToolBar: React.FC = () => {
                 {/* <Button type='text' onClick={() => {}} >Watch Face</Button> */}
                 {/* <Button type='text' onClick={() => {}} >Charging Animation</Button> */}
                 {/* <Button type='text' onClick={onAddIconPack} >Icon Pack</Button> */}
-                <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button>
+                {/* <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button> */}
                 <Button type={addLockPackModalOpen ? 'primary' : 'text'} onClick={onToggleAddLockPackModal} >Lock Pack</Button>
                 <Button type={addThemeModalOpen ? 'primary' : 'text'} onClick={onToggleAddThemeModal} >Theme</Button>
                 <Button type={addMoreElementModalOpen ? 'primary' : 'text'} onClick={onToggleAddMoreElementModal} >More</Button>

@@ -2,9 +2,7 @@ import { useCallback, useState } from 'react';
 import JSZip from 'jszip';
 import type { Node as FlowNode } from '@xyflow/react';
 import { useEditorNodes } from '../context';
-import { buildWallpaperConfigJson } from '../wallpaper/util';
 import { cropMediaByUrl } from '../util/cropMediaByUrl';
-import { generateElementPreview } from '../util/generateElementPreview';
 import { unpackLottieBundleByUrl } from '../util/lottieBundle';
 import { buildLottieWallpaperSpec } from '../util/lottieWallpaperSpec';
 import {
@@ -16,7 +14,6 @@ import {
 const DEFAULT_WALLPAPER_WIDTH = 887;
 const DEFAULT_WALLPAPER_HEIGHT = 1920;
 const EXPORT_JPEG_QUALITY = 1;
-const EXPORT_PREVIEW_SCALE = 3;
 
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
@@ -72,7 +69,7 @@ const resolveExportExt = (value: unknown, fallback = 'jpg') => {
   return ext === 'jpeg' ? 'jpg' : ext;
 };
 
-const mimeTypeByExt  = (ext: string) => {
+const mimeTypeByExt = (ext: string) => {
   if (ext === 'png') return 'image/png';
   if (ext === 'webp') return 'image/webp';
   return 'image/jpeg';
@@ -88,7 +85,11 @@ const encodeBlobByExt = async (
   if (ext === 'jpg' || ext === 'jpeg') return blob;
   if (blob.type === mimeType) return blob;
 
-  const drawToCanvas = async (source: CanvasImageSource, width: number, height: number) => {
+  const drawToCanvas = async (
+    source: CanvasImageSource,
+    width: number,
+    height: number,
+  ) => {
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, width);
     canvas.height = Math.max(1, height);
@@ -128,6 +129,40 @@ const encodeBlobByExt = async (
       image.naturalWidth || image.width || 1,
       image.naturalHeight || image.height || 1,
     );
+  } catch {
+    return null;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+};
+
+/** 读取图片像素尺寸；失败返回 null */
+const readImageBlobSize = async (
+  blob: Blob,
+): Promise<{ width: number; height: number } | null> => {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(blob);
+      const size = { width: bitmap.width, height: bitmap.height };
+      bitmap.close();
+      return size;
+    } catch {
+      // createImageBitmap 失败时回退 <img>
+    }
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Failed to decode image.'));
+      img.src = objectUrl;
+    });
+    return {
+      width: image.naturalWidth || image.width || 0,
+      height: image.naturalHeight || image.height || 0,
+    };
   } catch {
     return null;
   } finally {
@@ -217,33 +252,57 @@ export const collectWallpaperExportFiles = async (
 
     pushLine('info', `开始处理 ${filename}...`);
 
-    if (source && typeof source === 'string') {
-      try {
-        const { jpegBlob } = await cropMediaByUrl(source, {
-          transform: normalizeCropProps(data.crop_props),
-          targetElement,
-          jpegOutputWidth: outputWidth,
-          jpegOutputHeight: outputHeight,
-          jpegQuality: EXPORT_JPEG_QUALITY,
-          outputScale: 1,
-          renderScale: 2,
-          resizeMode: 'stretch',
-        });
-        if (!jpegBlob) {
-          pushLine('warning', `跳过 ${filename}（裁剪失败）`);
+    if (!source || typeof source !== 'string') {
+      pushLine('warning', `跳过 ${filename}（未上传文件）`);
+      continue;
+    }
+
+    try {
+      const response = await fetch(source);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const sourceBlob = await response.blob();
+
+      // jpg/png：尺寸符合标准则原文件进 zip，避免反复重编码膨胀
+      if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
+        const actualSize = await readImageBlobSize(sourceBlob);
+        if (
+          actualSize &&
+          actualSize.width === outputWidth &&
+          actualSize.height === outputHeight
+        ) {
+          files.push({ filename, blob: sourceBlob });
+          pushLine('success', `生成 ${filename}（原文件）`);
           continue;
         }
-        const exportBlob = await encodeBlobByExt(jpegBlob, ext);
-        if (!exportBlob) {
-          pushLine('warning', `跳过 ${filename}（转码失败）`);
-          continue;
-        }
-        files.push({ filename, blob: exportBlob });
-        pushLine('success', `生成 ${filename}`);
-        continue;
-      } catch {
-        pushLine('warning', `${filename} 裁剪失败，尝试截图导出...`);
+        pushLine(
+          'info',
+          `${filename} 尺寸 ${actualSize ? `${actualSize.width}×${actualSize.height}` : '未知'} ≠ ${outputWidth}×${outputHeight}，走裁剪导出`,
+        );
       }
+
+      const { jpegBlob } = await cropMediaByUrl(source, {
+        transform: normalizeCropProps(data.crop_props),
+        targetElement,
+        jpegOutputWidth: outputWidth,
+        jpegOutputHeight: outputHeight,
+        jpegQuality: EXPORT_JPEG_QUALITY,
+        outputScale: 1,
+        renderScale: 2,
+        resizeMode: 'stretch',
+      });
+      if (!jpegBlob) {
+        pushLine('warning', `跳过 ${filename}（裁剪失败）`);
+        continue;
+      }
+      const exportBlob = await encodeBlobByExt(jpegBlob, ext);
+      if (!exportBlob) {
+        pushLine('warning', `跳过 ${filename}（转码失败）`);
+        continue;
+      }
+      files.push({ filename, blob: exportBlob });
+      pushLine('success', `生成 ${filename}`);
+    } catch {
+      pushLine('warning', `跳过 ${filename}（导出失败）`);
     }
   }
   for (let index = 0; index < liveWallpaperNodes.length; index += 1) {

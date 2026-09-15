@@ -95,6 +95,9 @@ type ImportKind =
  | 'photo_shuffles'
  | 'theme'
  | 'wallpaper_depth'
+ | 'contact_poster'
+ | 'dynamicisland_wallpaper'
+ | 'chat_wallpaper'
  | 'live_wallpaper'
  | 'diy_live_wallpaper'
  | 'lockWidget'
@@ -1239,6 +1242,50 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     });
 
   /**
+   * Contact Poster：默认用 WallpaperDefaultConfig['Contact Poster']
+   * 期望 zip 内含 wallpaper 与 wallpaper_depth_preview 两张图。
+   */
+  const importContactPosterFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any>; uploadedCount: number } | null> =>
+    importWallpaperFromZip(zip, {
+      silent: options?.silent,
+      defaultConfig: WallpaperDefaultConfig['Contact Poster'] as Record<string, any>,
+      emptyWarning:
+        '该套 Contact Poster 未找到可用图片（需 wallpaper / wallpaper_depth_preview）',
+    });
+
+  /**
+   * Dynamicisland Wallpaper：默认用 WallpaperDefaultConfig['Dynamicisland Wallpaper']
+   * 期望 zip 内含 wallpaper。
+   */
+  const importDynamicislandWallpaperFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any>; uploadedCount: number } | null> =>
+    importWallpaperFromZip(zip, {
+      silent: options?.silent,
+      defaultConfig: WallpaperDefaultConfig['Dynamicisland Wallpaper'] as Record<string, any>,
+      emptyWarning: '该套 Dynamicisland Wallpaper 未找到可用图片（需 wallpaper）',
+    });
+
+  /**
+   * Chat Wallpaper：默认用 WallpaperDefaultConfig['Chat Wallpaper']
+   * 期望 zip 内含 wallpaper / wallpaper_ipad。
+   */
+  const importChatWallpaperFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{ rootId: string; config: Record<string, any>; uploadedCount: number } | null> =>
+    importWallpaperFromZip(zip, {
+      silent: options?.silent,
+      defaultConfig: WallpaperDefaultConfig['Chat Wallpaper'] as Record<string, any>,
+      emptyWarning:
+        '该套 Chat Wallpaper 未找到可用图片（需 wallpaper / wallpaper_ipad）',
+    });
+
+  /**
    * Live Wallpaper：按平台取 mov(iOS) / mp4(Android) 默认配置，
    * 在 zip 里找导出时写入的 live_wallpaper.{mov|mp4}，上传后填 movsource / mp4source。
    */
@@ -1586,6 +1633,113 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       } catch (error) {
         console.error('[ImportModal] Wallpaper Depth 导入失败:', error);
         message.error('Wallpaper Depth 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readContactPosterFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const basenames = listZipBasenames(zip);
+        const missing = WALLPAPER_DEPTH_REQUIRED.filter(
+          (required) =>
+            !basenames.some((name) =>
+              new RegExp(`^${escapeRegExp(required)}\\.(?:jpg|jpeg|png)$`, 'i').test(name),
+            ),
+        );
+        if (missing.length) {
+          message.error(
+            `Contact Poster 压缩包缺少：${missing.map((name) => `${name}.jpg`).join('、')}`,
+          );
+          return false;
+        }
+
+        const result = await importContactPosterFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(
+            `Contact Poster 导入成功（上传 ${result.uploadedCount} 个）`,
+          );
+        }
+      } catch (error) {
+        console.error('[ImportModal] Contact Poster 导入失败:', error);
+        message.error('Contact Poster 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readDynamicislandWallpaperFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importDynamicislandWallpaperFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(
+            `Dynamicisland Wallpaper 导入成功（上传 ${result.uploadedCount} 个）`,
+          );
+        }
+      } catch (error) {
+        console.error('[ImportModal] Dynamicisland Wallpaper 导入失败:', error);
+        message.error('Dynamicisland Wallpaper 导入失败');
+      }
+      return false;
+    });
+  };
+
+  const readChatWallpaperFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importChatWallpaperFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(
+            `Chat Wallpaper 导入成功（上传 ${result.uploadedCount} 个）`,
+          );
+        }
+      } catch (error) {
+        console.error('[ImportModal] Chat Wallpaper 导入失败:', error);
+        message.error('Chat Wallpaper 导入失败');
       }
       return false;
     });
@@ -1999,6 +2153,15 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'wallpaper_depth') {
       return readWallpaperDepthFromZip(file);
     }
+    if (importKind === 'contact_poster') {
+      return readContactPosterFromZip(file);
+    }
+    if (importKind === 'dynamicisland_wallpaper') {
+      return readDynamicislandWallpaperFromZip(file);
+    }
+    if (importKind === 'chat_wallpaper') {
+      return readChatWallpaperFromZip(file);
+    }
     if (importKind === 'live_wallpaper') {
       return readLiveWallpaperFromZip(file);
     }
@@ -2056,6 +2219,18 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
                 {
                   label: 'wallpaper depth',
                   value: 'wallpaper_depth',
+                },
+                {
+                  label: 'contact poster',
+                  value: 'contact_poster',
+                },
+                {
+                  label: 'dynamicisland wallpaper',
+                  value: 'dynamicisland_wallpaper',
+                },
+                {
+                  label: 'chat wallpaper',
+                  value: 'chat_wallpaper',
                 },
                 {
                   label: 'live wallpaper',
