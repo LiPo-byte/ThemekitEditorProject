@@ -205,20 +205,130 @@ const fetchLockSourceBlob = (
   sourceField: string,
 ) => fetchSourceBlob(String(sizeData[sourceField]?.source ?? ''));
 
-/** 导出文件的稳定 key，外部改文件名后靠它识别 */
+/** 导出文件的稳定 key，外部改名后靠它识别 */
 const makeLockFileKey = (
   typeName: string,
   sizeLabel: string,
   suffix: string,
 ) => `lock_${typeName}_${sizeLabel}_${suffix}`;
 
+type DecodedLockAssetImage = {
+  source: CanvasImageSource;
+  width: number;
+  height: number;
+  release: () => void;
+};
+
+const decodeLockAssetImage = async (
+  blob: Blob,
+): Promise<DecodedLockAssetImage | null> => {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(blob);
+      return {
+        source: bitmap,
+        width: bitmap.width,
+        height: bitmap.height,
+        release: () => bitmap.close(),
+      };
+    } catch {
+      // createImageBitmap 失败时回退 <img>
+    }
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Failed to decode lock asset.'));
+      img.src = objectUrl;
+    });
+    return {
+      source: image,
+      width: image.naturalWidth || image.width,
+      height: image.naturalHeight || image.height,
+      release: () => URL.revokeObjectURL(objectUrl),
+    };
+  } catch {
+    URL.revokeObjectURL(objectUrl);
+    return null;
+  }
+};
+
+const canvasToLockAssetBlob = (
+  canvas: HTMLCanvasElement,
+  format: LockExportFileRule['format'],
+) =>
+  new Promise<Blob | null>((resolve) => {
+    const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
+    const quality = format === 'jpg' ? 1 : undefined;
+    canvas.toBlob((next) => resolve(next), mimeType, quality);
+  });
+
+/**
+ * asset 对齐规则尺寸：相同则原样返回；不同则拉伸缩放到 expectedWidth/Height。
+ *
+ * gif 重编码会破坏透明与动画（见 loadLockPreviewBlob 注释），尺寸不符时只警告、不缩放。
+ */
+const fitLockAssetToRuleSize = async (
+  blob: Blob,
+  assetRule: LockExportFileRule,
+): Promise<{
+  blob: Blob;
+  scaled: boolean;
+  width: number;
+  height: number;
+  skippedScaleReason?: string;
+} | null> => {
+  const targetWidth = Math.max(1, Math.round(assetRule.expectedWidth));
+  const targetHeight = Math.max(1, Math.round(assetRule.expectedHeight));
+  const decoded = await decodeLockAssetImage(blob);
+  if (!decoded) return null;
+
+  const { width, height, source, release } = decoded;
+  try {
+    if (width === targetWidth && height === targetHeight) {
+      return { blob, scaled: false, width, height };
+    }
+
+    if (assetRule.format === 'gif') {
+      return {
+        blob,
+        scaled: false,
+        width,
+        height,
+        skippedScaleReason: `gif 实际 ${width}×${height}，规则 ${targetWidth}×${targetHeight}，重编码会破坏透明/动画故未缩放`,
+      };
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.drawImage(source, 0, 0, targetWidth, targetHeight);
+    const scaledBlob = await canvasToLockAssetBlob(canvas, assetRule.format);
+    if (!scaledBlob) return null;
+    return {
+      blob: scaledBlob,
+      scaled: true,
+      width: targetWidth,
+      height: targetHeight,
+    };
+  } finally {
+    release();
+  }
+};
+
 /**
  * image_* 素材。两种来源：
  * - 规则填了 copyOf：这张素材和某张预览是同一张图（1009 Health 的 image_static_* 就是那张
  *   透明底预览，1005 Dynamic 的 {fileName}.gif 就是那张透明底 gif），
  *   直接复用预览那份 blob，不再重复下载 / 截图；
- * - 否则走用户上传的原图，按 yml 的 required_files 改个名透传，不重编码也不缩放。
+ * - 否则走用户上传的原图。
  *
+ * 进 zip 前按规则尺寸对齐：相同直推，不同则缩放（gif 除外，见 fitLockAssetToRuleSize）。
  * 某一张拿不到只跳过这一张，不影响同一份 zip 里的其他文件。
  */
 const pushLockRuleAssets = async (
@@ -238,20 +348,33 @@ const pushLockRuleAssets = async (
       ? previewBlobByFilename.get(assetRule.copyOf)
       : undefined;
     // 被复用的那张预览没产出时回落到上传的原图
-    const blob =
+    const sourceBlob =
       copiedBlob ?? (await fetchLockSourceBlob(sizeData, sourceField));
-    if (!blob) {
+    if (!sourceBlob) {
       pushLine('warning', `跳过 ${filename}（未上传或下载失败）`);
       continue;
     }
+
+    const fitted = await fitLockAssetToRuleSize(sourceBlob, assetRule);
+    if (!fitted) {
+      pushLine('warning', `跳过 ${filename}（图片解码或缩放失败）`);
+      continue;
+    }
+    if (fitted.skippedScaleReason) {
+      pushLine('warning', `${filename} ${fitted.skippedScaleReason}`);
+    }
+
     pushFile({
       key: makeLockFileKey(typeName, sizeLabel, sourceField),
       kind: 'asset',
       filename,
-      blob,
+      blob: fitted.blob,
     });
     pushLine(
-      'success', `生成 ${filename}`,
+      'success',
+      fitted.scaled
+        ? `生成 ${filename} ${fitted.width}×${fitted.height}（已缩放对齐规则）`
+        : `生成 ${filename} ${fitted.width}×${fitted.height}`,
     );
   }
 };
