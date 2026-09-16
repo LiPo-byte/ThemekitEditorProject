@@ -638,18 +638,34 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     });
   };
 
+  // 选中态与 draggable 都跟 selectedNodesMap 走，不写在 selectNode 里：
+  // 画布点击清空、多选、删除后清选等路径都只改 Map，这里能统一生效。
   useEffect(() => {
     setNodes((prevNodes) => {
       let changed = false;
+      // 各 widget 默认 draggable: false，避免误拖子节点；仅「单选 + 顶层 root group」时允许拖整块 widget。
+      let soleRootDraggableId: string | null = null;
+      if (selectedNodesMap.size === 1) {
+        const soleId = selectedNodesMap.keys().next().value as string;
+        const soleNode = prevNodes.find((node) => node.id === soleId);
+        if (soleNode?.type === 'group' && !soleNode.parentId) {
+          soleRootDraggableId = soleId;
+        }
+      }
+
       const nextNodes = prevNodes.map((node) => {
         const isSelected = selectedNodesMap.has(node.id);
-        if (Boolean(node.selected) === isSelected) {
+        const nextDraggable = node.id === soleRootDraggableId;
+        const selectedMatch = Boolean(node.selected) === isSelected;
+        const draggableMatch = Boolean(node.draggable) === nextDraggable;
+        if (selectedMatch && draggableMatch) {
           return node;
         }
         changed = true;
         return {
           ...node,
           selected: isSelected,
+          draggable: nextDraggable,
         };
       });
 
