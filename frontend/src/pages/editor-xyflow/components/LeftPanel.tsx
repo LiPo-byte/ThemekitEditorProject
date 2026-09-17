@@ -8,27 +8,32 @@ import {
   useEditorAddLockWidget,
   useEditorAddWallpaper,
   type LeftPanlContent,
+  useEditorAddWatchFace,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { Button, Col, Menu, Row, Typography, type MenuProps, Flex } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import widgetitems from '../widget_config.json';
 import lockwidgetItems from '../lock_widget_config.json';
-import wallpaperitems from '../wallpaper_config.json';
+import wallpaperItems from '../wallpaper_config.json';
+import watchFaceItems from '../watch_face_config.json';
 
-import { WidgetDefaultConfig, LockWidgetDefaultConfig, WallpaperDefaultConfig } from '@/editor-core/defaultConfig'
+
+import { WidgetDefaultConfig, LockWidgetDefaultConfig, WallpaperDefaultConfig, WatchFaceDefaultConfig } from '@/editor-core/defaultConfig'
 
 const LEFT_PANL_TITLE_MAP: Record<LeftPanlContent, string> = {
   widget: 'Widget',
   lockScreen: 'Lock Widget',
   theme: 'Theme',
   wallpaper: 'Wallpaper',
+  watchFace: 'Watch Face',
 };
 const LEFT_PANL_MENU_MAP: Record<LeftPanlContent, any> = {
   widget: widgetitems,
   lockScreen: lockwidgetItems,
   theme: [],
-  wallpaper: wallpaperitems,
+  wallpaper: wallpaperItems,
+  watchFace: watchFaceItems,
 }
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -95,6 +100,7 @@ const LeftPanel: React.FC<any> = () => {
   const addWidget = useEditorAddWidget();
   const addLockWidget = useEditorAddLockWidget();
   const addWallpaper = useEditorAddWallpaper();
+  const addWatchFace = useEditorAddWatchFace();
   const open = useEditorLeftPanlOpen();
   const setOpen = useEditorLeftPanlOpenSetter();
   const leftPanlContent = useEditorLeftPanlContent();
@@ -117,10 +123,17 @@ const LeftPanel: React.FC<any> = () => {
       addWallpaper(structuredClone(WallpaperDefaultConfig[key]));
     }
   };
+  const handleAddWatchFace = (param: { key: keyof typeof WatchFaceDefaultConfig }) => {
+    const { key } = param;
+    if (WatchFaceDefaultConfig[key]) {
+      addWatchFace(structuredClone(WatchFaceDefaultConfig[key]));
+    }
+  }
   const LEFT_PANL_ADD_HANDLER_MAP: Partial<Record<LeftPanlContent, (param: any) => void>> = {
     widget: handleAddWidget,
     wallpaper: handleAddWallpaper,
     lockScreen: handleAddLockWidget,
+    watchFace: handleAddWatchFace,
   };
   const handleMenuClick = (param: any) => {
     LEFT_PANL_ADD_HANDLER_MAP[leftPanlContent]?.(param);

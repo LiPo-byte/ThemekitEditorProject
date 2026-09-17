@@ -6773,3 +6773,50 @@ export const DEFAULT_LOCKPACK_CONFIG = {
     source: '',
   },
 };
+
+export const WatchFaceDefaultConfig = {
+  'Static Watch Face': {
+    "type": "Photos17",
+    "alignment": "top",
+    "hasDate": true,
+    "radius": 28,
+    "source": "",
+    "crop_props": defaultCropProps,
+    "name": "static_watch",
+  },
+  "Dynamic Watch Face": {
+    "type": "Photos17_dynamic",
+    "name": "dynamic_watch",
+    "alignment": "top",
+    "hasDate": true,
+    "radius": 28,
+    movsource: '',
+    pagsource: '',
+  },
+  "Photo LoayoutType 2": {
+    "name": "Watch_Face_Photos18",
+    "type": "Photos18",
+    "font": "rounded",
+    "radius": 28,
+    "size": "smallBottom",
+    "textColor": "s_lightPurple:0.32",
+    "source": "",
+  },
+  "Portraits Watch Face": {
+    "name": "Watch_Face_Portraits",
+    "type": "Portraits",
+    "alignment": "top",
+    "hasDate": true,
+    "font": "style1",
+    "radius": 28,
+    "backgroundSource": {
+      source: '',
+    },
+    "contentSource": {
+      source: '',
+    },
+    "maskSource": {
+      source: '',
+    }
+  }
+}

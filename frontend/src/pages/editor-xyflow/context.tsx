@@ -24,6 +24,7 @@ import { wallpaperConfig2Nodes, buildWallpaperConfigJson } from './wallpaper/uti
 import { themeConfig2Nodes, buildThemeConfigJson } from './theme/util';
 import { lockpackConfig2Nodes, buildLockpackConfigJson } from './lockpack/util';
 import { stickerConfig2Nodes, buildStickerConfigJson } from './sticker/util';
+import { watchFaceConfig2Nodes } from './watchface/util';
 import {
   chargingAnimationConfig2Nodes,
   buildChargingAnimationConfigJson,
@@ -65,7 +66,7 @@ const MANIFEST_FONTS = (fontManifest as FontManifestItem[]).filter(
   (item) => item.file && item.postscriptName,
 );
 
-export type LeftPanlContent = 'widget' | 'lockScreen' | 'theme' | 'wallpaper';
+export type LeftPanlContent = 'widget' | 'lockScreen' | 'theme' | 'wallpaper' | 'watchFace';
 
 // 画布底色是 xyflow 自己的 style，不走 antd token，这里按明暗各给一档：
 // 暗色用 #141414，比面板的 colorBgElevated(#1f1f1f) 深一档，让面板和节点能浮起来
@@ -139,6 +140,7 @@ type EditorCoreCtxValue = {
   addLockWidget: (config: any) => string | undefined;
   addIconPack: (config: any) => string | undefined;
   addWallpaper: (config: any) => string | undefined;
+  addWatchFace: (config: any) => string | undefined;
   addTheme: (config: any) => string | undefined;
   addLockpack: (config: any) => string | undefined;
   addSticker: (config: any) => string | undefined;
@@ -230,6 +232,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   addLockWidget: noopAddNodeGroup,
   addIconPack: noopAddNodeGroup,
   addWallpaper: noopAddNodeGroup,
+  addWatchFace: noopAddNodeGroup,
   addTheme: noopAddNodeGroup,
   addLockpack: noopAddNodeGroup,
   addSticker: noopAddNodeGroup,
@@ -373,6 +376,7 @@ const ELEMENT_LOADERS: Record<
   lockwidget: (configJson, element_key) => lockWidgetConfig2Nodes(configJson, element_key),
   iconpack: (configJson, element_key) => iconPackConfig2Nodes(configJson, element_key),
   wallpaper: (configJson, element_key) => wallpaperConfig2Nodes(configJson, element_key),
+  watchface: (configJson, element_key) => watchFaceConfig2Nodes(configJson, element_key),
   theme: (configJson, element_key) => themeConfig2Nodes(configJson, element_key),
   lockpack: (configJson, element_key) =>
     lockpackConfig2Nodes(configJson, element_key),
@@ -844,6 +848,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     appendNodesBySlot(newNodes, rootNode);
     return String(rootNode.id);
   };
+  const addWatchFace = (config: any) => {
+    const { nodes: newNodes, rootNode } = watchFaceConfig2Nodes(config);
+    if (!rootNode) return undefined;
+    appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id)
+  }
   const addTheme = (config: any) => {
     const { nodes: newNodes, rootNode } = themeConfig2Nodes(config);
     if (!rootNode) return undefined;
@@ -1264,6 +1274,29 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       },
     };
   };
+  const buildWatchFacewElementPayload = (rootNode: FlowNode) => {
+    const platformNode = nodes.find(
+      (node) => node.type === 'platform_group' && node.parentId === rootNode.id,
+    );
+    const platformData = ((platformNode?.data as Record<string, any>) ?? {}) as Record<string, any>;
+    const node = nodes.find(
+      (node) => node.parentId === platformNode?.id,
+    );
+    platformData.watchface = {...node?.data};
+    return {
+      element_key: rootNode.id,
+      category: 'watchface',
+      subtype: 'watchface',
+      x: rootNode.position?.x ?? 0,
+      y: rootNode.position?.y ?? 0,
+      visible: true,
+      locked: false,
+      schema_version: 1,
+      config_json: {
+        ...platformData,
+      },
+    };
+  };
 
   const buildIconPackElementPayload = (rootNode: FlowNode) => ({
     element_key: rootNode.id,
@@ -1394,6 +1427,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     lockpack: buildLockpackElementPayload,
     sticker: buildStickerElementPayload,
     charging_animation: buildChargingAnimationElementPayload,
+    watchface: buildWatchFacewElementPayload,
   };
 
   const buildElementsPayloadFromNodes = () => {
@@ -1622,6 +1656,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       addLockWidget,
       addIconPack,
       addWallpaper,
+      addWatchFace,
       addTheme,
       addLockpack,
       addSticker,
@@ -1749,6 +1784,7 @@ export const useEditorAddWidget = () => useContext(EditorCoreCtx).addWidget;
 export const useEditorAddLockWidget = () => useContext(EditorCoreCtx).addLockWidget;
 export const useEditorAddIconPack = () => useContext(EditorCoreCtx).addIconPack;
 export const useEditorAddWallpaper = () => useContext(EditorCoreCtx).addWallpaper;
+export const useEditorAddWatchFace = () => useContext(EditorCoreCtx).addWatchFace;
 export const useEditorAddTheme = () => useContext(EditorCoreCtx).addTheme;
 export const useEditorAddLockpack = () => useContext(EditorCoreCtx).addLockpack;
 export const useEditorAddSticker = () => useContext(EditorCoreCtx).addSticker;

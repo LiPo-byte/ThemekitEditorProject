@@ -65,6 +65,11 @@ import LockHealthInLine_0 from './lockwidget/health-inline_0';
 import LockLauncherRect_0 from './lockwidget/launcher-rect_0';
 import LockLauncherCircle_0 from './lockwidget/launcher-circle_0';
 
+import WatchFacePhotoStatic1 from './watchface/watchface-photo-static_1';
+import WatchFacePhotoDynamic1 from './watchface/watchface-photo-dynamic_1';
+import WatchFacePhoto2 from './watchface/watchface-photo_2';
+import WatchFacePortraits from './watchface/watchface-portraits';
+
 import Icon from './icon';
 import PlatformGroupNode from './components/PlatformGroupNode';
 import { withLockCaptureTheme } from './util/lockCaptureTheme';
@@ -152,6 +157,11 @@ const rawXyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   lottie_wallpaper: LottieWallpaper,
   sticker: Sticker,
   charging_animation: ChargingAnimation,
+  photo_watch_face_1_static: WatchFacePhotoStatic1,
+  photo_watch_face_1_dynamic: WatchFacePhotoDynamic1,
+  photo_watch_face_2: WatchFacePhoto2,
+  portraits_watch_face: WatchFacePortraits,
+  
 };
 
 /**

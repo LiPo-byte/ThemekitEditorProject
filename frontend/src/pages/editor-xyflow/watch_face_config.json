@@ -1,0 +1,24 @@
+[
+  {
+    "key": "Photo",
+    "label": "Phote",
+    "children": [{
+      "key": "Photo LayoutType 1",
+      "label": "Photo LayoutType 1",
+      "children": [{
+        "key": "Static Watch Face",
+        "label": "Static Watch Face"
+      }, {
+        "key": "Dynamic Watch Face",
+        "label": "Dynamic Watch Face"
+      }]
+    }, {
+      "key": "Photo LoayoutType 2",
+      "label": "Photo LoayoutType 2"
+    }]
+  },
+  {
+    "key": "Portraits Watch Face",
+    "label": "Portraits Watch Face"
+  }
+]

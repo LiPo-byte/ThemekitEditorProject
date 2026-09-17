@@ -15,6 +15,8 @@ import {
   LineOutlined,
   StopOutlined,
   FileOutlined,
+  VerticalAlignTopOutlined,
+  VerticalAlignBottomOutlined,
   // <LineOutlined />
   // <SyncOutlined />
 } from '@ant-design/icons';
@@ -1556,6 +1558,45 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('alignment') && (
+        <>
+          <Row style={{ marginBottom: '5px' }}>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                  <InputTitle label="Alignment" />
+                  <Segmented<string>
+                    options={[{
+                      value: 'top',
+                      icon: <VerticalAlignTopOutlined />
+                    }, {
+                      value: 'bottom',
+                      icon: <VerticalAlignBottomOutlined />
+                    }]}
+                    onChange={(nextValue) => {
+                      onChange?.('alignment', nextValue)
+                    }}
+                  />
+              </Flex>
+            </Col>
+          </Row>
+        </>
+      )}
+      {hasKey('hasDate') && (
+        <>
+          <Row style={{ marginBottom: '5px' }}>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                  <InputTitle label="HasDate" />
+                  <Switch
+                      size="small"
+                      checked={editProps.hasDate}
+                      onChange={(nextValue) => onChange?.('hasDate', nextValue)}
+                    />
+              </Flex>
+            </Col>
+          </Row>
+        </>
+      )}
       {hasKey('source') && (
         <>
           <ImageUpload
@@ -2058,6 +2099,28 @@ export const SelectedNodePropForm: React.FC<{
           <BaseSelectedNodePropForm editProps={editProps.style} onChange={(key: string, value: any) => {
             onChange && onChange(key, value, 'style');
           }} title="Style"/>
+        </>
+      )}
+      {/* contentSource backgroundSource maskSource */}
+      {hasKey('contentSource') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.contentSource} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'contentSource');
+          }} title="ContentSource"/>
+        </>
+      )}
+      {hasKey('backgroundSource') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.backgroundSource} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'backgroundSource');
+          }} title="BackgroundSource"/>
+        </>
+      )}
+      {hasKey('maskSource') && (
+        <>
+          <BaseSelectedNodePropForm editProps={editProps.maskSource} onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, 'maskSource');
+          }} title="MaskSource"/>
         </>
       )}
       {/* 锁屏组件的图片位，清单见 lockwidget/base-config 的 LOCK_IMAGE_FIELD_KEYS */}

@@ -10,14 +10,12 @@ import {
   useEditorLeftPanlContent,
   useEditorLeftPanlContentSetter,
   useEditorImportModalOpen,
-  useEditorAddIconPack,
   type LeftPanlContent,
 } from '../context';
 import { useEnterAnimation } from '../hooks/useEnterAnimation';
 import { SelectSvg, } from '@/icons'
-import { Button, Divider, Flex } from 'antd';
-import { CloseOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
-import { IconPackDefaultConfig } from '@/editor-core/defaultConfig'
+import { Button, Flex } from 'antd';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import ImportModal from './ImportModal';
 import AddThemeModal from './AddThemeModal';
 import AddLockPackModal from './AddLockPackModal';
@@ -81,7 +79,6 @@ const useStyles = createStyles(({ token, css }) => ({
 
 const EditorBottomToolBar: React.FC = () => {
   const { styles, theme } = useStyles();
-  const addIconPack = useEditorAddIconPack();
   const visible = useEditorBottomToolBarVisible();
   // const coreLoading = useEditorCoreLoading();
   const setLeftPanlOpen = useEditorLeftPanlOpenSetter();
@@ -95,9 +92,7 @@ const EditorBottomToolBar: React.FC = () => {
   const [addLockPackModalOpen, setAddLockPackModalOpen] = React.useState(false);
   const [addMoreElementModalOpen, setAddMoreElementModalOpen] =
     React.useState(false);
-  const onAddIconPack = () => {
-    addIconPack(IconPackDefaultConfig)
-  }
+
   const onToggleLeftPanl = (content: LeftPanlContent) => {
     if (leftPanlOpen && leftPanlContent === content) {
       setLeftPanlOpen(false);
@@ -138,7 +133,7 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='text' onClick={() => { onToggleLeftPanl('lockScreen'); }} >Lock Widget</Button>
                 <Button type='text' onClick={() => {}} >Control Center</Button>
                 {/* <Button type='text' onClick={() => {}} >Sticker</Button> */}
-                {/* <Button type='text' onClick={() => {}} >Watch Face</Button> */}
+                <Button type='text' onClick={() => { onToggleLeftPanl('watchFace') }} >Watch Face</Button>
                 {/* <Button type='text' onClick={() => {}} >Charging Animation</Button> */}
                 {/* <Button type='text' onClick={onAddIconPack} >Icon Pack</Button> */}
                 {/* <Button type='text' onClick={() => { onToggleLeftPanl('wallpaper'); }} >Wallpaper</Button> */}
