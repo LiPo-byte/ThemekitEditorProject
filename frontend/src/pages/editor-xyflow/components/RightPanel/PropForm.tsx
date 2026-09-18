@@ -1301,6 +1301,10 @@ export const BaseSelectedNodePropForm: React.FC<{
                             temp[index] = val;
                             onChange?.('appLinks', temp);
                           }}
+                          showSearch={{
+                            filterOption: (input, option) =>
+                              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+                          }}
                           options={[{ value: '', label: 'UnSelect' }, ...APP_LINK_OPTIONS]}
                         />
                         {appLinkSource && (

@@ -18,6 +18,18 @@ export type ExportBundleApi = {
   exportBundle: (options?: ExportBundleOptions) => Promise<void>;
 };
 
+/** 导出前 fitView 后等视口与 DOM 绘制完成，避免离屏节点截图为空 */
+export const waitForExportViewportReady = () =>
+  new Promise<void>((resolve) => {
+    const timer = window.setTimeout(resolve, 100);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.clearTimeout(timer);
+        resolve();
+      });
+    });
+  });
+
 const getNodeData = (node?: FlowNode | null) =>
   ((node?.data as Record<string, any> | undefined) ?? {}) as Record<string, any>;
 

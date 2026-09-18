@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
-import { useEditorNodes } from '../context';
+import { useCallback, useMemo } from 'react';
+import { useEditorFitView, useEditorNodes } from '../context';
 import {
   resolveExportCategory,
+  waitForExportViewportReady,
   type ExportBundleApi,
+  type ExportBundleOptions,
 } from './exportBundleShared';
 import { useWidgetExportBundle } from './useWidgetExportBundle';
 import { useLockWidgetExportBundle } from './useLockWidgetExportBundle';
@@ -29,6 +31,7 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
   category: string;
 } => {
   const nodes = useEditorNodes();
+  const fitView = useEditorFitView();
   const category = useMemo(
     () => resolveExportCategory(nodes, nodeId),
     [nodes, nodeId],
@@ -80,10 +83,19 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
     byCategory[DEFAULT_EXPORT_CATEGORY] ??
     widgetExport;
 
+  const exportBundle = useCallback(
+    async (options?: ExportBundleOptions) => {
+      fitView({ duration: 0 });
+      await waitForExportViewportReady();
+      await active.exportBundle(options);
+    },
+    [active.exportBundle, fitView],
+  );
+
   return {
     category,
     exporting: active.exporting,
-    exportBundle: active.exportBundle,
+    exportBundle,
   };
 };
 

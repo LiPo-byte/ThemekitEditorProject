@@ -194,7 +194,7 @@ export const APP_LINK_OPTIONS = [
     { value: 125, label: 'Life360' },
     { value: 116, label: 'Litely' },
     { value: 117, label: 'Medium' },
-    { value: 118, label: 'Musi' },
+    { value: 118, label: 'Music' },
     { value: 119, label: 'MyFitnessPal' },
     { value: 120, label: 'nPlayer' },
     { value: 121, label: 'OfficeSuite' },
