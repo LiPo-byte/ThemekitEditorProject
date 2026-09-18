@@ -315,6 +315,44 @@ export const WIDGET_EXPORT_FILE_RULES: {
     },
   },
   ios: {
+    1: {
+      small: {
+        static: {
+          timejpg: { width: 310, height: 310 },
+          timegif: { width: 310, height: 310 },
+          preview: { width: 310, height: 310 },
+        },
+        dynamic: {
+          timejpg: { width: 310, height: 310 },
+          timegif: { width: 269, height: 269 },
+          preview: { width: 269, height: 269 },
+        },
+      },
+      medium: {
+        static: {
+          timejpg: { width: 658, height: 310 },
+          timegif: { width: 658, height: 310 },
+          preview: { width: 658, height: 310 },
+        },
+        dynamic: {
+          timejpg: { width: 658, height: 310 },
+          timegif: { width: 571, height: 269 },
+          preview: { width: 571, height: 269 },
+        },
+      },
+      large: {
+        static: {
+          timejpg: { width: 658, height: 690 },
+          timegif: { width: 658, height: 690 },
+          preview: { width: 658, height: 690 },
+        },
+        dynamic: {
+          timejpg: { width: 658, height: 690 },
+          timegif: { width: 571, height: 599 },
+          preview: { width: 571, height: 599 },
+        },
+      },
+    },
     4: {
       small: {
         static: {

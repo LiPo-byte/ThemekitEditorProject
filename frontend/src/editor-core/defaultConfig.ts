@@ -2509,6 +2509,7 @@ export const WidgetDefaultConfig = {
                 "name":"Battery_IOS_Small",
                  "textAlignment":1,
                  radius: 28,
+                 "batteryPlayOrder": 'asc',
                  "battery": {
                     "font":"Cochin-Bold",
                     "textSize":20,
@@ -2544,6 +2545,7 @@ export const WidgetDefaultConfig = {
                  "layoutType":0,
                 "name":"Battery_IOS_Medium",
                  "textAlignment":3,
+                 "batteryPlayOrder": 'asc',
                  radius: 28,
                  "battery": {
                     "font":"Cochin-Bold",
@@ -2581,6 +2583,7 @@ export const WidgetDefaultConfig = {
                 "name":"Battery_IOS_Large",
                  "textAlignment":3,
                  radius: 28,
+                 "batteryPlayOrder": 'asc',
                  "battery": {
                     "font":"Cochin-Bold",
                     "textSize":20,
@@ -2625,6 +2628,7 @@ export const WidgetDefaultConfig = {
                 "name":"Battery_Android_Small",
                  "textAlignment":1,
                  radius: 28,
+                 "batteryPlayOrder": 'asc',
                  "battery": {
                     "font":"Cochin-Bold",
                     "textSize":20,
@@ -2661,6 +2665,7 @@ export const WidgetDefaultConfig = {
                 "name":"Battery_Android_Medium",
                  "textAlignment":3,
                  radius: 28,
+                 "batteryPlayOrder": 'asc',
                  "battery": {
                     "font":"Cochin-Bold",
                     "textSize":40,
@@ -2697,6 +2702,7 @@ export const WidgetDefaultConfig = {
                 "name":"Battery_Android_Large",
                  "textAlignment":3,
                  radius: 28,
+                 "batteryPlayOrder": 'asc',
                  "battery": {
                     "font":"Cochin-Bold",
                     "textSize":20,

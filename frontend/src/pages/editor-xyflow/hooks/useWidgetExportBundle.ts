@@ -87,6 +87,7 @@ const sanitizeWidgetsSpec = (value: unknown): unknown => {
     'music',
     'show',
     'charge_source',
+    'batteryPlayOrder',
   ];
   const showKey = ['weekday']
   if (Array.isArray(value)) {

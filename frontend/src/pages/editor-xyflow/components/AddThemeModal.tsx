@@ -147,7 +147,7 @@ const useStyles = createStyles(({ token, css }) => ({
     position: absolute;
     // right: -4%;
     bottom: 52px;
-    transform: translateX(-50%);
+    transform: translateX(50%);
     width: 100%;
     height: 500px;
     border-radius: 12px;
@@ -182,7 +182,7 @@ const useStyles = createStyles(({ token, css }) => ({
     color: ${token.colorText};
   `,
   panelClosed: css`
-    transform: translateX(-50%) translateY(300px);
+    transform: translateX(50%) translateY(300px);
     opacity: 0;
     pointer-events: none;
   `,

@@ -24,8 +24,8 @@ const useStyles = createStyles(({ token, css }) => ({
   toolbar: css`
     position: absolute;
     bottom: 12px;
-    left: 50%;
-    // right: 0;
+    // left: 50%;
+    right: 50%;
     margin: auto;
     // transform: translateY(0px) translateX(-50%);
     // width: 500px;
@@ -36,11 +36,11 @@ const useStyles = createStyles(({ token, css }) => ({
     @keyframes toolbar-slide-up {
       from {
         // transform: translateY(50px);
-        transform: translateY(50px) translateX(-50%);
+        transform: translateY(50px) translateX(50%);
         opacity: 0;
       }
       to {
-        transform: translateY(0) translateX(-50%);
+        transform: translateY(0) translateX(50%);
         opacity: 1;
       }
     }
@@ -48,7 +48,7 @@ const useStyles = createStyles(({ token, css }) => ({
   toolbarbody: css`
     overflow: hidden;
     border-radius: 12px;
-    transform: translateY(0px) translateX(-50%);
+    transform: translateY(0px) translateX(50%);
     border: 1px solid var(--editor-panel-border, transparent);
     box-shadow: ${token.boxShadowSecondary};
     background: ${token.colorBgElevated}f2;

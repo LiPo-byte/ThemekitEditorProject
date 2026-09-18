@@ -44,7 +44,7 @@ const useStyles = createStyles(({ token, css }) => ({
   panel: css`
     position: absolute;
     bottom: 52px;
-    transform: translateX(-50%);
+    transform: translateX(50%);
     width: 100%;
     height: 500px;
     border-radius: 12px;
@@ -61,7 +61,7 @@ const useStyles = createStyles(({ token, css }) => ({
     overflow: hidden;
   `,
   panelClosed: css`
-    transform: translateX(-50%) translateY(500px);
+    transform: translateX(50%) translateY(500px);
     opacity: 0;
     pointer-events: none;
   `,

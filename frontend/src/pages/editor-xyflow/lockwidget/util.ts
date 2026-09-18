@@ -156,12 +156,12 @@ export const lockWidgetConfig2Nodes: any = (config: any, element_key?: any) => {
       label: 'ios',
       themekitType,
     },
-    packable: true,
     parentId: rootGroupId,
     extent: 'parent',
     draggable: false,
     connectable: false,
     focusable: false,
+    selectable: false,
     zIndex: 10,
     style: {
       width: groupWidth,
@@ -182,6 +182,7 @@ export const lockWidgetConfig2Nodes: any = (config: any, element_key?: any) => {
     draggable: false,
     connectable: false,
     focusable: false,
+    packable: true,
     zIndex: 1,
     style: {
       width: groupWidth + GAP * 2,

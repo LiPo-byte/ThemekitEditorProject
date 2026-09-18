@@ -1176,6 +1176,31 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {hasKey('batteryPlayOrder') && (
+        <>
+          <Row style={{ marginBottom: '5px' }}>
+            <Col span={24}>
+              <Flex align='center' justify='space-between'>
+                  <InputTitle label="BatteryPlayOrder" />
+                  <Segmented<'asc' | 'desc'>
+                    options={['asc', 'desc']}
+                    value={
+                      editProps.batteryPlayOrder === MIXED_VALUE
+                        ? undefined
+                        : editProps.batteryPlayOrder === 'desc'
+                          ? 'desc'
+                          : 'asc'
+                    }
+                    onChange={(nextValue) => {
+                      onChange?.('batteryPlayOrder', nextValue);
+                    }}
+                  />
+              </Flex>
+            </Col>
+          </Row>
+
+        </>
+      )}
       {hasKey('topTextAlignment') && (
         <>
           <TextAlignment

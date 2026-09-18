@@ -40,7 +40,7 @@ const useStyles = createStyles(({ token, css }) => ({
     position: absolute;
     // right: 18%;
     bottom: 52px;
-    transform: translateX(-50%);
+    transform: translateX(50%);
     width: 100%;
     border-radius: 12px;
     border: 1px solid var(--editor-panel-border, transparent);
@@ -60,7 +60,7 @@ const useStyles = createStyles(({ token, css }) => ({
     color: ${token.colorText};
   `,
   panelClosed: css`
-    transform: translateX(-50%) translateY(30px);
+    transform: translateX(50%) translateY(30px);
     opacity: 0;
     pointer-events: none;
   `,
@@ -794,6 +794,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
       }
 
       if (type === 5 && item.layoutType === 0) {
+        item.batteryPlayOrder = item.batteryPlayOrder === 'desc' ? 'desc' : 'asc';
         const batterSource = [
           'battery_20',
           'battery_40',

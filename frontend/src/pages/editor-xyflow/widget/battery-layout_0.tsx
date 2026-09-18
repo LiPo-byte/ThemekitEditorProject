@@ -20,7 +20,8 @@ export default function BatteryLayout_0(props: any) {
   if (!data) return null;
 
   const batterySources = useMemo(() => {
-    const keys = ['battery_20', 'battery_40', 'battery_60', 'battery_80', 'battery_100'];
+    let keys = ['battery_20', 'battery_40', 'battery_60', 'battery_80', 'battery_100'];
+    keys = data.batteryPlayOrder === 'asc' ? keys : keys.reverse();
     return keys
       .map((key) => ({
         key,
