@@ -5,6 +5,7 @@ import {
   useEditorAddLockpack,
   useEditorAddLockWidget,
   useEditorAddChargingAnimation,
+  useEditorAddControlCenter,
   useEditorAddSticker,
   useEditorAddTheme,
   useEditorAddWidget,
@@ -34,6 +35,11 @@ import {
   WallpaperDefaultConfig,
 } from '@/editor-core/defaultConfig';
 import { LOCKPACK_SURFACE_KEYS } from '../lockpack/util';
+import {
+  CONTROL_CENTER_FILES,
+  CONTROL_CENTER_SPEC_FILE,
+} from '../control_center/asset-rules';
+import { uploadControlCenterFiles } from './AddMoreElementmodal/AddControlCenterModal';
 
 const useStyles = createStyles(({ token, css }) => ({
   panel: css`
@@ -103,7 +109,8 @@ type ImportKind =
  | 'lockWidget'
  | 'lockPack'
  | 'sticker'
- | 'charging_animation';
+ | 'charging_animation'
+ | 'control_center';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -358,6 +365,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const addWallpaper = useEditorAddWallpaper();
   const addSticker = useEditorAddSticker();
   const addChargingAnimation = useEditorAddChargingAnimation();
+  const addControlCenter = useEditorAddControlCenter();
   const addTheme = useEditorAddTheme();
   const addLockpack = useEditorAddLockpack();
   const setGlobalLoading = useEditorGlobalLoadingSetter();
@@ -1460,6 +1468,79 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   };
 
   /**
+   * Control Center：包内 73 个素材名是固定清单（control_center/asset-rules），
+   * 按名字精确命中，缺的格子留空让用户后补，不整单拦下来。
+   * 上传和回填 config 复用 AddControlCenterModal 那套（pag 走 upload-file）。
+   */
+  const importControlCenterFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{
+    rootId: string;
+    config: Record<string, any>;
+    uploadedCount: number;
+    failed: string[];
+  } | null> => {
+    const silent = Boolean(options?.silent);
+    if (!projectId) {
+      throw new Error('项目未初始化，无法上传资源');
+    }
+
+    // 先解析 spec，json 坏了就别白传 70 多个素材
+    const specEntry = findZipEntry(zip, CONTROL_CENTER_SPEC_FILE);
+    let spec: Record<string, any> | null = null;
+    if (specEntry) {
+      try {
+        const parsed = JSON.parse(await specEntry.async('string'));
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          spec = parsed;
+        }
+      } catch (error) {
+        console.warn(
+          `[ImportModal] ${CONTROL_CENTER_SPEC_FILE} 解析失败:`,
+          error,
+        );
+        if (!silent) {
+          message.error(`${CONTROL_CENTER_SPEC_FILE} 不是合法的 JSON`);
+        }
+        return null;
+      }
+    } else if (!silent) {
+      message.warning(`压缩包内缺少 ${CONTROL_CENTER_SPEC_FILE}，配色用默认值`);
+    }
+
+    // MIME 由 uploadControlCenterFiles 按扩展名补，这里不用管
+    const files: File[] = [];
+    const targets: Record<string, string> = {};
+    for (const rule of CONTROL_CENTER_FILES) {
+      const entry = findZipEntry(zip, rule.name);
+      if (!entry) continue;
+      files.push(new File([await entry.async('blob')], rule.name));
+      targets[rule.name] = rule.name;
+    }
+    if (!files.length) {
+      if (!silent) message.error('压缩包内没有 Control Center 素材');
+      return null;
+    }
+
+    const result = await uploadControlCenterFiles(projectId, {
+      files,
+      targets,
+    });
+    // yaml 的 allow_extra_fields 为 true，包里多写的字段一并留着
+    if (spec) result.config.spec = { ...result.config.spec, ...spec };
+
+    const rootId = addControlCenter(result.config);
+    if (!rootId) return null;
+    return {
+      rootId,
+      config: result.config,
+      uploadedCount: result.uploadedCount,
+      failed: result.failed,
+    };
+  };
+
+  /**
    * Diy Live Wallpaper：读导出包里的 lottie.json + images/，重新打成 .lottie 再上传。
    * 后端 upload-lottie 只收单个文件，images/ 没处安放；内联成 base64 又会撑大体积，
    * 打回 zip 反而有压缩。包里的 wallpapers_spec.json 不读，导出时从 lottie 现算。
@@ -1833,6 +1914,44 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     });
   };
 
+  const readControlCenterFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importControlCenterFromZip(zip);
+        if (result) {
+          onClose();
+          if (result.failed.length) {
+            // 失败的没落进 config，画布上对应格子是空的，重新传那几个覆盖即可
+            message.warning(
+              `Control Center 导入完成，${result.failed.length} 个文件上传失败：${result.failed.join('、')}`,
+            );
+          } else {
+            message.success(
+              `Control Center 导入成功（上传 ${result.uploadedCount} 个）`,
+            );
+          }
+        }
+      } catch (error) {
+        console.error('[ImportModal] Control Center 导入失败:', error);
+        message.error('Control Center 导入失败');
+      }
+      return false;
+    });
+  };
+
   const readDiyLiveWallpaperFromZip = async (file: File) => {
     const isZipFile =
       file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
@@ -2181,6 +2300,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'charging_animation') {
       return readChargingAnimationFromZip(file);
     }
+    if (importKind === 'control_center') {
+      return readControlCenterFromZip(file);
+    }
     return readWidgetsSpecFromZip(file);
   };
 
@@ -2247,6 +2369,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
             { label: 'LockPack', value: 'lockPack' },
             { label: 'Sticker', value: 'sticker' },
             { label: 'Charging Animation', value: 'charging_animation' },
+            { label: 'Control Center', value: 'control_center' },
           ]}
           style={{ width: '100%' }}
         />
