@@ -8,6 +8,7 @@ import {
   useEditorAddControlCenter,
   useEditorAddSticker,
   useEditorAddTheme,
+  useEditorAddWatchFace,
   useEditorAddWidget,
   useEditorAddWallpaper,
   useEditorGlobalLoadingSetter,
@@ -33,7 +34,12 @@ import {
   ChargingAnimationDefaultConfig,
   StickerDefaultConfig,
   WallpaperDefaultConfig,
+  WatchFaceDefaultConfig,
 } from '@/editor-core/defaultConfig';
+import {
+  resolveWatchFaceExportVariant,
+  type WatchFaceExportVariant,
+} from '../watchface/export-rules';
 import { LOCKPACK_SURFACE_KEYS } from '../lockpack/util';
 import {
   CONTROL_CENTER_FILES,
@@ -110,7 +116,8 @@ type ImportKind =
  | 'lockPack'
  | 'sticker'
  | 'charging_animation'
- | 'control_center';
+ | 'control_center'
+ | 'watchface';
 /** null = 无后缀（单套）；number = 导出时的 _1/_2 … */
 type ExportIndex = number | null;
 
@@ -203,6 +210,53 @@ const CHARGING_ANIMATION_FILES = {
   wallpaper: 'charging_wallpaper.mp4',
   spec: 'charging_animation_spec.json',
 } as const;
+
+/**
+ * watch face 导出包内的固定文件名，与校验规则一致：
+ * widget/rule_ymal/resource-validation/watch_face_photo_layout_1_static.yaml
+ * widget/rule_ymal/resource-validation/watch_face_photo_layout_1_gif.yaml
+ * widget/rule_ymal/resource-validation/watch_face_photo_layout_2.yaml
+ * widget/rule_ymal/resource-validation/watch_face_Portraits.yaml
+ *
+ * preview.jpg / preview.png 是导出时的 DOM 截图，画布不用它，导入时跳过；
+ * 只有动态包的 preview.pag 是真资源，要落到 pagsource 上。
+ */
+const WATCH_FACE_FILES = {
+  config: 'config.json',
+  watchImage: 'watch.jpg',
+  watchMov: 'watch.mov',
+  previewPag: 'preview.pag',
+  background: 'background.png',
+  content: 'content.png',
+  mask: 'mask.png',
+} as const;
+
+const WATCH_FACE_TEMPLATE_BY_VARIANT: Record<
+  WatchFaceExportVariant,
+  keyof typeof WatchFaceDefaultConfig
+> = {
+  photo_layout_1_static: 'Static Watch Face',
+  photo_layout_1_dynamic: 'Dynamic Watch Face',
+  photo_layout_2: 'Photo LoayoutType 2',
+  portraits: 'Portraits Watch Face',
+};
+
+/**
+ * config.json 的 type 区分不出静态和动态：导出时 Photos17_dynamic 也写成 Photos17
+ * （与 gif yaml 一致），只能靠包里有没有 watch.mov / preview.pag 反推。
+ */
+const resolveWatchFaceImportVariant = (
+  zip: JSZip,
+  type: string,
+): WatchFaceExportVariant | null => {
+  const variant = resolveWatchFaceExportVariant(type);
+  if (variant !== 'photo_layout_1_static') return variant;
+  const isDynamic = [
+    WATCH_FACE_FILES.watchMov,
+    WATCH_FACE_FILES.previewPag,
+  ].some((filename) => findZipEntry(zip, filename));
+  return isDynamic ? 'photo_layout_1_dynamic' : 'photo_layout_1_static';
+};
 
 const hasIconPackAssets = (zip: JSZip): boolean =>
   listZipBasenames(zip).some((name) => /^icon_.+\.(?:jpg|jpeg|png)$/i.test(name));
@@ -366,6 +420,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   const addSticker = useEditorAddSticker();
   const addChargingAnimation = useEditorAddChargingAnimation();
   const addControlCenter = useEditorAddControlCenter();
+  const addWatchFace = useEditorAddWatchFace();
   const addTheme = useEditorAddTheme();
   const addLockpack = useEditorAddLockpack();
   const setGlobalLoading = useEditorGlobalLoadingSetter();
@@ -1541,6 +1596,103 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
   };
 
   /**
+   * Watch Face：config.json 定 variant，素材按 variant 各传各的。
+   * 包里没有 width / height / radius / crop_props（导出时按 EDITOR_ONLY_KEYS 剥掉了），
+   * 这些只能落模板默认值，原来的裁剪位置还原不出来。
+   */
+  const importWatchFaceFromZip = async (
+    zip: JSZip,
+    options?: { silent?: boolean },
+  ): Promise<{
+    rootId: string;
+    config: Record<string, any>;
+    variant: WatchFaceExportVariant;
+  } | null> => {
+    const silent = Boolean(options?.silent);
+    const configEntry = findZipEntry(zip, WATCH_FACE_FILES.config);
+    if (!configEntry) {
+      if (!silent) message.error(`压缩包内未找到 ${WATCH_FACE_FILES.config}`);
+      return null;
+    }
+
+    let spec: Record<string, any>;
+    try {
+      spec = JSON.parse(await configEntry.async('string'));
+    } catch (error) {
+      console.warn('[ImportModal] watch face config.json 解析失败:', error);
+      if (!silent) message.error('config.json 不是合法的 JSON');
+      return null;
+    }
+    if (!spec || typeof spec !== 'object' || Array.isArray(spec)) {
+      if (!silent) message.error('config.json 结构不正确');
+      return null;
+    }
+
+    const variant = resolveWatchFaceImportVariant(zip, String(spec.type ?? ''));
+    if (!variant) {
+      if (!silent) {
+        message.error(`config.json 里的 type 不支持：${spec.type ?? '空'}`);
+      }
+      return null;
+    }
+
+    const template = WatchFaceDefaultConfig[
+      WATCH_FACE_TEMPLATE_BY_VARIANT[variant]
+    ] as Record<string, any>;
+    const config = structuredClone(template) as Record<string, any>;
+    Object.assign(config, spec);
+    // type 只认模板里的：动态包 config.json 写的是 Photos17，画布要 Photos17_dynamic
+    config.type = template.type;
+
+    if (variant === 'photo_layout_1_dynamic') {
+      // mov / pag 都走 upload-file，upload-image 的白名单不收
+      const mov = await uploadVideoFromZip(WATCH_FACE_FILES.watchMov, zip);
+      const pag = await uploadVideoFromZip(WATCH_FACE_FILES.previewPag, zip);
+      if (!mov || !pag) {
+        if (!silent) {
+          message.error(
+            `动态表盘需要 ${WATCH_FACE_FILES.watchMov} 和 ${WATCH_FACE_FILES.previewPag} 两个文件`,
+          );
+        }
+        return null;
+      }
+      config.movsource = mov.url;
+      config.pagsource = pag.url;
+    } else if (variant === 'portraits') {
+      const layers = [
+        { filename: WATCH_FACE_FILES.background, field: 'backgroundSource' },
+        { filename: WATCH_FACE_FILES.content, field: 'contentSource' },
+        { filename: WATCH_FACE_FILES.mask, field: 'maskSource' },
+      ];
+      for (const layer of layers) {
+        const uploaded = await uploadMediaFromZip(layer.filename, zip);
+        if (!uploaded) {
+          if (!silent) message.error(`压缩包内未找到 ${layer.filename}`);
+          return null;
+        }
+        // 三层素材在 config 里是 { source } 嵌套对象，不是裸字符串
+        config[layer.field] = {
+          ...(config[layer.field] ?? {}),
+          source: uploaded.url,
+        };
+      }
+    } else {
+      const uploaded = await uploadMediaFromZip(WATCH_FACE_FILES.watchImage, zip);
+      if (!uploaded) {
+        if (!silent) {
+          message.error(`压缩包内未找到 ${WATCH_FACE_FILES.watchImage}`);
+        }
+        return null;
+      }
+      config.source = uploaded.url;
+    }
+
+    const rootId = addWatchFace(config);
+    if (!rootId) return null;
+    return { rootId, config, variant };
+  };
+
+  /**
    * Diy Live Wallpaper：读导出包里的 lottie.json + images/，重新打成 .lottie 再上传。
    * 后端 upload-lottie 只收单个文件，images/ 没处安放；内联成 base64 又会撑大体积，
    * 打回 zip 反而有压缩。包里的 wallpapers_spec.json 不读，导出时从 lottie 现算。
@@ -1952,6 +2104,35 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     });
   };
 
+  const readWatchFaceFromZip = async (file: File) => {
+    const isZipFile =
+      file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+    if (!isZipFile) {
+      message.error('仅支持上传 zip 压缩包');
+      return false;
+    }
+
+    return withImportLoading(async () => {
+      try {
+        if (!projectId) {
+          message.error('项目未初始化，无法上传资源');
+          return false;
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const result = await importWatchFaceFromZip(zip);
+        if (result) {
+          onClose();
+          message.success(`Watch Face 导入成功（${result.variant}）`);
+        }
+      } catch (error) {
+        console.error('[ImportModal] Watch Face 导入失败:', error);
+        message.error('Watch Face 导入失败');
+      }
+      return false;
+    });
+  };
+
   const readDiyLiveWallpaperFromZip = async (file: File) => {
     const isZipFile =
       file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
@@ -2303,6 +2484,9 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
     if (importKind === 'control_center') {
       return readControlCenterFromZip(file);
     }
+    if (importKind === 'watchface') {
+      return readWatchFaceFromZip(file);
+    }
     return readWidgetsSpecFromZip(file);
   };
 
@@ -2370,6 +2554,7 @@ const ImportModal: React.FC<Props> = ({ open, onClose }) => {
             { label: 'Sticker', value: 'sticker' },
             { label: 'Charging Animation', value: 'charging_animation' },
             { label: 'Control Center', value: 'control_center' },
+            { label: 'Watch Face', value: 'watchface' },
           ]}
           style={{ width: '100%' }}
         />
