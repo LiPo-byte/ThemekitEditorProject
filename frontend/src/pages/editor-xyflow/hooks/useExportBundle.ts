@@ -15,6 +15,7 @@ import { useLockpackExportBundle } from './useLockpackExportBundle';
 import { useStickerExportBundle } from './useStickerExportBundle';
 import { useChargingAnimationExportBundle } from './useChargingAnimationExportBundle';
 import { useWatchFaceExportBundle } from './useWatchFaceExportBundle';
+import { useControlCenterExportBundle } from './useControlCenterExportBundle';
 
 const DEFAULT_EXPORT_CATEGORY = 'widget';
 
@@ -65,6 +66,9 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
   const watchFaceExport = useWatchFaceExportBundle(
     category === 'watchface' ? nodeId : undefined,
   );
+  const controlCenterExport = useControlCenterExportBundle(
+    category === 'control_center' ? nodeId : undefined,
+  );
 
   const byCategory: Record<string, ExportBundleApi> = {
     widget: widgetExport,
@@ -76,6 +80,7 @@ export const useExportBundle = (nodeId?: string): ExportBundleApi & {
     sticker: stickerExport,
     charging_animation: chargingAnimationExport,
     watchface: watchFaceExport,
+    control_center: controlCenterExport,
   };
 
   const active =
@@ -110,4 +115,5 @@ export const listRegisteredExportCategories = () => [
   'sticker',
   'charging_animation',
   'watchface',
+  'control_center',
 ];
