@@ -1,19 +1,21 @@
 import { PictureOutlined } from '@ant-design/icons';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { ControlCenterFileRole } from './asset-rules';
+import {
+  type ControlCenterFileRole,
+  getControlCenterRoleAssetKey,
+} from './asset-rules';
 import { loadPagRuntime, type PagFile, type PagView } from './pagRuntime';
 
-type SlotItem = {
+type SlotAsset = {
+  source?: string;
+  pagsource?: string;
+  ext?: string;
+};
+
+type SlotFile = {
   key: string;
-  role?: ControlCenterFileRole;
-  asset?: {
-    source?: string;
-    pagsource?: string;
-    ext?: string;
-  };
-  width?: number;
-  height?: number;
+  asset?: SlotAsset;
 };
 
 /** pag 播完没等到 onAnimationEnd 时的兜底时长 */
@@ -143,7 +145,7 @@ const PagOnce: React.FC<{
  */
 export default function ControlCenterToggle(props: any) {
   const data = props.data ?? {};
-  const items = (data.items ?? []) as SlotItem[];
+  const slotKey = String(data.key ?? '');
   const [on, setOn] = useState(false);
   /** 正在播的过渡动画，null 表示当前显示静态图 */
   const [playing, setPlaying] = useState<{
@@ -158,14 +160,17 @@ export default function ControlCenterToggle(props: any) {
   const labelHeight =
     Number(data.fileNameHeight) > 0 ? Number(data.fileNameHeight) : 40;
 
-  const findByRole = (role: ControlCenterFileRole) =>
-    items.find((item) => item.role === role);
+  const pick = (role: ControlCenterFileRole): SlotFile | undefined => {
+    const key = getControlCenterRoleAssetKey(slotKey, role);
+    if (!key) return undefined;
+    return { key, asset: data[key] as SlotAsset | undefined };
+  };
 
-  const base = findByRole('base') ?? items[0];
-  const select = findByRole('select');
+  const base = pick('base');
+  const select = pick('select');
   // pag 的 url 在 pagsource 而不是 source 上
-  const openSource = findByRole('open')?.asset?.pagsource ?? '';
-  const closeSource = findByRole('close')?.asset?.pagsource ?? '';
+  const openSource = pick('open')?.asset?.pagsource ?? '';
+  const closeSource = pick('close')?.asset?.pagsource ?? '';
   const hasAnimation = Boolean(openSource || closeSource);
 
   const current = on && select ? select : base;
@@ -174,7 +179,7 @@ export default function ControlCenterToggle(props: any) {
   const switchable = Boolean(select?.asset?.source);
 
   /** 当前画的是哪一个文件：播动画时是 open/close 的 pag，否则是静态的 base/select */
-  const activeItem = playing ? findByRole(playing.role) : current;
+  const activeItem = playing ? pick(playing.role) : current;
   // 名字取当前文件自己的 asset key（带 _select / _open 后缀的那个），
   // 不然切了图但底下还写着 base 那个名字，对不出现在画的是哪一个文件
   const activeName = activeItem?.key ?? data.name ?? '';

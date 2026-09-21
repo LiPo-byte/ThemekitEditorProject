@@ -1,15 +1,21 @@
 import { PictureOutlined } from '@ant-design/icons';
 import type { CSSProperties } from 'react';
-import type { ControlCenterFileRole } from './asset-rules';
+import {
+  type ControlCenterFileRole,
+  getControlCenterRoleAssetKey,
+} from './asset-rules';
 
-type SlotItem = {
+type SlotAsset = {
+  source?: string;
+  pagsource?: string;
+  ext?: string;
+  width?: number;
+  height?: number;
+};
+
+type SlotFile = {
   key: string;
-  role?: ControlCenterFileRole;
-  asset?: {
-    source?: string;
-    pagsource?: string;
-    ext?: string;
-  };
+  asset?: SlotAsset;
   width?: number;
   height?: number;
 };
@@ -23,7 +29,7 @@ type SlotItem = {
  */
 export default function ControlCenterSource(props: any) {
   const data = props.data ?? {};
-  const items = (data.items ?? []) as SlotItem[];
+  const slotKey = String(data.key ?? '');
 
   const mediaWidth =
     Number(data.mediaWidth) > 0 ? Number(data.mediaWidth) : 100;
@@ -32,11 +38,26 @@ export default function ControlCenterSource(props: any) {
   const labelHeight =
     Number(data.fileNameHeight) > 0 ? Number(data.fileNameHeight) : 40;
 
+  const pick = (role: ControlCenterFileRole): SlotFile | undefined => {
+    const key = getControlCenterRoleAssetKey(slotKey, role);
+    if (!key) return undefined;
+    const asset = data[key] as SlotAsset | undefined;
+    return {
+      key,
+      asset,
+      width: Number(asset?.width) || mediaWidth,
+      height: Number(asset?.height) || mediaHeight,
+    };
+  };
+
   const isSlider = data.kind === 'slider';
-  const hasAnySource = items.some((item) => item.asset?.source);
+  const primary = pick('preview') ?? pick('base') ?? pick('track');
+  const hasAnySource = ['preview', 'base', 'track', 'fill', 'thumb'].some(
+    (role) => pick(role as ControlCenterFileRole)?.asset?.source,
+  );
 
   /** 按素材自己的尺寸在 media 区里居中，滑条的三层才能对齐叠起来 */
-  const renderLayer = (item: SlotItem | undefined, extra?: CSSProperties) => {
+  const renderLayer = (item: SlotFile | undefined, extra?: CSSProperties) => {
     const source = item?.asset?.source;
     if (!source) return null;
     const width = item?.width ?? mediaWidth;
@@ -61,9 +82,9 @@ export default function ControlCenterSource(props: any) {
 
   /** 滑条三层一起画：底图 + 填一半的填充层 + 圆点，才看得出是一条进度条 */
   const renderSlider = () => {
-    const track = items.find((item) => item.role === 'track');
-    const fill = items.find((item) => item.role === 'fill');
-    const thumb = items.find((item) => item.role === 'thumb');
+    const track = pick('track');
+    const fill = pick('fill');
+    const thumb = pick('thumb');
     // 竖条（音量、亮度）从下往上填，横条（播放、音量进度）从左往右
     const vertical = (track?.height ?? 0) > (track?.width ?? 0);
     return (
@@ -98,7 +119,7 @@ export default function ControlCenterSource(props: any) {
       );
     }
     if (isSlider) return renderSlider();
-    return renderLayer(items[0]);
+    return renderLayer(primary);
   };
 
   return (
@@ -143,7 +164,7 @@ export default function ControlCenterSource(props: any) {
           textOverflow: 'ellipsis',
         }}
       >
-        {data.label ?? data.name}
+        {primary?.key ?? data.key ?? data.name}
       </div>
     </div>
   );

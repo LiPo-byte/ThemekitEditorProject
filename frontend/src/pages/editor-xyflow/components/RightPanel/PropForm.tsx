@@ -50,6 +50,7 @@ import RefElements from './RefElements';
 
 import { createStyles } from 'antd-style';
 import React, { useEffect, useRef, useState } from 'react';
+import { CONTROL_CENTER_FILES_PROPFORM, CONTROL_CENTER_SPEC_FIELDS } from '../../control_center/asset-rules';
 import { LOCK_IMAGE_FIELD_KEYS } from '../../lockwidget/base-config';
 import { APP_LINK_OPTIONS, FESTIVAL_NAME_OPTIONS } from '../../widget/base-config';
 import {
@@ -722,7 +723,8 @@ export const LottieUpload: React.FC<{
 export const AlphaSlider:React.FC<{
   value?: any;
   onChange?: (value: any) => void;
-}> = ({ value, onChange }) => {
+  title?: string;
+}> = ({ value, onChange, title }) => {
   const [alphaValue, setAlphaValue] = useState(0)
   useEffect(() => {
     setAlphaValue(value === MIXED_VALUE ? 0 : value * 100)
@@ -731,7 +733,7 @@ export const AlphaSlider:React.FC<{
     <Row>
       <Col span={24}>
         <Flex align='center' justify='space-between'>
-          <InputTitle label="Alpha" />
+          <InputTitle label={title || 'Alpha'} />
           <Slider
             min={1}
             max={100}
@@ -1681,6 +1683,41 @@ export const BaseSelectedNodePropForm: React.FC<{
           />
         </>
       )}
+      {CONTROL_CENTER_SPEC_FIELDS.filter((field) => hasKey(field.key)).map(
+        (field) => {
+          const label =
+            field.key.charAt(0).toUpperCase() + field.key.slice(1);
+          if (field.kind === 'color') {
+            return (
+              <FontColorInput
+                key={field.key}
+                title={label}
+                value={editProps[field.key]}
+                onChange={(nextValue) => onChange?.(field.key, nextValue)}
+              />
+            );
+          }
+          if (field.kind === 'alpha') {
+            return (
+              <AlphaSlider
+                key={field.key}
+                title={label}
+                value={editProps[field.key]}
+                onChange={(nextValue) => onChange?.(field.key, nextValue)}
+              />
+            );
+          }
+          return (
+            <PropInput
+              key={field.key}
+              LabelName={label}
+              type="number"
+              value={editProps[field.key]}
+              onChange={(nextValue) => onChange?.(field.key, nextValue ?? 0)}
+            />
+          );
+        },
+      )}
       </Space>
     </>
   );
@@ -2130,6 +2167,15 @@ export const SelectedNodePropForm: React.FC<{
           }} title="Style"/>
         </>
       )}
+      {hasKey('spec') && (
+        <BaseSelectedNodePropForm
+          editProps={editProps.spec}
+          onChange={(key: string, value: any) => {
+            onChange?.(key, value, 'spec');
+          }}
+          title="Spec"
+        />
+      )}
       {/* contentSource backgroundSource maskSource */}
       {hasKey('contentSource') && (
         <>
@@ -2154,6 +2200,16 @@ export const SelectedNodePropForm: React.FC<{
       )}
       {/* 锁屏组件的图片位，清单见 lockwidget/base-config 的 LOCK_IMAGE_FIELD_KEYS */}
       {LOCK_IMAGE_FIELD_KEYS.filter((key) => hasKey(key)).map((imageKey) => (
+        <BaseSelectedNodePropForm
+          key={imageKey}
+          editProps={editProps[imageKey]}
+          onChange={(key: string, value: any) => {
+            onChange && onChange(key, value, imageKey);
+          }}
+          title={formatImageFieldTitle(imageKey)}
+        />
+      ))}
+      {CONTROL_CENTER_FILES_PROPFORM.filter((key) => hasKey(key)).map((imageKey) => (
         <BaseSelectedNodePropForm
           key={imageKey}
           editProps={editProps[imageKey]}

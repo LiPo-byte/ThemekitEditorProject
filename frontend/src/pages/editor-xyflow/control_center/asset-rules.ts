@@ -171,6 +171,11 @@ export const getControlCenterFileRule = (
 export const toControlCenterAssetKey = (fileName: string) =>
   fileName.replace(/\.[^.]+$/, '');
 
+/** PropForm 里用来认「这是平铺在格子 data 上的素材」的 key，和 config.assets 同一套 */
+export const CONTROL_CENTER_FILES_PROPFORM = CONTROL_CENTER_FILES.map((file) =>
+  toControlCenterAssetKey(file.name),
+);
+
 // ---------------------------------------------------------------------------
 // control_spec.json
 // ---------------------------------------------------------------------------
@@ -398,6 +403,15 @@ const SLOT_BY_KEY = new Map(
 export const getControlCenterSlot = (
   key: string,
 ): ControlCenterSlot | undefined => SLOT_BY_KEY.get(key);
+
+/** 槽位里某个 role 对应的 asset key（文件名去后缀），没有这个 role 就返回 undefined */
+export const getControlCenterRoleAssetKey = (
+  slotKey: string,
+  role: ControlCenterFileRole,
+): string | undefined => {
+  const file = getControlCenterSlot(slotKey)?.files[role];
+  return file ? toControlCenterAssetKey(file.name) : undefined;
+};
 
 export const listControlCenterSlotsByGroup = (
   group: ControlCenterGroup,

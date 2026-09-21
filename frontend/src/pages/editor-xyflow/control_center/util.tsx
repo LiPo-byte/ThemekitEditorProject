@@ -253,7 +253,8 @@ const NODE_TYPE_BY_KIND: Record<ControlCenterSlotKind, string> = {
  * 格子是槽位而不是文件：双态的四个文件（关 / 开 / 开启动画 / 关闭动画）共用一格，
  * 滑条的三件套也共用一格，所以 44 格而不是 73 格。
  *
- * pag 跟着所属槽位进格子的 items，根节点上另存一份 pagAssets 作备份。
+ * 素材按 asset key 平铺在格子 data 上（图只有 source，pag 只有 pagsource），
+ * 组件用 getControlCenterRoleAssetKey 按 role 去取。
  */
 export const controlCenterConfig2Nodes: any = (
   config: any,
@@ -304,13 +305,26 @@ export const controlCenterConfig2Nodes: any = (
     });
 
     cells.forEach((cell) => {
+      // 素材按 asset key 平铺在 data 上，组件用 getControlCenterSlot(key) 自己找 role
+      const files = Object.fromEntries(
+        cell.items.map((item) => {
+          // 字段跟 defaultConfig 走：图只有 source，pag 只有 pagsource，不要交叉抄成 undefined
+          const file: ConfigAsset = { ext: item.asset.ext };
+          if (item.asset.ext === 'pag') {
+            file.pagsource = item.asset.pagsource ?? '';
+          } else {
+            file.source = item.asset.source ?? '';
+            file.width = item.asset.width;
+            file.height = item.asset.height;
+          }
+          return [item.key, file];
+        }),
+      );
       childNodes.push({
         id: nanoid(),
         type: NODE_TYPE_BY_KIND[cell.kind],
         data: {
-          /** 槽位内的文件，已按 base → select → open → close 排好序 */
-          items: cell.items,
-          /** 回写 config 时靠 items 里各自的 key 找回素材，这里存槽位名 */
+          /** 回写 config 时靠平铺的 asset key 找回素材，这里存槽位名 */
           key: cell.slot,
           kind: cell.kind,
           mediaWidth: cell.mediaWidth,
@@ -318,12 +332,13 @@ export const controlCenterConfig2Nodes: any = (
           fileNameHeight: LABEL_HEIGHT,
           /** 中文名，title / 静态格底部用；toggle 底下那行用的是当前文件的 key */
           label: cell.label,
+          ...files,
         },
         position: { x: cell.x, y: cell.y },
         parentId: platformGroupId,
         extent: 'parent',
         draggable: false,
-        selectable: false,
+        // selectable: false,
         connectable: false,
         focusable: false,
         style: {
@@ -348,12 +363,6 @@ export const controlCenterConfig2Nodes: any = (
       name: config?.name ?? 'Control_Center',
       /** control_spec.json 是整包共用的配色，挂根节点不进素材 */
       spec: config?.spec ?? {},
-      /** pag 不上画布，url 先存在这里，保存时再合回去 */
-      pagAssets: Object.fromEntries(
-        Object.entries(assets)
-          .filter(([, asset]) => asset?.ext === 'pag')
-          .map(([key, asset]) => [key, asset?.pagsource ?? '']),
-      ),
     },
     packable: true,
     draggable: false,
@@ -396,31 +405,32 @@ export const buildControlCenterConfigJson = (
   );
 
   const SLOT_NODE_TYPES = new Set(Object.values(NODE_TYPE_BY_KIND));
+  /** 格子 data 上的元数据，剩下的对象才是按 asset key 平铺的素材 */
+  const SLOT_META_KEYS = new Set([
+    'key',
+    'kind',
+    'label',
+    'mediaWidth',
+    'mediaHeight',
+    'fileNameHeight',
+  ]);
 
   nodes.forEach((node) => {
     if (!node.type || !SLOT_NODE_TYPES.has(node.type)) return;
     if (!node.parentId || !platformIds.has(node.parentId)) return;
     const data = getNodeData(node);
-    // 一个节点是一个槽位，里面可能有多张图（双态、滑条三件套），逐个按自己的 key 回填
-    const items = (data.items ?? []) as SourceItem[];
-    items.forEach((item) => {
-      const asset = assets[item.key];
+    Object.entries(data).forEach(([assetKey, value]) => {
+      if (SLOT_META_KEYS.has(assetKey)) return;
+      if (!value || typeof value !== 'object') return;
+      const asset = assets[assetKey];
       if (!asset) return;
-      // 格子上现在既有图也有 pag（toggle 播动画读的是 items 里的 pagsource），
-      // 保存时两边都回填，避免只改了格子、根上 pagAssets 还是旧的
-      if (item.asset?.ext === 'pag') {
-        asset.pagsource = item.asset?.pagsource ?? '';
+      const file = value as ConfigAsset;
+      if (file.ext === 'pag') {
+        asset.pagsource = file.pagsource ?? '';
         return;
       }
-      asset.source = item.asset?.source ?? '';
+      asset.source = file.source ?? '';
     });
-  });
-
-  // 根上那份补格子没带上的（老数据 / 以后属性面板只改了 pagAssets）
-  const pagAssets = (rootData.pagAssets ?? {}) as Record<string, string>;
-  Object.entries(pagAssets).forEach(([key, source]) => {
-    const asset = assets[key];
-    if (asset && !asset.pagsource) asset.pagsource = source ?? '';
   });
 
   return {
