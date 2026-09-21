@@ -29,10 +29,24 @@ export type GenerateElementPreviewOptions = {
    * 需要保证动画完整走完一个周期时开启。
    */
   paceSampling?: boolean;
+  /**
+   * 按源 GIF 自身的帧边界采样：输出帧数与每帧 delay 和源 GIF 一致，覆盖完整一轮循环。
+   * 开启后忽略 fps / durationMs，体积与导出耗时都会明显上升；
+   * 源帧数超过 GIF_MAX_ALIGNED_FRAMES 时退回固定 fps 重采样。
+   */
+  alignSourceGifTiming?: boolean;
+  /**
+   * GIF 帧直接按输出尺寸截图，不再「按 scale 超采样后缩回输出尺寸」。
+   * 省掉那次缩小插值：GIF 只有 256 色且不抖动，插值杂色会占满色槽、把 LZW 游程打断，体积明显变大。
+   * 同时截图像素数下降，导出也快很多。
+   */
+  gifExactCaptureScale?: boolean;
 };
 
 /** 预览 GIF 硬上限，避免多源采样把体积打爆 */
 const GIF_MAX_FRAMES = 16;
+/** 对齐源 GIF 时间轴时的帧数上限：再多就退回重采样，否则导出会慢到不可用 */
+const GIF_MAX_ALIGNED_FRAMES = 60;
 /** 实测帧间隔的取值范围：下限贴合 GIF 格式精度，上限避免切到后台被节流时出现长时间卡帧 */
 const GIF_MIN_FRAME_DELAY_MS = 20;
 const GIF_MAX_FRAME_DELAY_MS = 2000;
@@ -311,6 +325,41 @@ const pickFrameIndexAtTime = (frames: DecodedGifFrame[], timeMs: number) => {
   return frames.length - 1;
 };
 
+type GifSamplePoint = { timeMs: number; delayMs: number };
+
+/**
+ * 取所有源 GIF 帧边界的并集作为采样点，delay 用相邻边界的时间差。
+ * 单个源时结果就是「帧数、每帧 delay 与源完全一致」；多个源时两边的帧切换都不会被漏掉。
+ * 短于 loopDurationMs 的源会按循环继续铺边界，和播放时的实际表现一致。
+ */
+const buildSourceAlignedSamplePoints = (
+  framesBySource: DecodedGifFrame[][],
+  loopDurationMs: number,
+  maxPoints: number,
+): GifSamplePoint[] | null => {
+  if (loopDurationMs <= 0) return null;
+  const boundaries = new Set<number>([0]);
+  for (let i = 0; i < framesBySource.length; i += 1) {
+    const frames = framesBySource[i];
+    if (!frames.length) continue;
+    let cursor = 0;
+    while (cursor < loopDurationMs) {
+      for (let frameIndex = 0; frameIndex < frames.length; frameIndex += 1) {
+        if (cursor >= loopDurationMs) break;
+        boundaries.add(cursor);
+        cursor += Math.max(1, frames[frameIndex].delayMs);
+      }
+      if (boundaries.size > maxPoints) return null;
+    }
+  }
+  const sorted = Array.from(boundaries).sort((a, b) => a - b);
+  if (!sorted.length || sorted.length > maxPoints) return null;
+  return sorted.map((timeMs, index) => ({
+    timeMs,
+    delayMs: Math.max(1, (sorted[index + 1] ?? loopDurationMs) - timeMs),
+  }));
+};
+
 const waitImageSrc = (img: HTMLImageElement, nextSrc: string) =>
   new Promise<void>((resolve) => {
     const onDone = () => {
@@ -352,6 +401,7 @@ const getGifCaptureScale = (
   safeScale: number,
   outputWidth?: number,
   outputHeight?: number,
+  exact = false,
 ) => {
   const layoutSize = getElementLayoutSize(element);
   const requiredScale = Math.max(
@@ -359,6 +409,8 @@ const getGifCaptureScale = (
     (outputHeight ?? layoutSize.height) / layoutSize.height,
     1,
   );
+  // exact 时正好截到输出尺寸，normalizeCanvasSize 退化成空操作，不再有缩小插值
+  if (exact) return requiredScale;
   return Math.max(safeScale, requiredScale);
 };
 
@@ -381,11 +433,19 @@ export const generateElementPreview = async (
     frameCount: externalFrameCount,
     onFrame,
     paceSampling = false,
+    alignSourceGifTiming = false,
+    gifExactCaptureScale = false,
   } = options;
   const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
   // GIF 帧最后一定会归一到 output/layout 尺寸，提高截图倍率只改变采样精度、不改变输出像素数
   const captureScale = isGif
-    ? getGifCaptureScale(element, safeScale, outputWidth, outputHeight)
+    ? getGifCaptureScale(
+        element,
+        safeScale,
+        outputWidth,
+        outputHeight,
+        gifExactCaptureScale,
+      )
     : safeScale;
 
   if (!isGif) {
@@ -463,6 +523,27 @@ export const generateElementPreview = async (
         maxFrameCount,
         Math.max(2, Math.ceil(timelineMs / sampleDelay)),
       );
+      const resampledPoints: GifSamplePoint[] = Array.from(
+        { length: sampleCount },
+        (_unused, index) => ({
+          timeMs:
+            sampleCount <= 1
+              ? 0
+              : Math.min(
+                  timelineMs - 1,
+                  Math.round((index * timelineMs) / sampleCount),
+                ),
+          delayMs: sampleDelay,
+        }),
+      );
+      const samplePoints =
+        (alignSourceGifTiming
+          ? buildSourceAlignedSamplePoints(
+              usableSources.map((source) => decodedBySource.get(source) || []),
+              loopDurationMs,
+              GIF_MAX_ALIGNED_FRAMES,
+            )
+          : null) ?? resampledPoints;
 
       const dataUrlBySource = new Map<string, string[]>();
       usableSources.forEach((source) => {
@@ -483,14 +564,8 @@ export const generateElementPreview = async (
 
       try {
         let lastIndexKey = '';
-        for (let index = 0; index < sampleCount; index += 1) {
-          const timeMs =
-            sampleCount <= 1
-              ? 0
-              : Math.min(
-                  timelineMs - 1,
-                  Math.round((index * timelineMs) / sampleCount),
-                );
+        for (let index = 0; index < samplePoints.length; index += 1) {
+          const { timeMs, delayMs } = samplePoints[index];
           const frameIndexBySource = new Map<string, number>();
           const indexKey = usableSources
             .map((source) => {
@@ -504,7 +579,7 @@ export const generateElementPreview = async (
             .join('|');
 
           if (indexKey === lastIndexKey && capturedFrames.length) {
-            capturedFrames[capturedFrames.length - 1].delay += sampleDelay;
+            capturedFrames[capturedFrames.length - 1].delay += delayMs;
             continue;
           }
           lastIndexKey = indexKey;
@@ -529,7 +604,7 @@ export const generateElementPreview = async (
               frameCanvas.width === width && frameCanvas.height === height
                 ? frameCanvas
                 : normalizeCanvasSize(frameCanvas, width, height),
-            delay: sampleDelay,
+            delay: delayMs,
           });
         }
       } finally {

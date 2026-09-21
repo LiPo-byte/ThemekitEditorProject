@@ -87,6 +87,12 @@ const renderFrameWithTransform = (params: {
   renderScale: number;
   resizeMode: 'crop' | 'stretch';
   backgroundColor?: string | null;
+  /**
+   * 关掉插值改用最近邻。GIF 只有 256 色且不做抖动，插值产生的邻近杂色会被逐一占用色槽，
+   * 把索引像素打成散点、LZW 游程全断，是导出体积远大于源文件的主因。
+   * 扁平色块素材关掉后体积明显下降且几乎无损；照片/渐变素材会出现锯齿，所以默认仍开插值。
+   */
+  smoothing?: boolean;
 }) => {
   const {
     sourceCanvas,
@@ -97,6 +103,7 @@ const renderFrameWithTransform = (params: {
     renderScale,
     resizeMode,
     backgroundColor,
+    smoothing = true,
   } = params;
   const canvas = document.createElement('canvas');
   const combinedScale = outputScale * renderScale;
@@ -107,7 +114,7 @@ const renderFrameWithTransform = (params: {
     throw new Error('Cannot create canvas 2d context.');
   }
 
-  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingEnabled = smoothing;
   ctx.imageSmoothingQuality = 'high';
   ctx.scale(combinedScale, combinedScale);
   if (backgroundColor) {
@@ -140,6 +147,7 @@ const resizeCanvasTo = (
   sourceCanvas: HTMLCanvasElement,
   width: number,
   height: number,
+  smoothing = true,
 ) => {
   if (sourceCanvas.width === width && sourceCanvas.height === height) {
     return sourceCanvas;
@@ -151,7 +159,7 @@ const resizeCanvasTo = (
   if (!ctx) {
     throw new Error('Cannot create resize canvas context.');
   }
-  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingEnabled = smoothing;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(sourceCanvas, 0, 0, canvas.width, canvas.height);
   return canvas;
@@ -469,6 +477,15 @@ export const cropMediaByUrl = async (
       Math.round(preferredJpegOutputHeight ?? decoded.height),
     );
 
+    const gifTargetWidth = Math.max(1, Math.round(gifWidth * outputScale));
+    const gifTargetHeight = Math.max(1, Math.round(gifHeight * outputScale));
+    // GIF 帧直接渲染到目标尺寸，不再「按 renderScale 超采样后缩回目标尺寸」。
+    // 二次插值会把源图的纯色块变成渐变，256 色量化后邻近像素不再相同，LZW 几乎压不动，
+    // 是导出 gif 远大于源文件的主要可控因素。
+    const gifRenderScale = Math.max(
+      gifTargetWidth / renderWidth,
+      gifTargetHeight / renderHeight,
+    );
     const transformedFrames = decoded.frames.map((frame) => ({
       canvas: resizeCanvasTo(
         renderFrameWithTransform({
@@ -476,38 +493,34 @@ export const cropMediaByUrl = async (
           width: renderWidth,
           height: renderHeight,
           transform,
-          outputScale,
-          renderScale,
+          outputScale: 1,
+          renderScale: gifRenderScale,
           resizeMode,
           backgroundColor: options.gifBackgroundColor ?? null,
+          smoothing: false,
         }),
-        Math.max(1, Math.round(gifWidth * outputScale)),
-        Math.max(1, Math.round(gifHeight * outputScale)),
+        gifTargetWidth,
+        gifTargetHeight,
+        false,
       ),
       delayMs: frame.delayMs,
     }));
 
     const gifBlob = await encodeGifFromFrames(transformedFrames);
-    const firstFrameCanvas =
-      transformedFrames[0]?.canvas ??
-      resizeCanvasTo(
-        renderFrameWithTransform({
-          sourceCanvas: decoded.frames[0].canvas,
-          width: renderWidth,
-          height: renderHeight,
-          transform,
-          outputScale,
-          renderScale,
-          resizeMode,
-          backgroundColor: options.gifBackgroundColor ?? null,
-        }),
-        Math.max(1, Math.round(gifWidth * outputScale)),
-        Math.max(1, Math.round(gifHeight * outputScale)),
-      );
+    // jpeg 首帧仍按 renderScale 超采样后再归一，避免被 gif 的目标尺寸（可能小于 timejpg）带着降质
     const jpegFrameCanvas = options.skipJpeg
       ? null
       : resizeCanvasTo(
-          firstFrameCanvas,
+          renderFrameWithTransform({
+            sourceCanvas: decoded.frames[0].canvas,
+            width: renderWidth,
+            height: renderHeight,
+            transform,
+            outputScale,
+            renderScale,
+            resizeMode,
+            backgroundColor: options.gifBackgroundColor ?? null,
+          }),
           Math.max(1, Math.round(jpegWidth * outputScale)),
           Math.max(1, Math.round(jpegHeight * outputScale)),
         );
@@ -522,8 +535,8 @@ export const cropMediaByUrl = async (
       blob: gifBlob,
       mimeType: 'image/gif',
       isGif: true,
-      width: Math.max(1, Math.round(gifWidth * outputScale)),
-      height: Math.max(1, Math.round(gifHeight * outputScale)),
+      width: gifTargetWidth,
+      height: gifTargetHeight,
       gifBlob,
       jpegBlob,
     };

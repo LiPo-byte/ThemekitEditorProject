@@ -535,6 +535,10 @@ export const collectWidgetExportFiles = async (
           jpegQuality: EXPORT_JPEG_QUALITY,
           outputWidth: previewWidth,
           outputHeight: previewHeight,
+          // preview 的帧数与播放速度必须和源 GIF 一致，不接受固定 fps 重采样后的截断
+          alignSourceGifTiming: true,
+          // 按输出尺寸直接截图，省掉 3 倍超采样再缩回的插值，体积和耗时都会明显下降
+          gifExactCaptureScale: true,
           ...(shouldPaceToAlternateCycle
             ? { durationMs: alternateCycleMs, paceSampling: true }
             : {}),
