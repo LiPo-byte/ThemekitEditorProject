@@ -78,6 +78,8 @@ import LiveWallpaper from './wallpaper/live-wallpaper';
 import LottieWallpaper from './wallpaper/lottie_wallpaper';
 import Sticker from './sticker/sticker';
 import ChargingAnimation from './charginganimation/charging-animation';
+import controlCenterSource from './control_center/control-center-source';
+import controlCenterToggle from './control_center/control-center-toggle';
 // import PreviewLong from './theme/preview_long';
 // import PreviewShort from './theme/preview_short';
 // import ListView from './theme/list_view';
@@ -157,11 +159,12 @@ const rawXyFlowTypeNodeType: Record<string, ComponentType<any>> = {
   lottie_wallpaper: LottieWallpaper,
   sticker: Sticker,
   charging_animation: ChargingAnimation,
+  control_center_source: controlCenterSource,
+  control_center_toggle: controlCenterToggle,
   photo_watch_face_1_static: WatchFacePhotoStatic1,
   photo_watch_face_1_dynamic: WatchFacePhotoDynamic1,
   photo_watch_face_2: WatchFacePhoto2,
   portraits_watch_face: WatchFacePortraits,
-  
 };
 
 /**

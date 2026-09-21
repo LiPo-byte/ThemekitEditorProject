@@ -6556,6 +6556,136 @@ export const ChargingAnimationDefaultConfig = {
     }
 }
 
+/**
+ * Control Center 整包配置。
+ *
+ * assets 的 key 是不带后缀的素材名，导出时用 `${key}.${ext}` 还原成包内文件名，
+ * 与 editor-xyflow/widget/rule_ymal/resource-validation/control_center.yaml 的
+ * required_files 一一对应（73 个素材，去掉后缀后无重名）。
+ *
+ * 图片用 source、pag 用 pagsource；width / height 是 yaml 要求的导出尺寸，
+ * pag 在 yaml 里只校验格式不校验尺寸，所以没有这两个字段。
+ * 剩下那个 control_spec.json 对应下面的 spec。yaml 改了要回来同步。
+ */
+export const ControlCenterDefaultConfig = {
+    name: 'Control_Center',
+    assets: {
+        // 整包封面
+        'preview': { source: '', ext: 'jpg', width: 1080, height: 2338 },
+
+        // 主面板 · 背景与入口卡片
+        'home_bg': { source: '', ext: 'jpg', width: 1080, height: 2338 },
+        'home_control_bg': { source: '', ext: 'png', width: 432, height: 432 },
+        'home_music_bg': { source: '', ext: 'png', width: 432, height: 432 },
+
+        // 主面板 · 快捷开关
+        'home_second_ic_focus': { source: '', ext: 'png', width: 432, height: 195 },
+        'home_second_ic_focus_close': { pagsource: '', ext: 'pag' },
+        'home_second_ic_focus_open': { pagsource: '', ext: 'pag' },
+        'home_second_ic_focus_select': { source: '', ext: 'png', width: 432, height: 195 },
+        'home_second_ic_locking': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_second_ic_locking_close': { pagsource: '', ext: 'pag' },
+        'home_second_ic_locking_open': { pagsource: '', ext: 'pag' },
+        'home_second_ic_locking_select': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_second_ic_ring': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_second_ic_ring_close': { pagsource: '', ext: 'pag' },
+        'home_second_ic_ring_open': { pagsource: '', ext: 'pag' },
+        'home_second_ic_ring_select': { source: '', ext: 'png', width: 195, height: 195 },
+
+        // 主面板 · 底部按钮
+        'home_bottom_diy_bg': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_battery': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_calculator': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_camera': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_flashlight': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_flashlight_close': { pagsource: '', ext: 'pag' },
+        'home_bottom_ic_flashlight_open': { pagsource: '', ext: 'pag' },
+        'home_bottom_ic_flashlight_select': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_record': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_record_close': { pagsource: '', ext: 'pag' },
+        'home_bottom_ic_record_open': { pagsource: '', ext: 'pag' },
+        'home_bottom_ic_record_select': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_recording': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_screenshot': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_setup': { source: '', ext: 'png', width: 195, height: 195 },
+        'home_bottom_ic_timing': { source: '', ext: 'png', width: 195, height: 195 },
+
+        // 主面板 · 音量条与图标
+        'common_home_sound_bg': { source: '', ext: 'png', width: 195, height: 432 },
+        'common_home_sound_big': { source: '', ext: 'png', width: 105, height: 105 },
+        'common_home_sound_mute': { source: '', ext: 'png', width: 105, height: 105 },
+        'common_home_sound_slide': { source: '', ext: 'png', width: 195, height: 432 },
+        'home_light_icon': { source: '', ext: 'png', width: 105, height: 105 },
+
+        // 控制开关面板
+        'common_control_ic_airplane': { source: '', ext: 'png', width: 153, height: 153 },
+        'common_control_ic_airplane_select': { source: '', ext: 'png', width: 153, height: 153 },
+        'common_control_ic_bluetooth': { source: '', ext: 'png', width: 153, height: 153 },
+        'common_control_ic_bluetooth_select': { source: '', ext: 'png', width: 153, height: 153 },
+        'common_control_ic_data': { source: '', ext: 'png', width: 153, height: 153 },
+        'common_control_ic_data_select': { source: '', ext: 'png', width: 153, height: 153 },
+        'common_control_wifi': { source: '', ext: 'png', width: 153, height: 153 },
+        'common_control_wifi_select': { source: '', ext: 'png', width: 153, height: 153 },
+        'control_bg': { source: '', ext: 'png', width: 906, height: 1197 },
+        'control_ic_hotspot': { source: '', ext: 'png', width: 153, height: 153 },
+        'control_ic_hotspot_select': { source: '', ext: 'png', width: 153, height: 153 },
+        'control_ic_sync': { source: '', ext: 'png', width: 153, height: 153 },
+        'control_ic_sync_select': { source: '', ext: 'png', width: 153, height: 153 },
+        'control_preview': { source: '', ext: 'jpg', width: 1080, height: 2338 },
+
+        // 亮度面板
+        'common_light_bg': { source: '', ext: 'png', width: 381, height: 984 },
+        'common_light_slide': { source: '', ext: 'png', width: 381, height: 984 },
+        'light_empty_preview': { source: '', ext: 'jpg', width: 1080, height: 2338 },
+        'light_full_preview': { source: '', ext: 'jpg', width: 1080, height: 2338 },
+        'light_ic_auto_bright': { source: '', ext: 'png', width: 153, height: 153 },
+        'light_ic_auto_bright_select': { source: '', ext: 'png', width: 153, height: 153 },
+        'light_ic_light': { source: '', ext: 'png', width: 150, height: 150 },
+        'light_ic_night_shift': { source: '', ext: 'png', width: 153, height: 153 },
+        'light_ic_night_shift_select': { source: '', ext: 'png', width: 153, height: 153 },
+
+        // 音乐面板
+        'common_music_ic_next': { source: '', ext: 'png', width: 90, height: 90 },
+        'common_music_ic_pause': { source: '', ext: 'png', width: 90, height: 90 },
+        'common_music_ic_play': { source: '', ext: 'png', width: 90, height: 90 },
+        'common_music_ic_previous': { source: '', ext: 'png', width: 90, height: 90 },
+        'music_bg': { source: '', ext: 'png', width: 894, height: 1512 },
+        'music_bg_music_progress': { source: '', ext: 'png', width: 774, height: 24 },
+        'music_bg_sound_progress': { source: '', ext: 'png', width: 612, height: 24 },
+        'music_ic_music_progress': { source: '', ext: 'png', width: 36, height: 36 },
+        'music_ic_sound_progress': { source: '', ext: 'png', width: 66, height: 66 },
+        'music_im_default': { source: '', ext: 'png', width: 774, height: 762 },
+        'music_im_music_progress': { source: '', ext: 'png', width: 774, height: 24 },
+        'music_im_sound_progress': { source: '', ext: 'png', width: 612, height: 24 },
+        'music_preview': { source: '', ext: 'jpg', width: 1080, height: 2338 },
+    },
+    // 对应包内的 control_spec.json；颜色默认白、透明度默认不透明，
+    // 三个数值字段没有中性默认可言，取自现有成品包（corner 是圆角、size 是边长，都是 dp）
+    spec: {
+        pullBarColor: '#FFFFFF',
+        pullBarAlpha: 1,
+        controlTextColor: '#FFFFFF',
+        controlTextAlpha: 1,
+        volumeTextColor: '#FFFFFF',
+        volumeTextAlpha: 1,
+        brightnessTextColor: '#FFFFFF',
+        brightnessTextAlpha: 1,
+        musicKnownTitleColor: '#FFFFFF',
+        musicKnownTitleAlpha: 1,
+        musicKnownSingerColor: '#FFFFFF',
+        musicKnownSingerAlpha: 1,
+        musicUnknownTitleColor: '#FFFFFF',
+        musicUnknownTitleAlpha: 1,
+        musicUnknownSingerColor: '#FFFFFF',
+        musicUnknownSingerAlpha: 1,
+        musicTimeColor: '#FFFFFF',
+        musicTimeAlpha: 1,
+        musicAlbumCorner: 33,
+        homeControlDiyCorner: 22,
+        homeControlDiySize: 30,
+    },
+}
+
 
 const withPhotoShufflesHandler = (n: number) => {
     const obj:any = {};

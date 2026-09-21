@@ -28,6 +28,7 @@ export const CATEGORY_COLUMN_ORDER = [
   'wallpaper',
   'sticker',
   'charging_animation',
+  'control_center',
   'theme',
   'lockpack',
 ] as const;

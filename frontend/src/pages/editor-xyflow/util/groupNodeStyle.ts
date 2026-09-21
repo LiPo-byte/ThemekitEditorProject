@@ -18,7 +18,8 @@ export type GroupNodeCategory =
   | 'wallpaper'
   | 'lockpack'
   | 'sticker'
-  | 'charging_animation';
+  | 'charging_animation'
+  | 'control_center';
 
 type GroupNodeStyle = {
   background: string;
@@ -69,6 +70,12 @@ export const ROOT_GROUP_STYLE: Record<GroupNodeCategory, GroupNodeStyle> = {
   charging_animation: {
     background: '#fdf5fa',
     border: '1px solid #edaed7',
+    borderRadius: 16,
+  },
+  /** 色相 180，落在绿（155）与青（210）之间最后一个 55 度的空档 */
+  control_center: {
+    background: '#f0faf8',
+    border: '1px solid #7fd8c7',
     borderRadius: 16,
   },
 };
@@ -122,5 +129,11 @@ export const PLATFORM_GROUP_STYLE: Record<GroupNodeCategory, GroupNodeStyle> = {
     border: '1px solid #f6d1e8',
     borderRadius: 12,
     boxShadow: '0 2px 8px rgba(168, 72, 141, 0.06)',
+  },
+  control_center: {
+    background: '#e4f7f2',
+    border: '1px solid #bbe9df',
+    borderRadius: 12,
+    boxShadow: '0 2px 8px rgba(33, 131, 115, 0.06)',
   },
 };

@@ -3,18 +3,28 @@ import { createStyles } from 'antd-style';
 import React, { useMemo, useRef, useState } from 'react';
 import {
   useEditorAddChargingAnimation,
+  useEditorAddControlCenter,
   useEditorAddIconPack,
   useEditorAddSticker,
   useEditorAddWallpaper,
   useEditorProjectId,
 } from '../../context';
 import AddChargingAnimationModal, {
+  buildChargingAnimationConfig,
   type ChargingAnimationFormValue,
   EMPTY_CHARGING_ANIMATION_VALUE,
   uploadChargingAnimationFiles,
   validateChargingAnimationValue,
-  buildChargingAnimationConfig,
 } from './AddChargingAnimationModal';
+import AddControlCenterModal, {
+  buildControlCenterConfig,
+  buildEmptyControlCenterConfig,
+  type ControlCenterFormValue,
+  type ControlCenterUploadProgress,
+  EMPTY_CONTROL_CENTER_VALUE,
+  uploadControlCenterFiles,
+  validateControlCenterValue,
+} from './AddControlCenterModal';
 import AddIconPackModal, {
   buildEmptyIconPackConfig,
   buildIconPackConfig,
@@ -34,10 +44,10 @@ import AddWallpaperModal, {
   buildEmptyWallpaperConfig,
   buildWallpaperConfig,
   EMPTY_WALLPAPER_VALUE,
-  type WallpaperFormValue,
   hasWallpaperFiles,
   uploadWallpaperFiles,
   validateWallpaperValue,
+  type WallpaperFormValue,
 } from './AddWallpaperModal';
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -151,6 +161,7 @@ const tagsData = [
   { label: 'Sticker', value: 'sticker' },
   { label: 'Charging Animation', value: 'charging_animation' },
   { label: 'Icon Pack', value: 'icon_pack' },
+  { label: 'Control Center', value: 'control_center' },
   { label: 'Wallpaper', value: 'wallpaper', subTags: subWallpaperTags },
 ] as const satisfies readonly MoreTagItem[];
 type MoreCategory = (typeof tagsData)[number]['value'];
@@ -188,11 +199,13 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
   const addChargingAnimation = useEditorAddChargingAnimation();
   const addIconPack = useEditorAddIconPack();
   const addWallpaper = useEditorAddWallpaper();
+  const addControlCenter = useEditorAddControlCenter();
   const [singleSelected, setSingleSelected] = useState<MoreCategory>('sticker');
   /** 二级选中按一级标签分别记住，来回切一级时保留各自上次的选择 */
-  const [subSelectedMap, setSubSelectedMap] = useState<
-    Partial<Record<MoreCategory, MoreSubCategory>>
-  >(DEFAULT_SUB_SELECTED);
+  const [subSelectedMap, setSubSelectedMap] =
+    useState<Partial<Record<MoreCategory, MoreSubCategory>>>(
+      DEFAULT_SUB_SELECTED,
+    );
 
   const subTags = useMemo(() => getSubTags(singleSelected), [singleSelected]);
   /** 当前一级没有二级标签时为 undefined；body 后续按 singleSelected + subSelected 筛选 */
@@ -219,11 +232,18 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
     useState<StickerFormValue>(EMPTY_STICKER_VALUE);
   const [chargingValue, setChargingValue] =
     useState<ChargingAnimationFormValue>(EMPTY_CHARGING_ANIMATION_VALUE);
-  const [iconPackValue, setIconPackValue] =
-    useState<IconPackFormValue>(EMPTY_ICON_PACK_VALUE);
-  const [wallpaperValue, setWallpaperValue] =
-    useState<WallpaperFormValue>(EMPTY_WALLPAPER_VALUE);
+  const [iconPackValue, setIconPackValue] = useState<IconPackFormValue>(
+    EMPTY_ICON_PACK_VALUE,
+  );
+  const [controlCenterValue, setControlCenterValue] =
+    useState<ControlCenterFormValue>(EMPTY_CONTROL_CENTER_VALUE);
+  const [wallpaperValue, setWallpaperValue] = useState<WallpaperFormValue>(
+    EMPTY_WALLPAPER_VALUE,
+  );
   const [submitting, setSubmitting] = useState(false);
+  /** 只有 Control Center 会一次传几十个文件，需要让用户看到进度 */
+  const [uploadProgress, setUploadProgress] =
+    useState<ControlCenterUploadProgress | null>(null);
 
   const onAddSticker = async () => {
     const invalidText = validateStickerValue(stickerValue);
@@ -308,6 +328,51 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
     }
   };
 
+  const onAddControlCenter = async () => {
+    const invalidText = validateControlCenterValue(controlCenterValue);
+    if (invalidText) {
+      message.error(invalidText);
+      return;
+    }
+    // 不传素材也能先加个空壳到画布上，素材后面再补
+    if (!controlCenterValue.files.length) {
+      addControlCenter(buildEmptyControlCenterConfig());
+      message.success('Control Center 已添加');
+      onClose();
+      return;
+    }
+    if (!projectId) {
+      message.error('项目未初始化，无法上传');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const result = await uploadControlCenterFiles(
+        projectId,
+        controlCenterValue,
+        setUploadProgress,
+      );
+      addControlCenter(buildControlCenterConfig(result));
+      if (result.failed.length) {
+        // 失败的没落进 config，画布上对应格子是空的，重新传那几个覆盖即可
+        message.warning(
+          `Control Center 已添加，${result.failed.length} 个文件上传失败：${result.failed.join('、')}`,
+        );
+      } else {
+        message.success(
+          `Control Center 已添加（上传 ${result.uploadedCount} 个）`,
+        );
+      }
+      setControlCenterValue(EMPTY_CONTROL_CENTER_VALUE);
+      onClose();
+    } catch {
+      message.error('上传失败，请重试');
+    } finally {
+      setSubmitting(false);
+      setUploadProgress(null);
+    }
+  };
+
   const onAddWallpaper = async () => {
     const wallpaperType = subSelected || '';
     const invalidText = validateWallpaperValue(wallpaperValue, wallpaperType);
@@ -382,12 +447,25 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
       ),
       onAdd: onAddIconPack,
     },
+    control_center: {
+      render: () => (
+        <AddControlCenterModal
+          value={controlCenterValue}
+          onChange={setControlCenterValue}
+        />
+      ),
+      onAdd: onAddControlCenter,
+    },
     wallpaper: {
       render: () => (
-        <AddWallpaperModal value={wallpaperValue} onChange={setWallpaperValue} wallpaperType={subSelected || ''} />
+        <AddWallpaperModal
+          value={wallpaperValue}
+          onChange={setWallpaperValue}
+          wallpaperType={subSelected || ''}
+        />
       ),
       onAdd: onAddWallpaper,
-    }
+    },
   };
   const currentHandler = categoryHandlers[singleSelected];
 
@@ -441,9 +519,16 @@ const AddMoreElementModal: React.FC<Props> = ({ open, onClose }) => {
       </div>
       <Divider className={styles.divider} size="small" />
       <div className={styles.footer}>
-        <Flex gap={8} justify="flex-end">
+        <Flex gap={8} justify="flex-end" align="center">
+          {uploadProgress ? (
+            <Typography.Text type="secondary" style={{ marginRight: 'auto' }}>
+              上传中 {uploadProgress.done} / {uploadProgress.total}
+            </Typography.Text>
+          ) : null}
           <Button onClick={onClose}>cancel</Button>
-          <Button type="primary" loading={submitting} onClick={onAdd}>add</Button>
+          <Button type="primary" loading={submitting} onClick={onAdd}>
+            add
+          </Button>
         </Flex>
       </div>
     </div>

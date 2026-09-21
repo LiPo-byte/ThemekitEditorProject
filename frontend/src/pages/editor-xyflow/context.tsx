@@ -29,6 +29,10 @@ import {
   chargingAnimationConfig2Nodes,
   buildChargingAnimationConfigJson,
 } from './charginganimation/util';
+import {
+  controlCenterConfig2Nodes,
+  buildControlCenterConfigJson,
+} from './control_center/util';
 
 import { buildIconPackConfigJson } from './icon/buildIconPackConfig';
 import { relayoutRootNodes, resolveNextRootPosition } from './util/rootLayout';
@@ -145,6 +149,7 @@ type EditorCoreCtxValue = {
   addLockpack: (config: any) => string | undefined;
   addSticker: (config: any) => string | undefined;
   addChargingAnimation: (config: any) => string | undefined;
+  addControlCenter: (config: any) => string | undefined;
   /** 全览：把画布缩放平移到刚好容纳所有根元素 */
   fitView: (options?: ViewFitOptions) => void;
   /** 聚焦：把视角移到指定根元素；元素尚未落到 nodes 时会等它出现后再执行 */
@@ -237,6 +242,7 @@ const EditorCoreCtx = createContext<EditorCoreCtxValue>({
   addLockpack: noopAddNodeGroup,
   addSticker: noopAddNodeGroup,
   addChargingAnimation: noopAddNodeGroup,
+  addControlCenter: noopAddNodeGroup,
   fitView: (_options?: ViewFitOptions) => {},
   focusElement: (_rootId: string, _options?: ViewFitOptions) => {},
   arrangeElements: () => {},
@@ -384,6 +390,8 @@ const ELEMENT_LOADERS: Record<
     stickerConfig2Nodes(configJson, element_key),
   charging_animation: (configJson, element_key) =>
     chargingAnimationConfig2Nodes(configJson, element_key),
+  control_center: (configJson, element_key) =>
+    controlCenterConfig2Nodes(configJson, element_key),
 };
 
 const mapProjectElementsToNodes = (elements: any[]): FlowNode[] => {
@@ -878,6 +886,12 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     appendNodesBySlot(newNodes, rootNode);
     return String(rootNode.id);
   };
+  const addControlCenter = (config: any) => {
+    const { nodes: newNodes, rootNode } = controlCenterConfig2Nodes(config);
+    if (!rootNode) return undefined;
+    appendNodesBySlot(newNodes, rootNode);
+    return String(rootNode.id);
+  };
 
   const selectedBranchNodes = useMemo(
     () => {
@@ -1346,6 +1360,18 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     config_json: buildChargingAnimationConfigJson(rootNode, nodes),
   });
 
+  const buildControlCenterElementPayload = (rootNode: FlowNode) => ({
+    element_key: rootNode.id,
+    category: 'control_center',
+    subtype: 'control_center',
+    x: rootNode.position?.x ?? 0,
+    y: rootNode.position?.y ?? 0,
+    visible: true,
+    locked: false,
+    schema_version: 1,
+    config_json: buildControlCenterConfigJson(rootNode, nodes),
+  });
+
   const buildThemeElementPayload = (rootNode: FlowNode) => {
     const sourceConfigMap: Record<string, any> = {};
     nodes
@@ -1427,6 +1453,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
     lockpack: buildLockpackElementPayload,
     sticker: buildStickerElementPayload,
     charging_animation: buildChargingAnimationElementPayload,
+    control_center: buildControlCenterElementPayload,
     watchface: buildWatchFacewElementPayload,
   };
 
@@ -1661,6 +1688,7 @@ export const EditorCoreProvider: React.FC<{ children: ReactNode }> = ({ children
       addLockpack,
       addSticker,
       addChargingAnimation,
+      addControlCenter,
       fitView,
       focusElement,
       arrangeElements,
@@ -1790,6 +1818,8 @@ export const useEditorAddLockpack = () => useContext(EditorCoreCtx).addLockpack;
 export const useEditorAddSticker = () => useContext(EditorCoreCtx).addSticker;
 export const useEditorAddChargingAnimation = () =>
   useContext(EditorCoreCtx).addChargingAnimation;
+export const useEditorAddControlCenter = () =>
+  useContext(EditorCoreCtx).addControlCenter;
 export const useEditorFitView = () => useContext(EditorCoreCtx).fitView;
 export const useEditorFocusElement = () => useContext(EditorCoreCtx).focusElement;
 export const useEditorArrangeElements = () => useContext(EditorCoreCtx).arrangeElements;
