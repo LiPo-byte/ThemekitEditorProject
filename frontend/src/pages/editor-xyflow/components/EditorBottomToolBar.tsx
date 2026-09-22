@@ -131,7 +131,7 @@ const EditorBottomToolBar: React.FC = () => {
                 <Button type='primary' icon={<SelectSvg color={theme.colorWhite} size={14} />}></Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('widget'); }} >Widget</Button>
                 <Button type='text' onClick={() => { onToggleLeftPanl('lockScreen'); }} >Lock Widget</Button>
-                <Button type='text' onClick={() => {}} >Control Center</Button>
+                {/* <Button type='text' onClick={() => {}} >Control Center</Button> */}
                 {/* <Button type='text' onClick={() => {}} >Sticker</Button> */}
                 <Button type='text' onClick={() => { onToggleLeftPanl('watchFace') }} >Watch Face</Button>
                 {/* <Button type='text' onClick={() => {}} >Charging Animation</Button> */}
